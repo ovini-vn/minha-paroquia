@@ -1,0 +1,200 @@
+# Comunidade
+
+Plataforma multi-paróquia católica — o elo digital entre o fiel, o sacerdote e
+sua comunidade. Ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e
+[docs/FUNDACAO.md](docs/FUNDACAO.md) para o racional completo do produto e
+das decisões técnicas desta primeira fatia.
+
+Esta etapa entrega a fundação: cadastro/login, multi-paróquia com isolamento
+por Row-Level Security, fluxo de convite, papéis/permissões básicos, e os
+dashboards iniciais do fiel e da paróquia. Catequese, liturgia, dízimo,
+confissão, sacramentos completos e qualquer integração externa ficam para
+etapas futuras — ver docs/FUNDACAO.md para o que é intencionalmente "Em
+construção" nesta versão.
+
+## Stack
+
+- **Next.js 15** (App Router) full-stack — TypeScript ponta a ponta, Server
+  Actions como camada de API.
+- **PostgreSQL** com **Row-Level Security** por `parish_id` (defesa em
+  profundidade além do filtro na aplicação).
+- **Prisma** como ORM/migrations.
+- **Tailwind CSS** para estilo.
+- **Zod** para validação.
+- **Argon2** (`@node-rs/argon2`) para hash de senha; sessão por token opaco
+  em cookie httpOnly (não JWT — ver `src/server/auth/session.ts`).
+- **Vitest** para testes.
+
+Ver [docs/FUNDACAO.md](docs/FUNDACAO.md) seção "Fase 2" para a justificativa
+de cada escolha.
+
+## Requisitos
+
+- Node.js 20+
+- Um banco PostgreSQL — recomendado um projeto gratuito no
+  [Neon](https://neon.tech) ou [Supabase](https://supabase.com) (não há
+  Docker configurado neste ambiente; ver decisão registrada em
+  docs/FUNDACAO.md)
+
+## Instalação
+
+```bash
+npm install
+```
+
+## Configuração
+
+```bash
+cp .env.example .env
+```
+
+`.env` precisa de **duas** connection strings — ver `.env.example`:
+
+- `DIRECT_URL`: a role "dona" que o Neon/Supabase te dá ao criar o projeto
+  (ex.: `neondb_owner`). Só usada por `prisma migrate`, que precisa de DDL.
+- `DATABASE_URL`: uma role de aplicação restrita (`app_user`), que o Prisma
+  Client usa em runtime (app e testes). **Isso não é opcional** — a role
+  padrão que o Neon/Supabase cria normalmente tem o atributo `BYPASSRLS`
+  (ignora toda política de Row-Level Security, mesmo com
+  `FORCE ROW LEVEL SECURITY` na tabela). Rodar a aplicação com a role dona
+  faria o isolamento multi-paróquia parecer funcionar em todo teste manual e
+  falhar silenciosamente em produção. Ver `prisma/schema.prisma` (comentário
+  no `datasource`) e `docs/FUNDACAO.md`.
+
+Usamos `.env` (não `.env.local`) de propósito: é o único arquivo que tanto o
+Next.js quanto o Prisma CLI leem automaticamente. **Nunca** commite `.env`
+(já está no `.gitignore`).
+
+## Banco de dados
+
+### 1. Criar a role de aplicação (uma vez, por banco novo)
+
+Conecte no seu banco com a role dona (`psql` ou o SQL editor do
+Neon/Supabase) e rode, com uma senha forte gerada por você:
+
+```sql
+CREATE ROLE app_user WITH LOGIN PASSWORD 'sua-senha-forte-aqui'
+  NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+GRANT USAGE ON SCHEMA public TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
+ALTER DEFAULT PRIVILEGES FOR ROLE neondb_owner IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_user;
+```
+
+(troque `neondb_owner` pelo nome real da sua role dona, se for diferente).
+O último comando garante que tabelas criadas por migrations futuras também
+ficam acessíveis para `app_user` automaticamente. Monte a connection string
+de `DATABASE_URL` trocando usuário/senha pelos de `app_user`, mantendo o
+mesmo host/porta/banco da connection string da role dona.
+
+### 2. Aplicar o schema e o RLS
+
+```bash
+# Aplica o schema base (users, parishes, roles, invitations...) — usa DIRECT_URL
+npx prisma migrate dev --name init
+
+# Cria uma migration vazia para as políticas de RLS
+npx prisma migrate dev --name row_level_security --create-only
+```
+
+Abra o arquivo `prisma/migrations/<timestamp>_row_level_security/migration.sql`
+recém-criado, cole nele o conteúdo de `prisma/rls-policies.sql`, e então
+aplique:
+
+```bash
+npx prisma migrate dev
+```
+
+A partir daí, `npx prisma migrate dev` (nome novo a cada mudança de schema)
+é o fluxo normal do dia a dia — sempre roda contra `DIRECT_URL`.
+
+## Seed
+
+```bash
+npm run db:seed
+```
+
+Cria os papéis/permissões (fonte de verdade em `src/server/auth/rbac.ts`),
+uma paróquia demo ("Paróquia Nossa Senhora de Fátima") e 3 usuários de teste,
+todos com a senha `ComunidadeDev123!` (só em desenvolvimento — nunca use essa
+senha ou esse padrão em produção):
+
+| Papel | E-mail |
+|---|---|
+| Admin da plataforma | vini.bode@gmail.com |
+| Pároco | paroco.demo@comunidade.app |
+| Fiel | fiel.demo@comunidade.app |
+
+## Executar localmente
+
+```bash
+npm run dev
+```
+
+Abre em `http://localhost:3000`. Para testar o fluxo de convite do zero, entre
+como pároco (`paroco.demo@comunidade.app`), abra o **Painel da Paróquia**
+(menu "Eu"), crie um convite, e acesse `http://localhost:3000/convite/<código>`
+numa aba anônima.
+
+## Scripts
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run start` | Roda o build de produção |
+| `npm run lint` | ESLint |
+| `npm run test` | Testes (Vitest) — os testes de integração exigem `DATABASE_URL` configurado |
+| `npm run db:generate` | Regenera o Prisma Client após mudar o schema |
+| `npm run db:migrate` | Cria/aplica uma migration |
+| `npm run db:deploy` | Aplica migrations pendentes (uso em produção/CI) |
+| `npm run db:seed` | Popula papéis, permissões e dados demo |
+| `npm run db:studio` | Abre o Prisma Studio (explorador de dados) |
+
+## Testes
+
+```bash
+npm run test
+```
+
+Cobre os fluxos críticos desta fase: criação de paróquia, criação/validação/
+expiração/reuso de convite, criação de usuário (senha nunca em texto puro),
+vínculo usuário→paróquia, controle básico de permissões, e — o mais
+importante — **isolamento cross-tenant** (`tests/integration/tenant-isolation.test.ts`):
+prova que a política de RLS bloqueia leitura de dado de outra paróquia mesmo
+manipulando o `WHERE` da query, não só que a aplicação "lembrou de filtrar".
+
+Os testes em `tests/integration/` precisam de `DATABASE_URL` configurado e
+das migrations (incluindo RLS) aplicadas. `tests/unit/` roda sem banco.
+
+## Estrutura do projeto
+
+```text
+prisma/                    schema, migrations, seed, rls-policies.sql
+src/
+  app/
+    (public)/               login, cadastro, recuperar-acesso, /convite/[code]
+    (fiel)/                 início, caminhada, comunidade, servir, eu
+    (admin)/painel/         dashboard da paróquia
+  components/
+    ui/                     Button, Card, FormField, EmptyState...
+    layout/                 TabBar, ParishHeader
+  server/
+    auth/                   sessão, hash de senha, guards, RBAC
+    modules/                users, parishes, memberships, invitations,
+                             priests, celebrations, events
+    db/                     Prisma client, contexto de tenant (RLS)
+    actions/                Server Actions (auth, convites)
+    shared/                 erros de aplicação
+  lib/                      utilitários client-safe
+tests/
+  unit/                     sem dependência de banco
+  integration/               fluxos ponta a ponta, exigem DATABASE_URL
+docs/
+  ARQUITETURA.md            visão de arquitetura completa (todas as fases do PRD)
+  FUNDACAO.md                escopo e decisões desta fatia específica
+```
+
+Regra de dependência: nada em `app/` ou `components/` importa Prisma
+diretamente ou contém regra de negócio — só chama funções de
+`server/modules/*/service.ts`.

@@ -1,0 +1,521 @@
+// Schema da fundação (fatia 1). Ver docs/FUNDACAO.md para o racional de cada
+// decisão. Tabelas tenant-scoped (parish_memberships, invitations) recebem
+// políticas de Row-Level Security aplicadas via migration SQL manual — ver
+// prisma/migrations/<timestamp>_row_level_security/migration.sql.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // DATABASE_URL conecta como "app_user" (role restrita, sujeita a RLS) —
+  // é a que o Prisma Client usa em runtime. directUrl conecta como o dono
+  // do banco (neondb_owner) e só é usada por `prisma migrate`/`db push`,
+  // que precisam de DDL. Ver docs/FUNDACAO.md sobre por que isso é
+  // necessário: a role padrão do Neon tem BYPASSRLS.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String   @map("password_hash")
+  fullName        String   @map("full_name")
+  photoUrl        String?  @map("photo_url")
+  isPlatformAdmin Boolean  @default(false) @map("is_platform_admin")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  memberships         ParishMembership[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  invitationsCreated  Invitation[]          @relation("InvitationCreatedBy")
+  invitationsUsed     Invitation[]          @relation("InvitationUsedBy")
+  priestProfiles      PriestProfile[]
+  appointments        Appointment[]
+  volunteerProfiles   VolunteerProfile[]
+  serviceInterests    ServiceInterest[]
+  massParticipations  MassParticipation[]
+  sacraments          Sacrament[]
+  confessionLogs      ConfessionLog[]
+
+  @@map("users")
+}
+
+model Parish {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships        ParishMembership[]
+  invitations        Invitation[]
+  priestProfiles     PriestProfile[]
+  celebrations       Celebration[]
+  events             Event[]
+  posts              Post[]
+  priestAvailability  PriestAvailability[]
+  appointments        Appointment[]
+  volunteerProfiles   VolunteerProfile[]
+  serviceOpportunities ServiceOpportunity[]
+  serviceInterests    ServiceInterest[]
+  massParticipations  MassParticipation[]
+  sacraments          Sacrament[]
+  confessionLogs      ConfessionLog[]
+
+  @@map("parishes")
+}
+
+// Papéis com escopo de paróquia. ADMIN_PLATFORM NÃO é um Role — é o atributo
+// users.isPlatformAdmin, porque não está vinculado a nenhuma comunidade.
+model Role {
+  id             String  @id @default(uuid())
+  code           String  @unique
+  name           String
+  isParishScoped Boolean @default(true) @map("is_parish_scoped")
+
+  memberships     ParishMembership[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id   String @id @default(uuid())
+  code String @unique
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String @map("role_id")
+  permissionId String @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+enum MembershipStatus {
+  active
+  inactive
+}
+
+// unique(user_id) WHERE status = 'active' é reforçado por índice parcial
+// (migration SQL manual) + checagem na camada de serviço — Prisma não
+// suporta unique constraint condicional nativamente.
+model ParishMembership {
+  id           String           @id @default(uuid())
+  userId       String           @map("user_id")
+  parishId     String           @map("parish_id")
+  roleId       String           @map("role_id")
+  status       MembershipStatus @default(active)
+  invitationId String?          @unique @map("invitation_id")
+  joinedAt     DateTime         @default(now()) @map("joined_at")
+  leftAt       DateTime?        @map("left_at")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish     Parish      @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  role       Role        @relation(fields: [roleId], references: [id])
+  invitation Invitation? @relation(fields: [invitationId], references: [id])
+
+  @@index([parishId])
+  @@index([userId, status])
+  @@map("parish_memberships")
+}
+
+enum InvitationType {
+  link
+  qrcode
+  individual
+}
+
+enum InvitationStatus {
+  pending
+  used
+  expired
+  revoked
+}
+
+model Invitation {
+  id        String           @id @default(uuid())
+  parishId  String           @map("parish_id")
+  code      String           @unique
+  type      InvitationType   @default(link)
+  status    InvitationStatus @default(pending)
+  maxUses   Int?             @map("max_uses")
+  usedCount Int              @default(0) @map("used_count")
+  createdBy String           @map("created_by")
+  expiresAt DateTime?        @map("expires_at")
+  usedBy    String?          @map("used_by")
+  usedAt    DateTime?        @map("used_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+  // Papel que o vínculo recebe ao aceitar. Null = FIEL (o caso comum — a
+  // maioria dos convites é para fiéis). Só PAROCO/SECRETARIA podem criar um
+  // convite com outro valor (ex.: SACERDOTE) — ver invitation-actions.ts.
+  intendedRoleCode String? @map("intended_role_code")
+
+  parish           Parish            @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  creator          User              @relation("InvitationCreatedBy", fields: [createdBy], references: [id])
+  usedByUser       User?             @relation("InvitationUsedBy", fields: [usedBy], references: [id])
+  parishMembership ParishMembership?
+
+  @@index([parishId])
+  @@map("invitations")
+}
+
+// Token opaco (não JWT) hash-armazenado — permite revogação/logout remoto
+// sem gerenciar chave de assinatura. Ver src/server/auth/session.ts.
+model Session {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Criado automaticamente quando um vínculo com papel PAROCO/SACERDOTE é
+// criado (seed ou aceite de convite) — ver
+// src/server/modules/priests/service.ts. Não existe sem um vínculo
+// correspondente; é 1:1 por (userId, parishId).
+model PriestProfile {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  parishId     String   @map("parish_id")
+  title        String
+  bio          String?
+  photoUrl     String?  @map("photo_url")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  celebrations  Celebration[]
+  posts         Post[]
+  availability  PriestAvailability[]
+  appointments  Appointment[]
+  sacraments    Sacrament[]
+
+  @@unique([userId, parishId])
+  @@index([parishId])
+  @@map("priest_profiles")
+}
+
+enum CelebrationType {
+  missa
+  confissao
+  adoracao
+  batizado
+  casamento
+  outro
+}
+
+model Celebration {
+  id              String          @id @default(uuid())
+  parishId        String          @map("parish_id")
+  type            CelebrationType @default(missa)
+  title           String?
+  startsAt        DateTime        @map("starts_at")
+  location        String?
+  priestProfileId String?         @map("priest_profile_id")
+  createdBy       String          @map("created_by")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  parish        Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile?      @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
+  massParticipations MassParticipation[]
+
+  @@index([parishId, startsAt])
+  @@map("celebrations")
+}
+
+model Event {
+  id          String    @id @default(uuid())
+  parishId    String    @map("parish_id")
+  title       String
+  description String?
+  startsAt    DateTime  @map("starts_at")
+  location    String?
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, startsAt])
+  @@map("events")
+}
+
+enum PostMediaType {
+  texto
+  audio
+  video
+}
+
+// "Palavra do Padre". Sem infraestrutura de upload ainda (decisão de infra
+// maior, adiada) — áudio/vídeo são link externo (mediaUrl) em vez de
+// arquivo hospedado por nós. Segmentação por grupo (seção 12 do PRD) fica
+// para quando pastorais existirem; por ora todo post é público na paróquia.
+model Post {
+  id              String        @id @default(uuid())
+  parishId        String        @map("parish_id")
+  priestProfileId String        @map("priest_profile_id")
+  mediaType       PostMediaType @default(texto)
+  contentText     String?       @map("content_text")
+  mediaUrl        String?       @map("media_url")
+  publishedAt     DateTime      @default(now()) @map("published_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, publishedAt])
+  @@map("posts")
+}
+
+enum AvailabilityType {
+  atendimento
+  confissao
+}
+
+// Janela semanal recorrente ("toda quarta das 14h às 17h"), não uma data
+// concreta — os horários reais são calculados em
+// src/server/modules/appointments/service.ts (getAvailableSlots).
+// startTime/endTime como string "HH:mm": mais simples que modelar
+// recorrência com DateTime, e suficiente para este escopo.
+model PriestAvailability {
+  id              String            @id @default(uuid())
+  parishId        String            @map("parish_id")
+  priestProfileId String            @map("priest_profile_id")
+  weekday         Int // 0 = domingo ... 6 = sábado
+  startTime       String            @map("start_time")
+  endTime         String            @map("end_time")
+  type            AvailabilityType  @default(atendimento)
+  slotMinutes     Int               @default(30) @map("slot_minutes")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, priestProfileId])
+  @@map("priest_availability")
+}
+
+enum AppointmentCategory {
+  confissao
+  direcao_espiritual
+  conversa
+  questao_familiar
+  sacramento
+  outro
+}
+
+enum AppointmentStatus {
+  solicitado
+  confirmado
+  cancelado
+  concluido
+}
+
+// REGRA CRÍTICA (PRD seção 15/35): nenhum campo de texto livre aqui — nem
+// descrição do motivo, nem conteúdo de confissão. Categoria é o único
+// contexto armazenado, e é um enum fechado.
+model Appointment {
+  id              String              @id @default(uuid())
+  parishId        String              @map("parish_id")
+  priestProfileId String              @map("priest_profile_id")
+  fielUserId      String              @map("fiel_user_id")
+  category        AppointmentCategory
+  scheduledAt     DateTime            @map("scheduled_at")
+  status          AppointmentStatus   @default(solicitado)
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+  fiel          User          @relation(fields: [fielUserId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, priestProfileId, scheduledAt])
+  @@index([fielUserId])
+  @@map("appointments")
+}
+
+// Formulário "Eu Posso Ajudar" (PRD seção 18) — um por (userId, parishId),
+// reenviar atualiza (upsert). Áreas/talentos como string[] em vez de tabelas
+// de lookup: são só tags de auto-declaração, não precisam de FK.
+model VolunteerProfile {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  parishId         String   @map("parish_id")
+  hasTime          Boolean  @default(false) @map("has_time")
+  timeAreas        String[] @map("time_areas")
+  hasTalent        Boolean  @default(false) @map("has_talent")
+  talents          String[]
+  wantsToServe     Boolean  @default(false) @map("wants_to_serve")
+  serviceAreas     String[] @map("service_areas")
+  availabilityNote String?  @map("availability_note")
+  freeText         String?  @map("free_text")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, parishId])
+  @@index([parishId])
+  @@map("volunteer_profiles")
+}
+
+enum OpportunityStatus {
+  aberta
+  encerrada
+}
+
+model ServiceOpportunity {
+  id          String            @id @default(uuid())
+  parishId    String            @map("parish_id")
+  title       String
+  description String?
+  startsAt    DateTime?         @map("starts_at")
+  status      OpportunityStatus @default(aberta)
+  createdBy   String            @map("created_by")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  parish    Parish            @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  interests ServiceInterest[]
+
+  @@index([parishId, status])
+  @@map("service_opportunities")
+}
+
+enum InterestStatus {
+  manifestado
+  em_contato
+  acolhido
+  declinado
+}
+
+// PRD seção 21 — REGRA: não é match automático. A criação desta linha só
+// notifica o responsável (fica visível pra ele no painel); toda mudança de
+// status daqui pra frente é uma ação humana explícita, nunca automática.
+model ServiceInterest {
+  id            String         @id @default(uuid())
+  opportunityId String         @map("opportunity_id")
+  userId        String         @map("user_id")
+  parishId      String         @map("parish_id")
+  status        InterestStatus @default(manifestado)
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  opportunity ServiceOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish      Parish             @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@unique([opportunityId, userId])
+  @@index([parishId])
+  @@map("service_interests")
+}
+
+// Minha Caminhada (PRD seção 23-24). reflectionText é privada por padrão —
+// a paróquia só acessa indicador agregado (getReflectionAggregate em
+// src/server/modules/caminhada/service.ts), nunca a linha individual.
+// celebrationId opcional: nem toda missa que o fiel frequenta tem uma
+// Celebration cadastrada pelo admin.
+model MassParticipation {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  parishId       String    @map("parish_id")
+  celebrationId  String?   @map("celebration_id")
+  participatedAt DateTime  @map("participated_at") @db.Date
+  reflectionText String?   @map("reflection_text")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish      Parish       @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  celebration Celebration? @relation(fields: [celebrationId], references: [id], onDelete: SetNull)
+
+  @@index([parishId, userId])
+  @@index([parishId, participatedAt])
+  @@map("mass_participations")
+}
+
+enum SacramentType {
+  batismo
+  primeira_eucaristia
+  crisma
+  matrimonio
+  outro
+}
+
+enum SacramentStatus {
+  self_reported
+  validated
+}
+
+// Auto-declarado pelo fiel (status self_reported) — nunca é fonte oficial
+// sem validação humana. A tela/ação de validação pela secretaria é P2 (ver
+// docs/ARQUITETURA.md); o schema já deixa o campo pronto.
+model Sacrament {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  parishId        String          @map("parish_id")
+  type            SacramentType
+  date            DateTime        @db.Date
+  location        String?
+  priestProfileId String?         @map("priest_profile_id")
+  note            String?
+  status          SacramentStatus @default(self_reported)
+  validatedBy     String?         @map("validated_by")
+  validatedAt     DateTime?       @map("validated_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish        Parish         @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile? @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
+
+  @@index([parishId, userId])
+  @@map("sacraments")
+}
+
+// REGRA CRÍTICA (PRD seção 15/26/35): só a data. Nunca conteúdo — sem
+// campo de texto, sem "motivo", sem nada além de quando aconteceu.
+model ConfessionLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  parishId  String   @map("parish_id")
+  date      DateTime @db.Date
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, userId])
+  @@map("confession_logs")
+}

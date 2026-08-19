@@ -22,7 +22,7 @@ export function EnrollForm({ groupId, familyMembers }: { groupId: string; family
           id="familyMemberId"
           name="familyMemberId"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="">Selecione...</option>
           {familyMembers.map((fm) => (

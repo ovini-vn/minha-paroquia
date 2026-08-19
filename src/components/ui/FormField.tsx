@@ -16,7 +16,7 @@ export function FormField({ label, error, id, className, ...props }: FormFieldPr
       <input
         id={inputId}
         className={cn(
-          "rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-ink-900 outline-none transition-colors focus:border-terracotta-500",
+          "rounded-xl border border-border bg-surface px-4 py-3 text-foreground outline-none transition-colors focus:border-primary",
           error && "border-red-400",
           className,
         )}

@@ -33,7 +33,7 @@ export function CreateScheduleForm({
           name="roleType"
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {roles.map((r) => (
             <option key={r} value={r}>
@@ -50,7 +50,7 @@ export function CreateScheduleForm({
           id={`person-${celebrationId}`}
           name="userId"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {people.length === 0 ? (
             <option value="">Ninguém disponível para esta função</option>

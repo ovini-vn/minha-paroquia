@@ -21,7 +21,7 @@ export function EditAvisoForm({ id, title, body }: { id: string; title: string; 
           name="title"
           required
           defaultValue={title}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -34,7 +34,7 @@ export function EditAvisoForm({ id, title, body }: { id: string; title: string; 
           required
           rows={3}
           defaultValue={body}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <Button type="submit" disabled={pending} className="self-start">

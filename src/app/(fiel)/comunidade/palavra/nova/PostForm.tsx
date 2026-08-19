@@ -23,7 +23,7 @@ export function PostForm() {
           name="mediaType"
           value={mediaType}
           onChange={(e) => setMediaType(e.target.value as MediaType)}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="texto">Texto</option>
           <option value="audio">Áudio (link)</option>
@@ -41,7 +41,7 @@ export function PostForm() {
             name="contentText"
             rows={6}
             placeholder="O que Deus colocou no seu coração para compartilhar com a comunidade hoje?"
-            className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
           />
         </div>
       ) : (
@@ -54,7 +54,7 @@ export function PostForm() {
             name="mediaUrl"
             type="url"
             placeholder="https://..."
-            className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
           />
           <p className="text-xs text-ink-700">
             Cole o link de onde o {mediaType === "audio" ? "áudio" : "vídeo"} já está hospedado.

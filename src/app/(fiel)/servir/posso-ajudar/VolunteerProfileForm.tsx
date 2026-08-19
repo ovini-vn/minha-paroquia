@@ -90,7 +90,7 @@ export function VolunteerProfileForm({ existing }: { existing: ExistingProfile }
           name="availabilityNote"
           placeholder="Ex.: sábado à tarde, disponível eventualmente"
           defaultValue={existing?.availabilityNote ?? ""}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 
@@ -103,7 +103,7 @@ export function VolunteerProfileForm({ existing }: { existing: ExistingProfile }
           name="freeText"
           rows={3}
           defaultValue={existing?.freeText ?? ""}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 

@@ -21,7 +21,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
         <select
           id="type"
           name="type"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {Object.entries(SACRAMENT_TYPE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -41,7 +41,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
           type="date"
           required
           max={new Date().toISOString().slice(0, 10)}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 
@@ -52,7 +52,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
         <input
           id="location"
           name="location"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 
@@ -64,7 +64,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
           <select
             id="priestProfileId"
             name="priestProfileId"
-            className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
           >
             <option value="">—</option>
             {priests.map((priest) => (
@@ -84,7 +84,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
           id="note"
           name="note"
           rows={3}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 

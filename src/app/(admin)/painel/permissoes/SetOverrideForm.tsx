@@ -23,7 +23,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
         <select
           id="override-userId"
           name="userId"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {members.map((member) => (
             <option key={member.userId} value={member.userId}>
@@ -39,7 +39,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
         <select
           id="override-permissionCode"
           name="permissionCode"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {(Object.entries(PERMISSION_NAMES) as [PermissionCode, string][]).map(([code, name]) => (
             <option key={code} value={code}>
@@ -55,7 +55,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
         <select
           id="override-granted"
           name="granted"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="true">Conceder</option>
           <option value="false">Revogar</option>

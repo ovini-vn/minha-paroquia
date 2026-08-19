@@ -21,7 +21,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
           id="enrollmentId"
           name="enrollmentId"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {enrollments.map((e) => (
             <option key={e.id} value={e.id}>
@@ -39,7 +39,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
           name="name"
           placeholder="Ex.: Rito de Acolhida"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -50,7 +50,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
           id="scheduledAt"
           name="scheduledAt"
           type="date"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <Button type="submit" disabled={pending}>

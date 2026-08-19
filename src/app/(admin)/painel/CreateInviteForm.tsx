@@ -18,7 +18,7 @@ export function CreateInviteForm() {
         <select
           id="type"
           name="type"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="link">Link</option>
           <option value="qrcode">QR Code</option>
@@ -32,7 +32,7 @@ export function CreateInviteForm() {
         <select
           id="role"
           name="role"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="FIEL">Fiel</option>
           <option value="SACERDOTE">Sacerdote</option>
@@ -52,7 +52,7 @@ export function CreateInviteForm() {
           type="number"
           min={1}
           placeholder="Sem validade"
-          className="w-40 rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="w-40 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <Button type="submit" disabled={pending}>

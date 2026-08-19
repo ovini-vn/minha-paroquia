@@ -43,7 +43,7 @@ export default async function DizimoAdminPage({
               type="month"
               name="period"
               defaultValue={period}
-              className="rounded-lg border border-terracotta-100 px-3 py-2 text-sm text-ink-900"
+              className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
             />
           </label>
           <Button type="submit" variant="secondary">

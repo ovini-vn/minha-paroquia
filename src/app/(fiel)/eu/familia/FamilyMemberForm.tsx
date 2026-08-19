@@ -20,7 +20,7 @@ export function FamilyMemberForm() {
           id="fullName"
           name="fullName"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -30,7 +30,7 @@ export function FamilyMemberForm() {
         <select
           id="relationship"
           name="relationship"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {Object.entries(RELATIONSHIP_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -48,7 +48,7 @@ export function FamilyMemberForm() {
           name="birthDate"
           type="date"
           max={new Date().toISOString().slice(0, 10)}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <Button type="submit" disabled={pending}>

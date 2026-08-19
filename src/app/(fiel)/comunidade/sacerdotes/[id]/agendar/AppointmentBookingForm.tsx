@@ -41,7 +41,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
           id="category"
           name="category"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {Object.entries(APPOINTMENT_CATEGORY_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -67,7 +67,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
                       "rounded-xl border px-3 py-2 text-sm transition-colors",
                       isSelected
                         ? "border-terracotta-600 bg-terracotta-600 text-cream-50"
-                        : "border-terracotta-100 bg-cream-50 text-ink-900 hover:bg-terracotta-50",
+                        : "border-border bg-surface text-foreground hover:bg-background",
                     )}
                   >
                     {formatTimeLabel(slot.startsAt)}

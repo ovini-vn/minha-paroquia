@@ -22,7 +22,7 @@ export function MassParticipationForm() {
           required
           defaultValue={new Date().toISOString().slice(0, 10)}
           max={new Date().toISOString().slice(0, 10)}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
 
@@ -35,7 +35,7 @@ export function MassParticipationForm() {
           name="reflectionText"
           rows={5}
           placeholder="Aprendi que..."
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
         <p className="text-xs text-ink-700">
           Fica só com você — sua paróquia só vê quantas pessoas refletiram, nunca o que você escreveu.

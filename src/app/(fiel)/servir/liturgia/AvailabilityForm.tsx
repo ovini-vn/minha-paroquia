@@ -20,7 +20,7 @@ export function AvailabilityForm() {
         <select
           id="roleType"
           name="roleType"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {Object.entries(LITURGICAL_ROLE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -36,7 +36,7 @@ export function AvailabilityForm() {
         <select
           id="weekdayPref"
           name="weekdayPref"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="">Sem preferência</option>
           {WEEKDAY_LABELS.map((label, index) => (
@@ -54,7 +54,7 @@ export function AvailabilityForm() {
           id="notes"
           name="notes"
           placeholder="Ex.: disponível eventualmente"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <Button type="submit" disabled={pending}>

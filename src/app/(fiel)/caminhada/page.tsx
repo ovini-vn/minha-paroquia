@@ -110,7 +110,7 @@ export default async function CaminhadaPage() {
                 required
                 defaultValue={new Date().toISOString().slice(0, 10)}
                 max={new Date().toISOString().slice(0, 10)}
-                className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+                className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
               />
             </div>
             <Button type="submit" variant="secondary">

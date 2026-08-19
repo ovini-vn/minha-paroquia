@@ -28,7 +28,7 @@ export function AddGuardianForm({ familyMemberId, candidates }: AddGuardianFormP
         <select
           id="guardian-userId"
           name="userId"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {candidates.map((candidate) => (
             <option key={candidate.id} value={candidate.id}>

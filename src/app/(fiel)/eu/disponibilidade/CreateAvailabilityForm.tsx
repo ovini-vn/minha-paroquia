@@ -19,7 +19,7 @@ export function CreateAvailabilityForm() {
         <select
           id="weekday"
           name="weekday"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           {WEEKDAY_LABELS.map((label, index) => (
             <option key={label} value={index}>
@@ -37,7 +37,7 @@ export function CreateAvailabilityForm() {
           name="startTime"
           type="time"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -49,7 +49,7 @@ export function CreateAvailabilityForm() {
           name="endTime"
           type="time"
           required
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -59,7 +59,7 @@ export function CreateAvailabilityForm() {
         <select
           id="type"
           name="type"
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value="atendimento">Atendimento</option>
           <option value="confissao">Confissão</option>
@@ -73,7 +73,7 @@ export function CreateAvailabilityForm() {
           id="slotMinutes"
           name="slotMinutes"
           defaultValue={30}
-          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
           <option value={15}>15 min</option>
           <option value={30}>30 min</option>

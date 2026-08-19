@@ -38,6 +38,7 @@ export async function cleanupTenantData(params: { userIds?: string[]; parishIds?
       await tx.titheParticipation.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.notification.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.aviso.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.prayerRequest.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.priestProfile.deleteMany({ where: { parishId: { in: parishIds } } });
     }
   });

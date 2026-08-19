@@ -340,6 +340,19 @@ async function seedDemoParish() {
       });
     }
 
+    const existingPrayerRequest = await tx.prayerRequest.findFirst({ where: { parishId: parish.id, requesterUserId: fiel.id } });
+    if (!existingPrayerRequest) {
+      await tx.prayerRequest.create({
+        data: {
+          parishId: parish.id,
+          requesterUserId: fiel.id,
+          contentText: "Peço orações pela saúde da minha família.",
+          visibility: "comunidade",
+          isAnonymous: false,
+        },
+      });
+    }
+
     const existingNotification = await tx.notification.findFirst({ where: { parishId: parish.id, userId: fiel.id } });
     if (!existingNotification) {
       await tx.notification.create({

@@ -316,4 +316,20 @@ describe("isolamento multi-paróquia (RLS)", () => {
     expect(events).toHaveLength(1);
     expect(avisos).toHaveLength(1);
   });
+
+  it("não retorna pedidos de oração da paróquia A dentro do contexto da paróquia B", async () => {
+    await withTenantContext(parishAId, (tx) =>
+      tx.prayerRequest.create({
+        data: { parishId: parishAId, requesterUserId: userAId, contentText: "Teste", visibility: "padre" },
+      }),
+    );
+
+    const rows = await withTenantContext(parishBId, (tx) => tx.prayerRequest.findMany({ where: { parishId: parishAId } }));
+    expect(rows).toHaveLength(0);
+  });
+
+  it("retorna pedidos de oração normalmente dentro do contexto correto (paróquia A)", async () => {
+    const rows = await withTenantContext(parishAId, (tx) => tx.prayerRequest.findMany({}));
+    expect(rows).toHaveLength(1);
+  });
 });

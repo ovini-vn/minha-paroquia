@@ -174,6 +174,16 @@ export default async function ComunidadePage() {
           <span aria-hidden>→</span>
         </Card>
       </Link>
+
+      <Link href="/comunidade/oracao">
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink-900">🙏 Pedidos de oração</p>
+            <p className="text-xs text-ink-700">Envie ao pároco ou compartilhe no mural da comunidade</p>
+          </div>
+          <span aria-hidden>→</span>
+        </Card>
+      </Link>
     </div>
   );
 }

@@ -51,6 +51,7 @@ model User {
   titheParticipationsRegistered TitheParticipation[] @relation("TitheParticipationRegisteredBy")
   notifications            Notification[]
   notificationPreferences  NotificationPreference[]
+  prayerRequests           PrayerRequest[]
 
   @@map("users")
 }
@@ -91,6 +92,7 @@ model Parish {
   liturgicalSchedules    LiturgicalSchedule[]
   titheParticipations    TitheParticipation[]
   notifications          Notification[]
+  prayerRequests         PrayerRequest[]
 
   @@map("parishes")
 }
@@ -805,4 +807,30 @@ model NotificationPreference {
 
   @@unique([userId, category])
   @@map("notification_preferences")
+}
+
+enum PrayerRequestVisibility {
+  padre
+  comunidade
+}
+
+// docs/ARQUITETURA.md, seção "Participação e pedidos de oração". Visibilidade
+// "padre" é privada: só pároco/sacerdote enxergam (mesma sensibilidade de
+// confissão). "comunidade" é um mural visível a qualquer fiel da paróquia.
+// is_anonymous controla só a EXIBIÇÃO do nome — o requesterUserId sempre fica
+// gravado, nunca some, para moderação futura.
+model PrayerRequest {
+  id              String                  @id @default(uuid())
+  parishId        String                  @map("parish_id")
+  requesterUserId String                  @map("requester_user_id")
+  contentText     String                  @map("content_text")
+  visibility      PrayerRequestVisibility @default(padre)
+  isAnonymous     Boolean                 @default(false) @map("is_anonymous")
+  createdAt       DateTime                @default(now()) @map("created_at")
+
+  parish    Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  requester User   @relation(fields: [requesterUserId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, visibility])
+  @@map("prayer_requests")
 }

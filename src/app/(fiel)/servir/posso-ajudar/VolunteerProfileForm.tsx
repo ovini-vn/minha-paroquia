@@ -34,14 +34,14 @@ function CheckboxGroup({
   defaultValues: string[];
 }) {
   return (
-    <fieldset className="rounded-xl border border-terracotta-100 p-4">
-      <label className="flex items-center gap-2 text-sm font-medium text-ink-900">
+    <fieldset className="rounded-xl border border-border p-4">
+      <label className="flex items-center gap-2 text-sm font-medium text-foreground">
         <input type="checkbox" name={checkboxName} defaultChecked={defaultChecked} />
         {legend}
       </label>
       <div className="mt-3 flex flex-wrap gap-3">
         {Object.entries(options).map(([value, label]) => (
-          <label key={value} className="flex items-center gap-1.5 text-sm text-ink-700">
+          <label key={value} className="flex items-center gap-1.5 text-sm text-muted">
             <input type="checkbox" name={name} value={value} defaultChecked={defaultValues.includes(value)} />
             {label}
           </label>
@@ -82,7 +82,7 @@ export function VolunteerProfileForm({ existing }: { existing: ExistingProfile }
       />
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="availabilityNote" className="text-sm font-medium text-ink-700">
+        <label htmlFor="availabilityNote" className="text-sm font-medium text-muted">
           Quando costuma estar disponível?
         </label>
         <input
@@ -95,7 +95,7 @@ export function VolunteerProfileForm({ existing }: { existing: ExistingProfile }
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="freeText" className="text-sm font-medium text-ink-700">
+        <label htmlFor="freeText" className="text-sm font-medium text-muted">
           Outra coisa que queira contar
         </label>
         <textarea

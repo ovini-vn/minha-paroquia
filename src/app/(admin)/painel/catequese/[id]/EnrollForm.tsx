@@ -15,7 +15,7 @@ export function EnrollForm({ groupId, familyMembers }: { groupId: string; family
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="groupId" value={groupId} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="familyMemberId" className="text-sm font-medium text-ink-700">
+        <label htmlFor="familyMemberId" className="text-sm font-medium text-muted">
           Dependente
         </label>
         <select

@@ -13,7 +13,7 @@ export function FamilyMemberForm() {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="fullName" className="text-sm font-medium text-ink-700">
+        <label htmlFor="fullName" className="text-sm font-medium text-muted">
           Nome completo
         </label>
         <input
@@ -24,7 +24,7 @@ export function FamilyMemberForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="relationship" className="text-sm font-medium text-ink-700">
+        <label htmlFor="relationship" className="text-sm font-medium text-muted">
           Relação
         </label>
         <select
@@ -40,7 +40,7 @@ export function FamilyMemberForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="birthDate" className="text-sm font-medium text-ink-700">
+        <label htmlFor="birthDate" className="text-sm font-medium text-muted">
           Data de nascimento (opcional)
         </label>
         <input

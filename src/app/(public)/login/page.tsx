@@ -17,7 +17,7 @@ export default async function LoginPage({
 
   return (
     <Card>
-      <h1 className="mb-4 font-serif text-xl text-ink-900">Entrar</h1>
+      <h1 className="mb-4 font-serif text-xl text-foreground">Entrar</h1>
       {errorMessage && <p className="mb-4 text-sm text-red-600">{errorMessage}</p>}
       <LoginForm inviteCode={convite ?? null} />
     </Card>

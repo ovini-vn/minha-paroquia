@@ -12,7 +12,7 @@ export function PrayerRequestForm() {
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="prayer-content" className="text-sm font-medium text-ink-700">
+        <label htmlFor="prayer-content" className="text-sm font-medium text-muted">
           Seu pedido
         </label>
         <textarea
@@ -25,7 +25,7 @@ export function PrayerRequestForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="prayer-visibility" className="text-sm font-medium text-ink-700">
+        <label htmlFor="prayer-visibility" className="text-sm font-medium text-muted">
           Quem pode ver
         </label>
         <select
@@ -38,7 +38,7 @@ export function PrayerRequestForm() {
           <option value="comunidade">Mural da comunidade</option>
         </select>
       </div>
-      <label className="flex items-center gap-2 text-sm text-ink-700">
+      <label className="flex items-center gap-2 text-sm text-muted">
         <input type="checkbox" name="isAnonymous" className="h-4 w-4" />
         Não mostrar meu nome
       </label>

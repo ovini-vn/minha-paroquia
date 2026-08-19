@@ -25,8 +25,8 @@ export default async function FamilyPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="font-serif text-xl text-ink-900">Minha família</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-xl text-foreground">Minha família</h1>
+        <p className="mt-1 text-sm text-muted">
           Cadastre seus dependentes aqui — é assim que eles podem ser matriculados na catequese.
         </p>
       </div>
@@ -43,8 +43,8 @@ export default async function FamilyPage() {
             <Link key={member.id} href={`/eu/familia/${member.id}`}>
               <Card className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ink-900">{member.fullName}</p>
-                  {member.birthDate && <p className="text-xs text-ink-700">{formatDateOnly(member.birthDate)}</p>}
+                  <p className="text-sm font-medium text-foreground">{member.fullName}</p>
+                  {member.birthDate && <p className="text-xs text-muted">{formatDateOnly(member.birthDate)}</p>}
                 </div>
                 <Badge>{RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}</Badge>
               </Card>

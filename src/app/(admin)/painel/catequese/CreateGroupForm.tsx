@@ -14,7 +14,7 @@ export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-ink-700">
+        <label htmlFor="name" className="text-sm font-medium text-muted">
           Nome da turma
         </label>
         <input
@@ -26,7 +26,7 @@ export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="year" className="text-sm font-medium text-ink-700">
+        <label htmlFor="year" className="text-sm font-medium text-muted">
           Ano
         </label>
         <input
@@ -40,7 +40,7 @@ export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
       </div>
       {catechists.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="catechistUserId" className="text-sm font-medium text-ink-700">
+          <label htmlFor="catechistUserId" className="text-sm font-medium text-muted">
             Catequista (opcional)
           </label>
           <select

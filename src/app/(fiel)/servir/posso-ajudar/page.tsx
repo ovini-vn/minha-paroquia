@@ -21,8 +21,8 @@ export default async function VolunteerProfilePage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="font-serif text-xl text-ink-900">Eu posso ajudar</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-xl text-foreground">Eu posso ajudar</h1>
+        <p className="mt-1 text-sm text-muted">
           Conte pra sua comunidade como você pode contribuir. Não é um compromisso — é só um ponto de partida.
         </p>
       </div>

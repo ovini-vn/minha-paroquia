@@ -15,7 +15,7 @@ export default async function EditAvisoPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink-900">Editar aviso</h1>
+      <h1 className="font-serif text-2xl text-foreground">Editar aviso</h1>
       <Card>
         <EditAvisoForm id={aviso.id} title={aviso.title} body={aviso.body} />
       </Card>

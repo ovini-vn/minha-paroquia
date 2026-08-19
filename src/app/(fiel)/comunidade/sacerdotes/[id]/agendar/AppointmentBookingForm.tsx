@@ -34,7 +34,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
       <input type="hidden" name="scheduledAt" value={selected ? selected.startsAt.toISOString() : ""} />
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="category" className="text-sm font-medium text-ink-700">
+        <label htmlFor="category" className="text-sm font-medium text-muted">
           Motivo
         </label>
         <select
@@ -54,7 +54,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
       <div className="flex flex-col gap-4">
         {Array.from(groups.entries()).map(([dayKey, daySlots]) => (
           <div key={dayKey}>
-            <p className="mb-2 text-sm font-medium text-ink-900">{formatDateLabel(new Date(dayKey))}</p>
+            <p className="mb-2 text-sm font-medium text-foreground">{formatDateLabel(new Date(dayKey))}</p>
             <div className="flex flex-wrap gap-2">
               {daySlots.map((slot) => {
                 const isSelected = selected?.startsAt.getTime() === slot.startsAt.getTime();
@@ -66,7 +66,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
                     className={cn(
                       "rounded-xl border px-3 py-2 text-sm transition-colors",
                       isSelected
-                        ? "border-terracotta-600 bg-terracotta-600 text-cream-50"
+                        ? "border-primary bg-primary text-white"
                         : "border-border bg-surface text-foreground hover:bg-background",
                     )}
                   >

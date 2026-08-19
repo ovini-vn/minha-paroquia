@@ -33,7 +33,7 @@ export default async function NotificationsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-xl text-ink-900">Notificações</h1>
+        <h1 className="font-serif text-xl text-foreground">Notificações</h1>
         {hasUnread && (
           <form action={markAllNotificationsReadAction}>
             <Button type="submit" variant="ghost">
@@ -53,10 +53,10 @@ export default async function NotificationsPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Badge>{NOTIFICATION_CATEGORY_LABELS[notification.category]}</Badge>
-                    <p className="text-sm font-medium text-ink-900">{notification.title}</p>
+                    <p className="text-sm font-medium text-foreground">{notification.title}</p>
                   </div>
-                  <p className="mt-1 text-sm text-ink-700">{notification.body}</p>
-                  <p className="mt-1 text-xs text-ink-700">{formatDateTime(notification.createdAt)}</p>
+                  <p className="mt-1 text-sm text-muted">{notification.body}</p>
+                  <p className="mt-1 text-xs text-muted">{formatDateTime(notification.createdAt)}</p>
                 </div>
                 {!notification.readAt && (
                   <form action={markNotificationReadAction}>
@@ -73,11 +73,11 @@ export default async function NotificationsPage() {
       )}
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Preferências</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Preferências</p>
         <ul className="flex flex-col gap-1.5">
           {preferences.map((preference) => (
             <li key={preference.category} className="flex items-center justify-between border-b border-border py-2 text-sm">
-              <span className="text-ink-900">{NOTIFICATION_CATEGORY_LABELS[preference.category]}</span>
+              <span className="text-foreground">{NOTIFICATION_CATEGORY_LABELS[preference.category]}</span>
               <div className="flex items-center gap-2">
                 <Badge>{preference.enabled ? "Ativada" : "Desativada"}</Badge>
                 <form action={setPreferenceAction}>

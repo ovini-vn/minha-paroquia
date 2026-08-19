@@ -45,36 +45,36 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">
+        <h1 className="font-serif text-2xl text-foreground">
           {greeting()}, {firstName}
         </h1>
       </div>
 
       <Link href="/comunidade">
         <Card>
-          <p className="text-xs uppercase tracking-wide text-terracotta-600">🎙️ Palavra do Padre</p>
+          <p className="text-xs uppercase tracking-wide text-primary">🎙️ Palavra do Padre</p>
           {latestPost ? (
-            <p className="mt-1 line-clamp-3 text-sm text-ink-700">
+            <p className="mt-1 line-clamp-3 text-sm text-muted">
               {latestPost.mediaType === "texto"
                 ? latestPost.contentText
                 : POST_PREVIEW_LABEL[latestPost.mediaType]}
             </p>
           ) : (
-            <p className="mt-1 text-sm text-ink-700">Ainda não há publicações — em breve, aqui.</p>
+            <p className="mt-1 text-sm text-muted">Ainda não há publicações — em breve, aqui.</p>
           )}
         </Card>
       </Link>
 
       <Card>
-        <p className="text-xs uppercase tracking-wide text-terracotta-600">Seu próximo compromisso</p>
+        <p className="text-xs uppercase tracking-wide text-primary">Seu próximo compromisso</p>
         {nextCelebration ? (
-          <p className="mt-1 text-sm text-ink-700">
+          <p className="mt-1 text-sm text-muted">
             {nextCelebration.title || CELEBRATION_TYPE_LABELS[nextCelebration.type]} ·{" "}
             {formatDateTime(nextCelebration.startsAt)}
             {nextCelebration.location ? ` · ${nextCelebration.location}` : ""}
           </p>
         ) : (
-          <p className="mt-1 text-sm text-ink-700">Nenhum compromisso agendado ainda.</p>
+          <p className="mt-1 text-sm text-muted">Nenhum compromisso agendado ainda.</p>
         )}
       </Card>
 
@@ -83,14 +83,14 @@ export default async function HomePage() {
       </LinkButton>
 
       <Card>
-        <p className="text-xs uppercase tracking-wide text-terracotta-600">Avisos</p>
+        <p className="text-xs uppercase tracking-wide text-primary">Avisos</p>
         {latestAviso ? (
           <>
-            <p className="mt-1 text-sm font-medium text-ink-900">{latestAviso.title}</p>
-            <p className="mt-1 text-sm text-ink-700">{latestAviso.body}</p>
+            <p className="mt-1 text-sm font-medium text-foreground">{latestAviso.title}</p>
+            <p className="mt-1 text-sm text-muted">{latestAviso.body}</p>
           </>
         ) : (
-          <p className="mt-1 text-sm text-ink-700">Nenhum aviso por enquanto.</p>
+          <p className="mt-1 text-sm text-muted">Nenhum aviso por enquanto.</p>
         )}
       </Card>
 
@@ -100,7 +100,7 @@ export default async function HomePage() {
             <span className="text-2xl" aria-hidden>
               ⛪
             </span>
-            <p className="mt-1 text-sm font-medium text-ink-900">Minha Comunidade</p>
+            <p className="mt-1 text-sm font-medium text-foreground">Minha Comunidade</p>
           </Card>
         </Link>
         <Link href="/caminhada">
@@ -108,7 +108,7 @@ export default async function HomePage() {
             <span className="text-2xl" aria-hidden>
               🙏
             </span>
-            <p className="mt-1 text-sm font-medium text-ink-900">Minha Caminhada</p>
+            <p className="mt-1 text-sm font-medium text-foreground">Minha Caminhada</p>
           </Card>
         </Link>
       </div>

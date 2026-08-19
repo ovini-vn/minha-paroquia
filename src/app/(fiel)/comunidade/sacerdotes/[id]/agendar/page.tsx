@@ -19,8 +19,8 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="text-xs uppercase tracking-wide text-terracotta-600">Solicitar atendimento com</p>
-        <h1 className="font-serif text-xl text-ink-900">{priest.user.fullName}</h1>
+        <p className="text-xs uppercase tracking-wide text-primary">Solicitar atendimento com</p>
+        <h1 className="font-serif text-xl text-foreground">{priest.user.fullName}</h1>
       </div>
 
       {slots.length === 0 ? (

@@ -22,10 +22,10 @@ export default async function AppointmentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-xl text-ink-900">Meus atendimentos</h1>
+      <h1 className="font-serif text-xl text-foreground">Meus atendimentos</h1>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Meus pedidos</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Meus pedidos</p>
         {myAppointments.length === 0 ? (
           <EmptyState
             icon="🗓️"
@@ -37,10 +37,10 @@ export default async function AppointmentsPage() {
             {myAppointments.map((appointment) => (
               <Card key={appointment.id} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ink-900">
+                  <p className="text-sm font-medium text-foreground">
                     {APPOINTMENT_CATEGORY_LABELS[appointment.category]} com {appointment.priestProfile.user.fullName}
                   </p>
-                  <p className="text-xs text-ink-700">{formatDateTime(appointment.scheduledAt)}</p>
+                  <p className="text-xs text-muted">{formatDateTime(appointment.scheduledAt)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge>{APPOINTMENT_STATUS_LABELS[appointment.status]}</Badge>
@@ -61,20 +61,20 @@ export default async function AppointmentsPage() {
 
       {priest && (
         <section>
-          <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Pedidos recebidos</p>
+          <p className="mb-2 text-xs uppercase tracking-wide text-primary">Pedidos recebidos</p>
           {received.length === 0 ? (
             <Card>
-              <p className="text-sm text-ink-700">Nenhum pedido recebido ainda.</p>
+              <p className="text-sm text-muted">Nenhum pedido recebido ainda.</p>
             </Card>
           ) : (
             <div className="flex flex-col gap-2">
               {received.map((appointment) => (
                 <Card key={appointment.id} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-ink-900">
+                    <p className="text-sm font-medium text-foreground">
                       {APPOINTMENT_CATEGORY_LABELS[appointment.category]} com {appointment.fiel.fullName}
                     </p>
-                    <p className="text-xs text-ink-700">{formatDateTime(appointment.scheduledAt)}</p>
+                    <p className="text-xs text-muted">{formatDateTime(appointment.scheduledAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge>{APPOINTMENT_STATUS_LABELS[appointment.status]}</Badge>

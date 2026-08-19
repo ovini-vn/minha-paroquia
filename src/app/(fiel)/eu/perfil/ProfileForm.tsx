@@ -19,7 +19,7 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="fullName" className="text-sm font-medium text-ink-700">
+        <label htmlFor="fullName" className="text-sm font-medium text-muted">
           Nome completo
         </label>
         <input
@@ -31,7 +31,7 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="phone" className="text-sm font-medium text-ink-700">
+        <label htmlFor="phone" className="text-sm font-medium text-muted">
           Telefone (opcional)
         </label>
         <input
@@ -42,7 +42,7 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="birthDate" className="text-sm font-medium text-ink-700">
+        <label htmlFor="birthDate" className="text-sm font-medium text-muted">
           Data de nascimento (opcional)
         </label>
         <input
@@ -55,7 +55,7 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="photoUrl" className="text-sm font-medium text-ink-700">
+        <label htmlFor="photoUrl" className="text-sm font-medium text-muted">
           URL da foto (opcional)
         </label>
         <input

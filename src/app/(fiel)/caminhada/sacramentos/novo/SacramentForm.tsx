@@ -15,7 +15,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="type" className="text-sm font-medium text-ink-700">
+        <label htmlFor="type" className="text-sm font-medium text-muted">
           Sacramento
         </label>
         <select
@@ -32,7 +32,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="date" className="text-sm font-medium text-ink-700">
+        <label htmlFor="date" className="text-sm font-medium text-muted">
           Data
         </label>
         <input
@@ -46,7 +46,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="location" className="text-sm font-medium text-ink-700">
+        <label htmlFor="location" className="text-sm font-medium text-muted">
           Local (opcional)
         </label>
         <input
@@ -58,7 +58,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
 
       {priests.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="priestProfileId" className="text-sm font-medium text-ink-700">
+          <label htmlFor="priestProfileId" className="text-sm font-medium text-muted">
             Sacerdote (opcional)
           </label>
           <select
@@ -77,7 +77,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="note" className="text-sm font-medium text-ink-700">
+        <label htmlFor="note" className="text-sm font-medium text-muted">
           Observação (opcional)
         </label>
         <textarea
@@ -88,7 +88,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
         />
       </div>
 
-      <p className="text-xs text-ink-700">
+      <p className="text-xs text-muted">
         Este registro é pessoal — se sua paróquia guarda um registro oficial, ela pode validar depois.
       </p>
 

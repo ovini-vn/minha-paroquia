@@ -19,7 +19,7 @@ export default async function NewPostPage() {
 
   return (
     <Card>
-      <h1 className="mb-4 font-serif text-xl text-ink-900">Palavra do Padre</h1>
+      <h1 className="mb-4 font-serif text-xl text-foreground">Palavra do Padre</h1>
       <PostForm />
     </Card>
   );

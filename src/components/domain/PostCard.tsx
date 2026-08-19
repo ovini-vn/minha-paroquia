@@ -20,17 +20,17 @@ export function PostCard({ post }: { post: Post }) {
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-sm font-medium text-ink-900">{post.priestProfile.user.fullName}</p>
-        <p className="text-xs text-ink-700">{formatDateTime(post.publishedAt)}</p>
+        <p className="text-sm font-medium text-foreground">{post.priestProfile.user.fullName}</p>
+        <p className="text-xs text-muted">{formatDateTime(post.publishedAt)}</p>
       </div>
       {post.mediaType === "texto" ? (
-        <p className="whitespace-pre-wrap text-sm text-ink-700">{post.contentText}</p>
+        <p className="whitespace-pre-wrap text-sm text-muted">{post.contentText}</p>
       ) : (
         <a
           href={post.mediaUrl ?? "#"}
           target="_blank"
           rel="noreferrer"
-          className="text-sm font-medium text-terracotta-700 underline"
+          className="text-sm font-medium text-primary underline"
         >
           {MEDIA_TYPE_LABEL[post.mediaType]}
         </a>

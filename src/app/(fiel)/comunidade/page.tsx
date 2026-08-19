@@ -66,9 +66,9 @@ export default async function ComunidadePage() {
           <img src={parish.logoUrl} alt="" className="h-14 w-14 rounded-full object-cover" />
         )}
         <div>
-          <h1 className="font-serif text-2xl text-ink-900">{parish?.name ?? "Sua Comunidade"}</h1>
+          <h1 className="font-serif text-2xl text-foreground">{parish?.name ?? "Sua Comunidade"}</h1>
           {(parish?.address || parish?.phone) && (
-            <p className="text-xs text-ink-700">
+            <p className="text-xs text-muted">
               {[parish?.address, parish?.phone].filter(Boolean).join(" · ")}
             </p>
           )}
@@ -77,18 +77,18 @@ export default async function ComunidadePage() {
 
       {parish?.description && (
         <Card>
-          <p className="text-sm text-ink-700">{parish.description}</p>
+          <p className="text-sm text-muted">{parish.description}</p>
         </Card>
       )}
 
       {avisos.length > 0 && (
         <section>
-          <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Avisos</p>
+          <p className="mb-2 text-xs uppercase tracking-wide text-primary">Avisos</p>
           <div className="flex flex-col gap-2">
             {avisos.map((aviso) => (
               <Card key={aviso.id}>
-                <p className="text-sm font-medium text-ink-900">{aviso.title}</p>
-                <p className="mt-1 text-sm text-ink-700">{aviso.body}</p>
+                <p className="text-sm font-medium text-foreground">{aviso.title}</p>
+                <p className="mt-1 text-sm text-muted">{aviso.body}</p>
               </Card>
             ))}
           </div>
@@ -97,16 +97,16 @@ export default async function ComunidadePage() {
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-wide text-terracotta-600">Palavra do Padre</p>
+          <p className="text-xs uppercase tracking-wide text-primary">Palavra do Padre</p>
           {canPublish && (
-            <Link href="/comunidade/palavra/nova" className="text-xs font-medium text-terracotta-700">
+            <Link href="/comunidade/palavra/nova" className="text-xs font-medium text-primary">
               Publicar
             </Link>
           )}
         </div>
         {posts.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Ainda não há publicações — em breve, aqui.</p>
+            <p className="text-sm text-muted">Ainda não há publicações — em breve, aqui.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
@@ -118,18 +118,18 @@ export default async function ComunidadePage() {
       </section>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Agenda</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Agenda</p>
         {agendaItems.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhum compromisso agendado ainda.</p>
+            <p className="text-sm text-muted">Nenhum compromisso agendado ainda.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {agendaItems.map((item) => (
               <Card key={item.id} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ink-900">{item.label}</p>
-                  <p className="text-xs text-ink-700">
+                  <p className="text-sm font-medium text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted">
                     {formatDateTime(item.startsAt)}
                     {item.location ? ` · ${item.location}` : ""}
                   </p>
@@ -141,22 +141,22 @@ export default async function ComunidadePage() {
       </section>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Sacerdotes</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Sacerdotes</p>
         {priests.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhum sacerdote cadastrado ainda.</p>
+            <p className="text-sm text-muted">Nenhum sacerdote cadastrado ainda.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {priests.map((priest) => (
               <Link key={priest.id} href={`/comunidade/sacerdotes/${priest.id}`}>
                 <Card className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta-100 text-sm font-medium text-terracotta-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                     {priest.user.fullName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-ink-900">{priest.user.fullName}</p>
-                    <p className="text-xs text-ink-700">{priest.title}</p>
+                    <p className="text-sm font-medium text-foreground">{priest.user.fullName}</p>
+                    <p className="text-xs text-muted">{priest.title}</p>
                   </div>
                 </Card>
               </Link>
@@ -168,8 +168,8 @@ export default async function ComunidadePage() {
       <Link href="/comunidade/catequese">
         <Card className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-ink-900">Catequese</p>
-            <p className="text-xs text-ink-700">Turmas, encontros e ritos</p>
+            <p className="text-sm font-medium text-foreground">Catequese</p>
+            <p className="text-xs text-muted">Turmas, encontros e ritos</p>
           </div>
           <span aria-hidden>→</span>
         </Card>
@@ -178,8 +178,8 @@ export default async function ComunidadePage() {
       <Link href="/comunidade/oracao">
         <Card className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-ink-900">🙏 Pedidos de oração</p>
-            <p className="text-xs text-ink-700">Envie ao pároco ou compartilhe no mural da comunidade</p>
+            <p className="text-sm font-medium text-foreground">🙏 Pedidos de oração</p>
+            <p className="text-xs text-muted">Envie ao pároco ou compartilhe no mural da comunidade</p>
           </div>
           <span aria-hidden>→</span>
         </Card>

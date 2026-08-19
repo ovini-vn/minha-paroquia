@@ -22,8 +22,8 @@ export default async function PermissionOverridesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink-900">Delegar permissões</h1>
-      <p className="text-sm text-ink-700">
+      <h1 className="font-serif text-2xl text-foreground">Delegar permissões</h1>
+      <p className="text-sm text-muted">
         Conceda ou revogue uma permissão específica para alguém, além do que o papel dela já dá — ex.: um coordenador
         que pode editar catequese, mas não liturgia.
       </p>
@@ -39,8 +39,8 @@ export default async function PermissionOverridesPage() {
           {overrides.map((override) => (
             <Card key={override.id} className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-ink-900">{override.user.fullName}</p>
-                <p className="text-xs text-ink-700">
+                <p className="text-sm font-medium text-foreground">{override.user.fullName}</p>
+                <p className="text-xs text-muted">
                   {PERMISSION_NAMES[override.permissionCode as PermissionCode] ?? override.permissionCode}
                 </p>
               </div>

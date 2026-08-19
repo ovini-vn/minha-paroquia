@@ -21,7 +21,7 @@ export function EditEventForm({ id, title, description, startsAtLocal, location 
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="id" value={id} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-title" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-title" className="text-sm font-medium text-muted">
           Título
         </label>
         <input
@@ -33,7 +33,7 @@ export function EditEventForm({ id, title, description, startsAtLocal, location 
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-description" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-description" className="text-sm font-medium text-muted">
           Descrição (opcional)
         </label>
         <textarea
@@ -45,7 +45,7 @@ export function EditEventForm({ id, title, description, startsAtLocal, location 
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-startsAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-startsAt" className="text-sm font-medium text-muted">
           Data e hora
         </label>
         <input
@@ -58,7 +58,7 @@ export function EditEventForm({ id, title, description, startsAtLocal, location 
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-location" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-location" className="text-sm font-medium text-muted">
           Local (opcional)
         </label>
         <input

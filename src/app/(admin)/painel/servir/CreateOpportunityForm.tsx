@@ -12,7 +12,7 @@ export function CreateOpportunityForm() {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-sm font-medium text-ink-700">
+        <label htmlFor="title" className="text-sm font-medium text-muted">
           Título
         </label>
         <input
@@ -24,7 +24,7 @@ export function CreateOpportunityForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className="text-sm font-medium text-ink-700">
+        <label htmlFor="description" className="text-sm font-medium text-muted">
           Precisamos de (opcional)
         </label>
         <input
@@ -35,7 +35,7 @@ export function CreateOpportunityForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="startsAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="startsAt" className="text-sm font-medium text-muted">
           Data (opcional)
         </label>
         <input

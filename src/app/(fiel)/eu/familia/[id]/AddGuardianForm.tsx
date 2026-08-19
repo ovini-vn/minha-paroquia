@@ -15,14 +15,14 @@ export function AddGuardianForm({ familyMemberId, candidates }: AddGuardianFormP
   const [state, formAction, pending] = useActionState(addGuardianAction, initialState);
 
   if (candidates.length === 0) {
-    return <p className="text-sm text-ink-700">Todos os membros da paróquia já são responsáveis por este dependente.</p>;
+    return <p className="text-sm text-muted">Todos os membros da paróquia já são responsáveis por este dependente.</p>;
   }
 
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="familyMemberId" value={familyMemberId} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="guardian-userId" className="text-sm font-medium text-ink-700">
+        <label htmlFor="guardian-userId" className="text-sm font-medium text-muted">
           Adicionar responsável
         </label>
         <select

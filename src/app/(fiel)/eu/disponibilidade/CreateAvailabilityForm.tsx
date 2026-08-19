@@ -13,7 +13,7 @@ export function CreateAvailabilityForm() {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="weekday" className="text-sm font-medium text-ink-700">
+        <label htmlFor="weekday" className="text-sm font-medium text-muted">
           Dia da semana
         </label>
         <select
@@ -29,7 +29,7 @@ export function CreateAvailabilityForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="startTime" className="text-sm font-medium text-ink-700">
+        <label htmlFor="startTime" className="text-sm font-medium text-muted">
           Início
         </label>
         <input
@@ -41,7 +41,7 @@ export function CreateAvailabilityForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="endTime" className="text-sm font-medium text-ink-700">
+        <label htmlFor="endTime" className="text-sm font-medium text-muted">
           Fim
         </label>
         <input
@@ -53,7 +53,7 @@ export function CreateAvailabilityForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="type" className="text-sm font-medium text-ink-700">
+        <label htmlFor="type" className="text-sm font-medium text-muted">
           Tipo
         </label>
         <select
@@ -66,7 +66,7 @@ export function CreateAvailabilityForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="slotMinutes" className="text-sm font-medium text-ink-700">
+        <label htmlFor="slotMinutes" className="text-sm font-medium text-muted">
           Duração
         </label>
         <select

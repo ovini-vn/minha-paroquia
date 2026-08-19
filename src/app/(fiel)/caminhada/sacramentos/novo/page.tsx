@@ -20,7 +20,7 @@ export default async function NewSacramentPage() {
 
   return (
     <Card>
-      <h1 className="mb-4 font-serif text-xl text-ink-900">Registrar sacramento</h1>
+      <h1 className="mb-4 font-serif text-xl text-foreground">Registrar sacramento</h1>
       <SacramentForm priests={priests} />
     </Card>
   );

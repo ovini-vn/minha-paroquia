@@ -21,8 +21,8 @@ export default async function MyTithePage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="font-serif text-xl text-ink-900">Minha participação no dízimo</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-xl text-foreground">Minha participação no dízimo</h1>
+        <p className="mt-1 text-sm text-muted">
           Registro de presença, sem valores — quem registra é a secretaria da paróquia.
         </p>
       </div>
@@ -37,7 +37,7 @@ export default async function MyTithePage() {
         <Card>
           <ul className="flex flex-col gap-1.5">
             {contributions.map((contribution) => (
-              <li key={contribution.id} className="border-b border-border py-2 text-sm text-ink-900 last:border-0">
+              <li key={contribution.id} className="border-b border-border py-2 text-sm text-foreground last:border-0">
                 {formatPeriodLabel(contribution.period)}
               </li>
             ))}

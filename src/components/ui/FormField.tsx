@@ -10,7 +10,7 @@ export function FormField({ label, error, id, className, ...props }: FormFieldPr
   const inputId = id ?? props.name;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm font-medium text-ink-700">
+      <label htmlFor={inputId} className="text-sm font-medium text-muted">
         {label}
       </label>
       <input

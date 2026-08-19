@@ -29,9 +29,9 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
 
   return (
     <Card className="text-center">
-      <p className="mb-1 text-sm text-terracotta-600">Você foi convidado para fazer parte da</p>
-      <h1 className="mb-2 font-serif text-2xl text-ink-900">{validation.invitation.parish.name}</h1>
-      <p className="mb-6 text-sm text-ink-700">Seja bem-vindo à sua comunidade.</p>
+      <p className="mb-1 text-sm text-primary">Você foi convidado para fazer parte da</p>
+      <h1 className="mb-2 font-serif text-2xl text-foreground">{validation.invitation.parish.name}</h1>
+      <p className="mb-6 text-sm text-muted">Seja bem-vindo à sua comunidade.</p>
       <div className="flex flex-col gap-3">
         <LinkButton href={`/cadastro?convite=${code}`} className="w-full">
           Criar conta

@@ -13,7 +13,7 @@ export function CreateSessionForm({ groupId }: { groupId: string }) {
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="groupId" value={groupId} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="date" className="text-sm font-medium text-ink-700">
+        <label htmlFor="date" className="text-sm font-medium text-muted">
           Data do encontro
         </label>
         <input
@@ -25,7 +25,7 @@ export function CreateSessionForm({ groupId }: { groupId: string }) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="topic" className="text-sm font-medium text-ink-700">
+        <label htmlFor="topic" className="text-sm font-medium text-muted">
           Tema (opcional)
         </label>
         <input

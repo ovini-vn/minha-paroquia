@@ -36,8 +36,8 @@ const STATUS_LABEL: Record<string, string> = {
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <Card className="text-center">
-      <p className="text-3xl font-semibold text-terracotta-700">{value}</p>
-      <p className="mt-1 text-sm text-ink-700">{label}</p>
+      <p className="text-3xl font-semibold text-primary">{value}</p>
+      <p className="mt-1 text-sm text-muted">{label}</p>
     </Card>
   );
 }
@@ -112,7 +112,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">{session.membership.parishName}</h1>
+        <h1 className="font-serif text-2xl text-foreground">{session.membership.parishName}</h1>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -123,8 +123,8 @@ export default async function AdminDashboardPage() {
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Perfil da paróquia</p>
-        <p className="mb-3 text-sm text-ink-700">
+        <p className="mb-3 font-serif text-lg text-foreground">Perfil da paróquia</p>
+        <p className="mb-3 text-sm text-muted">
           Essas informações aparecem para o fiel em Minha Comunidade.
         </p>
         <ParishProfileForm
@@ -139,8 +139,8 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-serif text-lg text-ink-900">Avisos</p>
-              <p className="text-sm text-ink-700">{publishedAvisoCount} publicados</p>
+              <p className="font-serif text-lg text-foreground">Avisos</p>
+              <p className="text-sm text-muted">{publishedAvisoCount} publicados</p>
             </div>
             <LinkButton href="/painel/avisos" variant="secondary">
               Gerenciar
@@ -150,8 +150,8 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-serif text-lg text-ink-900">Eventos</p>
-              <p className="text-sm text-ink-700">{events.length} futuros</p>
+              <p className="font-serif text-lg text-foreground">Eventos</p>
+              <p className="text-sm text-muted">{events.length} futuros</p>
             </div>
             <LinkButton href="/painel/eventos" variant="secondary">
               Gerenciar
@@ -161,11 +161,11 @@ export default async function AdminDashboardPage() {
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Convites</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Convites</p>
         <CreateInviteForm />
 
         {invitations.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-700">Nenhum convite criado ainda.</p>
+          <p className="mt-4 text-sm text-muted">Nenhum convite criado ainda.</p>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -204,15 +204,15 @@ export default async function AdminDashboardPage() {
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Sacerdotes</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Sacerdotes</p>
         {priests.length === 0 ? (
-          <p className="text-sm text-ink-700">
+          <p className="text-sm text-muted">
             Nenhum sacerdote cadastrado ainda — crie um convite acima com vínculo &ldquo;Sacerdote&rdquo;.
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
             {priests.map((priest) => (
-              <li key={priest.id} className="flex items-center gap-2 text-sm text-ink-900">
+              <li key={priest.id} className="flex items-center gap-2 text-sm text-foreground">
                 {priest.user.fullName} <Badge>{priest.title}</Badge>
               </li>
             ))}
@@ -221,21 +221,21 @@ export default async function AdminDashboardPage() {
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Agenda</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Agenda</p>
         <div className="flex flex-col gap-4">
           <CreateCelebrationForm priests={priests} />
           <CreateEventForm />
         </div>
 
         {agendaItems.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-700">Nenhum compromisso futuro cadastrado.</p>
+          <p className="mt-4 text-sm text-muted">Nenhum compromisso futuro cadastrado.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {agendaItems.map((item) => (
               <li key={item.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
                 <div>
-                  <p className="text-ink-900">{item.label}</p>
-                  <p className="text-xs text-ink-700">
+                  <p className="text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted">
                     {formatDateTime(item.startsAt)}
                     {item.location ? ` · ${item.location}` : ""}
                     {item.priestName ? ` · ${item.priestName}` : ""}
@@ -250,8 +250,8 @@ export default async function AdminDashboardPage() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-serif text-lg text-ink-900">Servir</p>
-            <p className="text-sm text-ink-700">
+            <p className="font-serif text-lg text-foreground">Servir</p>
+            <p className="text-sm text-muted">
               {volunteerCount} {volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} ·{" "}
               {openOpportunities.length} {openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}
             </p>
@@ -265,8 +265,8 @@ export default async function AdminDashboardPage() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-serif text-lg text-ink-900">Catequese</p>
-            <p className="text-sm text-ink-700">{catechismGroupCount} {catechismGroupCount === 1 ? "turma" : "turmas"}</p>
+            <p className="font-serif text-lg text-foreground">Catequese</p>
+            <p className="text-sm text-muted">{catechismGroupCount} {catechismGroupCount === 1 ? "turma" : "turmas"}</p>
           </div>
           <LinkButton href="/painel/catequese" variant="secondary">
             Gerenciar
@@ -277,8 +277,8 @@ export default async function AdminDashboardPage() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-serif text-lg text-ink-900">Liturgia</p>
-            <p className="text-sm text-ink-700">
+            <p className="font-serif text-lg text-foreground">Liturgia</p>
+            <p className="text-sm text-muted">
               {liturgicalAvailabilityCount} {liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}
             </p>
           </div>
@@ -291,8 +291,8 @@ export default async function AdminDashboardPage() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-serif text-lg text-ink-900">Dízimo</p>
-            <p className="text-sm text-ink-700">
+            <p className="font-serif text-lg text-foreground">Dízimo</p>
+            <p className="text-sm text-muted">
               {titheContributionCount} {titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em {formatPeriodLabel(currentPeriod())}
             </p>
           </div>
@@ -305,8 +305,8 @@ export default async function AdminDashboardPage() {
       <Card>
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-serif text-lg text-ink-900">Sacramentos</p>
-            <p className="text-sm text-ink-700">
+            <p className="font-serif text-lg text-foreground">Sacramentos</p>
+            <p className="text-sm text-muted">
               {pendingSacramentCount} {pendingSacramentCount === 1 ? "sacramento aguardando validação" : "sacramentos aguardando validação"}
             </p>
           </div>
@@ -320,8 +320,8 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-serif text-lg text-ink-900">Delegar permissões</p>
-              <p className="text-sm text-ink-700">Conceda ou revogue permissões específicas por pessoa</p>
+              <p className="font-serif text-lg text-foreground">Delegar permissões</p>
+              <p className="text-sm text-muted">Conceda ou revogue permissões específicas por pessoa</p>
             </div>
             <LinkButton href="/painel/permissoes" variant="secondary">
               Gerenciar
@@ -331,19 +331,19 @@ export default async function AdminDashboardPage() {
       )}
 
       <Card>
-        <p className="font-serif text-lg text-ink-900">Minha Caminhada</p>
+        <p className="font-serif text-lg text-foreground">Minha Caminhada</p>
         {reflectionAggregate.available ? (
-          <p className="mt-1 text-sm text-ink-700">
+          <p className="mt-1 text-sm text-muted">
             Nos últimos 30 dias, {reflectionAggregate.total} participações em missa foram registradas e{" "}
             {reflectionAggregate.rate}% vieram com uma reflexão.
           </p>
         ) : (
-          <p className="mt-1 text-sm text-ink-700">
+          <p className="mt-1 text-sm text-muted">
             Ainda não há participações suficientes nos últimos 30 dias para mostrar um indicador sem identificar
             ninguém.
           </p>
         )}
-        <p className="mt-2 text-xs text-ink-700">
+        <p className="mt-2 text-xs text-muted">
           Só o indicador agregado é visível — o conteúdo das reflexões é sempre privado.
         </p>
       </Card>

@@ -10,7 +10,7 @@ export default async function ProfileEditPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-ink-900">Editar perfil</h1>
+      <h1 className="font-serif text-xl text-foreground">Editar perfil</h1>
       <Card>
         <ProfileForm
           fullName={user.fullName}

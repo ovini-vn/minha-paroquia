@@ -12,7 +12,7 @@ export function MassParticipationForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="participatedAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="participatedAt" className="text-sm font-medium text-muted">
           Quando foi?
         </label>
         <input
@@ -27,7 +27,7 @@ export function MassParticipationForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="reflectionText" className="text-sm font-medium text-ink-700">
+        <label htmlFor="reflectionText" className="text-sm font-medium text-muted">
           O que você aprendeu hoje?
         </label>
         <textarea
@@ -37,7 +37,7 @@ export function MassParticipationForm() {
           placeholder="Aprendi que..."
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
-        <p className="text-xs text-ink-700">
+        <p className="text-xs text-muted">
           Fica só com você — sua paróquia só vê quantas pessoas refletiram, nunca o que você escreveu.
         </p>
       </div>

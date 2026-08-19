@@ -13,7 +13,7 @@ export function EditAvisoForm({ id, title, body }: { id: string; title: string; 
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="id" value={id} />
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="aviso-title" className="text-sm font-medium text-ink-700">
+        <label htmlFor="aviso-title" className="text-sm font-medium text-muted">
           Título
         </label>
         <input
@@ -25,7 +25,7 @@ export function EditAvisoForm({ id, title, body }: { id: string; title: string; 
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="aviso-body" className="text-sm font-medium text-ink-700">
+        <label htmlFor="aviso-body" className="text-sm font-medium text-muted">
           Texto
         </label>
         <textarea

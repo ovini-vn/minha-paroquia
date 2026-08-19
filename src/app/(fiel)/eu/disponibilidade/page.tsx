@@ -37,7 +37,7 @@ export default async function AvailabilityPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-ink-900">Minha disponibilidade</h1>
+      <h1 className="font-serif text-xl text-foreground">Minha disponibilidade</h1>
 
       <Card>
         <CreateAvailabilityForm />
@@ -54,10 +54,10 @@ export default async function AvailabilityPage() {
           {windows.map((window) => (
             <Card key={window.id} className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-ink-900">
+                <p className="text-sm font-medium text-foreground">
                   {WEEKDAY_LABELS[window.weekday]} · {window.startTime} às {window.endTime}
                 </p>
-                <p className="text-xs text-ink-700">
+                <p className="text-xs text-muted">
                   {AVAILABILITY_TYPE_LABELS[window.type]} · horários de {window.slotMinutes} min
                 </p>
               </div>

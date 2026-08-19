@@ -28,7 +28,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
       : undefined;
 
   return (
-    <div className="min-h-dvh bg-cream-100 pb-20" style={themeStyle} data-theme-preference={session.themePreference}>
+    <div className="min-h-dvh bg-background pb-20" style={themeStyle} data-theme-preference={session.themePreference}>
       <ParishHeader parishName={session.membership?.parishName ?? "Sem comunidade ativa"} unreadCount={unreadCount} />
       <main className="mx-auto max-w-lg px-4 py-6">{children}</main>
       <TabBar />

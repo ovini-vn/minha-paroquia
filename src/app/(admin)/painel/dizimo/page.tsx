@@ -29,15 +29,15 @@ export default async function DizimoAdminPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink-900">Dízimo</h1>
-      <p className="text-sm text-ink-700">
+      <h1 className="font-serif text-2xl text-foreground">Dízimo</h1>
+      <p className="text-sm text-muted">
         Registro de presença de contribuição por período — sem valores. Contribuições em dinheiro/pagamento entram
         numa fase futura.
       </p>
 
       <Card>
         <form className="flex items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm text-ink-700">
+          <label className="flex flex-col gap-1 text-sm text-muted">
             Período
             <input
               type="month"
@@ -53,12 +53,12 @@ export default async function DizimoAdminPage({
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">
+        <p className="mb-3 font-serif text-lg text-foreground">
           {formatPeriodLabel(period)} · {contributedUserIds.size} de {members.length}
         </p>
 
         {members.length === 0 ? (
-          <p className="text-sm text-ink-700">Nenhum membro ativo nesta paróquia.</p>
+          <p className="text-sm text-muted">Nenhum membro ativo nesta paróquia.</p>
         ) : (
           <ul className="flex flex-col gap-1.5">
             {members.map((membership) => {
@@ -68,7 +68,7 @@ export default async function DizimoAdminPage({
                   key={membership.user.id}
                   className="flex items-center justify-between border-b border-border py-2 text-sm"
                 >
-                  <span className="text-ink-900">{membership.user.fullName}</span>
+                  <span className="text-foreground">{membership.user.fullName}</span>
                   <div className="flex items-center gap-2">
                     <Badge>{contributed ? "Contribuiu" : "Sem registro"}</Badge>
                     <form action={setContributionAction}>

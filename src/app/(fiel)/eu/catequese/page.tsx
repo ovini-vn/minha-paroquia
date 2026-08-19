@@ -26,7 +26,7 @@ export default async function MyCatequesePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-ink-900">Minha catequese</h1>
+      <h1 className="font-serif text-xl text-foreground">Minha catequese</h1>
 
       {groups.length === 0 ? (
         <EmptyState
@@ -38,7 +38,7 @@ export default async function MyCatequesePage() {
         <div className="flex flex-col gap-2">
           {groups.map((group) => (
             <Card key={group.id} className="flex items-center justify-between">
-              <p className="text-sm font-medium text-ink-900">
+              <p className="text-sm font-medium text-foreground">
                 {group.name} · {group.year}
               </p>
               <LinkButton href={`/eu/catequese/${group.id}`} variant="secondary">

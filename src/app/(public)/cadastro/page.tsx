@@ -33,8 +33,8 @@ export default async function RegisterPage({
 
   return (
     <Card>
-      <p className="mb-1 text-sm text-terracotta-600">Você foi convidado para</p>
-      <h1 className="mb-4 font-serif text-xl text-ink-900">{validation.invitation.parish.name}</h1>
+      <p className="mb-1 text-sm text-primary">Você foi convidado para</p>
+      <h1 className="mb-4 font-serif text-xl text-foreground">{validation.invitation.parish.name}</h1>
       <RegisterForm inviteCode={convite} />
     </Card>
   );

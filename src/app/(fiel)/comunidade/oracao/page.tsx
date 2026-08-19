@@ -32,8 +32,8 @@ export default async function PrayerRequestsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-xl text-ink-900">Pedidos de oração</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-xl text-foreground">Pedidos de oração</h1>
+        <p className="mt-1 text-sm text-muted">
           Envie ao pároco/sacerdote, ou compartilhe no mural para a comunidade rezar com você.
         </p>
       </div>
@@ -44,17 +44,17 @@ export default async function PrayerRequestsPage() {
 
       {canViewPrivate && (
         <section>
-          <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Pedidos privados</p>
+          <p className="mb-2 text-xs uppercase tracking-wide text-primary">Pedidos privados</p>
           {privateRequests.length === 0 ? (
             <Card>
-              <p className="text-sm text-ink-700">Nenhum pedido privado ainda.</p>
+              <p className="text-sm text-muted">Nenhum pedido privado ainda.</p>
             </Card>
           ) : (
             <div className="flex flex-col gap-2">
               {privateRequests.map((request) => (
                 <Card key={request.id}>
-                  <p className="text-sm text-ink-900">{request.contentText}</p>
-                  <p className="mt-1 text-xs text-ink-700">
+                  <p className="text-sm text-foreground">{request.contentText}</p>
+                  <p className="mt-1 text-xs text-muted">
                     {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                   </p>
                 </Card>
@@ -65,17 +65,17 @@ export default async function PrayerRequestsPage() {
       )}
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Mural da comunidade</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Mural da comunidade</p>
         {communityRequests.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhum pedido compartilhado ainda.</p>
+            <p className="text-sm text-muted">Nenhum pedido compartilhado ainda.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {communityRequests.map((request) => (
               <Card key={request.id}>
-                <p className="text-sm text-ink-900">{request.contentText}</p>
-                <p className="mt-1 text-xs text-ink-700">
+                <p className="text-sm text-foreground">{request.contentText}</p>
+                <p className="mt-1 text-xs text-muted">
                   {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                 </p>
               </Card>
@@ -85,17 +85,17 @@ export default async function PrayerRequestsPage() {
       </section>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Meus pedidos</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Meus pedidos</p>
         {myRequests.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Você ainda não enviou nenhum pedido.</p>
+            <p className="text-sm text-muted">Você ainda não enviou nenhum pedido.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {myRequests.map((request) => (
               <Card key={request.id}>
-                <p className="text-sm text-ink-900">{request.contentText}</p>
-                <p className="mt-1 text-xs text-ink-700">{formatDateTime(request.createdAt)}</p>
+                <p className="text-sm text-foreground">{request.contentText}</p>
+                <p className="mt-1 text-xs text-muted">{formatDateTime(request.createdAt)}</p>
               </Card>
             ))}
           </div>

@@ -14,7 +14,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="enrollmentId" className="text-sm font-medium text-ink-700">
+        <label htmlFor="enrollmentId" className="text-sm font-medium text-muted">
           Matriculado
         </label>
         <select
@@ -31,7 +31,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-ink-700">
+        <label htmlFor="name" className="text-sm font-medium text-muted">
           Rito
         </label>
         <input
@@ -43,7 +43,7 @@ export function CreateRiteForm({ enrollments }: { enrollments: Enrollment[] }) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="scheduledAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="scheduledAt" className="text-sm font-medium text-muted">
           Data prevista (opcional)
         </label>
         <input

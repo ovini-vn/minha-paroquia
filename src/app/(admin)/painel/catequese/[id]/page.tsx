@@ -25,18 +25,18 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">
+        <h1 className="font-serif text-2xl text-foreground">
           {group.name} · {group.year}
         </h1>
-        <p className="text-sm text-ink-700">
+        <p className="text-sm text-muted">
           {group.catechist ? `Catequista: ${group.catechist.fullName}` : "Sem catequista designado"}
         </p>
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Matricular dependente</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Matricular dependente</p>
         {available.length === 0 ? (
-          <p className="text-sm text-ink-700">
+          <p className="text-sm text-muted">
             Todos os dependentes cadastrados já estão matriculados nesta turma, ou nenhum dependente foi
             cadastrado ainda.
           </p>
@@ -46,15 +46,15 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Matriculados</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Matriculados</p>
         {enrollments.length === 0 ? (
-          <p className="text-sm text-ink-700">Ninguém matriculado ainda.</p>
+          <p className="text-sm text-muted">Ninguém matriculado ainda.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {enrollments.map((enrollment) => (
-              <li key={enrollment.id} className="text-sm text-ink-900">
+              <li key={enrollment.id} className="text-sm text-foreground">
                 {enrollment.familyMember.fullName}{" "}
-                <span className="text-xs text-ink-700">
+                <span className="text-xs text-muted">
                   (responsável: {enrollment.familyMember.responsible.fullName})
                 </span>
               </li>

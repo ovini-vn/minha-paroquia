@@ -30,8 +30,8 @@ export default async function LiturgiaPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-xl text-ink-900">Liturgia</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-xl text-foreground">Liturgia</h1>
+        <p className="mt-1 text-sm text-muted">
           Informe em que função você pode servir nas celebrações — leitura, canto, acolhida e mais.
         </p>
       </div>
@@ -57,18 +57,18 @@ export default async function LiturgiaPage() {
       </Card>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Sua escala</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Sua escala</p>
         {schedule.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhuma escala futura por enquanto.</p>
+            <p className="text-sm text-muted">Nenhuma escala futura por enquanto.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {schedule.map((s) => (
               <Card key={s.id} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ink-900">{LITURGICAL_ROLE_LABELS[s.roleType]}</p>
-                  <p className="text-xs text-ink-700">{formatDateTime(s.celebration.startsAt)}</p>
+                  <p className="text-sm font-medium text-foreground">{LITURGICAL_ROLE_LABELS[s.roleType]}</p>
+                  <p className="text-xs text-muted">{formatDateTime(s.celebration.startsAt)}</p>
                 </div>
                 {s.confirmed ? (
                   <Badge>Confirmado</Badge>

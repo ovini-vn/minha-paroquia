@@ -37,24 +37,24 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">
+        <h1 className="font-serif text-2xl text-foreground">
           {group.name} · {group.year}
         </h1>
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Encontros</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Encontros</p>
         <CreateSessionForm groupId={id} />
 
         {sessions.length === 0 ? (
-          <p className="mt-4 text-sm text-ink-700">Nenhum encontro cadastrado ainda.</p>
+          <p className="mt-4 text-sm text-muted">Nenhum encontro cadastrado ainda.</p>
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {sessions.map((s) => (
               <li key={s.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
                 <div>
-                  <p className="text-ink-900">{formatDateOnly(s.date)}</p>
-                  {s.topic && <p className="text-xs text-ink-700">{s.topic}</p>}
+                  <p className="text-foreground">{formatDateOnly(s.date)}</p>
+                  {s.topic && <p className="text-xs text-muted">{s.topic}</p>}
                 </div>
                 <LinkButton href={`/eu/catequese/${id}/encontro/${s.id}`} variant="secondary">
                   Chamada
@@ -66,7 +66,7 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Matriculados e ritos</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Matriculados e ritos</p>
         {enrollments.length === 0 ? (
           <EmptyState
             icon="📖"
@@ -79,9 +79,9 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
             <div className="mt-4 flex flex-col gap-3">
               {enrollments.map((enrollment, index) => (
                 <div key={enrollment.id} className="border-t border-border pt-3">
-                  <p className="text-sm font-medium text-ink-900">{enrollment.familyMember.fullName}</p>
+                  <p className="text-sm font-medium text-foreground">{enrollment.familyMember.fullName}</p>
                   {ritesByEnrollment[index]!.length === 0 ? (
-                    <p className="text-xs text-ink-700">Nenhum rito registrado.</p>
+                    <p className="text-xs text-muted">Nenhum rito registrado.</p>
                   ) : (
                     <div className="mt-1 flex flex-wrap gap-2">
                       {ritesByEnrollment[index]!.map((rite) => (

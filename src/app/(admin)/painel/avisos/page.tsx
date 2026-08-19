@@ -17,10 +17,10 @@ export default async function AvisosAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink-900">Avisos</h1>
+      <h1 className="font-serif text-2xl text-foreground">Avisos</h1>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Novo aviso</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Novo aviso</p>
         <CreateAvisoForm />
       </Card>
 
@@ -34,9 +34,9 @@ export default async function AvisosAdminPage() {
               <Card key={aviso.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-ink-900">{aviso.title}</p>
-                    <p className="mt-1 text-sm text-ink-700">{aviso.body}</p>
-                    <p className="mt-1 text-xs text-ink-700">{formatDateTime(aviso.createdAt)}</p>
+                    <p className="text-sm font-medium text-foreground">{aviso.title}</p>
+                    <p className="mt-1 text-sm text-muted">{aviso.body}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDateTime(aviso.createdAt)}</p>
                   </div>
                   <Badge>{archived ? "Arquivado" : "Publicado"}</Badge>
                 </div>

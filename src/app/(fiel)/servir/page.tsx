@@ -31,15 +31,15 @@ export default async function ServirPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h1 className="font-serif text-2xl text-ink-900">Servir</h1>
-        <p className="mt-1 text-sm text-ink-700">Existe um lugar para você na nossa comunidade.</p>
+        <h1 className="font-serif text-2xl text-foreground">Servir</h1>
+        <p className="mt-1 text-sm text-muted">Existe um lugar para você na nossa comunidade.</p>
       </div>
 
       <Card>
-        <p className="text-xs uppercase tracking-wide text-terracotta-600">Eu posso ajudar</p>
+        <p className="text-xs uppercase tracking-wide text-primary">Eu posso ajudar</p>
         {volunteerProfile ? (
           <>
-            <p className="mt-1 text-sm text-ink-700">
+            <p className="mt-1 text-sm text-muted">
               Obrigado por se colocar à disposição — sua comunidade já sabe como você pode ajudar.
             </p>
             <LinkButton href="/servir/posso-ajudar" variant="secondary" className="mt-3">
@@ -48,7 +48,7 @@ export default async function ServirPage() {
           </>
         ) : (
           <>
-            <p className="mt-1 text-sm text-ink-700">
+            <p className="mt-1 text-sm text-muted">
               Conte seu tempo, seu talento, ou como você quer servir sua comunidade.
             </p>
             <LinkButton href="/servir/posso-ajudar" className="mt-3">
@@ -59,10 +59,10 @@ export default async function ServirPage() {
       </Card>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Oportunidades</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Oportunidades</p>
         {opportunities.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhuma oportunidade em aberto no momento.</p>
+            <p className="text-sm text-muted">Nenhuma oportunidade em aberto no momento.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
@@ -70,12 +70,12 @@ export default async function ServirPage() {
               const alreadyInterested = interestedOpportunityIds.has(opportunity.id);
               return (
                 <Card key={opportunity.id}>
-                  <p className="text-sm font-medium text-ink-900">{opportunity.title}</p>
+                  <p className="text-sm font-medium text-foreground">{opportunity.title}</p>
                   {opportunity.description && (
-                    <p className="mt-1 text-sm text-ink-700">{opportunity.description}</p>
+                    <p className="mt-1 text-sm text-muted">{opportunity.description}</p>
                   )}
                   {opportunity.startsAt && (
-                    <p className="mt-1 text-xs text-ink-700">{formatDateTime(opportunity.startsAt)}</p>
+                    <p className="mt-1 text-xs text-muted">{formatDateTime(opportunity.startsAt)}</p>
                   )}
                   <div className="mt-3">
                     {alreadyInterested ? (

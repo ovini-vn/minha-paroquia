@@ -15,7 +15,7 @@ export function PostForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="mediaType" className="text-sm font-medium text-ink-700">
+        <label htmlFor="mediaType" className="text-sm font-medium text-muted">
           Tipo
         </label>
         <select
@@ -33,7 +33,7 @@ export function PostForm() {
 
       {mediaType === "texto" ? (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="contentText" className="text-sm font-medium text-ink-700">
+          <label htmlFor="contentText" className="text-sm font-medium text-muted">
             Sua mensagem
           </label>
           <textarea
@@ -46,7 +46,7 @@ export function PostForm() {
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="mediaUrl" className="text-sm font-medium text-ink-700">
+          <label htmlFor="mediaUrl" className="text-sm font-medium text-muted">
             Link do {mediaType === "audio" ? "áudio" : "vídeo"}
           </label>
           <input
@@ -56,7 +56,7 @@ export function PostForm() {
             placeholder="https://..."
             className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
           />
-          <p className="text-xs text-ink-700">
+          <p className="text-xs text-muted">
             Cole o link de onde o {mediaType === "audio" ? "áudio" : "vídeo"} já está hospedado.
           </p>
         </div>

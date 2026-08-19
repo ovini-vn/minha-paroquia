@@ -15,7 +15,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="celebration-type" className="text-sm font-medium text-ink-700">
+        <label htmlFor="celebration-type" className="text-sm font-medium text-muted">
           Tipo
         </label>
         <select
@@ -31,7 +31,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="celebration-title" className="text-sm font-medium text-ink-700">
+        <label htmlFor="celebration-title" className="text-sm font-medium text-muted">
           Título (opcional)
         </label>
         <input
@@ -42,7 +42,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="celebration-startsAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="celebration-startsAt" className="text-sm font-medium text-muted">
           Data e hora
         </label>
         <input
@@ -54,7 +54,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="celebration-location" className="text-sm font-medium text-ink-700">
+        <label htmlFor="celebration-location" className="text-sm font-medium text-muted">
           Local (opcional)
         </label>
         <input
@@ -66,7 +66,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
       </div>
       {priests.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="celebration-priest" className="text-sm font-medium text-ink-700">
+          <label htmlFor="celebration-priest" className="text-sm font-medium text-muted">
             Celebrante (opcional)
           </label>
           <select

@@ -17,12 +17,12 @@ export default async function EventsAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-2xl text-ink-900">Eventos</h1>
+        <h1 className="font-serif text-2xl text-foreground">Eventos</h1>
         <LinkButton href="/painel" variant="secondary">
           Criar evento
         </LinkButton>
       </div>
-      <p className="text-sm text-ink-700">Novos eventos são criados no painel principal, na seção Agenda.</p>
+      <p className="text-sm text-muted">Novos eventos são criados no painel principal, na seção Agenda.</p>
 
       {events.length === 0 ? (
         <EmptyState icon="🎉" title="Nenhum evento criado ainda" description="Crie um no painel principal." />
@@ -34,8 +34,8 @@ export default async function EventsAdminPage() {
               <Card key={event.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-ink-900">{event.title}</p>
-                    <p className="mt-1 text-xs text-ink-700">
+                    <p className="text-sm font-medium text-foreground">{event.title}</p>
+                    <p className="mt-1 text-xs text-muted">
                       {formatDateTime(event.startsAt)}
                       {event.location ? ` · ${event.location}` : ""}
                     </p>

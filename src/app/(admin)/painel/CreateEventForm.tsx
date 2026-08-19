@@ -12,7 +12,7 @@ export function CreateEventForm() {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-title" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-title" className="text-sm font-medium text-muted">
           Título
         </label>
         <input
@@ -24,7 +24,7 @@ export function CreateEventForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-startsAt" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-startsAt" className="text-sm font-medium text-muted">
           Data e hora
         </label>
         <input
@@ -36,7 +36,7 @@ export function CreateEventForm() {
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="event-location" className="text-sm font-medium text-ink-700">
+        <label htmlFor="event-location" className="text-sm font-medium text-muted">
           Local (opcional)
         </label>
         <input

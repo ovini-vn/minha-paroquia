@@ -29,13 +29,13 @@ export function RegisterForm({ inviteCode }: { inviteCode: string }) {
       <Button type="submit" disabled={pending}>
         {pending ? "Criando conta..." : "Criar conta e entrar na comunidade"}
       </Button>
-      <p className="text-center text-sm text-terracotta-700">
+      <p className="text-center text-sm text-primary">
         Já tem conta? <Link href={`/login?convite=${inviteCode}`}>Entrar</Link>
       </p>
-      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-700">
-        <span className="h-px flex-1 bg-terracotta-100" />
+      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
+        <span className="h-px flex-1 bg-border" />
         ou
-        <span className="h-px flex-1 bg-terracotta-100" />
+        <span className="h-px flex-1 bg-border" />
       </div>
       <OAuthButtons inviteCode={inviteCode} />
     </form>

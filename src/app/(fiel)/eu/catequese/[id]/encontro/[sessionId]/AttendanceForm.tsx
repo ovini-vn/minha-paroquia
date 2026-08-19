@@ -21,7 +21,7 @@ export function AttendanceForm({
       <input type="hidden" name="groupId" value={groupId} />
       <input type="hidden" name="sessionId" value={sessionId} />
       {enrollments.map((enrollment) => (
-        <label key={enrollment.id} className="flex items-center gap-2 text-sm text-ink-900">
+        <label key={enrollment.id} className="flex items-center gap-2 text-sm text-foreground">
           <input type="hidden" name="enrollmentId" value={enrollment.id} />
           <input
             type="checkbox"

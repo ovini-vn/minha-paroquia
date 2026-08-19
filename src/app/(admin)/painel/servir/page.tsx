@@ -23,26 +23,26 @@ export default async function ServirAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">Servir</h1>
-        <p className="mt-1 text-sm text-ink-700">
+        <h1 className="font-serif text-2xl text-foreground">Servir</h1>
+        <p className="mt-1 text-sm text-muted">
           {volunteerCount} {volunteerCount === 1 ? "pessoa se colocou" : "pessoas se colocaram"} à disposição para
           ajudar.
         </p>
         {!fullAdmin && (
-          <p className="mt-1 text-xs text-ink-700">
+          <p className="mt-1 text-xs text-muted">
             Mostrando só as oportunidades criadas por você. Pároco e secretaria veem todas.
           </p>
         )}
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-ink-900">Nova oportunidade</p>
+        <p className="mb-3 font-serif text-lg text-foreground">Nova oportunidade</p>
         <CreateOpportunityForm />
       </Card>
 
       {opportunities.length === 0 ? (
         <Card>
-          <p className="text-sm text-ink-700">Nenhuma oportunidade criada ainda.</p>
+          <p className="text-sm text-muted">Nenhuma oportunidade criada ainda.</p>
         </Card>
       ) : (
         <div className="flex flex-col gap-4">
@@ -50,10 +50,10 @@ export default async function ServirAdminPage() {
             <Card key={opportunity.id}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="font-medium text-ink-900">{opportunity.title}</p>
-                  {opportunity.description && <p className="text-sm text-ink-700">{opportunity.description}</p>}
+                  <p className="font-medium text-foreground">{opportunity.title}</p>
+                  {opportunity.description && <p className="text-sm text-muted">{opportunity.description}</p>}
                   {opportunity.startsAt && (
-                    <p className="text-xs text-ink-700">{formatDateTime(opportunity.startsAt)}</p>
+                    <p className="text-xs text-muted">{formatDateTime(opportunity.startsAt)}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -70,14 +70,14 @@ export default async function ServirAdminPage() {
               </div>
 
               {opportunity.interests.length === 0 ? (
-                <p className="mt-3 text-sm text-ink-700">Ninguém manifestou interesse ainda.</p>
+                <p className="mt-3 text-sm text-muted">Ninguém manifestou interesse ainda.</p>
               ) : (
                 <ul className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
                   {opportunity.interests.map((interest) => (
                     <li key={interest.id} className="flex items-center justify-between text-sm">
                       <div>
-                        <p className="text-ink-900">{interest.user.fullName}</p>
-                        <p className="text-xs text-ink-700">{interest.user.email}</p>
+                        <p className="text-foreground">{interest.user.fullName}</p>
+                        <p className="text-xs text-muted">{interest.user.email}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge>{INTEREST_STATUS_LABELS[interest.status]}</Badge>

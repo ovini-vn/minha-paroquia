@@ -19,7 +19,7 @@ export function ParishProfileForm({ address, phone, description, logoUrl }: Pari
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-address" className="text-sm font-medium text-ink-700">
+        <label htmlFor="parish-address" className="text-sm font-medium text-muted">
           Endereço (opcional)
         </label>
         <input
@@ -30,7 +30,7 @@ export function ParishProfileForm({ address, phone, description, logoUrl }: Pari
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-phone" className="text-sm font-medium text-ink-700">
+        <label htmlFor="parish-phone" className="text-sm font-medium text-muted">
           Telefone (opcional)
         </label>
         <input
@@ -41,7 +41,7 @@ export function ParishProfileForm({ address, phone, description, logoUrl }: Pari
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-description" className="text-sm font-medium text-ink-700">
+        <label htmlFor="parish-description" className="text-sm font-medium text-muted">
           Descrição (opcional)
         </label>
         <textarea
@@ -53,7 +53,7 @@ export function ParishProfileForm({ address, phone, description, logoUrl }: Pari
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-logoUrl" className="text-sm font-medium text-ink-700">
+        <label htmlFor="parish-logoUrl" className="text-sm font-medium text-muted">
           URL do logo (opcional)
         </label>
         <input

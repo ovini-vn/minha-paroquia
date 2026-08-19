@@ -34,30 +34,30 @@ export default async function CaminhadaPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink-900">Minha Caminhada</h1>
-        <p className="mt-1 text-sm text-ink-700">Uma memória pessoal da sua fé — só você vê o que escreve aqui.</p>
+        <h1 className="font-serif text-2xl text-foreground">Minha Caminhada</h1>
+        <p className="mt-1 text-sm text-muted">Uma memória pessoal da sua fé — só você vê o que escreve aqui.</p>
       </div>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-wide text-terracotta-600">Missas</p>
+          <p className="text-xs uppercase tracking-wide text-primary">Missas</p>
           <LinkButton href="/caminhada/missa/nova" variant="secondary">
             Registrar participação
           </LinkButton>
         </div>
         {participations.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhuma participação registrada ainda.</p>
+            <p className="text-sm text-muted">Nenhuma participação registrada ainda.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {participations.map((p) => (
               <Card key={p.id}>
-                <p className="text-sm font-medium text-ink-900">{formatDateOnly(p.participatedAt)}</p>
+                <p className="text-sm font-medium text-foreground">{formatDateOnly(p.participatedAt)}</p>
                 {p.reflectionText ? (
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-ink-700">{p.reflectionText}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-muted">{p.reflectionText}</p>
                 ) : (
-                  <p className="mt-1 text-sm text-ink-700">Sem reflexão registrada.</p>
+                  <p className="mt-1 text-sm text-muted">Sem reflexão registrada.</p>
                 )}
               </Card>
             ))}
@@ -67,22 +67,22 @@ export default async function CaminhadaPage() {
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs uppercase tracking-wide text-terracotta-600">Sacramentos</p>
+          <p className="text-xs uppercase tracking-wide text-primary">Sacramentos</p>
           <LinkButton href="/caminhada/sacramentos/novo" variant="secondary">
             Adicionar
           </LinkButton>
         </div>
         {sacraments.length === 0 ? (
           <Card>
-            <p className="text-sm text-ink-700">Nenhum sacramento registrado ainda.</p>
+            <p className="text-sm text-muted">Nenhum sacramento registrado ainda.</p>
           </Card>
         ) : (
           <div className="flex flex-col gap-2">
             {sacraments.map((s) => (
               <Card key={s.id} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-ink-900">{SACRAMENT_TYPE_LABELS[s.type]}</p>
-                  <p className="text-xs text-ink-700">
+                  <p className="text-sm font-medium text-foreground">{SACRAMENT_TYPE_LABELS[s.type]}</p>
+                  <p className="text-xs text-muted">
                     {formatDateOnly(s.date)}
                     {s.location ? ` · ${s.location}` : ""}
                     {s.priestProfile ? ` · ${s.priestProfile.user.fullName}` : ""}
@@ -96,11 +96,11 @@ export default async function CaminhadaPage() {
       </section>
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Confissão</p>
+        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Confissão</p>
         <Card>
           <form action={registerConfessionAction} className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="date" className="text-sm font-medium text-ink-700">
+              <label htmlFor="date" className="text-sm font-medium text-muted">
                 Data
               </label>
               <input

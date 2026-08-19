@@ -22,20 +22,20 @@ export default async function ProfilePage() {
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col items-center gap-2 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta-100 text-2xl">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl">
           {session.fullName.charAt(0).toUpperCase()}
         </div>
-        <p className="font-serif text-lg text-ink-900">{session.fullName}</p>
-        <p className="text-sm text-ink-700">{session.email}</p>
-        {user?.phone && <p className="text-sm text-ink-700">{user.phone}</p>}
-        {user?.birthDate && <p className="text-sm text-ink-700">{formatDateOnly(user.birthDate)}</p>}
+        <p className="font-serif text-lg text-foreground">{session.fullName}</p>
+        <p className="text-sm text-muted">{session.email}</p>
+        {user?.phone && <p className="text-sm text-muted">{user.phone}</p>}
+        {user?.birthDate && <p className="text-sm text-muted">{formatDateOnly(user.birthDate)}</p>}
         {session.membership && <Badge>{session.membership.roleName}</Badge>}
       </Card>
 
       {session.membership && (
         <Card>
-          <p className="text-xs uppercase tracking-wide text-terracotta-600">Sua comunidade</p>
-          <p className="mt-1 text-sm text-ink-900">{session.membership.parishName}</p>
+          <p className="text-xs uppercase tracking-wide text-primary">Sua comunidade</p>
+          <p className="mt-1 text-sm text-foreground">{session.membership.parishName}</p>
         </Card>
       )}
 

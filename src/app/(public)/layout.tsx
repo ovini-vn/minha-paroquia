@@ -1,9 +1,9 @@
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-cream-100 px-4 py-10">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-10">
       <div className="mb-6 text-center">
-        <p className="font-serif text-2xl text-terracotta-700">Minha Paróquia</p>
-        <p className="mt-1 text-xs uppercase tracking-wide text-ink-700">Caminhar · Pertencer · Servir</p>
+        <p className="font-serif text-2xl text-primary">Minha Paróquia</p>
+        <p className="mt-1 text-xs uppercase tracking-wide text-muted">Caminhar · Pertencer · Servir</p>
       </div>
       <div className="w-full max-w-sm">{children}</div>
     </div>

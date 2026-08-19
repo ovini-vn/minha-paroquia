@@ -17,7 +17,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="override-userId" className="text-sm font-medium text-ink-700">
+        <label htmlFor="override-userId" className="text-sm font-medium text-muted">
           Pessoa
         </label>
         <select
@@ -33,7 +33,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="override-permissionCode" className="text-sm font-medium text-ink-700">
+        <label htmlFor="override-permissionCode" className="text-sm font-medium text-muted">
           Permissão
         </label>
         <select
@@ -49,7 +49,7 @@ export function SetOverrideForm({ members }: SetOverrideFormProps) {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="override-granted" className="text-sm font-medium text-ink-700">
+        <label htmlFor="override-granted" className="text-sm font-medium text-muted">
           Ação
         </label>
         <select

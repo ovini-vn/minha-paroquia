@@ -14,7 +14,7 @@ export function AvailabilityForm() {
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="roleType" className="text-sm font-medium text-ink-700">
+        <label htmlFor="roleType" className="text-sm font-medium text-muted">
           Função
         </label>
         <select
@@ -30,7 +30,7 @@ export function AvailabilityForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="weekdayPref" className="text-sm font-medium text-ink-700">
+        <label htmlFor="weekdayPref" className="text-sm font-medium text-muted">
           Dia preferido (opcional)
         </label>
         <select
@@ -47,7 +47,7 @@ export function AvailabilityForm() {
         </select>
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="notes" className="text-sm font-medium text-ink-700">
+        <label htmlFor="notes" className="text-sm font-medium text-muted">
           Observação (opcional)
         </label>
         <input

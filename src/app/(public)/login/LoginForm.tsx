@@ -21,14 +21,14 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
       <Button type="submit" disabled={pending}>
         {pending ? "Entrando..." : "Entrar"}
       </Button>
-      <div className="flex justify-between text-sm text-terracotta-700">
+      <div className="flex justify-between text-sm text-primary">
         <Link href="/recuperar-acesso">Esqueci minha senha</Link>
         <Link href={inviteCode ? `/cadastro?convite=${inviteCode}` : "/cadastro"}>Criar conta</Link>
       </div>
-      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-700">
-        <span className="h-px flex-1 bg-terracotta-100" />
+      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
+        <span className="h-px flex-1 bg-border" />
         ou
-        <span className="h-px flex-1 bg-terracotta-100" />
+        <span className="h-px flex-1 bg-border" />
       </div>
       <OAuthButtons inviteCode={inviteCode} />
     </form>

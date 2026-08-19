@@ -32,7 +32,7 @@ export default async function LiturgiaAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink-900">Liturgia</h1>
+      <h1 className="font-serif text-2xl text-foreground">Liturgia</h1>
 
       {celebrations.length === 0 ? (
         <EmptyState
@@ -44,10 +44,10 @@ export default async function LiturgiaAdminPage() {
         <div className="flex flex-col gap-4">
           {celebrations.map((celebration, index) => (
             <Card key={celebration.id}>
-              <p className="font-medium text-ink-900">
+              <p className="font-medium text-foreground">
                 {celebration.title || CELEBRATION_TYPE_LABELS[celebration.type]}
               </p>
-              <p className="text-xs text-ink-700">{formatDateTime(celebration.startsAt)}</p>
+              <p className="text-xs text-muted">{formatDateTime(celebration.startsAt)}</p>
 
               <div className="mt-3 border-t border-border pt-3">
                 <CreateScheduleForm celebrationId={celebration.id} availabilityByRole={availabilityByRole} />
@@ -57,7 +57,7 @@ export default async function LiturgiaAdminPage() {
                 <ul className="mt-3 flex flex-col gap-1.5">
                   {schedulesByCelebration[index]!.map((s) => (
                     <li key={s.id} className="flex items-center justify-between text-sm">
-                      <span className="text-ink-900">
+                      <span className="text-foreground">
                         {LITURGICAL_ROLE_LABELS[s.roleType]} — {s.user.fullName}
                       </span>
                       <div className="flex items-center gap-2">

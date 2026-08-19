@@ -5,6 +5,8 @@ import { listPriests } from "@/server/modules/priests/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { listRecentPosts } from "@/server/modules/posts/service";
+import { listPublishedAvisos } from "@/server/modules/avisos/service";
+import { getParish } from "@/server/modules/parishes/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PostCard } from "@/components/domain/PostCard";
@@ -32,11 +34,13 @@ export default async function ComunidadePage() {
 
   const parishId = session.membership.parishId;
   const canPublish = session.permissions.includes(PERMISSIONS.POSTS_CREATE);
-  const [priests, celebrations, events, posts] = await Promise.all([
+  const [parish, priests, celebrations, events, posts, avisos] = await Promise.all([
+    getParish(parishId),
     listPriests(parishId),
     listUpcomingCelebrations(parishId, 5),
     listUpcomingEvents(parishId, 5),
     listRecentPosts(parishId, 5),
+    listPublishedAvisos(parishId, 5),
   ]);
 
   const agendaItems: AgendaItem[] = [
@@ -56,9 +60,40 @@ export default async function ComunidadePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-serif text-2xl text-ink-900">Sua Comunidade</h1>
+      <div className="flex items-center gap-3">
+        {parish?.logoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={parish.logoUrl} alt="" className="h-14 w-14 rounded-full object-cover" />
+        )}
+        <div>
+          <h1 className="font-serif text-2xl text-ink-900">{parish?.name ?? "Sua Comunidade"}</h1>
+          {(parish?.address || parish?.phone) && (
+            <p className="text-xs text-ink-700">
+              {[parish?.address, parish?.phone].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
       </div>
+
+      {parish?.description && (
+        <Card>
+          <p className="text-sm text-ink-700">{parish.description}</p>
+        </Card>
+      )}
+
+      {avisos.length > 0 && (
+        <section>
+          <p className="mb-2 text-xs uppercase tracking-wide text-terracotta-600">Avisos</p>
+          <div className="flex flex-col gap-2">
+            {avisos.map((aviso) => (
+              <Card key={aviso.id}>
+                <p className="text-sm font-medium text-ink-900">{aviso.title}</p>
+                <p className="mt-1 text-sm text-ink-700">{aviso.body}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="mb-2 flex items-center justify-between">

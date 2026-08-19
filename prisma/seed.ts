@@ -21,10 +21,15 @@ const prisma = new PrismaClient();
 const DEV_PASSWORD = "ComunidadeDev123!";
 
 async function seedDemoParish() {
+  const parishProfile = {
+    address: "Rua das Palmeiras, 210 — Centro",
+    phone: "(11) 3333-4455",
+    description: "Uma comunidade acolhedora, caminhando junto há mais de 40 anos.",
+  };
   const parish = await prisma.parish.upsert({
     where: { slug: "nossa-senhora-de-fatima" },
-    update: {},
-    create: { name: "Paróquia Nossa Senhora de Fátima", slug: "nossa-senhora-de-fatima" },
+    update: parishProfile,
+    create: { name: "Paróquia Nossa Senhora de Fátima", slug: "nossa-senhora-de-fatima", ...parishProfile },
   });
 
   const passwordHash = await hash(DEV_PASSWORD, { memoryCost: 19456, timeCost: 2, parallelism: 1 });
@@ -320,6 +325,18 @@ async function seedDemoParish() {
     if (!existingTithe) {
       await tx.titheParticipation.create({
         data: { parishId: parish.id, userId: fiel.id, period: currentPeriod(), registeredBy: paroco.id },
+      });
+    }
+
+    const existingAviso = await tx.aviso.findFirst({ where: { parishId: parish.id } });
+    if (!existingAviso) {
+      await tx.aviso.create({
+        data: {
+          parishId: parish.id,
+          title: "Mudança de horário neste domingo",
+          body: "Atenção: neste domingo a missa das 19h será realizada às 18h.",
+          createdBy: paroco.id,
+        },
       });
     }
 

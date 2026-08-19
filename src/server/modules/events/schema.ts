@@ -7,3 +7,6 @@ export const createEventInputSchema = z.object({
   location: z.string().trim().max(160).optional(),
 });
 export type CreateEventInput = z.infer<typeof createEventInputSchema>;
+
+export const updateEventInputSchema = createEventInputSchema;
+export type UpdateEventInput = z.infer<typeof updateEventInputSchema>;

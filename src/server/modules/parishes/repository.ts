@@ -17,3 +17,10 @@ export function findParishById(id: string) {
 export function createParish(data: { name: string; slug: string }) {
   return prisma.parish.create({ data });
 }
+
+export function updateParishProfile(
+  id: string,
+  data: { address: string | null; phone: string | null; description: string | null; logoUrl: string | null },
+) {
+  return prisma.parish.update({ where: { id }, data });
+}

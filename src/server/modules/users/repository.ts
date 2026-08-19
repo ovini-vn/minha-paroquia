@@ -15,3 +15,10 @@ export function findUserById(id: string) {
 export function createUser(data: { email: string; passwordHash: string; fullName: string }) {
   return prisma.user.create({ data });
 }
+
+export function updateUserProfile(
+  id: string,
+  data: { fullName: string; phone: string | null; birthDate: Date | null; photoUrl: string | null },
+) {
+  return prisma.user.update({ where: { id }, data });
+}

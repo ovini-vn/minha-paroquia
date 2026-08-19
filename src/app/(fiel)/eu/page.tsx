@@ -1,13 +1,16 @@
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
+import { findUserById } from "@/server/modules/users/repository";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { logoutAction } from "@/server/actions/auth-actions";
+import { formatDateOnly } from "@/lib/date";
 
 export default async function ProfilePage() {
   const session = await getSessionContext();
   if (!session) return null;
+  const user = await findUserById(session.userId);
 
   const canSeeAdminPanel =
     session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.DASHBOARD_PARISH_VIEW);
@@ -24,6 +27,8 @@ export default async function ProfilePage() {
         </div>
         <p className="font-serif text-lg text-ink-900">{session.fullName}</p>
         <p className="text-sm text-ink-700">{session.email}</p>
+        {user?.phone && <p className="text-sm text-ink-700">{user.phone}</p>}
+        {user?.birthDate && <p className="text-sm text-ink-700">{formatDateOnly(user.birthDate)}</p>}
         {session.membership && <Badge>{session.membership.roleName}</Badge>}
       </Card>
 
@@ -33,6 +38,10 @@ export default async function ProfilePage() {
           <p className="mt-1 text-sm text-ink-900">{session.membership.parishName}</p>
         </Card>
       )}
+
+      <LinkButton href="/eu/perfil" variant="secondary" className="w-full">
+        Editar perfil
+      </LinkButton>
 
       <LinkButton href="/eu/atendimentos" variant="secondary" className="w-full">
         Meus atendimentos

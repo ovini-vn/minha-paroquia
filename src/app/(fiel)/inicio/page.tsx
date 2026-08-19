@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
+import { listPublishedAvisos } from "@/server/modules/avisos/service";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -34,10 +35,12 @@ export default async function HomePage() {
     );
   }
 
-  const [nextCelebration, latestPost] = await Promise.all([
+  const [nextCelebration, latestPost, latestAvisos] = await Promise.all([
     getNextCelebration(session.membership.parishId),
     getLatestPost(session.membership.parishId),
+    listPublishedAvisos(session.membership.parishId, 1),
   ]);
+  const latestAviso = latestAvisos[0] ?? null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -81,7 +84,14 @@ export default async function HomePage() {
 
       <Card>
         <p className="text-xs uppercase tracking-wide text-terracotta-600">Avisos</p>
-        <p className="mt-1 text-sm text-ink-700">Nenhum aviso por enquanto.</p>
+        {latestAviso ? (
+          <>
+            <p className="mt-1 text-sm font-medium text-ink-900">{latestAviso.title}</p>
+            <p className="mt-1 text-sm text-ink-700">{latestAviso.body}</p>
+          </>
+        ) : (
+          <p className="mt-1 text-sm text-ink-700">Nenhum aviso por enquanto.</p>
+        )}
       </Card>
 
       <div className="grid grid-cols-2 gap-3">

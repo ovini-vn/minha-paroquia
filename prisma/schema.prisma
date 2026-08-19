@@ -19,14 +19,16 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(uuid())
-  email           String   @unique
-  passwordHash    String   @map("password_hash")
-  fullName        String   @map("full_name")
-  photoUrl        String?  @map("photo_url")
-  isPlatformAdmin Boolean  @default(false) @map("is_platform_admin")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id              String    @id @default(uuid())
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  fullName        String    @map("full_name")
+  photoUrl        String?   @map("photo_url")
+  phone           String?
+  birthDate       DateTime? @map("birth_date") @db.Date
+  isPlatformAdmin Boolean   @default(false) @map("is_platform_admin")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
   memberships         ParishMembership[]
   sessions            Session[]
@@ -54,17 +56,22 @@ model User {
 }
 
 model Parish {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  address     String?
+  phone       String?
+  description String?
+  logoUrl     String?  @map("logo_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   memberships        ParishMembership[]
   invitations        Invitation[]
   priestProfiles     PriestProfile[]
   celebrations       Celebration[]
   events             Event[]
+  avisos             Aviso[]
   posts              Post[]
   priestAvailability  PriestAvailability[]
   appointments        Appointment[]
@@ -278,20 +285,51 @@ model Celebration {
   @@map("celebrations")
 }
 
+enum EventStatus {
+  published
+  archived
+}
+
 model Event {
-  id          String    @id @default(uuid())
-  parishId    String    @map("parish_id")
+  id          String      @id @default(uuid())
+  parishId    String      @map("parish_id")
   title       String
   description String?
-  startsAt    DateTime  @map("starts_at")
+  startsAt    DateTime    @map("starts_at")
   location    String?
-  createdBy   String    @map("created_by")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  status      EventStatus @default(published)
+  createdBy   String      @map("created_by")
+  createdAt   DateTime    @default(now()) @map("created_at")
 
   parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
 
   @@index([parishId, startsAt])
   @@map("events")
+}
+
+enum AvisoStatus {
+  published
+  archived
+}
+
+// "Avisos" — comunicados curtos da paróquia (ex.: mudança de horário de
+// missa), distintos de Event (compromisso com data/hora) e de Post/Palavra
+// do Padre (mensagem do sacerdote). Sempre publicado ao criar, sem estado
+// de rascunho — mesmo padrão de Post/Event nesta base.
+model Aviso {
+  id        String      @id @default(uuid())
+  parishId  String      @map("parish_id")
+  title     String
+  body      String
+  status    AvisoStatus @default(published)
+  createdBy String      @map("created_by")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, createdAt])
+  @@map("avisos")
 }
 
 enum PostMediaType {

@@ -293,4 +293,27 @@ describe("isolamento multi-paróquia (RLS)", () => {
     const rows = await withTenantContext(parishAId, (tx) => tx.notification.findMany({}));
     expect(rows).toHaveLength(1);
   });
+
+  it("não retorna eventos nem avisos da paróquia A dentro do contexto da paróquia B", async () => {
+    await withTenantContext(parishAId, (tx) =>
+      tx.event.create({
+        data: { parishId: parishAId, title: "Festa Teste", startsAt: new Date(Date.now() + 86400000), createdBy: userAId },
+      }),
+    );
+    await withTenantContext(parishAId, (tx) =>
+      tx.aviso.create({ data: { parishId: parishAId, title: "Aviso Teste", body: "Corpo do aviso", createdBy: userAId } }),
+    );
+
+    const events = await withTenantContext(parishBId, (tx) => tx.event.findMany({ where: { parishId: parishAId } }));
+    const avisos = await withTenantContext(parishBId, (tx) => tx.aviso.findMany({ where: { parishId: parishAId } }));
+    expect(events).toHaveLength(0);
+    expect(avisos).toHaveLength(0);
+  });
+
+  it("retorna eventos e avisos normalmente dentro do contexto correto (paróquia A)", async () => {
+    const events = await withTenantContext(parishAId, (tx) => tx.event.findMany({}));
+    const avisos = await withTenantContext(parishAId, (tx) => tx.aviso.findMany({}));
+    expect(events).toHaveLength(1);
+    expect(avisos).toHaveLength(1);
+  });
 });

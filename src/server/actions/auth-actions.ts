@@ -2,9 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
+import { revalidatePath } from "next/cache";
 import { createSession, destroySession } from "@/server/auth/session";
-import { registerUser, authenticateUser } from "@/server/modules/users/service";
-import { loginInputSchema, registerInputSchema } from "@/server/modules/users/schema";
+import { requireSession } from "@/server/auth/guards";
+import { registerUser, authenticateUser, updateOwnProfile } from "@/server/modules/users/service";
+import { loginInputSchema, registerInputSchema, updateProfileInputSchema } from "@/server/modules/users/schema";
 import { acceptInvitation, validateInvitation } from "@/server/modules/invitations/service";
 import { AppError } from "@/server/shared/errors";
 import {
@@ -86,6 +88,28 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
 export async function logoutAction(): Promise<void> {
   await destroySession();
   redirect("/login");
+}
+
+export async function updateProfileAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireSession();
+
+  try {
+    const input = updateProfileInputSchema.parse({
+      fullName: formData.get("fullName"),
+      phone: formData.get("phone") || undefined,
+      birthDate: formData.get("birthDate") || undefined,
+      photoUrl: formData.get("photoUrl") || undefined,
+    });
+
+    await updateOwnProfile(session.userId, input);
+  } catch (error) {
+    if (error instanceof ZodError) return { error: firstZodMessage(error) };
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/eu");
+  redirect("/eu");
 }
 
 export async function requestPasswordResetAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

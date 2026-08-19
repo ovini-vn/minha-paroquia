@@ -1,6 +1,7 @@
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { getParishDashboardCounts } from "@/server/modules/parishes/service";
+import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
+import { listAllAvisos } from "@/server/modules/avisos/service";
 import { getParishInvitations } from "@/server/modules/invitations/service";
 import { listPriests } from "@/server/modules/priests/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
@@ -18,9 +19,12 @@ import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { revokeInvitationAction } from "@/server/actions/invitation-actions";
+import { Button } from "@/components/ui/Button";
 import { CreateInviteForm } from "./CreateInviteForm";
 import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
+import { ParishProfileForm } from "./ParishProfileForm";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -52,6 +56,7 @@ export default async function AdminDashboardPage() {
   }
 
   const [
+    parish,
     counts,
     invitations,
     priests,
@@ -64,7 +69,9 @@ export default async function AdminDashboardPage() {
     liturgicalAvailability,
     titheContributions,
     sacraments,
+    avisos,
   ] = await Promise.all([
+    getParish(session.membership.parishId),
     getParishDashboardCounts(session.membership.parishId),
     getParishInvitations(session.membership.parishId),
     listPriests(session.membership.parishId),
@@ -77,11 +84,13 @@ export default async function AdminDashboardPage() {
     listAllAvailability(session.membership.parishId),
     listContributionsForPeriod(session.membership.parishId, currentPeriod()),
     listSacramentsForValidation(session.membership.parishId),
+    listAllAvisos(session.membership.parishId),
   ]);
   const catechismGroupCount = catechismGroups.length;
   const liturgicalAvailabilityCount = liturgicalAvailability.length;
   const titheContributionCount = titheContributions.length;
   const pendingSacramentCount = sacraments.filter((s) => s.status === "self_reported").length;
+  const publishedAvisoCount = avisos.filter((a) => a.status === "published").length;
 
   const agendaItems = [
     ...celebrations.map((c) => ({
@@ -114,6 +123,44 @@ export default async function AdminDashboardPage() {
       </div>
 
       <Card>
+        <p className="mb-3 font-serif text-lg text-ink-900">Perfil da paróquia</p>
+        <p className="mb-3 text-sm text-ink-700">
+          Essas informações aparecem para o fiel em Minha Comunidade.
+        </p>
+        <ParishProfileForm
+          address={parish?.address ?? ""}
+          phone={parish?.phone ?? ""}
+          description={parish?.description ?? ""}
+          logoUrl={parish?.logoUrl ?? ""}
+        />
+      </Card>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-serif text-lg text-ink-900">Avisos</p>
+              <p className="text-sm text-ink-700">{publishedAvisoCount} publicados</p>
+            </div>
+            <LinkButton href="/painel/avisos" variant="secondary">
+              Gerenciar
+            </LinkButton>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-serif text-lg text-ink-900">Eventos</p>
+              <p className="text-sm text-ink-700">{events.length} futuros</p>
+            </div>
+            <LinkButton href="/painel/eventos" variant="secondary">
+              Gerenciar
+            </LinkButton>
+          </div>
+        </Card>
+      </div>
+
+      <Card>
         <p className="mb-3 font-serif text-lg text-ink-900">Convites</p>
         <CreateInviteForm />
 
@@ -128,15 +175,26 @@ export default async function AdminDashboardPage() {
                   <th className="py-2 pr-4">Tipo</th>
                   <th className="py-2 pr-4">Status</th>
                   <th className="py-2 pr-4">Usado por</th>
+                  <th className="py-2 pr-4" />
                 </tr>
               </thead>
               <tbody>
                 {invitations.map((invitation) => (
                   <tr key={invitation.id} className="border-b border-terracotta-50">
-                    <td className="py-2 pr-4 font-mono">{invitation.code}</td>
+                    <td className="py-2 pr-4 font-mono">/convite/{invitation.code}</td>
                     <td className="py-2 pr-4">{invitation.type}</td>
                     <td className="py-2 pr-4">{STATUS_LABEL[invitation.status] ?? invitation.status}</td>
                     <td className="py-2 pr-4">{invitation.usedByUser?.fullName ?? "—"}</td>
+                    <td className="py-2 pr-4">
+                      {invitation.status === "pending" && (
+                        <form action={revokeInvitationAction}>
+                          <input type="hidden" name="id" value={invitation.id} />
+                          <Button type="submit" variant="ghost">
+                            Revogar
+                          </Button>
+                        </form>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

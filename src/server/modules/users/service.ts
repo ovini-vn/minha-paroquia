@@ -1,7 +1,7 @@
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
-import { createUser, findUserByEmail } from "./repository";
-import type { LoginInput, RegisterInput } from "./schema";
+import { createUser, findUserByEmail, updateUserProfile } from "./repository";
+import type { LoginInput, RegisterInput, UpdateProfileInput } from "./schema";
 
 export async function registerUser(input: RegisterInput) {
   const existing = await findUserByEmail(input.email);
@@ -33,4 +33,14 @@ export async function authenticateUser(input: LoginInput) {
   }
 
   return user;
+}
+
+/** Só o próprio usuário edita seus dados — nunca chamado com outro userId a partir de uma tela administrativa. */
+export function updateOwnProfile(userId: string, input: UpdateProfileInput) {
+  return updateUserProfile(userId, {
+    fullName: input.fullName,
+    phone: input.phone || null,
+    birthDate: input.birthDate || null,
+    photoUrl: input.photoUrl || null,
+  });
 }

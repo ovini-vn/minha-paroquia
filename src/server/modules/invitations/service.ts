@@ -34,6 +34,13 @@ export function getParishInvitations(parishId: string) {
   return listInvitationsByParish(parishId);
 }
 
+/** Só revoga convites ainda pendentes — um já usado/expirado/revogado não muda de estado daqui. */
+export function revokeInvitation(parishId: string, id: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.invitation.updateMany({ where: { id, parishId, status: "pending" }, data: { status: "revoked" } }),
+  );
+}
+
 export type InvitationValidation =
   | { valid: true; invitation: Invitation & { parish: { id: string; name: string; slug: string } } }
   | { valid: false; reason: "not_found" | "used" | "revoked" | "expired" | "exhausted" };

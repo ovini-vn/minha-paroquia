@@ -1,6 +1,7 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
-import { createParish, findParishBySlug } from "./repository";
+import { createParish, findParishBySlug, findParishById, updateParishProfile } from "./repository";
+import type { UpdateParishProfileInput } from "./schema";
 
 // Faixa Unicode "Combining Diacritical Marks" (0x0300-0x036f), construída por
 // código para evitar problemas de encoding de caracteres combinantes no
@@ -32,6 +33,19 @@ export async function registerParish(input: { name: string }) {
   }
 
   return createParish({ name: input.name, slug });
+}
+
+export function getParish(parishId: string) {
+  return findParishById(parishId);
+}
+
+export function updateOwnParishProfile(parishId: string, input: UpdateParishProfileInput) {
+  return updateParishProfile(parishId, {
+    address: input.address || null,
+    phone: input.phone || null,
+    description: input.description || null,
+    logoUrl: input.logoUrl || null,
+  });
 }
 
 const PRIEST_ROLE_CODES = ["SACERDOTE", "PAROCO"] as const;

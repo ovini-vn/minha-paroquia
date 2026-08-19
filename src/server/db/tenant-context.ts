@@ -74,10 +74,16 @@ export async function withInvitationCodeLookup<T>(
 export async function withPlatformContext<T>(
   fn: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
-    await tx.$executeRawUnsafe(`SET LOCAL app.bypass_rls = 'true'`);
-    return fn(tx);
-  });
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.$executeRawUnsafe(`SET LOCAL app.bypass_rls = 'true'`);
+      return fn(tx);
+    },
+    // Único chamador real é a limpeza de dados de teste (tests/helpers/cleanup.ts),
+    // que acumulou dezenas de deleteMany sequenciais ao longo das fatias — o
+    // timeout padrão de 5s do Prisma passou a estourar sob latência de rede.
+    { timeout: 20000 },
+  );
 }
 
 export type { PrismaClient };

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { createInvitation } from "@/server/modules/invitations/service";
+import { createInvitation, revokeInvitation } from "@/server/modules/invitations/service";
 import { createInvitationInputSchema } from "@/server/modules/invitations/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -32,4 +32,14 @@ export async function createInvitationAction(_prev: ActionState, formData: FormD
 
   revalidatePath("/painel");
   return {};
+}
+
+export async function revokeInvitationAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.INVITATIONS_CREATE);
+
+  const id = formData.get("id") as string;
+  await revokeInvitation(session.membership.parishId, id);
+  revalidatePath("/painel");
 }

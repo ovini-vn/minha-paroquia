@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
-import type { PermissionCode, RoleCode } from "./rbac";
+import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -78,12 +78,14 @@ export async function getSessionContext(): Promise<SessionContext | null> {
 
   const { user } = session;
 
-  const membershipRow = await withOwnMembershipLookup(user.id, (tx) =>
-    tx.parishMembership.findFirst({
+  const { membershipRow, overrides } = await withOwnMembershipLookup(user.id, async (tx) => {
+    const membershipRow = await tx.parishMembership.findFirst({
       where: { userId: user.id, status: "active" },
       include: { parish: true, role: { include: { rolePermissions: { include: { permission: true } } } } },
-    }),
-  );
+    });
+    const overrides = await tx.permissionOverride.findMany({ where: { userId: user.id } });
+    return { membershipRow, overrides };
+  });
 
   if (!membershipRow) {
     return {
@@ -95,6 +97,8 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       permissions: [],
     };
   }
+
+  const rolePermissions = membershipRow.role.rolePermissions.map((rp) => rp.permission.code as PermissionCode);
 
   return {
     userId: user.id,
@@ -109,6 +113,6 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       roleCode: membershipRow.role.code as RoleCode,
       roleName: membershipRow.role.name,
     },
-    permissions: membershipRow.role.rolePermissions.map((rp) => rp.permission.code as PermissionCode),
+    permissions: computeEffectivePermissions(rolePermissions, overrides),
   };
 }

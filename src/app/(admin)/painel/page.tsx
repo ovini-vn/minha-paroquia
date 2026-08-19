@@ -316,6 +316,20 @@ export default async function AdminDashboardPage() {
         </div>
       </Card>
 
+      {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+        <Card>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-serif text-lg text-ink-900">Delegar permissões</p>
+              <p className="text-sm text-ink-700">Conceda ou revogue permissões específicas por pessoa</p>
+            </div>
+            <LinkButton href="/painel/permissoes" variant="secondary">
+              Gerenciar
+            </LinkButton>
+          </div>
+        </Card>
+      )}
+
       <Card>
         <p className="font-serif text-lg text-ink-900">Minha Caminhada</p>
         {reflectionAggregate.available ? (

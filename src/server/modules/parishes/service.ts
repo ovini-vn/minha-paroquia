@@ -80,7 +80,7 @@ export function listActiveMembers(parishId: string) {
   return withTenantContext(parishId, (tx) =>
     tx.parishMembership.findMany({
       where: { parishId, status: "active" },
-      include: { user: { select: { id: true, fullName: true } } },
+      include: { user: { select: { id: true, fullName: true } }, role: { select: { name: true } } },
       orderBy: { user: { fullName: "asc" } },
     }),
   );

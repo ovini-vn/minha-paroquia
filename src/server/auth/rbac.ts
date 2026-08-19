@@ -48,10 +48,34 @@ export const PERMISSIONS = {
   SACRAMENTS_VALIDATE: "sacraments.validate",
   AVISOS_MANAGE: "avisos.manage",
   PRAYER_REQUESTS_VIEW_PRIVATE: "prayer_requests.view_private",
+  PERMISSION_OVERRIDES_MANAGE: "permission_overrides.manage",
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
+export const PERMISSION_NAMES: Record<PermissionCode, string> = {
+  [PERMISSIONS.INVITATIONS_CREATE]: "Criar convites",
+  [PERMISSIONS.INVITATIONS_VIEW]: "Ver convites",
+  [PERMISSIONS.MEMBERS_VIEW]: "Ver membros",
+  [PERMISSIONS.DASHBOARD_PARISH_VIEW]: "Ver painel da paróquia",
+  [PERMISSIONS.AGENDA_MANAGE]: "Gerenciar agenda e eventos",
+  [PERMISSIONS.POSTS_CREATE]: "Publicar Palavra do Padre",
+  [PERMISSIONS.AVAILABILITY_MANAGE]: "Gerenciar disponibilidade de atendimento",
+  [PERMISSIONS.OPPORTUNITIES_MANAGE]: "Gerenciar oportunidades de servir",
+  [PERMISSIONS.CATEQUESE_MANAGE]: "Gerenciar catequese",
+  [PERMISSIONS.CATEQUESE_TEACH]: "Lecionar catequese",
+  [PERMISSIONS.LITURGIA_MANAGE]: "Gerenciar liturgia",
+  [PERMISSIONS.DIZIMO_MANAGE]: "Gerenciar dízimo",
+  [PERMISSIONS.SACRAMENTS_VALIDATE]: "Validar sacramentos",
+  [PERMISSIONS.AVISOS_MANAGE]: "Gerenciar avisos",
+  [PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE]: "Ver pedidos de oração privados",
+  [PERMISSIONS.PERMISSION_OVERRIDES_MANAGE]: "Delegar permissões",
+};
+
+// PERMISSION_OVERRIDES_MANAGE só existe para PAROCO, de propósito — é
+// autoridade sobre o próprio sistema de permissões (quem pode conceder
+// mais permissão a quem), e Secretaria concedendo a si mesma seria um
+// loop de escalação de privilégio.
 export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   PAROCO: [
     PERMISSIONS.INVITATIONS_CREATE,
@@ -68,6 +92,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.SACRAMENTS_VALIDATE,
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE,
+    PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
   ],
   SECRETARIA: [
     PERMISSIONS.INVITATIONS_CREATE,
@@ -94,6 +119,25 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   COORDENADOR_PASTORAL: [PERMISSIONS.OPPORTUNITIES_MANAGE],
   COORDENADOR_LITURGIA: [PERMISSIONS.LITURGIA_MANAGE],
 };
+
+/**
+ * Delegação fina (P2, ambiguidade #7): aplica os overrides do usuário por
+ * cima das permissões fixas do papel — granted=true concede mesmo que o
+ * papel não tenha, granted=false revoga mesmo que o papel tenha. Extraída
+ * como função pura (usada por getSessionContext) para poder testar a
+ * regra sem precisar simular cookies/sessão.
+ */
+export function computeEffectivePermissions(
+  rolePermissions: PermissionCode[],
+  overrides: { permissionCode: string; granted: boolean }[],
+): PermissionCode[] {
+  const effective = new Set(rolePermissions);
+  for (const override of overrides) {
+    if (override.granted) effective.add(override.permissionCode as PermissionCode);
+    else effective.delete(override.permissionCode as PermissionCode);
+  }
+  return Array.from(effective);
+}
 
 /**
  * "Vê tudo, de qualquer ministério" vs. "vê só o que é seu". Usado em

@@ -53,6 +53,8 @@ model User {
   notificationPreferences  NotificationPreference[]
   prayerRequests           PrayerRequest[]
   familyMemberGuardianOf   FamilyMemberGuardian[]
+  permissionOverrides         PermissionOverride[] @relation("PermissionOverrideUser")
+  permissionOverridesGranted  PermissionOverride[] @relation("PermissionOverrideGrantedBy")
 
   @@map("users")
 }
@@ -95,6 +97,7 @@ model Parish {
   notifications          Notification[]
   prayerRequests         PrayerRequest[]
   familyMemberGuardians  FamilyMemberGuardian[]
+  permissionOverrides    PermissionOverride[]
 
   @@map("parishes")
 }
@@ -859,4 +862,29 @@ model PrayerRequest {
 
   @@index([parishId, visibility])
   @@map("prayer_requests")
+}
+
+// P2 (docs/ARQUITETURA.md, ambiguidade #7 e seção C.2): delegação fina além
+// do papel fixo — ex.: "esse coordenador pode editar catequese mas não
+// liturgia". granted=true CONCEDE uma permissão que o papel não tem;
+// granted=false REVOGA uma que o papel normalmente tem. A permissão
+// efetiva de um usuário = permissões do papel, com os overrides aplicados
+// por cima (ver src/server/auth/session.ts). Único por (userId,
+// permissionCode) porque só existe um vínculo ativo por usuário.
+model PermissionOverride {
+  id             String   @id @default(uuid())
+  parishId       String   @map("parish_id")
+  userId         String   @map("user_id")
+  permissionCode String   @map("permission_code")
+  granted        Boolean
+  grantedBy      String   @map("granted_by")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  parish  Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user    User   @relation("PermissionOverrideUser", fields: [userId], references: [id], onDelete: Cascade)
+  granter User   @relation("PermissionOverrideGrantedBy", fields: [grantedBy], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionCode])
+  @@index([parishId])
+  @@map("permission_overrides")
 }

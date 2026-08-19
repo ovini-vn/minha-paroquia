@@ -353,4 +353,26 @@ describe("isolamento multi-paróquia (RLS)", () => {
     const rows = await withTenantContext(parishAId, (tx) => tx.familyMemberGuardian.findMany({}));
     expect(rows).toHaveLength(1);
   });
+
+  it("não retorna overrides de permissão da paróquia A dentro do contexto da paróquia B", async () => {
+    await withTenantContext(parishAId, (tx) =>
+      tx.permissionOverride.create({
+        data: {
+          parishId: parishAId,
+          userId: userAId,
+          permissionCode: "catequese.manage",
+          granted: true,
+          grantedBy: userAId,
+        },
+      }),
+    );
+
+    const rows = await withTenantContext(parishBId, (tx) => tx.permissionOverride.findMany({ where: { parishId: parishAId } }));
+    expect(rows).toHaveLength(0);
+  });
+
+  it("retorna overrides de permissão normalmente dentro do contexto correto (paróquia A)", async () => {
+    const rows = await withTenantContext(parishAId, (tx) => tx.permissionOverride.findMany({}));
+    expect(rows).toHaveLength(1);
+  });
 });

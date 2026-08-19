@@ -1,10 +1,11 @@
-import type { OAuthProvider } from "@prisma/client";
+import type { OAuthProvider, ThemePreference } from "@prisma/client";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
 import {
   createUser,
   findUserByEmail,
   updateUserProfile,
+  updateUserThemePreference,
   findOAuthAccount,
   createUserFromOAuth,
   linkOAuthAccount,
@@ -89,4 +90,8 @@ export function updateOwnProfile(userId: string, input: UpdateProfileInput) {
     birthDate: input.birthDate || null,
     photoUrl: input.photoUrl || null,
   });
+}
+
+export function updateOwnThemePreference(userId: string, themePreference: ThemePreference) {
+  return updateUserThemePreference(userId, themePreference);
 }

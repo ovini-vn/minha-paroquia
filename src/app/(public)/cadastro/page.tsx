@@ -15,7 +15,7 @@ export default async function RegisterPage({
       <EmptyState
         icon="✉️"
         title="Você precisa de um convite"
-        description="A Comunidade cresce por convite da própria paróquia — peça ao seu pároco, secretaria ou a alguém da comunidade o link ou QR Code de convite."
+        description="Minha Paróquia cresce por convite da própria paróquia — peça ao seu pároco, secretaria ou a alguém da comunidade o link ou QR Code de convite."
       />
     );
   }

@@ -24,6 +24,21 @@ const config: Config = {
           700: "#3d3530",
           900: "#231f1c",
         },
+        // Fundação do redesign visual (docs do redesign, seção 17) — tokens
+        // via CSS custom properties (ver globals.css), ainda não aplicados
+        // às telas existentes. Nomes distintos de cream/terracotta/ink de
+        // propósito, pra não confundir durante a migração gradual.
+        primary: {
+          DEFAULT: "var(--color-primary)",
+          hover: "var(--color-primary-hover)",
+          light: "var(--color-primary-light)",
+        },
+        accent: "var(--color-accent)",
+        surface: "var(--color-surface)",
+        foreground: "var(--color-foreground)",
+        muted: "var(--color-muted)",
+        border: "var(--color-border)",
+        background: "var(--color-background)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

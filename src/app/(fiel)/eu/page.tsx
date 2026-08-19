@@ -43,6 +43,10 @@ export default async function ProfilePage() {
         Editar perfil
       </LinkButton>
 
+      <LinkButton href="/eu/aparencia" variant="secondary" className="w-full">
+        Aparência
+      </LinkButton>
+
       <LinkButton href="/eu/atendimentos" variant="secondary" className="w-full">
         Meus atendimentos
       </LinkButton>

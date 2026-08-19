@@ -1,4 +1,4 @@
-# Comunidade
+# Minha Paróquia
 
 Plataforma multi-paróquia católica — o elo digital entre o fiel, o sacerdote e
 sua comunidade. Ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e

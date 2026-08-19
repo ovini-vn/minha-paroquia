@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Fundação do redesign visual — design tokens como CSS custom properties,
+ * não cores espalhadas pelos componentes (docs do redesign, seção 17).
+ *
+ * Paleta padrão (seção 2 do prompt de redesign): violeta profundo + dourado
+ * sobre marfim. Quando o usuário ativa "Usar cor do Tempo Litúrgico"
+ * (/eu/aparencia), só --color-primary/--color-primary-hover/
+ * --color-primary-light/--color-accent são sobrescritos via `style` inline
+ * no wrapper de (fiel)/layout.tsx, calculados por
+ * src/lib/liturgical-season.ts — única fonte de verdade das cores por
+ * tempo litúrgico. Nunca duplicar esses valores aqui em CSS.
+ *
+ * Estes tokens ainda não são consumidos pelas telas existentes (que
+ * continuam usando as classes terracotta/cream/ink) — são a base pra fatias
+ * futuras de aplicação visual, tela por tela.
+ */
+:root {
+  --color-primary: #5b2890;
+  --color-primary-hover: #4a2073;
+  --color-primary-light: #8e63b0;
+  --color-accent: #c9a44c;
+  --color-background: #f8f6f1;
+  --color-surface: #ffffff;
+  --color-foreground: #242124;
+  --color-muted: #6f6a67;
+  --color-border: #e5e0d8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #8e63b0;
+    --color-primary-hover: #a179c2;
+    --color-primary-light: #5b2890;
+    --color-accent: #c9a44c;
+    --color-background: #18151d;
+    --color-surface: #221e29;
+    --color-foreground: #f0ece6;
+    --color-muted: #b0a8a4;
+    --color-border: #34303c;
+  }
+}
+
 body {
   background-color: theme("colors.cream.100");
   color: theme("colors.ink.900");

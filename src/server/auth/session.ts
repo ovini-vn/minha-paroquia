@@ -4,6 +4,7 @@ import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
+import type { ThemePreference } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -13,6 +14,7 @@ export type SessionContext = {
   email: string;
   fullName: string;
   isPlatformAdmin: boolean;
+  themePreference: ThemePreference;
   membership: {
     parishId: string;
     parishName: string;
@@ -93,6 +95,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       email: user.email,
       fullName: user.fullName,
       isPlatformAdmin: user.isPlatformAdmin,
+      themePreference: user.themePreference,
       membership: null,
       permissions: [],
     };
@@ -105,6 +108,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     email: user.email,
     fullName: user.fullName,
     isPlatformAdmin: user.isPlatformAdmin,
+    themePreference: user.themePreference,
     membership: {
       parishId: membershipRow.parishId,
       parishName: membershipRow.parish.name,

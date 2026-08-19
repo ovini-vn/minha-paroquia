@@ -9,6 +9,7 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     email: "teste@comunidade.app",
     fullName: "Sessão de Teste",
     isPlatformAdmin: false,
+    themePreference: "default",
     membership: null,
     permissions: ROLE_PERMISSIONS[roleCode],
   };

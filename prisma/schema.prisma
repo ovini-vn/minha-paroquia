@@ -47,6 +47,8 @@ model User {
   liturgicalSchedules      LiturgicalSchedule[]
   titheParticipations      TitheParticipation[] @relation("TitheParticipationUser")
   titheParticipationsRegistered TitheParticipation[] @relation("TitheParticipationRegisteredBy")
+  notifications            Notification[]
+  notificationPreferences  NotificationPreference[]
 
   @@map("users")
 }
@@ -81,6 +83,7 @@ model Parish {
   liturgicalAvailability LiturgicalAvailability[]
   liturgicalSchedules    LiturgicalSchedule[]
   titheParticipations    TitheParticipation[]
+  notifications          Notification[]
 
   @@map("parishes")
 }
@@ -720,4 +723,48 @@ model TitheParticipation {
   @@index([parishId])
   @@index([parishId, period])
   @@map("tithe_participations")
+}
+
+enum NotificationCategory {
+  urgente
+  pessoal
+  pastoral
+  espiritual
+}
+
+// P1 é só canal in-app (docs/ARQUITETURA.md, seção 0 ambiguidade #9: web
+// push + e-mail ficam para quando houver decisão de infraestrutura —
+// VAPID/provedor de e-mail —, então nenhum campo "channel" aqui ainda).
+model Notification {
+  id        String               @id @default(uuid())
+  parishId  String               @map("parish_id")
+  userId    String               @map("user_id")
+  category  NotificationCategory
+  title     String
+  body      String
+  readAt    DateTime?            @map("read_at")
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([parishId])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+// Sem parish_id de propósito: preferência é do usuário, não da paróquia
+// (mesmo padrão de `users`/`sessions` — não é tenant-scoped, não recebe
+// RLS). Ausência de linha para uma categoria == habilitada por padrão.
+model NotificationPreference {
+  id        String               @id @default(uuid())
+  userId    String               @map("user_id")
+  category  NotificationCategory
+  enabled   Boolean              @default(true)
+  createdAt DateTime             @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@map("notification_preferences")
 }

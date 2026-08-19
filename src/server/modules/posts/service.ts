@@ -1,9 +1,10 @@
 import { withTenantContext } from "@/server/db/tenant-context";
+import { notifyManyUsers } from "@/server/modules/notifications/service";
 import type { CreatePostInput } from "./schema";
 
 export function createPost(input: CreatePostInput & { parishId: string; priestProfileId: string }) {
-  return withTenantContext(input.parishId, (tx) =>
-    tx.post.create({
+  return withTenantContext(input.parishId, async (tx) => {
+    const post = await tx.post.create({
       data: {
         parishId: input.parishId,
         priestProfileId: input.priestProfileId,
@@ -11,8 +12,23 @@ export function createPost(input: CreatePostInput & { parishId: string; priestPr
         contentText: input.contentText ?? null,
         mediaUrl: input.mediaUrl ?? null,
       },
-    }),
-  );
+    });
+
+    const members = await tx.parishMembership.findMany({
+      where: { parishId: input.parishId, status: "active" },
+      select: { userId: true },
+    });
+    await notifyManyUsers(
+      tx,
+      input.parishId,
+      members.map((m) => m.userId),
+      "espiritual",
+      "Nova Palavra do Padre",
+      "O pároco publicou uma nova mensagem — confira na Comunidade.",
+    );
+
+    return post;
+  });
 }
 
 export function listRecentPosts(parishId: string, limit = 10) {

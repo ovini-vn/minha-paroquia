@@ -277,4 +277,20 @@ describe("isolamento multi-paróquia (RLS)", () => {
     const rows = await withTenantContext(parishAId, (tx) => tx.titheParticipation.findMany({}));
     expect(rows).toHaveLength(1);
   });
+
+  it("não retorna notificações da paróquia A dentro do contexto B", async () => {
+    await withTenantContext(parishAId, (tx) =>
+      tx.notification.create({
+        data: { parishId: parishAId, userId: userAId, category: "espiritual", title: "Teste", body: "Teste" },
+      }),
+    );
+
+    const rows = await withTenantContext(parishBId, (tx) => tx.notification.findMany({ where: { userId: userAId } }));
+    expect(rows).toHaveLength(0);
+  });
+
+  it("retorna notificações normalmente dentro do contexto correto (paróquia A)", async () => {
+    const rows = await withTenantContext(parishAId, (tx) => tx.notification.findMany({}));
+    expect(rows).toHaveLength(1);
+  });
 });

@@ -1,5 +1,8 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
+import { notifyUser } from "@/server/modules/notifications/service";
+import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
+import { formatDateTime } from "@/lib/date";
 import type { CreateAvailabilityInput, CreateScheduleInput } from "./schema";
 
 // ---- Disponibilidade ------------------------------------------------------
@@ -59,9 +62,19 @@ export async function createSchedule(
     });
     if (existing) throw new ValidationError("Esta pessoa já está escalada para essa função nesta celebração.");
 
-    return tx.liturgicalSchedule.create({
+    const schedule = await tx.liturgicalSchedule.create({
       data: { parishId, celebrationId, roleType: input.roleType, userId: input.userId },
     });
+
+    await notifyUser(tx, {
+      parishId,
+      userId: input.userId,
+      category: "pastoral",
+      title: "Você foi escalado na liturgia",
+      body: `Você foi escalado como ${LITURGICAL_ROLE_LABELS[input.roleType]} para ${formatDateTime(celebration.startsAt)}.`,
+    });
+
+    return schedule;
   });
 }
 

@@ -1,5 +1,7 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { NotFoundError, ValidationError } from "@/server/shared/errors";
+import { notifyUser } from "@/server/modules/notifications/service";
+import { formatDateTime } from "@/lib/date";
 import type { CreateAppointmentInput } from "./schema";
 
 const ACTIVE_STATUSES = ["solicitado", "confirmado"] as const;
@@ -122,6 +124,11 @@ export function listReceivedAppointments(parishId: string, priestProfileId: stri
   );
 }
 
+const STATUS_NOTIFICATION_TITLE: Record<string, string> = {
+  confirmado: "Atendimento confirmado",
+  cancelado: "Atendimento recusado",
+};
+
 /** Escopado ao próprio priestProfileId — um sacerdote só altera os próprios atendimentos. */
 export function updateAppointmentStatus(
   parishId: string,
@@ -129,9 +136,25 @@ export function updateAppointmentStatus(
   priestProfileId: string,
   status: "confirmado" | "cancelado" | "concluido",
 ) {
-  return withTenantContext(parishId, (tx) =>
-    tx.appointment.updateMany({ where: { id, priestProfileId }, data: { status } }),
-  );
+  return withTenantContext(parishId, async (tx) => {
+    const appointment = await tx.appointment.findFirst({ where: { id, priestProfileId, parishId } });
+    if (!appointment) return { count: 0 };
+
+    await tx.appointment.update({ where: { id: appointment.id }, data: { status } });
+
+    const title = STATUS_NOTIFICATION_TITLE[status];
+    if (title) {
+      await notifyUser(tx, {
+        parishId,
+        userId: appointment.fielUserId,
+        category: "pessoal",
+        title,
+        body: `Seu atendimento de ${formatDateTime(appointment.scheduledAt)} foi ${status === "confirmado" ? "confirmado" : "recusado"}.`,
+      });
+    }
+
+    return { count: 1 };
+  });
 }
 
 /** O fiel só cancela o próprio pedido, e só enquanto ainda está "solicitado". */

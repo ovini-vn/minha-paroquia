@@ -322,6 +322,19 @@ async function seedDemoParish() {
         data: { parishId: parish.id, userId: fiel.id, period: currentPeriod(), registeredBy: paroco.id },
       });
     }
+
+    const existingNotification = await tx.notification.findFirst({ where: { parishId: parish.id, userId: fiel.id } });
+    if (!existingNotification) {
+      await tx.notification.create({
+        data: {
+          parishId: parish.id,
+          userId: fiel.id,
+          category: "espiritual",
+          title: "Bem-vinda à Comunidade",
+          body: "Que alegria ter você conosco! Explore a paróquia pelo app.",
+        },
+      });
+    }
   });
 
   return { parish, platformAdmin, paroco, fiel, catequista };

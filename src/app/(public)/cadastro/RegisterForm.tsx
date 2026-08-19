@@ -5,6 +5,7 @@ import Link from "next/link";
 import { registerAction, type ActionState } from "@/server/actions/auth-actions";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 const initialState: ActionState = {};
 
@@ -31,6 +32,12 @@ export function RegisterForm({ inviteCode }: { inviteCode: string }) {
       <p className="text-center text-sm text-terracotta-700">
         Já tem conta? <Link href={`/login?convite=${inviteCode}`}>Entrar</Link>
       </p>
+      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-ink-700">
+        <span className="h-px flex-1 bg-terracotta-100" />
+        ou
+        <span className="h-px flex-1 bg-terracotta-100" />
+      </div>
+      <OAuthButtons inviteCode={inviteCode} />
     </form>
   );
 }

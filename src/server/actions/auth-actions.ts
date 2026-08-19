@@ -7,7 +7,8 @@ import { createSession, destroySession } from "@/server/auth/session";
 import { requireSession } from "@/server/auth/guards";
 import { registerUser, authenticateUser, updateOwnProfile } from "@/server/modules/users/service";
 import { loginInputSchema, registerInputSchema, updateProfileInputSchema } from "@/server/modules/users/schema";
-import { acceptInvitation, validateInvitation } from "@/server/modules/invitations/service";
+import { validateInvitation } from "@/server/modules/invitations/service";
+import { tryAcceptInvitationIfPresent } from "@/server/modules/invitations/accept-if-present";
 import { AppError } from "@/server/shared/errors";
 import {
   createPasswordResetToken,
@@ -18,21 +19,6 @@ export type ActionState = { error?: string };
 
 function firstZodMessage(error: ZodError): string {
   return error.issues[0]?.message ?? "Dados inválidos.";
-}
-
-/**
- * Se um código de convite acompanha o cadastro/login, tenta aceitar a
- * comunidade logo em seguida. Falha aqui não desfaz a conta/login — o
- * usuário só cai numa Home sem comunidade ativa, que orienta a pedir um
- * novo convite.
- */
-async function tryAcceptInvitationIfPresent(userId: string, code: string | null) {
-  if (!code) return;
-  try {
-    await acceptInvitation({ code, userId });
-  } catch {
-    // silencioso de propósito: a Home cobre o estado "sem comunidade ativa".
-  }
 }
 
 export async function registerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {

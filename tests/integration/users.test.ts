@@ -12,7 +12,8 @@ describe("criação de usuário", () => {
   it("cria o usuário sem guardar a senha em texto puro", async () => {
     const user = await registerUser({ fullName: "Usuária de Teste", email, password: "SenhaForte123" });
     expect(user.passwordHash).not.toBe("SenhaForte123");
-    expect(user.passwordHash.startsWith("$argon2")).toBe(true);
+    expect(user.passwordHash).not.toBeNull();
+    expect(user.passwordHash?.startsWith("$argon2")).toBe(true);
   });
 
   it("rejeita cadastro duplicado para o mesmo e-mail", async () => {

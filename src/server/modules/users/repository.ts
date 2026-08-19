@@ -1,4 +1,5 @@
 import { prisma } from "@/server/db/prisma";
+import type { OAuthProvider } from "@prisma/client";
 
 /**
  * users é uma tabela global (não tenant-scoped) — um usuário existe
@@ -21,4 +22,37 @@ export function updateUserProfile(
   data: { fullName: string; phone: string | null; birthDate: Date | null; photoUrl: string | null },
 ) {
   return prisma.user.update({ where: { id }, data });
+}
+
+export function findOAuthAccount(provider: OAuthProvider, providerAccountId: string) {
+  return prisma.oAuthAccount.findUnique({
+    where: { provider_providerAccountId: { provider, providerAccountId } },
+    include: { user: true },
+  });
+}
+
+/** Cria o User e já o vincula ao provedor na mesma transação — nunca existe um sem o outro. */
+export function createUserFromOAuth(data: {
+  email: string;
+  fullName: string;
+  provider: OAuthProvider;
+  providerAccountId: string;
+}) {
+  return prisma.user.create({
+    data: {
+      email: data.email,
+      fullName: data.fullName,
+      oauthAccounts: {
+        create: { provider: data.provider, providerAccountId: data.providerAccountId, email: data.email },
+      },
+    },
+  });
+}
+
+/** Linka um provedor a um User já existente (achado por e-mail) — próximo login pelo mesmo provedor bate direto. */
+export function linkOAuthAccount(
+  userId: string,
+  data: { provider: OAuthProvider; providerAccountId: string; email: string },
+) {
+  return prisma.oAuthAccount.create({ data: { userId, ...data } });
 }

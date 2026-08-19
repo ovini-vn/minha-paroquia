@@ -1,6 +1,14 @@
+import type { OAuthProvider } from "@prisma/client";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
-import { createUser, findUserByEmail, updateUserProfile } from "./repository";
+import {
+  createUser,
+  findUserByEmail,
+  updateUserProfile,
+  findOAuthAccount,
+  createUserFromOAuth,
+  linkOAuthAccount,
+} from "./repository";
 import type { LoginInput, RegisterInput, UpdateProfileInput } from "./schema";
 
 export async function registerUser(input: RegisterInput) {
@@ -23,7 +31,9 @@ export async function registerUser(input: RegisterInput) {
  */
 export async function authenticateUser(input: LoginInput) {
   const user = await findUserByEmail(input.email);
-  if (!user) {
+  // passwordHash nulo = conta só-OAuth (Google/Facebook) — mesma mensagem
+  // genérica de sempre, nunca revela que a conta existe nem como ela loga.
+  if (!user || !user.passwordHash) {
     throw new ValidationError("E-mail ou senha inválidos.");
   }
 
@@ -33,6 +43,42 @@ export async function authenticateUser(input: LoginInput) {
   }
 
   return user;
+}
+
+export type OAuthProfile = {
+  provider: OAuthProvider;
+  providerAccountId: string;
+  email: string;
+  fullName: string;
+};
+
+/**
+ * Login social: acha por (provider, providerAccountId); se não achar, tenta
+ * linkar a um User já existente pelo mesmo e-mail (só chamado pelo caller
+ * com e-mail já confirmado pelo provedor); senão cria um User novo sem
+ * senha. Nunca falha por "e-mail já cadastrado" — login social sempre
+ * resolve para uma conta, uma forma ou outra.
+ */
+export async function findOrCreateUserFromOAuth(profile: OAuthProfile) {
+  const existingAccount = await findOAuthAccount(profile.provider, profile.providerAccountId);
+  if (existingAccount) return existingAccount.user;
+
+  const existingUser = await findUserByEmail(profile.email);
+  if (existingUser) {
+    await linkOAuthAccount(existingUser.id, {
+      provider: profile.provider,
+      providerAccountId: profile.providerAccountId,
+      email: profile.email,
+    });
+    return existingUser;
+  }
+
+  return createUserFromOAuth({
+    email: profile.email,
+    fullName: profile.fullName,
+    provider: profile.provider,
+    providerAccountId: profile.providerAccountId,
+  });
 }
 
 /** Só o próprio usuário edita seus dados — nunca chamado com outro userId a partir de uma tela administrativa. */

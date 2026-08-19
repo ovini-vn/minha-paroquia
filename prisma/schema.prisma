@@ -21,7 +21,10 @@ datasource db {
 model User {
   id              String    @id @default(uuid())
   email           String    @unique
-  passwordHash    String    @map("password_hash")
+  // Opcional: quem entra só via Google/Facebook nunca define uma senha.
+  // authenticateUser() trata null como "e-mail ou senha inválidos", nunca
+  // revela que a conta é OAuth-only.
+  passwordHash    String?   @map("password_hash")
   fullName        String    @map("full_name")
   photoUrl        String?   @map("photo_url")
   phone           String?
@@ -55,6 +58,7 @@ model User {
   familyMemberGuardianOf   FamilyMemberGuardian[]
   permissionOverrides         PermissionOverride[] @relation("PermissionOverrideUser")
   permissionOverridesGranted  PermissionOverride[] @relation("PermissionOverrideGrantedBy")
+  oauthAccounts               OAuthAccount[]
 
   @@map("users")
 }
@@ -233,6 +237,32 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+enum OAuthProvider {
+  google
+  facebook
+}
+
+// Login social — não é tenant-scoped (users não é), sem RLS, mesmo padrão
+// de sessions/password_reset_tokens. Vínculo: primeiro tenta achar por
+// (provider, providerAccountId); se não achar, tenta achar User existente
+// pelo e-mail do provedor (só se o provedor confirma e-mail verificado) e
+// linka; senão cria um User novo com passwordHash nulo. Ver
+// src/server/auth/oauth.ts.
+model OAuthAccount {
+  id                String        @id @default(uuid())
+  userId            String        @map("user_id")
+  provider          OAuthProvider
+  providerAccountId String        @map("provider_account_id")
+  email             String
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
 }
 
 // Criado automaticamente quando um vínculo com papel PAROCO/SACERDOTE é

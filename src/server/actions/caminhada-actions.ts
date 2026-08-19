@@ -3,11 +3,13 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
-import { requireSession } from "@/server/auth/guards";
+import { requireSession, requirePermission } from "@/server/auth/guards";
+import { PERMISSIONS } from "@/server/auth/rbac";
 import {
   registerMassParticipation,
   registerSacrament,
   registerConfession,
+  setSacramentValidation,
 } from "@/server/modules/caminhada/service";
 import {
   registerMassParticipationInputSchema,
@@ -74,4 +76,15 @@ export async function registerConfessionAction(formData: FormData): Promise<void
   const input = registerConfessionInputSchema.parse({ date: formData.get("date") });
   await registerConfession({ ...input, parishId: session.membership.parishId, userId: session.userId });
   revalidatePath("/caminhada");
+}
+
+export async function setSacramentValidationAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.SACRAMENTS_VALIDATE);
+
+  const id = formData.get("id") as string;
+  const validated = formData.get("validated") === "true";
+  await setSacramentValidation(session.membership.parishId, id, validated, session.userId);
+  revalidatePath("/painel/sacramentos");
 }

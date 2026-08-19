@@ -7,7 +7,7 @@ import { listUpcomingCelebrations } from "@/server/modules/celebrations/service"
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { countVolunteerProfiles } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities } from "@/server/modules/opportunities/service";
-import { getReflectionAggregate } from "@/server/modules/caminhada/service";
+import { getReflectionAggregate, listSacramentsForValidation } from "@/server/modules/caminhada/service";
 import { listGroups } from "@/server/modules/catequese/service";
 import { listAllAvailability } from "@/server/modules/liturgia/service";
 import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
@@ -63,6 +63,7 @@ export default async function AdminDashboardPage() {
     catechismGroups,
     liturgicalAvailability,
     titheContributions,
+    sacraments,
   ] = await Promise.all([
     getParishDashboardCounts(session.membership.parishId),
     getParishInvitations(session.membership.parishId),
@@ -75,10 +76,12 @@ export default async function AdminDashboardPage() {
     listGroups(session.membership.parishId),
     listAllAvailability(session.membership.parishId),
     listContributionsForPeriod(session.membership.parishId, currentPeriod()),
+    listSacramentsForValidation(session.membership.parishId),
   ]);
   const catechismGroupCount = catechismGroups.length;
   const liturgicalAvailabilityCount = liturgicalAvailability.length;
   const titheContributionCount = titheContributions.length;
+  const pendingSacramentCount = sacraments.filter((s) => s.status === "self_reported").length;
 
   const agendaItems = [
     ...celebrations.map((c) => ({
@@ -236,6 +239,20 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
           <LinkButton href="/painel/dizimo" variant="secondary">
+            Gerenciar
+          </LinkButton>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-serif text-lg text-ink-900">Sacramentos</p>
+            <p className="text-sm text-ink-700">
+              {pendingSacramentCount} {pendingSacramentCount === 1 ? "sacramento aguardando validação" : "sacramentos aguardando validação"}
+            </p>
+          </div>
+          <LinkButton href="/painel/sacramentos" variant="secondary">
             Gerenciar
           </LinkButton>
         </div>

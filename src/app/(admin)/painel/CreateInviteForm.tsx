@@ -38,6 +38,8 @@ export function CreateInviteForm() {
           <option value="SACERDOTE">Sacerdote</option>
           <option value="SECRETARIA">Secretaria</option>
           <option value="COORDENADOR_PASTORAL">Coordenador de Pastoral</option>
+          <option value="CATEQUISTA">Catequista</option>
+          <option value="COORDENADOR_LITURGIA">Coordenador de Liturgia</option>
         </select>
       </div>
       <div className="flex flex-col gap-1.5">

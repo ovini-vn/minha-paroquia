@@ -203,4 +203,62 @@ describe("isolamento multi-paróquia (RLS)", () => {
     expect(sacraments).toHaveLength(1);
     expect(confessions).toHaveLength(1);
   });
+
+  it("não retorna família nem catequese da paróquia A dentro do contexto B", async () => {
+    const familyMember = await withTenantContext(parishAId, (tx) =>
+      tx.familyMember.create({
+        data: { parishId: parishAId, responsibleUserId: userAId, fullName: "Dependente Teste", relationship: "filho" },
+      }),
+    );
+    const group = await withTenantContext(parishAId, (tx) =>
+      tx.catechismGroup.create({ data: { parishId: parishAId, name: "Turma Teste", year: 2026 } }),
+    );
+    await withTenantContext(parishAId, (tx) =>
+      tx.catechismEnrollment.create({
+        data: { parishId: parishAId, catechismGroupId: group.id, familyMemberId: familyMember.id },
+      }),
+    );
+
+    const familyMembers = await withTenantContext(parishBId, (tx) => tx.familyMember.findMany({ where: { responsibleUserId: userAId } }));
+    const groups = await withTenantContext(parishBId, (tx) => tx.catechismGroup.findMany({ where: { parishId: parishAId } }));
+    const enrollments = await withTenantContext(parishBId, (tx) => tx.catechismEnrollment.findMany({ where: { parishId: parishAId } }));
+    expect(familyMembers).toHaveLength(0);
+    expect(groups).toHaveLength(0);
+    expect(enrollments).toHaveLength(0);
+  });
+
+  it("retorna família e catequese normalmente dentro do contexto correto (paróquia A)", async () => {
+    const familyMembers = await withTenantContext(parishAId, (tx) => tx.familyMember.findMany({}));
+    const groups = await withTenantContext(parishAId, (tx) => tx.catechismGroup.findMany({}));
+    const enrollments = await withTenantContext(parishAId, (tx) => tx.catechismEnrollment.findMany({}));
+    expect(familyMembers).toHaveLength(1);
+    expect(groups).toHaveLength(1);
+    expect(enrollments).toHaveLength(1);
+  });
+
+  it("não retorna disponibilidade nem escala litúrgica da paróquia A dentro do contexto B", async () => {
+    const celebration = await withTenantContext(parishAId, (tx) => tx.celebration.findFirstOrThrow({}));
+    await withTenantContext(parishAId, (tx) =>
+      tx.liturgicalAvailability.create({
+        data: { parishId: parishAId, userId: userAId, roleType: "leitor" },
+      }),
+    );
+    await withTenantContext(parishAId, (tx) =>
+      tx.liturgicalSchedule.create({
+        data: { parishId: parishAId, celebrationId: celebration.id, roleType: "leitor", userId: userAId },
+      }),
+    );
+
+    const availability = await withTenantContext(parishBId, (tx) => tx.liturgicalAvailability.findMany({ where: { userId: userAId } }));
+    const schedule = await withTenantContext(parishBId, (tx) => tx.liturgicalSchedule.findMany({ where: { userId: userAId } }));
+    expect(availability).toHaveLength(0);
+    expect(schedule).toHaveLength(0);
+  });
+
+  it("retorna disponibilidade e escala litúrgica normalmente dentro do contexto correto (paróquia A)", async () => {
+    const availability = await withTenantContext(parishAId, (tx) => tx.liturgicalAvailability.findMany({}));
+    const schedule = await withTenantContext(parishAId, (tx) => tx.liturgicalSchedule.findMany({}));
+    expect(availability).toHaveLength(1);
+    expect(schedule).toHaveLength(1);
+  });
 });

@@ -95,6 +95,10 @@ export default async function ServirPage() {
           </div>
         )}
       </section>
+
+      <LinkButton href="/servir/liturgia" variant="secondary" className="w-full">
+        Liturgia — disponibilidade e escala
+      </LinkButton>
     </div>
   );
 }

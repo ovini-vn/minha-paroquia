@@ -6,7 +6,9 @@ export const createInvitationInputSchema = z.object({
   // invitations.create pode escolher outro papel, ver invitation-actions.ts.
   // PAROCO não entra aqui de propósito: normalmente já existe um só, criar
   // outro via convite é caso raro demais para o MVP.
-  role: z.enum(["FIEL", "SACERDOTE", "SECRETARIA", "COORDENADOR_PASTORAL"]).default("FIEL"),
+  role: z
+    .enum(["FIEL", "SACERDOTE", "SECRETARIA", "COORDENADOR_PASTORAL", "CATEQUISTA", "COORDENADOR_LITURGIA"])
+    .default("FIEL"),
   expiresInDays: z.number().int().positive().max(365).optional(),
   maxUses: z.number().int().positive().max(1000).optional(),
 });

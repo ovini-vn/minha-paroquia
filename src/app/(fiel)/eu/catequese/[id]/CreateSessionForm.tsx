@@ -1,0 +1,43 @@
+"use client";
+
+import { useActionState } from "react";
+import { createSessionAction, type ActionState } from "@/server/actions/catequese-actions";
+import { Button } from "@/components/ui/Button";
+
+const initialState: ActionState = {};
+
+export function CreateSessionForm({ groupId }: { groupId: string }) {
+  const [state, formAction, pending] = useActionState(createSessionAction, initialState);
+
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-3">
+      <input type="hidden" name="groupId" value={groupId} />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="date" className="text-sm font-medium text-ink-700">
+          Data do encontro
+        </label>
+        <input
+          id="date"
+          name="date"
+          type="date"
+          required
+          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="topic" className="text-sm font-medium text-ink-700">
+          Tema (opcional)
+        </label>
+        <input
+          id="topic"
+          name="topic"
+          className="rounded-xl border border-terracotta-100 bg-cream-50 px-4 py-3 text-sm text-ink-900"
+        />
+      </div>
+      <Button type="submit" disabled={pending}>
+        {pending ? "Criando..." : "Novo encontro"}
+      </Button>
+      {state.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
+    </form>
+  );
+}

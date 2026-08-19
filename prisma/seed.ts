@@ -47,8 +47,15 @@ async function seedDemoParish() {
     create: { email: "fiel.demo@comunidade.app", fullName: "Maria Demo", passwordHash },
   });
 
+  const catequista = await prisma.user.upsert({
+    where: { email: "catequista.demo@comunidade.app" },
+    update: {},
+    create: { email: "catequista.demo@comunidade.app", fullName: "Ana Catequista", passwordHash },
+  });
+
   const parocoRole = await prisma.role.findUniqueOrThrow({ where: { code: "PAROCO" } });
   const fielRole = await prisma.role.findUniqueOrThrow({ where: { code: "FIEL" } });
+  const catequistaRole = await prisma.role.findUniqueOrThrow({ where: { code: "CATEQUISTA" } });
 
   // Seed roda fora do contexto de requisição HTTP: usamos SET LOCAL direto
   // (equivalente a withTenantContext) numa transação simples, já que
@@ -76,6 +83,15 @@ async function seedDemoParish() {
     if (!existingFielMembership) {
       await tx.parishMembership.create({
         data: { userId: fiel.id, parishId: parish.id, roleId: fielRole.id, status: "active" },
+      });
+    }
+
+    const existingCatequistaMembership = await tx.parishMembership.findFirst({
+      where: { userId: catequista.id, status: "active" },
+    });
+    if (!existingCatequistaMembership) {
+      await tx.parishMembership.create({
+        data: { userId: catequista.id, parishId: parish.id, roleId: catequistaRole.id, status: "active" },
       });
     }
 
@@ -213,21 +229,101 @@ async function seedDemoParish() {
         },
       });
     }
+
+    let cecilia = await tx.familyMember.findFirst({
+      where: { parishId: parish.id, responsibleUserId: fiel.id, fullName: "Cecília Demo" },
+    });
+    if (!cecilia) {
+      cecilia = await tx.familyMember.create({
+        data: {
+          parishId: parish.id,
+          responsibleUserId: fiel.id,
+          fullName: "Cecília Demo",
+          relationship: "filha",
+          birthDate: new Date("2016-03-02"),
+        },
+      });
+    }
+
+    let group = await tx.catechismGroup.findFirst({
+      where: { parishId: parish.id, name: "Primeira Eucaristia A" },
+    });
+    if (!group) {
+      group = await tx.catechismGroup.create({
+        data: {
+          parishId: parish.id,
+          name: "Primeira Eucaristia A",
+          year: new Date().getFullYear(),
+          catechistUserId: catequista.id,
+        },
+      });
+    }
+
+    const existingEnrollment = await tx.catechismEnrollment.findUnique({
+      where: { catechismGroupId_familyMemberId: { catechismGroupId: group.id, familyMemberId: cecilia.id } },
+    });
+    const enrollment =
+      existingEnrollment ??
+      (await tx.catechismEnrollment.create({
+        data: { parishId: parish.id, catechismGroupId: group.id, familyMemberId: cecilia.id },
+      }));
+
+    const existingSession = await tx.catechismSession.count({ where: { catechismGroupId: group.id } });
+    if (existingSession === 0) {
+      const nextSaturday = new Date();
+      nextSaturday.setDate(nextSaturday.getDate() + ((6 - nextSaturday.getDay() + 7) % 7 || 7));
+      await tx.catechismSession.create({
+        data: { parishId: parish.id, catechismGroupId: group.id, date: nextSaturday, topic: "Os dez mandamentos" },
+      });
+    }
+
+    const existingRite = await tx.catechismRite.count({ where: { enrollmentId: enrollment.id } });
+    if (existingRite === 0) {
+      await tx.catechismRite.create({
+        data: { parishId: parish.id, enrollmentId: enrollment.id, name: "Rito de Acolhida" },
+      });
+    }
+
+    const existingLiturgicalAvailability = await tx.liturgicalAvailability.findFirst({
+      where: { parishId: parish.id, userId: fiel.id, roleType: "leitor" },
+    });
+    if (!existingLiturgicalAvailability) {
+      await tx.liturgicalAvailability.create({
+        data: { parishId: parish.id, userId: fiel.id, roleType: "leitor", weekdayPref: 0 },
+      });
+    }
+
+    const sundayMass = await tx.celebration.findFirst({
+      where: { parishId: parish.id, title: "Missa dominical" },
+    });
+    if (sundayMass) {
+      const existingSchedule = await tx.liturgicalSchedule.findUnique({
+        where: {
+          celebrationId_roleType_userId: { celebrationId: sundayMass.id, roleType: "leitor", userId: fiel.id },
+        },
+      });
+      if (!existingSchedule) {
+        await tx.liturgicalSchedule.create({
+          data: { parishId: parish.id, celebrationId: sundayMass.id, roleType: "leitor", userId: fiel.id },
+        });
+      }
+    }
   });
 
-  return { parish, platformAdmin, paroco, fiel };
+  return { parish, platformAdmin, paroco, fiel, catequista };
 }
 
 async function main() {
   await ensureRolesAndPermissionsSeeded();
-  const { parish, paroco, fiel } = await seedDemoParish();
+  const { parish, paroco, fiel, catequista } = await seedDemoParish();
 
   console.log("\nSeed concluído.\n");
   console.log(`Paróquia demo: ${parish.name} (${parish.slug})\n`);
   console.log("Usuários de teste (senha para todos, só em dev):", DEV_PASSWORD);
   console.log(`  Admin da plataforma: vini.bode@gmail.com`);
   console.log(`  Pároco:              ${paroco.email}`);
-  console.log(`  Fiel:                ${fiel.email}\n`);
+  console.log(`  Fiel:                ${fiel.email}`);
+  console.log(`  Catequista:          ${catequista.email}\n`);
 }
 
 main()

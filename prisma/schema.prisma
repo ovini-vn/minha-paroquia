@@ -40,6 +40,11 @@ model User {
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]
+  familyMembersResponsible FamilyMember[] @relation("FamilyMemberResponsible")
+  familyMemberLinkedTo     FamilyMember[] @relation("FamilyMemberLinked")
+  catechismGroupsTaught    CatechismGroup[]
+  liturgicalAvailability   LiturgicalAvailability[]
+  liturgicalSchedules      LiturgicalSchedule[]
 
   @@map("users")
 }
@@ -65,6 +70,14 @@ model Parish {
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]
+  familyMembers       FamilyMember[]
+  catechismGroups     CatechismGroup[]
+  catechismEnrollments CatechismEnrollment[]
+  catechismSessions   CatechismSession[]
+  catechismAttendance CatechismAttendance[]
+  catechismRites      CatechismRite[]
+  liturgicalAvailability LiturgicalAvailability[]
+  liturgicalSchedules    LiturgicalSchedule[]
 
   @@map("parishes")
 }
@@ -253,6 +266,7 @@ model Celebration {
   parish        Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
   priestProfile PriestProfile?      @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
   massParticipations MassParticipation[]
+  liturgicalSchedules LiturgicalSchedule[]
 
   @@index([parishId, startsAt])
   @@map("celebrations")
@@ -518,4 +532,165 @@ model ConfessionLog {
 
   @@index([parishId, userId])
   @@map("confession_logs")
+}
+
+// PRD seção 27 (Família), trazido pra cá porque catequizando normalmente é
+// dependente de um fiel, não uma conta própria. Sem tabela "Family"
+// separada de propósito — responsibleUserId já diz quem administra o
+// perfil. linkedUserId fica pronto pra quando o dependente for "promovido"
+// a conta própria (FUNDACAO.md, decisão #2), sem precisar migrar nada.
+model FamilyMember {
+  id                String    @id @default(uuid())
+  parishId          String    @map("parish_id")
+  responsibleUserId String    @map("responsible_user_id")
+  linkedUserId      String?   @map("linked_user_id")
+  fullName          String    @map("full_name")
+  relationship      String
+  birthDate         DateTime? @map("birth_date") @db.Date
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  responsible User                  @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: Cascade)
+  linkedUser  User?                 @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  enrollments CatechismEnrollment[]
+
+  @@index([parishId, responsibleUserId])
+  @@map("family_members")
+}
+
+model CatechismGroup {
+  id              String   @id @default(uuid())
+  parishId        String   @map("parish_id")
+  name            String
+  year            Int
+  catechistUserId String?  @map("catechist_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  catechist   User?                 @relation(fields: [catechistUserId], references: [id], onDelete: SetNull)
+  enrollments CatechismEnrollment[]
+  sessions    CatechismSession[]
+
+  @@index([parishId])
+  @@map("catechism_groups")
+}
+
+// Junção turma <-> dependente, não FK direta — o mesmo dependente pode se
+// matricular de novo em outro ano/turma no futuro.
+model CatechismEnrollment {
+  id               String   @id @default(uuid())
+  parishId         String   @map("parish_id")
+  catechismGroupId String   @map("catechism_group_id")
+  familyMemberId   String   @map("family_member_id")
+  enrolledAt       DateTime @default(now()) @map("enrolled_at")
+
+  parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group        CatechismGroup         @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  familyMember FamilyMember           @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  attendances  CatechismAttendance[]
+  rites        CatechismRite[]
+
+  @@unique([catechismGroupId, familyMemberId])
+  @@index([parishId])
+  @@map("catechism_enrollments")
+}
+
+model CatechismSession {
+  id               String   @id @default(uuid())
+  parishId         String   @map("parish_id")
+  catechismGroupId String   @map("catechism_group_id")
+  date             DateTime @db.Date
+  topic            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group       CatechismGroup        @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  attendances CatechismAttendance[]
+
+  @@index([parishId, catechismGroupId])
+  @@map("catechism_sessions")
+}
+
+// "Catequista pode registrar: Presente / Ausente" (PRD seção 28).
+model CatechismAttendance {
+  id           String   @id @default(uuid())
+  parishId     String   @map("parish_id")
+  sessionId    String   @map("session_id")
+  enrollmentId String   @map("enrollment_id")
+  present      Boolean
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  parish     Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  session    CatechismSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollment CatechismEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, enrollmentId])
+  @@index([parishId])
+  @@map("catechism_attendance")
+}
+
+model CatechismRite {
+  id           String    @id @default(uuid())
+  parishId     String    @map("parish_id")
+  enrollmentId String    @map("enrollment_id")
+  name         String
+  scheduledAt  DateTime? @map("scheduled_at") @db.Date
+  completedAt  DateTime? @map("completed_at") @db.Date
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  parish     Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  enrollment CatechismEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([parishId])
+  @@map("catechism_rites")
+}
+
+enum LiturgicalRoleType {
+  leitor
+  salmista
+  ministro
+  acolhida
+  musica
+  outro
+}
+
+// "Fiel informa disponibilidade" (PRD seção 22) — um por (usuário, função);
+// reenviar para a mesma função atualiza em vez de duplicar.
+model LiturgicalAvailability {
+  id          String             @id @default(uuid())
+  parishId    String             @map("parish_id")
+  userId      String             @map("user_id")
+  roleType    LiturgicalRoleType @map("role_type")
+  weekdayPref Int?               @map("weekday_pref")
+  notes       String?
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleType])
+  @@index([parishId])
+  @@map("liturgical_availability")
+}
+
+// "Coordenador monta a escala" / "Fiel recebe sua escala" (PRD seção 22).
+// confirmed é o próprio fiel confirmando que vai — ação humana, nunca
+// setada automaticamente na criação.
+model LiturgicalSchedule {
+  id            String             @id @default(uuid())
+  parishId      String             @map("parish_id")
+  celebrationId String             @map("celebration_id")
+  roleType      LiturgicalRoleType @map("role_type")
+  userId        String             @map("user_id")
+  confirmed     Boolean            @default(false)
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  parish      Parish      @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  celebration Celebration @relation(fields: [celebrationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([celebrationId, roleType, userId])
+  @@index([parishId])
+  @@index([userId])
+  @@map("liturgical_schedules")
 }

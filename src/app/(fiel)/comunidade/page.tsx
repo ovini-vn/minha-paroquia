@@ -129,6 +129,16 @@ export default async function ComunidadePage() {
           </div>
         )}
       </section>
+
+      <Link href="/comunidade/catequese">
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-ink-900">Catequese</p>
+            <p className="text-xs text-ink-700">Turmas, encontros e ritos</p>
+          </div>
+          <span aria-hidden>→</span>
+        </Card>
+      </Link>
     </div>
   );
 }

@@ -12,6 +12,9 @@ export default async function ProfilePage() {
   const canSeeAdminPanel =
     session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.DASHBOARD_PARISH_VIEW);
   const canManageAvailability = session.permissions.includes(PERMISSIONS.AVAILABILITY_MANAGE);
+  const canTeachCatequese =
+    session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH) ||
+    session.permissions.includes(PERMISSIONS.CATEQUESE_MANAGE);
 
   return (
     <div className="flex flex-col gap-4">
@@ -35,9 +38,19 @@ export default async function ProfilePage() {
         Meus atendimentos
       </LinkButton>
 
+      <LinkButton href="/eu/familia" variant="secondary" className="w-full">
+        Minha família
+      </LinkButton>
+
       {canManageAvailability && (
         <LinkButton href="/eu/disponibilidade" variant="secondary" className="w-full">
           Minha disponibilidade
+        </LinkButton>
+      )}
+
+      {canTeachCatequese && (
+        <LinkButton href="/eu/catequese" variant="secondary" className="w-full">
+          Minha catequese
         </LinkButton>
       )}
 

@@ -50,3 +50,13 @@ export async function getParishDashboardCounts(parishId: string) {
     return { fielCount, sacerdoteCount, invitesIssued, invitesUsed };
   });
 }
+
+/** Membros ativos com um papel específico — usado para escolher catequista ao criar uma turma. */
+export function listMembersByRole(parishId: string, roleCode: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: { parishId, status: "active", role: { code: roleCode } },
+      include: { user: { select: { id: true, fullName: true } } },
+    }),
+  );
+}

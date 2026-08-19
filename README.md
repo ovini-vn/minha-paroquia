@@ -115,7 +115,7 @@ npm run db:seed
 ```
 
 Cria os papéis/permissões (fonte de verdade em `src/server/auth/rbac.ts`),
-uma paróquia demo ("Paróquia Nossa Senhora de Fátima") e 3 usuários de teste,
+uma paróquia demo ("Paróquia Nossa Senhora de Fátima") e usuários de teste,
 todos com a senha `ComunidadeDev123!` (só em desenvolvimento — nunca use essa
 senha ou esse padrão em produção):
 
@@ -124,6 +124,7 @@ senha ou esse padrão em produção):
 | Admin da plataforma | vini.bode@gmail.com |
 | Pároco | paroco.demo@comunidade.app |
 | Fiel | fiel.demo@comunidade.app |
+| Catequista | catequista.demo@comunidade.app |
 
 ## Executar localmente
 

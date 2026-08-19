@@ -8,6 +8,8 @@ import { listUpcomingEvents } from "@/server/modules/events/service";
 import { countVolunteerProfiles } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities } from "@/server/modules/opportunities/service";
 import { getReflectionAggregate } from "@/server/modules/caminhada/service";
+import { listGroups } from "@/server/modules/catequese/service";
+import { listAllAvailability } from "@/server/modules/liturgia/service";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
@@ -47,17 +49,31 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  const [counts, invitations, priests, celebrations, events, volunteerCount, openOpportunities, reflectionAggregate] =
-    await Promise.all([
-      getParishDashboardCounts(session.membership.parishId),
-      getParishInvitations(session.membership.parishId),
-      listPriests(session.membership.parishId),
-      listUpcomingCelebrations(session.membership.parishId, 10),
-      listUpcomingEvents(session.membership.parishId, 10),
-      countVolunteerProfiles(session.membership.parishId),
-      listOpenOpportunities(session.membership.parishId),
-      getReflectionAggregate(session.membership.parishId),
-    ]);
+  const [
+    counts,
+    invitations,
+    priests,
+    celebrations,
+    events,
+    volunteerCount,
+    openOpportunities,
+    reflectionAggregate,
+    catechismGroups,
+    liturgicalAvailability,
+  ] = await Promise.all([
+    getParishDashboardCounts(session.membership.parishId),
+    getParishInvitations(session.membership.parishId),
+    listPriests(session.membership.parishId),
+    listUpcomingCelebrations(session.membership.parishId, 10),
+    listUpcomingEvents(session.membership.parishId, 10),
+    countVolunteerProfiles(session.membership.parishId),
+    listOpenOpportunities(session.membership.parishId),
+    getReflectionAggregate(session.membership.parishId),
+    listGroups(session.membership.parishId),
+    listAllAvailability(session.membership.parishId),
+  ]);
+  const catechismGroupCount = catechismGroups.length;
+  const liturgicalAvailabilityCount = liturgicalAvailability.length;
 
   const agendaItems = [
     ...celebrations.map((c) => ({
@@ -175,6 +191,32 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
           <LinkButton href="/painel/servir" variant="secondary">
+            Gerenciar
+          </LinkButton>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-serif text-lg text-ink-900">Catequese</p>
+            <p className="text-sm text-ink-700">{catechismGroupCount} {catechismGroupCount === 1 ? "turma" : "turmas"}</p>
+          </div>
+          <LinkButton href="/painel/catequese" variant="secondary">
+            Gerenciar
+          </LinkButton>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-serif text-lg text-ink-900">Liturgia</p>
+            <p className="text-sm text-ink-700">
+              {liturgicalAvailabilityCount} {liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}
+            </p>
+          </div>
+          <LinkButton href="/painel/liturgia" variant="secondary">
             Gerenciar
           </LinkButton>
         </div>

@@ -1,6 +1,7 @@
 import { requireSessionForPage } from "@/server/auth/guards";
 import { countUnreadNotifications } from "@/server/modules/notifications/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { hexToRgbTriple } from "@/lib/color";
 import { ParishHeader } from "@/components/layout/ParishHeader";
 import { TabBar } from "@/components/layout/TabBar";
 
@@ -18,10 +19,10 @@ export default async function FielLayout({ children }: { children: React.ReactNo
       ? (() => {
           const season = getLiturgicalSeason(new Date());
           return {
-            "--color-primary": season.primaryColor,
-            "--color-primary-hover": season.primaryHoverColor,
-            "--color-primary-light": season.primaryLightColor,
-            "--color-accent": season.accentColor,
+            "--color-primary": hexToRgbTriple(season.primaryColor),
+            "--color-primary-hover": hexToRgbTriple(season.primaryHoverColor),
+            "--color-primary-light": hexToRgbTriple(season.primaryLightColor),
+            "--color-accent": hexToRgbTriple(season.accentColor),
           } as React.CSSProperties;
         })()
       : undefined;

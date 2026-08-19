@@ -16,7 +16,7 @@ export function TabBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-terracotta-100 bg-cream-50/95 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 backdrop-blur">
       <ul className="mx-auto flex max-w-lg justify-between px-2 py-2">
         {TABS.map((tab) => {
           const active = pathname === tab.href;
@@ -26,7 +26,7 @@ export function TabBar() {
                 href={tab.href}
                 className={cn(
                   "flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-xs transition-colors",
-                  active ? "text-terracotta-700" : "text-ink-700/60",
+                  active ? "text-primary" : "text-muted",
                 )}
               >
                 <span className="text-xl" aria-hidden>

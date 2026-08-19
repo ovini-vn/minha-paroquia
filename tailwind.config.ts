@@ -29,16 +29,16 @@ const config: Config = {
         // às telas existentes. Nomes distintos de cream/terracotta/ink de
         // propósito, pra não confundir durante a migração gradual.
         primary: {
-          DEFAULT: "var(--color-primary)",
-          hover: "var(--color-primary-hover)",
-          light: "var(--color-primary-light)",
+          DEFAULT: "rgb(var(--color-primary) / <alpha-value>)",
+          hover: "rgb(var(--color-primary-hover) / <alpha-value>)",
+          light: "rgb(var(--color-primary-light) / <alpha-value>)",
         },
-        accent: "var(--color-accent)",
-        surface: "var(--color-surface)",
-        foreground: "var(--color-foreground)",
-        muted: "var(--color-muted)",
-        border: "var(--color-border)",
-        background: "var(--color-background)",
+        accent: "rgb(var(--color-accent) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        foreground: "rgb(var(--color-foreground) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        border: "rgb(var(--color-border) / <alpha-value>)",
+        background: "rgb(var(--color-background) / <alpha-value>)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

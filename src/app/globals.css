@@ -14,33 +14,33 @@
  * src/lib/liturgical-season.ts — única fonte de verdade das cores por
  * tempo litúrgico. Nunca duplicar esses valores aqui em CSS.
  *
- * Estes tokens ainda não são consumidos pelas telas existentes (que
- * continuam usando as classes terracotta/cream/ink) — são a base pra fatias
- * futuras de aplicação visual, tela por tela.
+ * Valores em "R G B" (não "#rrggbb"): tailwind.config.ts consome via
+ * `rgb(var(--x) / <alpha-value>)`, o único jeito de opacidade (`bg-x/50`)
+ * funcionar com cor vinda de CSS custom property — ver src/lib/color.ts.
  */
 :root {
-  --color-primary: #5b2890;
-  --color-primary-hover: #4a2073;
-  --color-primary-light: #8e63b0;
-  --color-accent: #c9a44c;
-  --color-background: #f8f6f1;
-  --color-surface: #ffffff;
-  --color-foreground: #242124;
-  --color-muted: #6f6a67;
-  --color-border: #e5e0d8;
+  --color-primary: 91 40 144; /* #5b2890 */
+  --color-primary-hover: 74 32 115; /* #4a2073 */
+  --color-primary-light: 142 99 176; /* #8e63b0 */
+  --color-accent: 201 164 76; /* #c9a44c */
+  --color-background: 248 246 241; /* #f8f6f1 */
+  --color-surface: 255 255 255; /* #ffffff */
+  --color-foreground: 36 33 36; /* #242124 */
+  --color-muted: 111 106 103; /* #6f6a67 */
+  --color-border: 229 224 216; /* #e5e0d8 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: #8e63b0;
-    --color-primary-hover: #a179c2;
-    --color-primary-light: #5b2890;
-    --color-accent: #c9a44c;
-    --color-background: #18151d;
-    --color-surface: #221e29;
-    --color-foreground: #f0ece6;
-    --color-muted: #b0a8a4;
-    --color-border: #34303c;
+    --color-primary: 142 99 176; /* #8e63b0 */
+    --color-primary-hover: 161 121 194; /* #a179c2 */
+    --color-primary-light: 91 40 144; /* #5b2890 */
+    --color-accent: 201 164 76; /* #c9a44c */
+    --color-background: 24 21 29; /* #18151d */
+    --color-surface: 34 30 41; /* #221e29 */
+    --color-foreground: 240 236 230; /* #f0ece6 */
+    --color-muted: 176 168 164; /* #b0a8a4 */
+    --color-border: 52 48 60; /* #34303c */
   }
 }
 

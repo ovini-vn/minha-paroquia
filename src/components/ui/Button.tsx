@@ -5,9 +5,9 @@ import type { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
 type Variant = "primary" | "secondary" | "ghost";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-terracotta-600 text-cream-50 hover:bg-terracotta-700",
-  secondary: "bg-cream-100 text-ink-900 hover:bg-cream-200 border border-terracotta-100",
-  ghost: "bg-transparent text-terracotta-700 hover:bg-terracotta-50",
+  primary: "bg-primary text-white hover:bg-primary-hover",
+  secondary: "bg-surface text-foreground hover:bg-background border border-border",
+  ghost: "bg-transparent text-primary hover:bg-background",
 };
 
 const BASE_CLASSES =

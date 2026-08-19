@@ -332,4 +332,25 @@ describe("isolamento multi-paróquia (RLS)", () => {
     const rows = await withTenantContext(parishAId, (tx) => tx.prayerRequest.findMany({}));
     expect(rows).toHaveLength(1);
   });
+
+  it("não retorna guardiões de dependente da paróquia A dentro do contexto da paróquia B", async () => {
+    const familyMember = await withTenantContext(parishAId, (tx) =>
+      tx.familyMember.create({
+        data: { parishId: parishAId, responsibleUserId: userAId, fullName: "Dependente Isolamento", relationship: "filho" },
+      }),
+    );
+    await withTenantContext(parishAId, (tx) =>
+      tx.familyMemberGuardian.create({
+        data: { parishId: parishAId, familyMemberId: familyMember.id, userId: userAId },
+      }),
+    );
+
+    const rows = await withTenantContext(parishBId, (tx) => tx.familyMemberGuardian.findMany({ where: { parishId: parishAId } }));
+    expect(rows).toHaveLength(0);
+  });
+
+  it("retorna guardiões normalmente dentro do contexto correto (paróquia A)", async () => {
+    const rows = await withTenantContext(parishAId, (tx) => tx.familyMemberGuardian.findMany({}));
+    expect(rows).toHaveLength(1);
+  });
 });

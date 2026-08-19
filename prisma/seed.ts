@@ -255,6 +255,17 @@ async function seedDemoParish() {
       });
     }
 
+    for (const guardianUserId of [fiel.id, catequista.id]) {
+      const existingGuardian = await tx.familyMemberGuardian.findUnique({
+        where: { familyMemberId_userId: { familyMemberId: cecilia.id, userId: guardianUserId } },
+      });
+      if (!existingGuardian) {
+        await tx.familyMemberGuardian.create({
+          data: { parishId: parish.id, familyMemberId: cecilia.id, userId: guardianUserId },
+        });
+      }
+    }
+
     let group = await tx.catechismGroup.findFirst({
       where: { parishId: parish.id, name: "Primeira Eucaristia A" },
     });

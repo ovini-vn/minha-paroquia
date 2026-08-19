@@ -52,6 +52,7 @@ model User {
   notifications            Notification[]
   notificationPreferences  NotificationPreference[]
   prayerRequests           PrayerRequest[]
+  familyMemberGuardianOf   FamilyMemberGuardian[]
 
   @@map("users")
 }
@@ -93,6 +94,7 @@ model Parish {
   titheParticipations    TitheParticipation[]
   notifications          Notification[]
   prayerRequests         PrayerRequest[]
+  familyMemberGuardians  FamilyMemberGuardian[]
 
   @@map("parishes")
 }
@@ -599,9 +601,33 @@ model FamilyMember {
   responsible User                  @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: Cascade)
   linkedUser  User?                 @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
+  guardians   FamilyMemberGuardian[]
 
   @@index([parishId, responsibleUserId])
   @@map("family_members")
+}
+
+// P2 (docs/ARQUITETURA.md, seção K): "família com múltiplos vínculos
+// simultâneos" — um dependente pode ter mais de um responsável ao mesmo
+// tempo (ex.: pai e mãe), cada um enxergando e gerenciando o mesmo
+// cadastro. responsibleUserId em FamilyMember continua existindo (quem
+// cadastrou originalmente); este é o mecanismo real de acesso — quem cria
+// um FamilyMember já entra aqui automaticamente como o primeiro guardião.
+model FamilyMemberGuardian {
+  id             String   @id @default(uuid())
+  parishId       String   @map("parish_id")
+  familyMemberId String   @map("family_member_id")
+  userId         String   @map("user_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  parish       Parish       @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  familyMember FamilyMember @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyMemberId, userId])
+  @@index([parishId])
+  @@index([userId])
+  @@map("family_member_guardians")
 }
 
 model CatechismGroup {

@@ -75,11 +75,15 @@ export function listEnrollments(parishId: string, groupId: string) {
   );
 }
 
-/** Matrículas dos próprios dependentes — base da visão do responsável em /comunidade/catequese. */
-export function listMyChildrenEnrollments(parishId: string, responsibleUserId: string) {
+/**
+ * Matrículas dos próprios dependentes — base da visão do responsável em
+ * /comunidade/catequese. Considera QUALQUER guardião do dependente, não só
+ * quem cadastrou originalmente (múltiplos vínculos simultâneos, P2).
+ */
+export function listMyChildrenEnrollments(parishId: string, userId: string) {
   return withTenantContext(parishId, (tx) =>
     tx.catechismEnrollment.findMany({
-      where: { parishId, familyMember: { responsibleUserId } },
+      where: { parishId, familyMember: { guardians: { some: { userId } } } },
       include: { familyMember: true, group: true },
     }),
   );

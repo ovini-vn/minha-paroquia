@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSession } from "@/server/auth/guards";
-import { createFamilyMember } from "@/server/modules/family/service";
+import { createFamilyMember, addGuardian, removeGuardian } from "@/server/modules/family/service";
 import { createFamilyMemberInputSchema } from "@/server/modules/family/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -29,4 +29,39 @@ export async function createFamilyMemberAction(_prev: ActionState, formData: For
 
   revalidatePath("/eu/familia");
   return {};
+}
+
+export async function addGuardianAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+
+  const familyMemberId = formData.get("familyMemberId") as string;
+  const userId = formData.get("userId") as string;
+  if (!userId) return { error: "Escolha uma pessoa." };
+
+  try {
+    await addGuardian(session.membership.parishId, familyMemberId, userId, session.userId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath(`/eu/familia/${familyMemberId}`);
+  return {};
+}
+
+export async function removeGuardianAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+
+  const familyMemberId = formData.get("familyMemberId") as string;
+  const userId = formData.get("userId") as string;
+
+  try {
+    await removeGuardian(session.membership.parishId, familyMemberId, userId, session.userId);
+  } catch (error) {
+    if (error instanceof AppError) return; // último guardião ou não-guardião tentando remover — botão nem deveria aparecer
+    throw error;
+  }
+  revalidatePath(`/eu/familia/${familyMemberId}`);
 }

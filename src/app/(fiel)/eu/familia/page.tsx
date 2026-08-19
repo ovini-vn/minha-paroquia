@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyFamilyMembers } from "@/server/modules/family/service";
 import { Card } from "@/components/ui/Card";
@@ -39,13 +40,15 @@ export default async function FamilyPage() {
       ) : (
         <div className="flex flex-col gap-2">
           {members.map((member) => (
-            <Card key={member.id} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-ink-900">{member.fullName}</p>
-                {member.birthDate && <p className="text-xs text-ink-700">{formatDateOnly(member.birthDate)}</p>}
-              </div>
-              <Badge>{RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}</Badge>
-            </Card>
+            <Link key={member.id} href={`/eu/familia/${member.id}`}>
+              <Card className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-ink-900">{member.fullName}</p>
+                  {member.birthDate && <p className="text-xs text-ink-700">{formatDateOnly(member.birthDate)}</p>}
+                </div>
+                <Badge>{RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}</Badge>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

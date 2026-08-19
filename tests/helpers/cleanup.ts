@@ -32,6 +32,7 @@ export async function cleanupTenantData(params: { userIds?: string[]; parishIds?
       await tx.catechismEnrollment.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.catechismSession.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.catechismGroup.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.familyMemberGuardian.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.familyMember.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.liturgicalSchedule.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.liturgicalAvailability.deleteMany({ where: { parishId: { in: parishIds } } });

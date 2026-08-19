@@ -66,7 +66,7 @@ export default async function DizimoAdminPage({
               return (
                 <li
                   key={membership.user.id}
-                  className="flex items-center justify-between border-b border-terracotta-50 py-2 text-sm"
+                  className="flex items-center justify-between border-b border-border py-2 text-sm"
                 >
                   <span className="text-ink-900">{membership.user.fullName}</span>
                   <div className="flex items-center gap-2">

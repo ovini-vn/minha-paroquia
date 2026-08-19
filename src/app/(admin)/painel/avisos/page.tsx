@@ -40,7 +40,7 @@ export default async function AvisosAdminPage() {
                   </div>
                   <Badge>{archived ? "Arquivado" : "Publicado"}</Badge>
                 </div>
-                <div className="mt-3 flex items-center gap-2 border-t border-terracotta-50 pt-3">
+                <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
                   <LinkButton href={`/painel/avisos/${aviso.id}`} variant="secondary">
                     Editar
                   </LinkButton>

@@ -118,7 +118,7 @@ export default async function CaminhadaPage() {
             </Button>
           </form>
           {confessions.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2 border-t border-terracotta-50 pt-4">
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
               {confessions.map((c) => (
                 <Badge key={c.id}>{formatDateOnly(c.date)}</Badge>
               ))}

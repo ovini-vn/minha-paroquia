@@ -37,7 +37,7 @@ export default async function MyTithePage() {
         <Card>
           <ul className="flex flex-col gap-1.5">
             {contributions.map((contribution) => (
-              <li key={contribution.id} className="border-b border-terracotta-50 py-2 text-sm text-ink-900 last:border-0">
+              <li key={contribution.id} className="border-b border-border py-2 text-sm text-ink-900 last:border-0">
                 {formatPeriodLabel(contribution.period)}
               </li>
             ))}

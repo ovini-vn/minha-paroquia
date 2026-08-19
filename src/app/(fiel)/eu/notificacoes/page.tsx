@@ -76,7 +76,7 @@ export default async function NotificationsPage() {
         <p className="mb-3 font-serif text-lg text-ink-900">Preferências</p>
         <ul className="flex flex-col gap-1.5">
           {preferences.map((preference) => (
-            <li key={preference.category} className="flex items-center justify-between border-b border-terracotta-50 py-2 text-sm">
+            <li key={preference.category} className="flex items-center justify-between border-b border-border py-2 text-sm">
               <span className="text-ink-900">{NOTIFICATION_CATEGORY_LABELS[preference.category]}</span>
               <div className="flex items-center gap-2">
                 <Badge>{preference.enabled ? "Ativada" : "Desativada"}</Badge>

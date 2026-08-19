@@ -72,7 +72,7 @@ export default async function ServirAdminPage() {
               {opportunity.interests.length === 0 ? (
                 <p className="mt-3 text-sm text-ink-700">Ninguém manifestou interesse ainda.</p>
               ) : (
-                <ul className="mt-3 flex flex-col gap-2 border-t border-terracotta-50 pt-3">
+                <ul className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
                   {opportunity.interests.map((interest) => (
                     <li key={interest.id} className="flex items-center justify-between text-sm">
                       <div>

@@ -51,7 +51,7 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {sessions.map((s) => (
-              <li key={s.id} className="flex items-center justify-between border-b border-terracotta-50 py-2 text-sm">
+              <li key={s.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
                 <div>
                   <p className="text-ink-900">{formatDateOnly(s.date)}</p>
                   {s.topic && <p className="text-xs text-ink-700">{s.topic}</p>}
@@ -78,7 +78,7 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
             <CreateRiteForm enrollments={enrollments} />
             <div className="mt-4 flex flex-col gap-3">
               {enrollments.map((enrollment, index) => (
-                <div key={enrollment.id} className="border-t border-terracotta-50 pt-3">
+                <div key={enrollment.id} className="border-t border-border pt-3">
                   <p className="text-sm font-medium text-ink-900">{enrollment.familyMember.fullName}</p>
                   {ritesByEnrollment[index]!.length === 0 ? (
                     <p className="text-xs text-ink-700">Nenhum rito registrado.</p>

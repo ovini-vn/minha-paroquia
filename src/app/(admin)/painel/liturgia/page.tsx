@@ -49,7 +49,7 @@ export default async function LiturgiaAdminPage() {
               </p>
               <p className="text-xs text-ink-700">{formatDateTime(celebration.startsAt)}</p>
 
-              <div className="mt-3 border-t border-terracotta-50 pt-3">
+              <div className="mt-3 border-t border-border pt-3">
                 <CreateScheduleForm celebrationId={celebration.id} availabilityByRole={availabilityByRole} />
               </div>
 

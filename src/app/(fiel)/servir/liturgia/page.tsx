@@ -39,7 +39,7 @@ export default async function LiturgiaPage() {
       <Card>
         <AvailabilityForm />
         {availability.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-terracotta-50 pt-4">
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
             {availability.map((a) => (
               <form key={a.id} action={deleteAvailabilityAction} className="flex items-center gap-1.5">
                 <input type="hidden" name="id" value={a.id} />

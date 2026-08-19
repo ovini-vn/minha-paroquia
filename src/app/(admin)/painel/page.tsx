@@ -170,7 +170,7 @@ export default async function AdminDashboardPage() {
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-terracotta-100 text-ink-700">
+                <tr className="border-b border-border text-muted">
                   <th className="py-2 pr-4">Código</th>
                   <th className="py-2 pr-4">Tipo</th>
                   <th className="py-2 pr-4">Status</th>
@@ -180,7 +180,7 @@ export default async function AdminDashboardPage() {
               </thead>
               <tbody>
                 {invitations.map((invitation) => (
-                  <tr key={invitation.id} className="border-b border-terracotta-50">
+                  <tr key={invitation.id} className="border-b border-border">
                     <td className="py-2 pr-4 font-mono">/convite/{invitation.code}</td>
                     <td className="py-2 pr-4">{invitation.type}</td>
                     <td className="py-2 pr-4">{STATUS_LABEL[invitation.status] ?? invitation.status}</td>
@@ -232,7 +232,7 @@ export default async function AdminDashboardPage() {
         ) : (
           <ul className="mt-4 flex flex-col gap-2">
             {agendaItems.map((item) => (
-              <li key={item.id} className="flex items-center justify-between border-b border-terracotta-50 py-2 text-sm">
+              <li key={item.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
                 <div>
                   <p className="text-ink-900">{item.label}</p>
                   <p className="text-xs text-ink-700">

@@ -45,7 +45,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
         </p>
         <ul className="mb-4 flex flex-col gap-1.5">
           {guardians.map((guardian) => (
-            <li key={guardian.id} className="flex items-center justify-between border-b border-terracotta-50 py-2 text-sm">
+            <li key={guardian.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
               <span className="text-ink-900">{guardian.user.fullName}</span>
               {guardians.length > 1 && (
                 <form action={removeGuardianAction}>

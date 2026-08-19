@@ -60,3 +60,14 @@ export function listMembersByRole(parishId: string, roleCode: string) {
     }),
   );
 }
+
+/** Todos os membros ativos, qualquer papel — usado para registrar dízimo. */
+export function listActiveMembers(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: { parishId, status: "active" },
+      include: { user: { select: { id: true, fullName: true } } },
+      orderBy: { user: { fullName: "asc" } },
+    }),
+  );
+}

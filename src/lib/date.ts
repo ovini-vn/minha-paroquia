@@ -45,3 +45,17 @@ const DATE_ONLY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
 export function formatDateOnly(date: Date): string {
   return DATE_ONLY_FORMATTER.format(date);
 }
+
+/** Período corrente no formato "AAAA-MM", usado pelo módulo de dízimo. */
+export function currentPeriod(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+const PERIOD_FORMATTER = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+
+/** "2026-08" -> "agosto de 2026". */
+export function formatPeriodLabel(period: string): string {
+  const [year, month] = period.split("-").map(Number);
+  return PERIOD_FORMATTER.format(new Date(Date.UTC(year!, month! - 1, 1)));
+}

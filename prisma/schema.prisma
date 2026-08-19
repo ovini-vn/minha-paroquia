@@ -45,6 +45,8 @@ model User {
   catechismGroupsTaught    CatechismGroup[]
   liturgicalAvailability   LiturgicalAvailability[]
   liturgicalSchedules      LiturgicalSchedule[]
+  titheParticipations      TitheParticipation[] @relation("TitheParticipationUser")
+  titheParticipationsRegistered TitheParticipation[] @relation("TitheParticipationRegisteredBy")
 
   @@map("users")
 }
@@ -78,6 +80,7 @@ model Parish {
   catechismRites      CatechismRite[]
   liturgicalAvailability LiturgicalAvailability[]
   liturgicalSchedules    LiturgicalSchedule[]
+  titheParticipations    TitheParticipation[]
 
   @@map("parishes")
 }
@@ -693,4 +696,28 @@ model LiturgicalSchedule {
   @@index([parishId])
   @@index([userId])
   @@map("liturgical_schedules")
+}
+
+// Dízimo no P1 (docs/ARQUITETURA.md, ambiguidade #6): registra só a
+// PRESENÇA de participação por período ("contribuiu em 2026-08"), nunca
+// valor monetário — isso fica para o P2, quando houver gateway de
+// pagamento definido. Quem registra é sempre pároco/secretaria (ver
+// PERMISSIONS.DIZIMO_MANAGE), nunca o próprio fiel — evita indicador
+// inflado por autodeclaração.
+model TitheParticipation {
+  id           String   @id @default(uuid())
+  parishId     String   @map("parish_id")
+  userId       String   @map("user_id")
+  period       String
+  registeredBy String   @map("registered_by")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  parish           Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user             User   @relation("TitheParticipationUser", fields: [userId], references: [id], onDelete: Cascade)
+  registeredByUser User   @relation("TitheParticipationRegisteredBy", fields: [registeredBy], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([parishId])
+  @@index([parishId, period])
+  @@map("tithe_participations")
 }

@@ -10,6 +10,8 @@ import { listOpenOpportunities } from "@/server/modules/opportunities/service";
 import { getReflectionAggregate } from "@/server/modules/caminhada/service";
 import { listGroups } from "@/server/modules/catequese/service";
 import { listAllAvailability } from "@/server/modules/liturgia/service";
+import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
+import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
@@ -60,6 +62,7 @@ export default async function AdminDashboardPage() {
     reflectionAggregate,
     catechismGroups,
     liturgicalAvailability,
+    titheContributions,
   ] = await Promise.all([
     getParishDashboardCounts(session.membership.parishId),
     getParishInvitations(session.membership.parishId),
@@ -71,9 +74,11 @@ export default async function AdminDashboardPage() {
     getReflectionAggregate(session.membership.parishId),
     listGroups(session.membership.parishId),
     listAllAvailability(session.membership.parishId),
+    listContributionsForPeriod(session.membership.parishId, currentPeriod()),
   ]);
   const catechismGroupCount = catechismGroups.length;
   const liturgicalAvailabilityCount = liturgicalAvailability.length;
+  const titheContributionCount = titheContributions.length;
 
   const agendaItems = [
     ...celebrations.map((c) => ({
@@ -217,6 +222,20 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
           <LinkButton href="/painel/liturgia" variant="secondary">
+            Gerenciar
+          </LinkButton>
+        </div>
+      </Card>
+
+      <Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-serif text-lg text-ink-900">Dízimo</p>
+            <p className="text-sm text-ink-700">
+              {titheContributionCount} {titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em {formatPeriodLabel(currentPeriod())}
+            </p>
+          </div>
+          <LinkButton href="/painel/dizimo" variant="secondary">
             Gerenciar
           </LinkButton>
         </div>

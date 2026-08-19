@@ -11,6 +11,11 @@ import { hash } from "@node-rs/argon2";
 import { ensureRolesAndPermissionsSeeded } from "../src/server/auth/seed-rbac";
 import { ensurePriestProfile } from "../src/server/modules/priests/ensure-priest-profile";
 
+function currentPeriod(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 const prisma = new PrismaClient();
 
 const DEV_PASSWORD = "ComunidadeDev123!";
@@ -307,6 +312,15 @@ async function seedDemoParish() {
           data: { parishId: parish.id, celebrationId: sundayMass.id, roleType: "leitor", userId: fiel.id },
         });
       }
+    }
+
+    const existingTithe = await tx.titheParticipation.findUnique({
+      where: { userId_period: { userId: fiel.id, period: currentPeriod() } },
+    });
+    if (!existingTithe) {
+      await tx.titheParticipation.create({
+        data: { parishId: parish.id, userId: fiel.id, period: currentPeriod(), registeredBy: paroco.id },
+      });
     }
   });
 

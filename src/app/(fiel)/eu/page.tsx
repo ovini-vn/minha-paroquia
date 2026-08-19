@@ -42,6 +42,10 @@ export default async function ProfilePage() {
         Minha família
       </LinkButton>
 
+      <LinkButton href="/eu/dizimo" variant="secondary" className="w-full">
+        Minha participação no dízimo
+      </LinkButton>
+
       {canManageAvailability && (
         <LinkButton href="/eu/disponibilidade" variant="secondary" className="w-full">
           Minha disponibilidade

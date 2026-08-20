@@ -1,6 +1,12 @@
 /**
  * Cânon católico (73 livros) com a contagem de capítulos de cada um.
  *
+ * ATENÇÃO: este módulo está intencionalmente SEM USO no momento. A tela de
+ * Bíblia foi retirada do app enquanto a paróquia não tiver licença de uma
+ * das traduções — não faz sentido expor um leitor que não pode mostrar
+ * texto. O mapeamento do cânon fica aqui pronto para quando a licença
+ * existir; não apagar por parecer código morto.
+ *
  * Nomes de livros e número de capítulos são FATOS de estrutura, não texto
  * protegido — por isso podem viver aqui. O TEXTO de cada versículo é que
  * vem de traduções licenciadas (Ave Maria, CNBB, Edição Pastoral, Bíblia de

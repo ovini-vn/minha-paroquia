@@ -50,6 +50,7 @@ model User {
   appointments        Appointment[]
   volunteerProfiles   VolunteerProfile[]
   serviceInterests    ServiceInterest[]
+  pastoralInterests   PastoralGroupInterest[]
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]
@@ -93,6 +94,8 @@ model Parish {
   events             Event[]
   avisos             Aviso[]
   liturgyOfTheDay    LiturgyOfTheDay[]
+  pastoralGroups     PastoralGroup[]
+  pastoralInterests  PastoralGroupInterest[]
   posts              Post[]
   priestAvailability  PriestAvailability[]
   appointments        Appointment[]
@@ -549,6 +552,56 @@ model ServiceOpportunity {
 
   @@index([parishId, status])
   @@map("service_opportunities")
+}
+
+enum PastoralGroupStatus {
+  ativa
+  inativa
+}
+
+// Pastorais e grupos da paróquia (Catequese, Liturgia, Ministros, Coral...).
+// Diferente de ServiceOpportunity, que é pontual ("preciso de gente pra
+// festa"): uma pastoral é permanente e tem coordenador, horário e local.
+model PastoralGroup {
+  id           String              @id @default(uuid())
+  parishId     String              @map("parish_id")
+  name         String
+  description  String?
+  // Coordenador como texto: nem todo coordenador tem conta no app, e
+  // travar o cadastro nisso impediria a paróquia de listar suas pastorais.
+  leaderName   String?             @map("leader_name")
+  meetsWhen    String?             @map("meets_when")
+  meetsWhere   String?             @map("meets_where")
+  status       PastoralGroupStatus @default(ativa)
+  createdBy    String              @map("created_by")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  parish    Parish                  @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  interests PastoralGroupInterest[]
+
+  @@index([parishId, status])
+  @@map("pastoral_groups")
+}
+
+// Mesma regra do ServiceInterest (PRD seção 21): manifestar interesse NÃO
+// inscreve ninguém — só avisa o coordenador. Entrar na pastoral continua
+// sendo uma conversa entre pessoas.
+model PastoralGroupInterest {
+  id        String         @id @default(uuid())
+  groupId   String         @map("group_id")
+  userId    String         @map("user_id")
+  parishId  String         @map("parish_id")
+  status    InterestStatus @default(manifestado)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([parishId])
+  @@map("pastoral_group_interests")
 }
 
 enum InterestStatus {

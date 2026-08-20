@@ -1,4 +1,4 @@
-import { HandHeart, Footprints, ScrollText, Sparkles, BookMarked, BookOpen } from "lucide-react";
+import { HandHeart, Footprints, ScrollText, Sparkles, BookOpen } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listCommunityPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getTodayContext } from "@/server/modules/liturgia/daily-service";
@@ -101,12 +101,6 @@ export default async function OracaoPage() {
             icon={HandHeart}
             title="Pedidos de oração"
             subtitle="Envie ao pároco ou compartilhe no mural"
-          />
-          <RowLink
-            href="/oracao/biblia"
-            icon={BookMarked}
-            title="Bíblia"
-            subtitle="Leitura por livro e capítulo"
           />
           <RowLink
             href="/caminhada"

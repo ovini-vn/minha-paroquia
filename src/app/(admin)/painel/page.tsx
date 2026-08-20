@@ -12,6 +12,7 @@ import { getReflectionAggregate, listSacramentsForValidation } from "@/server/mo
 import { listGroups } from "@/server/modules/catequese/service";
 import { listAllAvailability } from "@/server/modules/liturgia/service";
 import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
+import { listAllGroups } from "@/server/modules/pastorais/service";
 import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -37,6 +38,7 @@ import {
   HandCoins,
   ScrollText,
   KeyRound,
+  Users,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -81,6 +83,7 @@ export default async function AdminDashboardPage() {
     titheContributions,
     sacraments,
     avisos,
+    pastoralGroups,
   ] = await Promise.all([
     getParish(session.membership.parishId),
     getParishDashboardCounts(session.membership.parishId),
@@ -96,7 +99,9 @@ export default async function AdminDashboardPage() {
     listContributionsForPeriod(session.membership.parishId, currentPeriod()),
     listSacramentsForValidation(session.membership.parishId),
     listAllAvisos(session.membership.parishId),
+    listAllGroups(session.membership.parishId),
   ]);
+  const pastoralGroupCount = pastoralGroups.length;
   const catechismGroupCount = catechismGroups.length;
   const liturgicalAvailabilityCount = liturgicalAvailability.length;
   const titheContributionCount = titheContributions.length;
@@ -168,10 +173,22 @@ export default async function AdminDashboardPage() {
             subtitle={`${events.length} ${events.length === 1 ? "futuro" : "futuros"}`}
           />
           <RowLink
+            href="/painel/liturgia-do-dia"
+            icon={BookOpen}
+            title="Leituras do dia"
+            subtitle="Publique o Evangelho e uma reflexão"
+          />
+          <RowLink
             href="/painel/servir"
             icon={HeartHandshake}
             title="Servir"
             subtitle={`${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`}
+          />
+          <RowLink
+            href="/painel/pastorais"
+            icon={Users}
+            title="Grupos e pastorais"
+            subtitle={`${pastoralGroupCount} ${pastoralGroupCount === 1 ? "pastoral cadastrada" : "pastorais cadastradas"}`}
           />
           <RowLink
             href="/painel/catequese"

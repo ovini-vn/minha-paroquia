@@ -16,7 +16,7 @@ import {
   listParishesInDiocese,
   listParishesWithoutDiocese,
 } from "@/server/modules/dioceses/service";
-import { hasDioceseAccess } from "@/server/auth/guards";
+import { canAccessDiocese } from "@/server/auth/guards";
 import type { SessionContext } from "@/server/auth/session";
 import { cleanupTenantData } from "../helpers/cleanup";
 
@@ -33,6 +33,8 @@ function sessionWith(
     themePreference: "default",
     membership: null,
     dioceses,
+    provinces: [],
+    national: null,
     permissions: [],
   };
 }
@@ -192,22 +194,22 @@ describe("hierarquia diocese → paróquia", () => {
     ).rejects.toThrow();
   });
 
-  it("bispo da diocese A não tem acesso à diocese B", () => {
+  it("bispo da diocese A não tem acesso à diocese B", async () => {
     const bispoA = sessionWith([
       { id: dioceseAId, name: "A", state: "PR", role: "BISPO" },
     ]);
-    expect(hasDioceseAccess(bispoA, dioceseAId)).toBe(true);
-    expect(hasDioceseAccess(bispoA, dioceseBId)).toBe(false);
+    expect(await canAccessDiocese(bispoA, dioceseAId)).toBe(true);
+    expect(await canAccessDiocese(bispoA, dioceseBId)).toBe(false);
   });
 
-  it("quem não supervisiona nenhuma diocese não acessa nenhuma", () => {
-    expect(hasDioceseAccess(sessionWith([]), dioceseAId)).toBe(false);
+  it("quem não supervisiona nenhuma diocese não acessa nenhuma", async () => {
+    expect(await canAccessDiocese(sessionWith([]), dioceseAId)).toBe(false);
   });
 
-  it("admin da plataforma acessa qualquer diocese", () => {
+  it("admin da plataforma acessa qualquer diocese", async () => {
     const admin = sessionWith([], true);
-    expect(hasDioceseAccess(admin, dioceseAId)).toBe(true);
-    expect(hasDioceseAccess(admin, dioceseBId)).toBe(true);
+    expect(await canAccessDiocese(admin, dioceseAId)).toBe(true);
+    expect(await canAccessDiocese(admin, dioceseBId)).toBe(true);
   });
 
   it("remover o vínculo tira o acesso do bispo", async () => {

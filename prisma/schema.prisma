@@ -52,6 +52,8 @@ model User {
   serviceInterests    ServiceInterest[]
   pastoralInterests   PastoralGroupInterest[]
   dioceseMemberships  DioceseMembership[]
+  provinceMemberships ProvinceMembership[]
+  nationalMembership  NationalMembership?
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]
@@ -73,21 +75,92 @@ model User {
   @@map("users")
 }
 
+// Província Eclesiástica — o agrupamento canônico de dioceses. Uma
+// arquidiocese (sede metropolitana) mais as dioceses sufragâneas, sob um
+// Arcebispo Metropolita. No Brasil são ~45.
+//
+// NÃO é o mesmo recorte que os Regionais da CNBB (18, geográfico/pastoral):
+// uma diocese pertence a uma província E a um regional ao mesmo tempo. Só a
+// província está modelada aqui — regional entra se/quando for necessário.
+//
+// Como `dioceses` e `parishes`, é topo de hierarquia e não leva RLS.
+model EcclesiasticalProvince {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  dioceses    Diocese[]
+  memberships ProvinceMembership[]
+
+  @@map("ecclesiastical_provinces")
+}
+
+enum ProvinceRole {
+  ARCEBISPO_METROPOLITA
+  ADMINISTRADOR_PROVINCIAL
+}
+
+model ProvinceMembership {
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  provinceId String           @map("province_id")
+  role       ProvinceRole     @default(ARCEBISPO_METROPOLITA)
+  status     MembershipStatus @default(active)
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  province EcclesiasticalProvince @relation(fields: [provinceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provinceId])
+  @@index([provinceId, status])
+  @@map("province_memberships")
+}
+
+// Escopo NACIONAL. Distinto de users.isPlatformAdmin de propósito: admin da
+// plataforma é papel técnico (cria dioceses, administra o sistema); este é
+// papel eclesiástico de acompanhamento — vê todas as dioceses, não
+// administra a plataforma.
+enum NationalRole {
+  PRESIDENTE_CNBB
+  OBSERVADOR_NACIONAL
+}
+
+model NationalMembership {
+  id        String           @id @default(uuid())
+  userId    String           @unique @map("user_id")
+  role      NationalRole     @default(OBSERVADOR_NACIONAL)
+  status    MembershipStatus @default(active)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("national_memberships")
+}
+
 // Diocese — o nível acima da paróquia. Como `parishes`, é "topo" de
 // hierarquia e NÃO leva RLS: não pertence a nenhum tenant, é o que define
 // tenants. Ver src/server/modules/dioceses/service.ts para como o acesso do
 // bispo é resolvido sem afrouxar o isolamento por paróquia.
 model Diocese {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  state     String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  state          String?
+  // Sede metropolitana da província (a arquidiocese). No máximo uma por
+  // província, mas não travamos isso no banco: durante a montagem do mapa
+  // eclesiástico a paróquia/diocese pode ficar temporariamente sem sede.
+  isArchdiocese  Boolean  @default(false) @map("is_archdiocese")
+  provinceId     String?  @map("province_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
+  province    EcclesiasticalProvince? @relation(fields: [provinceId], references: [id], onDelete: SetNull)
   parishes    Parish[]
   memberships DioceseMembership[]
 
+  @@index([provinceId])
   @@map("dioceses")
 }
 

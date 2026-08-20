@@ -64,7 +64,7 @@ export async function assignDioceseMemberAction(
 ): Promise<ActionState> {
   const session = await requireSession();
   const dioceseId = formData.get("dioceseId") as string;
-  requireDioceseAccess(session, dioceseId);
+  await requireDioceseAccess(session, dioceseId);
 
   const role = (formData.get("role") as string) === "ADMINISTRADOR_DIOCESANO"
     ? "ADMINISTRADOR_DIOCESANO"
@@ -85,7 +85,7 @@ export async function assignDioceseMemberAction(
 export async function removeDioceseMemberAction(formData: FormData): Promise<void> {
   const session = await requireSession();
   const dioceseId = formData.get("dioceseId") as string;
-  requireDioceseAccess(session, dioceseId);
+  await requireDioceseAccess(session, dioceseId);
 
   await removeDioceseMember(dioceseId, formData.get("userId") as string);
   revalidatePath("/plataforma/dioceses");

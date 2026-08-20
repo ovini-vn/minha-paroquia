@@ -10,6 +10,8 @@ import {
   LogOut,
   Landmark,
   Settings,
+  Crown,
+  Flag,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -81,25 +83,55 @@ export default async function ProfilePage() {
         </Card>
       </section>
 
-      {(session.dioceses.length > 0 || session.isPlatformAdmin) && (
+      {(session.dioceses.length > 0 ||
+        session.provinces.length > 0 ||
+        session.national !== null ||
+        session.isPlatformAdmin) && (
         <section>
           <Eyebrow tone="accent" className="mb-3">
-            Diocese
+            Acompanhamento
           </Eyebrow>
           <Card className="px-3.5 py-1.5">
-            <RowLink
-              href="/diocese"
-              icon={Landmark}
-              title={session.dioceses.length === 1 ? session.dioceses[0]!.name : "Dioceses"}
-              subtitle="Visão do conjunto das paróquias"
-            />
-            {session.isPlatformAdmin && (
+            {(session.national !== null || session.isPlatformAdmin) && (
               <RowLink
-                href="/plataforma/dioceses"
-                icon={Settings}
-                title="Administração da plataforma"
-                subtitle="Dioceses, paróquias e vínculos"
+                href="/nacional"
+                icon={Flag}
+                title="Visão nacional"
+                subtitle="Províncias e dioceses do país"
               />
+            )}
+            {session.provinces.map((province) => (
+              <RowLink
+                key={province.id}
+                href={`/provincia/${province.id}`}
+                icon={Crown}
+                title={province.name}
+                subtitle="Província eclesiástica"
+              />
+            ))}
+            {(session.dioceses.length > 0 || session.isPlatformAdmin) && (
+              <RowLink
+                href="/diocese"
+                icon={Landmark}
+                title={session.dioceses.length === 1 ? session.dioceses[0]!.name : "Dioceses"}
+                subtitle="Visão do conjunto das paróquias"
+              />
+            )}
+            {session.isPlatformAdmin && (
+              <>
+                <RowLink
+                  href="/plataforma/dioceses"
+                  icon={Settings}
+                  title="Dioceses e paróquias"
+                  subtitle="Administração da plataforma"
+                />
+                <RowLink
+                  href="/plataforma/estrutura"
+                  icon={Settings}
+                  title="Estrutura eclesiástica"
+                  subtitle="Províncias, sedes e acesso nacional"
+                />
+              </>
             )}
           </Card>
         </section>

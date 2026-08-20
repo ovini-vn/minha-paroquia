@@ -12,6 +12,8 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     themePreference: "default",
     membership: null,
     dioceses: [],
+    provinces: [],
+    national: null,
     permissions: ROLE_PERMISSIONS[roleCode],
   };
 }

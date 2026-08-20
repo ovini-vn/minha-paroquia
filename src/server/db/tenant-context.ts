@@ -71,6 +71,22 @@ export async function withDioceseContext<T>(
 }
 
 /**
+ * Administração de UMA província eclesiástica — mesma ideia de
+ * withDioceseContext: a política de RLS amarra a operação à província
+ * setada, em vez de bypassar o isolamento inteiro.
+ */
+export async function withProvinceContext<T>(
+  provinceId: string,
+  fn: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  assertMatches(provinceId, UUID_RE, "provinceId");
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET LOCAL app.current_province_id = '${provinceId}'`);
+    return fn(tx);
+  });
+}
+
+/**
  * Validação pública de convite (/convite/:code), antes de qualquer sessão
  * existir. A política de RLS permite ler exatamente a linha cujo `code`
  * bate com o valor setado aqui — não expõe nenhum outro convite.

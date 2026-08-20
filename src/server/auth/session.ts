@@ -4,7 +4,7 @@ import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
-import type { ThemePreference, DioceseRole } from "@prisma/client";
+import type { ThemePreference, DioceseRole, ProvinceRole, NationalRole } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -29,6 +29,10 @@ export type SessionContext = {
    * é independente da diocese que ele acompanha.
    */
   dioceses: { id: string; name: string; state: string | null; role: DioceseRole }[];
+  /** Províncias eclesiásticas que este usuário supervisiona (arcebispo). */
+  provinces: { id: string; name: string; role: ProvinceRole }[];
+  /** Escopo nacional (CNBB) — vê todas as dioceses. null se não tem. */
+  national: { role: NationalRole } | null;
   permissions: PermissionCode[];
 };
 
@@ -89,9 +93,8 @@ export async function getSessionContext(): Promise<SessionContext | null> {
   // Tudo o que o usuário pode ler sobre si mesmo antes de haver contexto de
   // tenant, numa transação só: vínculo de paróquia, overrides e vínculos
   // diocesanos (as três políticas de RLS permitem leitura por user_id).
-  const { membershipRow, overrides, dioceseRows } = await withOwnMembershipLookup(
-    user.id,
-    async (tx) => {
+  const { membershipRow, overrides, dioceseRows, provinceRows, nationalRow } =
+    await withOwnMembershipLookup(user.id, async (tx) => {
       const membershipRow = await tx.parishMembership.findFirst({
         where: { userId: user.id, status: "active" },
         include: { parish: true, role: { include: { rolePermissions: { include: { permission: true } } } } },
@@ -101,9 +104,15 @@ export async function getSessionContext(): Promise<SessionContext | null> {
         where: { userId: user.id, status: "active" },
         include: { diocese: { select: { id: true, name: true, state: true } } },
       });
-      return { membershipRow, overrides, dioceseRows };
-    },
-  );
+      const provinceRows = await tx.provinceMembership.findMany({
+        where: { userId: user.id, status: "active" },
+        include: { province: { select: { id: true, name: true } } },
+      });
+      const nationalRow = await tx.nationalMembership.findFirst({
+        where: { userId: user.id, status: "active" },
+      });
+      return { membershipRow, overrides, dioceseRows, provinceRows, nationalRow };
+    });
 
   const dioceses = dioceseRows.map((row) => ({
     id: row.diocese.id,
@@ -111,6 +120,12 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     state: row.diocese.state,
     role: row.role,
   }));
+  const provinces = provinceRows.map((row) => ({
+    id: row.province.id,
+    name: row.province.name,
+    role: row.role,
+  }));
+  const national = nationalRow ? { role: nationalRow.role } : null;
 
   if (!membershipRow) {
     return {
@@ -121,6 +136,8 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       themePreference: user.themePreference,
       membership: null,
       dioceses,
+      provinces,
+      national,
       permissions: [],
     };
   }
@@ -142,6 +159,8 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       roleName: membershipRow.role.name,
     },
     dioceses,
+    provinces,
+    national,
     permissions: computeEffectivePermissions(rolePermissions, overrides),
   };
 }

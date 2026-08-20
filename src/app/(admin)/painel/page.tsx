@@ -128,6 +128,8 @@ export default async function AdminDashboardPage() {
           Essas informações aparecem para o fiel em Minha Comunidade.
         </p>
         <ParishProfileForm
+          city={parish?.city ?? ""}
+          state={parish?.state ?? ""}
           address={parish?.address ?? ""}
           phone={parish?.phone ?? ""}
           description={parish?.description ?? ""}

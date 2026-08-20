@@ -75,6 +75,10 @@ model Parish {
   id          String   @id @default(uuid())
   name        String
   slug        String   @unique
+  // Usadas pra diferenciar paróquias com o mesmo nome (comum — ex.: várias
+  // "Nossa Senhora de Fátima" em cidades diferentes) e pra montar o slug.
+  city        String?
+  state       String?
   address     String?
   phone       String?
   description String?

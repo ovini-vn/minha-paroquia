@@ -22,6 +22,8 @@ const DEV_PASSWORD = "ComunidadeDev123!";
 
 async function seedDemoParish() {
   const parishProfile = {
+    city: "São Paulo",
+    state: "SP",
     address: "Rua das Palmeiras, 210 — Centro",
     phone: "(11) 3333-4455",
     description: "Uma comunidade acolhedora, caminhando junto há mais de 40 anos.",

@@ -17,6 +17,8 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
 
   try {
     const input = updateParishProfileInputSchema.parse({
+      city: formData.get("city") || undefined,
+      state: formData.get("state") || undefined,
       address: formData.get("address") || undefined,
       phone: formData.get("phone") || undefined,
       description: formData.get("description") || undefined,

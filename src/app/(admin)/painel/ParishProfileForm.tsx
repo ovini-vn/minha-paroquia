@@ -7,17 +7,44 @@ import { Button } from "@/components/ui/Button";
 const initialState: ActionState = {};
 
 type ParishProfileFormProps = {
+  city: string;
+  state: string;
   address: string;
   phone: string;
   description: string;
   logoUrl: string;
 };
 
-export function ParishProfileForm({ address, phone, description, logoUrl }: ParishProfileFormProps) {
-  const [state, formAction, pending] = useActionState(updateParishProfileAction, initialState);
+export function ParishProfileForm({ city, state, address, phone, description, logoUrl }: ParishProfileFormProps) {
+  const [formState, formAction, pending] = useActionState(updateParishProfileAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="parish-city" className="text-sm font-medium text-muted">
+            Cidade
+          </label>
+          <input
+            id="parish-city"
+            name="city"
+            defaultValue={city}
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="parish-state" className="text-sm font-medium text-muted">
+            UF
+          </label>
+          <input
+            id="parish-state"
+            name="state"
+            maxLength={2}
+            defaultValue={state}
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm uppercase text-foreground"
+          />
+        </div>
+      </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="parish-address" className="text-sm font-medium text-muted">
           Endereço (opcional)
@@ -67,7 +94,7 @@ export function ParishProfileForm({ address, phone, description, logoUrl }: Pari
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Salvando..." : "Salvar"}
       </Button>
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {formState.error && <p className="text-sm text-red-600">{formState.error}</p>}
     </form>
   );
 }

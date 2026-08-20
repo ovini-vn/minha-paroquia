@@ -9,16 +9,32 @@ describe("criação de paróquia", () => {
     await prisma.parish.deleteMany({ where: { id: { in: createdIds } } });
   });
 
-  it("cria uma paróquia com slug derivado do nome", async () => {
-    const parish = await registerParish({ name: `Paróquia Teste ${Date.now()}` });
+  it("cria uma paróquia com slug derivado do nome e da cidade", async () => {
+    const parish = await registerParish({ name: `Paróquia Teste ${Date.now()}`, city: "Belo Horizonte", state: "MG" });
     createdIds.push(parish.id);
-    expect(parish.slug).toMatch(/^paroquia-teste-/);
+    expect(parish.slug).toMatch(/^paroquia-teste-.*-belo-horizonte$/);
+    expect(parish.city).toBe("Belo Horizonte");
+    expect(parish.state).toBe("MG");
   });
 
-  it("rejeita um nome que geraria um slug já em uso", async () => {
+  it("permite duas paróquias com o mesmo nome em cidades diferentes", async () => {
+    const name = `Nossa Senhora de Fátima ${Date.now()}`;
+    const first = await registerParish({ name, city: "Recife", state: "PE" });
+    const second = await registerParish({ name, city: "Curitiba", state: "PR" });
+    createdIds.push(first.id, second.id);
+
+    expect(first.slug).not.toBe(second.slug);
+    expect(first.slug).toMatch(/-recife$/);
+    expect(second.slug).toMatch(/-curitiba$/);
+  });
+
+  it("mesmo nome e cidade não trava — cai num sufixo numérico em vez de rejeitar", async () => {
     const name = `Paróquia Duplicada ${Date.now()}`;
-    const first = await registerParish({ name });
-    createdIds.push(first.id);
-    await expect(registerParish({ name })).rejects.toThrow();
+    const first = await registerParish({ name, city: "Salvador", state: "BA" });
+    const second = await registerParish({ name, city: "Salvador", state: "BA" });
+    createdIds.push(first.id, second.id);
+
+    expect(first.slug).not.toBe(second.slug);
+    expect(second.slug).toBe(`${first.slug}-2`);
   });
 });

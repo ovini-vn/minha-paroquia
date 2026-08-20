@@ -14,13 +14,20 @@ export function findParishById(id: string) {
   return prisma.parish.findUnique({ where: { id } });
 }
 
-export function createParish(data: { name: string; slug: string }) {
+export function createParish(data: { name: string; slug: string; city?: string; state?: string }) {
   return prisma.parish.create({ data });
 }
 
 export function updateParishProfile(
   id: string,
-  data: { address: string | null; phone: string | null; description: string | null; logoUrl: string | null },
+  data: {
+    city: string | null;
+    state: string | null;
+    address: string | null;
+    phone: string | null;
+    description: string | null;
+    logoUrl: string | null;
+  },
 ) {
   return prisma.parish.update({ where: { id }, data });
 }

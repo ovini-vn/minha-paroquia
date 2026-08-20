@@ -21,18 +21,30 @@ function slugify(name: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
-export async function registerParish(input: { name: string }) {
-  const slug = slugify(input.name);
-  if (!slug) {
-    throw new ValidationError("Nome da paróquia inválido.");
+/**
+ * Nomes de paróquia se repetem muito (padroeiros comuns, ex.: "Nossa
+ * Senhora de Fátima" existe em várias cidades) — o slug incorpora a cidade
+ * pra evitar colisão, e cai num sufixo numérico no caso raro de duas
+ * paróquias com o mesmo nome *e* cidade.
+ */
+async function uniqueSlugFor(name: string, city?: string): Promise<string> {
+  const base = slugify(city ? `${name}-${city}` : name);
+  if (!base) {
+    throw new ValidationError("Nome ou cidade inválidos.");
   }
 
-  const existing = await findParishBySlug(slug);
-  if (existing) {
-    throw new ValidationError("Já existe uma paróquia com um nome muito parecido.");
+  let slug = base;
+  let attempt = 2;
+  while (await findParishBySlug(slug)) {
+    slug = `${base}-${attempt}`;
+    attempt += 1;
   }
+  return slug;
+}
 
-  return createParish({ name: input.name, slug });
+export async function registerParish(input: { name: string; city?: string; state?: string }) {
+  const slug = await uniqueSlugFor(input.name, input.city);
+  return createParish({ name: input.name, slug, city: input.city, state: input.state });
 }
 
 export function getParish(parishId: string) {
@@ -41,6 +53,8 @@ export function getParish(parishId: string) {
 
 export function updateOwnParishProfile(parishId: string, input: UpdateParishProfileInput) {
   return updateParishProfile(parishId, {
+    city: input.city || null,
+    state: input.state || null,
     address: input.address || null,
     phone: input.phone || null,
     description: input.description || null,

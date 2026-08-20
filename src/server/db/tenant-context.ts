@@ -51,6 +51,26 @@ export async function withOwnMembershipLookup<T>(
 }
 
 /**
+ * Administração de UMA diocese (ler/gravar diocese_memberships).
+ *
+ * Existe para não precisar de withPlatformContext aqui: a política de RLS
+ * amarra a operação à diocese setada, então mesmo um erro de programação
+ * não alcança o vínculo de outra diocese. Bypass total seria conveniente e
+ * perigoso — a autorização de QUEM pode administrar esta diocese continua
+ * sendo de quem chama (requireDioceseAccess).
+ */
+export async function withDioceseContext<T>(
+  dioceseId: string,
+  fn: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  assertMatches(dioceseId, UUID_RE, "dioceseId");
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET LOCAL app.current_diocese_id = '${dioceseId}'`);
+    return fn(tx);
+  });
+}
+
+/**
  * Validação pública de convite (/convite/:code), antes de qualquer sessão
  * existir. A política de RLS permite ler exatamente a linha cujo `code`
  * bate com o valor setado aqui — não expõe nenhum outro convite.

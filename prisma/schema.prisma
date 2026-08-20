@@ -51,6 +51,7 @@ model User {
   volunteerProfiles   VolunteerProfile[]
   serviceInterests    ServiceInterest[]
   pastoralInterests   PastoralGroupInterest[]
+  dioceseMemberships  DioceseMembership[]
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]
@@ -72,10 +73,55 @@ model User {
   @@map("users")
 }
 
+// Diocese — o nível acima da paróquia. Como `parishes`, é "topo" de
+// hierarquia e NÃO leva RLS: não pertence a nenhum tenant, é o que define
+// tenants. Ver src/server/modules/dioceses/service.ts para como o acesso do
+// bispo é resolvido sem afrouxar o isolamento por paróquia.
+model Diocese {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  state     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parishes    Parish[]
+  memberships DioceseMembership[]
+
+  @@map("dioceses")
+}
+
+enum DioceseRole {
+  BISPO
+  ADMINISTRADOR_DIOCESANO
+}
+
+// Vínculo de uma pessoa com uma DIOCESE — separado de ParishMembership de
+// propósito: é outro escopo. Bispo não é "papel de paróquia" e não deve
+// aparecer nas opções de convite paroquial.
+model DioceseMembership {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  dioceseId String           @map("diocese_id")
+  role      DioceseRole      @default(BISPO)
+  status    MembershipStatus @default(active)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  diocese Diocese @relation(fields: [dioceseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dioceseId])
+  @@index([dioceseId, status])
+  @@map("diocese_memberships")
+}
+
 model Parish {
   id          String   @id @default(uuid())
   name        String
   slug        String   @unique
+  // Opcional: paróquias cadastradas antes da diocese existir seguem válidas
+  // e sem diocese até alguém vinculá-las.
+  dioceseId   String?  @map("diocese_id")
   // Usadas pra diferenciar paróquias com o mesmo nome (comum — ex.: várias
   // "Nossa Senhora de Fátima" em cidades diferentes) e pra montar o slug.
   city        String?
@@ -87,6 +133,7 @@ model Parish {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  diocese            Diocese?           @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
   memberships        ParishMembership[]
   invitations        Invitation[]
   priestProfiles     PriestProfile[]

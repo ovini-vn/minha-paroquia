@@ -1,25 +1,8 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
+import { slugify } from "@/server/shared/slug";
 import { createParish, findParishBySlug, findParishById, updateParishProfile } from "./repository";
 import type { UpdateParishProfileInput } from "./schema";
-
-// Faixa Unicode "Combining Diacritical Marks" (0x0300-0x036f), construída por
-// código para evitar problemas de encoding de caracteres combinantes no
-// arquivo-fonte.
-const COMBINING_MARKS_RE = new RegExp(
-  `[${String.fromCharCode(0x0300)}-${String.fromCharCode(0x036f)}]`,
-  "g",
-);
-
-function slugify(name: string): string {
-  return name
-    .normalize("NFD")
-    .replace(COMBINING_MARKS_RE, "") // remove acentos (a -> a, c -> c, ...)
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 /**
  * Nomes de paróquia se repetem muito (padroeiros comuns, ex.: "Nossa

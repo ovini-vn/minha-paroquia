@@ -4,7 +4,7 @@ import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
-import type { ThemePreference } from "@prisma/client";
+import type { ThemePreference, DioceseRole } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -23,6 +23,12 @@ export type SessionContext = {
     roleCode: RoleCode;
     roleName: string;
   } | null;
+  /**
+   * Dioceses que este usuário supervisiona. Escopo SEPARADO de `membership`:
+   * um bispo pode ter (ou não) vínculo com uma paróquia específica, e isso
+   * é independente da diocese que ele acompanha.
+   */
+  dioceses: { id: string; name: string; state: string | null; role: DioceseRole }[];
   permissions: PermissionCode[];
 };
 
@@ -80,14 +86,31 @@ export async function getSessionContext(): Promise<SessionContext | null> {
 
   const { user } = session;
 
-  const { membershipRow, overrides } = await withOwnMembershipLookup(user.id, async (tx) => {
-    const membershipRow = await tx.parishMembership.findFirst({
-      where: { userId: user.id, status: "active" },
-      include: { parish: true, role: { include: { rolePermissions: { include: { permission: true } } } } },
-    });
-    const overrides = await tx.permissionOverride.findMany({ where: { userId: user.id } });
-    return { membershipRow, overrides };
-  });
+  // Tudo o que o usuário pode ler sobre si mesmo antes de haver contexto de
+  // tenant, numa transação só: vínculo de paróquia, overrides e vínculos
+  // diocesanos (as três políticas de RLS permitem leitura por user_id).
+  const { membershipRow, overrides, dioceseRows } = await withOwnMembershipLookup(
+    user.id,
+    async (tx) => {
+      const membershipRow = await tx.parishMembership.findFirst({
+        where: { userId: user.id, status: "active" },
+        include: { parish: true, role: { include: { rolePermissions: { include: { permission: true } } } } },
+      });
+      const overrides = await tx.permissionOverride.findMany({ where: { userId: user.id } });
+      const dioceseRows = await tx.dioceseMembership.findMany({
+        where: { userId: user.id, status: "active" },
+        include: { diocese: { select: { id: true, name: true, state: true } } },
+      });
+      return { membershipRow, overrides, dioceseRows };
+    },
+  );
+
+  const dioceses = dioceseRows.map((row) => ({
+    id: row.diocese.id,
+    name: row.diocese.name,
+    state: row.diocese.state,
+    role: row.role,
+  }));
 
   if (!membershipRow) {
     return {
@@ -97,6 +120,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       isPlatformAdmin: user.isPlatformAdmin,
       themePreference: user.themePreference,
       membership: null,
+      dioceses,
       permissions: [],
     };
   }
@@ -117,6 +141,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       roleCode: membershipRow.role.code as RoleCode,
       roleName: membershipRow.role.name,
     },
+    dioceses,
     permissions: computeEffectivePermissions(rolePermissions, overrides),
   };
 }

@@ -8,6 +8,8 @@ import {
   BookOpen,
   LayoutDashboard,
   LogOut,
+  Landmark,
+  Settings,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -78,6 +80,30 @@ export default async function ProfilePage() {
           />
         </Card>
       </section>
+
+      {(session.dioceses.length > 0 || session.isPlatformAdmin) && (
+        <section>
+          <Eyebrow tone="accent" className="mb-3">
+            Diocese
+          </Eyebrow>
+          <Card className="px-3.5 py-1.5">
+            <RowLink
+              href="/diocese"
+              icon={Landmark}
+              title={session.dioceses.length === 1 ? session.dioceses[0]!.name : "Dioceses"}
+              subtitle="Visão do conjunto das paróquias"
+            />
+            {session.isPlatformAdmin && (
+              <RowLink
+                href="/plataforma/dioceses"
+                icon={Settings}
+                title="Administração da plataforma"
+                subtitle="Dioceses, paróquias e vínculos"
+              />
+            )}
+          </Card>
+        </section>
+      )}
 
       {(canManageAvailability || canTeachCatequese || canSeeAdminPanel) && (
         <section>

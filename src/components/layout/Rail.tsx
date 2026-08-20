@@ -29,7 +29,7 @@ export function Rail({ parishName, city }: { parishName: string; city?: string |
 
       <nav className="flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
-          const active = isNavItemActive(pathname, item.href);
+          const active = isNavItemActive(pathname, item);
           const Icon = item.icon;
           return (
             <Link

@@ -92,6 +92,7 @@ model Parish {
   celebrations       Celebration[]
   events             Event[]
   avisos             Aviso[]
+  liturgyOfTheDay    LiturgyOfTheDay[]
   posts              Post[]
   priestAvailability  PriestAvailability[]
   appointments        Appointment[]
@@ -379,6 +380,33 @@ model Aviso {
 
   @@index([parishId, createdAt])
   @@map("avisos")
+}
+
+// Leituras do dia publicadas pela própria paróquia. Guardamos só as
+// REFERÊNCIAS (ex.: "Mt 20, 1-16") e a reflexão autoral do pároco — nunca o
+// texto bíblico, que vem de traduções licenciadas. Ver
+// src/server/modules/liturgia/daily-service.ts.
+model LiturgyOfTheDay {
+  id               String   @id @default(uuid())
+  parishId         String   @map("parish_id")
+  // Dia a que se refere, sem hora (uma publicação por paróquia por dia).
+  date             DateTime @db.Date
+  gospelReference  String   @map("gospel_reference")
+  gospelTitle      String?  @map("gospel_title")
+  firstReading     String?  @map("first_reading")
+  psalm            String?
+  secondReading    String?  @map("second_reading")
+  // Reflexão do pároco: conteúdo autoral da paróquia, esse sim pode ir na íntegra.
+  reflection       String?
+  createdBy        String   @map("created_by")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@unique([parishId, date])
+  @@index([parishId, date])
+  @@map("liturgy_of_the_day")
 }
 
 enum PostMediaType {

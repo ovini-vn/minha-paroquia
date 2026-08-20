@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Church, BookOpen, HandHeart, Megaphone, CalendarDays } from "lucide-react";
+import { Church, BookOpen, Megaphone, CalendarDays } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listPriests } from "@/server/modules/priests/service";
@@ -220,10 +220,10 @@ export default async function ComunidadePage() {
             subtitle="Turmas, encontros e ritos"
           />
           <RowLink
-            href="/comunidade/oracao"
-            icon={HandHeart}
-            title="Pedidos de oração"
-            subtitle="Envie ao pároco ou compartilhe no mural"
+            href="/agenda"
+            icon={CalendarDays}
+            title="Agenda completa"
+            subtitle="Missas, eventos e meus atendimentos"
           />
         </Card>
       </section>

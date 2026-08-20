@@ -33,8 +33,8 @@ const POST_PREVIEW_LABEL: Record<string, string> = {
 };
 
 const SHORTCUTS = [
-  { href: "/comunidade", icon: Church, label: "Comunidade" },
-  { href: "/comunidade/oracao", icon: HandHeart, label: "Oração" },
+  { href: "/agenda", icon: CalendarDays, label: "Agenda" },
+  { href: "/oracao", icon: HandHeart, label: "Oração" },
   { href: "/comunidade/catequese", icon: BookOpen, label: "Catequese" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
 ] as const;
@@ -179,16 +179,16 @@ export default async function HomePage() {
             />
           )}
           <RowLink
+            href="/agenda"
+            icon={CalendarDays}
+            title="Agenda da comunidade"
+            subtitle="Missas, eventos e seus atendimentos"
+          />
+          <RowLink
             href="/comunidade"
             icon={Users}
             title="Sacerdotes e pastorais"
             subtitle="Conheça quem caminha com você"
-          />
-          <RowLink
-            href="/eu/atendimentos"
-            icon={CalendarDays}
-            title="Meus atendimentos"
-            subtitle="Agende uma conversa ou confissão"
           />
         </Card>
       </section>

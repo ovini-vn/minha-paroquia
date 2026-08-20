@@ -1,3 +1,4 @@
+import { HeartHandshake, Music, Check, CalendarDays } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities, listMyInterests } from "@/server/modules/opportunities/service";
@@ -6,8 +7,9 @@ import { Card } from "@/components/ui/Card";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { RowLink } from "@/components/ui/RowLink";
+import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
-import { HeartHandshake } from "lucide-react";
 
 export default async function ServirPage() {
   const session = await getSessionContext();
@@ -30,61 +32,71 @@ export default async function ServirPage() {
   const interestedOpportunityIds = new Set(myInterests.map((i) => i.opportunityId));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center">
-        <h1 className="font-serif text-2xl text-foreground">Servir</h1>
-        <p className="mt-1 text-sm text-muted">Existe um lugar para você na nossa comunidade.</p>
-      </div>
-
-      <Card>
-        <p className="text-xs uppercase tracking-wide text-primary">Eu posso ajudar</p>
+    <div className="flex flex-col">
+      {/* Chamada principal — o coração desta aba, em destaque dourado. */}
+      <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-5">
+        <Eyebrow className="text-[#8a6b24] dark:text-gold">Serviço</Eyebrow>
+        <h1 className="mb-2 mt-2 font-serif text-[26px] font-semibold leading-tight text-foreground">
+          Existe um lugar para você.
+        </h1>
         {volunteerProfile ? (
           <>
-            <p className="mt-1 text-sm text-muted">
+            <p className="max-w-[34ch] text-[13.5px] text-muted">
               Obrigado por se colocar à disposição — sua comunidade já sabe como você pode ajudar.
             </p>
-            <LinkButton href="/servir/posso-ajudar" variant="secondary" className="mt-3">
-              Atualizar
+            <LinkButton href="/servir/posso-ajudar" variant="gold" className="mt-4 flex w-full">
+              Atualizar como posso ajudar
             </LinkButton>
           </>
         ) : (
           <>
-            <p className="mt-1 text-sm text-muted">
+            <p className="max-w-[34ch] text-[13.5px] text-muted">
               Conte seu tempo, seu talento, ou como você quer servir sua comunidade.
             </p>
-            <LinkButton href="/servir/posso-ajudar" className="mt-3">
+            <LinkButton href="/servir/posso-ajudar" className="mt-4 flex w-full">
+              <HeartHandshake className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
               Eu posso ajudar
             </LinkButton>
           </>
         )}
-      </Card>
+      </div>
 
-      <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Oportunidades</p>
+      <section className="pt-7">
+        <SectionTitle eyebrow="Oportunidades" title="Onde precisam de você" />
         {opportunities.length === 0 ? (
-          <Card>
-            <p className="text-sm text-muted">Nenhuma oportunidade em aberto no momento.</p>
-          </Card>
+          <EmptyState
+            icon={CalendarDays}
+            title="Nenhuma oportunidade em aberto"
+            description="Quando a paróquia precisar de voluntários, aparece aqui."
+          />
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {opportunities.map((opportunity) => {
               const alreadyInterested = interestedOpportunityIds.has(opportunity.id);
               return (
                 <Card key={opportunity.id}>
-                  <p className="text-sm font-medium text-foreground">{opportunity.title}</p>
+                  <p className="font-serif text-lg font-semibold leading-tight text-foreground">
+                    {opportunity.title}
+                  </p>
                   {opportunity.description && (
-                    <p className="mt-1 text-sm text-muted">{opportunity.description}</p>
+                    <p className="mt-1.5 text-[13.5px] text-muted">{opportunity.description}</p>
                   )}
                   {opportunity.startsAt && (
-                    <p className="mt-1 text-xs text-muted">{formatDateTime(opportunity.startsAt)}</p>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+                      <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+                      {formatDateTime(opportunity.startsAt)}
+                    </p>
                   )}
-                  <div className="mt-3">
+                  <div className="mt-3.5">
                     {alreadyInterested ? (
-                      <Badge>Interesse manifestado</Badge>
+                      <Badge tone="success">
+                        <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                        Interesse manifestado
+                      </Badge>
                     ) : (
                       <form action={expressInterestAction}>
                         <input type="hidden" name="opportunityId" value={opportunity.id} />
-                        <Button type="submit" variant="secondary">
+                        <Button type="submit" variant="ghost" size="sm">
                           Tenho interesse
                         </Button>
                       </form>
@@ -97,9 +109,21 @@ export default async function ServirPage() {
         )}
       </section>
 
-      <LinkButton href="/servir/liturgia" variant="secondary" className="w-full">
-        Liturgia — disponibilidade e escala
-      </LinkButton>
+      <section className="pt-7">
+        <Eyebrow tone="accent" className="mb-3">
+          Servir na celebração
+        </Eyebrow>
+        <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/servir/liturgia"
+            icon={Music}
+            title="Liturgia"
+            subtitle="Minha disponibilidade e escala"
+          />
+        </Card>
+      </section>
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

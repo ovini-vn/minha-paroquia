@@ -1,4 +1,6 @@
+import { Headphones, Video } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/date";
 
 type Post = {
@@ -10,29 +12,42 @@ type Post = {
   priestProfile: { title: string; user: { fullName: string } };
 };
 
-const MEDIA_TYPE_LABEL: Record<string, string> = {
-  texto: "Texto",
-  audio: "Ouvir áudio",
-  video: "Assistir vídeo",
+const MEDIA: Record<string, { label: string; icon: typeof Headphones }> = {
+  audio: { label: "Ouvir áudio", icon: Headphones },
+  video: { label: "Assistir vídeo", icon: Video },
 };
 
 export function PostCard({ post }: { post: Post }) {
+  const media = MEDIA[post.mediaType];
+
   return (
-    <Card>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-sm font-medium text-foreground">{post.priestProfile.user.fullName}</p>
-        <p className="text-xs text-muted">{formatDateTime(post.publishedAt)}</p>
+    // A hairline dourada no topo marca o conteúdo editorial do padre.
+    <Card className="relative overflow-hidden before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
+      <div className="flex items-center gap-3">
+        <Avatar name={post.priestProfile.user.fullName} size="sm" />
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-foreground">
+            {post.priestProfile.user.fullName}
+          </p>
+          <p className="text-xs text-muted">
+            {post.priestProfile.title} · {formatDateTime(post.publishedAt)}
+          </p>
+        </div>
       </div>
+
       {post.mediaType === "texto" ? (
-        <p className="whitespace-pre-wrap text-sm text-muted">{post.contentText}</p>
+        <p className="mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.62] text-foreground">
+          {post.contentText}
+        </p>
       ) : (
         <a
           href={post.mediaUrl ?? "#"}
           target="_blank"
           rel="noreferrer"
-          className="text-sm font-medium text-primary underline"
+          className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/45 px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:border-gold"
         >
-          {MEDIA_TYPE_LABEL[post.mediaType]}
+          {media && <media.icon className="h-4 w-4" strokeWidth={1.5} aria-hidden />}
+          {media?.label ?? "Abrir"}
         </a>
       )}
     </Card>

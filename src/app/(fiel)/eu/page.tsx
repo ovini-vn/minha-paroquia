@@ -1,9 +1,23 @@
+import {
+  UserPen,
+  Sparkles,
+  CalendarDays,
+  Users,
+  HandCoins,
+  Clock,
+  BookOpen,
+  LayoutDashboard,
+  LogOut,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { findUserById } from "@/server/modules/users/repository";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button, LinkButton } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
+import { Avatar } from "@/components/ui/Avatar";
+import { RowLink } from "@/components/ui/RowLink";
+import { Eyebrow } from "@/components/ui/Typography";
 import { logoutAction } from "@/server/actions/auth-actions";
 import { formatDateOnly } from "@/lib/date";
 
@@ -19,66 +33,109 @@ export default async function ProfilePage() {
     session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH) ||
     session.permissions.includes(PERMISSIONS.CATEQUESE_MANAGE);
 
+  const detalhes = [user?.phone, user?.birthDate ? formatDateOnly(user.birthDate) : null]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <div className="flex flex-col gap-4">
-      <Card className="flex flex-col items-center gap-2 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl">
-          {session.fullName.charAt(0).toUpperCase()}
-        </div>
-        <p className="font-serif text-lg text-foreground">{session.fullName}</p>
-        <p className="text-sm text-muted">{session.email}</p>
-        {user?.phone && <p className="text-sm text-muted">{user.phone}</p>}
-        {user?.birthDate && <p className="text-sm text-muted">{formatDateOnly(user.birthDate)}</p>}
-        {session.membership && <Badge>{session.membership.roleName}</Badge>}
+    <div className="flex flex-col gap-6">
+      {/* Identidade — quem eu sou nesta comunidade. */}
+      <Card className="flex flex-col items-center gap-2 py-6 text-center">
+        <Avatar name={session.fullName} size="lg" />
+        <p className="mt-1 font-serif text-2xl font-semibold text-foreground">{session.fullName}</p>
+        <p className="text-[13px] text-muted">{session.email}</p>
+        {detalhes && <p className="text-[13px] text-muted">{detalhes}</p>}
+        {session.membership && (
+          <div className="mt-1 flex flex-col items-center gap-1.5">
+            <Badge>{session.membership.roleName}</Badge>
+            <p className="text-xs text-muted">{session.membership.parishName}</p>
+          </div>
+        )}
       </Card>
 
-      {session.membership && (
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-primary">Sua comunidade</p>
-          <p className="mt-1 text-sm text-foreground">{session.membership.parishName}</p>
+      <section>
+        <Eyebrow tone="accent" className="mb-3">
+          Minha caminhada
+        </Eyebrow>
+        <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/eu/atendimentos"
+            icon={CalendarDays}
+            title="Meus atendimentos"
+            subtitle="Conversas e confissões agendadas"
+          />
+          <RowLink
+            href="/eu/familia"
+            icon={Users}
+            title="Minha família"
+            subtitle="Dependentes e responsáveis"
+          />
+          <RowLink
+            href="/eu/dizimo"
+            icon={HandCoins}
+            title="Dízimo"
+            subtitle="Minha participação por período"
+          />
         </Card>
+      </section>
+
+      {(canManageAvailability || canTeachCatequese || canSeeAdminPanel) && (
+        <section>
+          <Eyebrow tone="accent" className="mb-3">
+            Meu serviço
+          </Eyebrow>
+          <Card className="px-3.5 py-1.5">
+            {canManageAvailability && (
+              <RowLink
+                href="/eu/disponibilidade"
+                icon={Clock}
+                title="Minha disponibilidade"
+                subtitle="Quando posso atender"
+              />
+            )}
+            {canTeachCatequese && (
+              <RowLink
+                href="/eu/catequese"
+                icon={BookOpen}
+                title="Minha catequese"
+                subtitle="Turmas que acompanho"
+              />
+            )}
+            {canSeeAdminPanel && (
+              <RowLink
+                href="/painel"
+                icon={LayoutDashboard}
+                title="Painel da paróquia"
+                subtitle="Gestão da comunidade"
+              />
+            )}
+          </Card>
+        </section>
       )}
 
-      <LinkButton href="/eu/perfil" variant="secondary" className="w-full">
-        Editar perfil
-      </LinkButton>
-
-      <LinkButton href="/eu/aparencia" variant="secondary" className="w-full">
-        Aparência
-      </LinkButton>
-
-      <LinkButton href="/eu/atendimentos" variant="secondary" className="w-full">
-        Meus atendimentos
-      </LinkButton>
-
-      <LinkButton href="/eu/familia" variant="secondary" className="w-full">
-        Minha família
-      </LinkButton>
-
-      <LinkButton href="/eu/dizimo" variant="secondary" className="w-full">
-        Minha participação no dízimo
-      </LinkButton>
-
-      {canManageAvailability && (
-        <LinkButton href="/eu/disponibilidade" variant="secondary" className="w-full">
-          Minha disponibilidade
-        </LinkButton>
-      )}
-
-      {canTeachCatequese && (
-        <LinkButton href="/eu/catequese" variant="secondary" className="w-full">
-          Minha catequese
-        </LinkButton>
-      )}
-
-      {canSeeAdminPanel && (
-        <LinkButton href="/painel" variant="secondary" className="w-full">
-          Painel da paróquia
-        </LinkButton>
-      )}
+      <section>
+        <Eyebrow tone="accent" className="mb-3">
+          Conta
+        </Eyebrow>
+        <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/eu/perfil"
+            icon={UserPen}
+            title="Editar perfil"
+            subtitle="Nome, telefone e data de nascimento"
+          />
+          <RowLink
+            href="/eu/aparencia"
+            icon={Sparkles}
+            title="Aparência"
+            subtitle="Tema padrão ou cor do Tempo Litúrgico"
+          />
+        </Card>
+      </section>
 
       <form action={logoutAction}>
         <Button variant="ghost" type="submit" className="w-full">
+          <LogOut className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
           Sair
         </Button>
       </form>

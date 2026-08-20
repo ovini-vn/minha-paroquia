@@ -15,8 +15,10 @@ import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
 import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Stat } from "@/components/ui/Stat";
+import { RowLink } from "@/components/ui/RowLink";
+import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { revokeInvitationAction } from "@/server/actions/invitation-actions";
@@ -25,7 +27,17 @@ import { CreateInviteForm } from "./CreateInviteForm";
 import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
-import { Church } from "lucide-react";
+import {
+  Church,
+  Megaphone,
+  PartyPopper,
+  HeartHandshake,
+  BookOpen,
+  Music,
+  HandCoins,
+  ScrollText,
+  KeyRound,
+} from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -34,14 +46,12 @@ const STATUS_LABEL: Record<string, string> = {
   revoked: "Cancelado",
 };
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <Card className="text-center">
-      <p className="text-3xl font-semibold text-primary">{value}</p>
-      <p className="mt-1 text-sm text-muted">{label}</p>
-    </Card>
-  );
-}
+const STATUS_TONE: Record<string, "success" | "muted" | "warning" | "error"> = {
+  pending: "warning",
+  used: "success",
+  expired: "muted",
+  revoked: "error",
+};
 
 export default async function AdminDashboardPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);
@@ -117,10 +127,10 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Fiéis" value={counts.fielCount} />
-        <StatCard label="Sacerdotes" value={counts.sacerdoteCount} />
-        <StatCard label="Convites emitidos" value={counts.invitesIssued} />
-        <StatCard label="Convites utilizados" value={counts.invitesUsed} />
+        <Stat label="Fiéis" value={counts.fielCount} />
+        <Stat label="Sacerdotes" value={counts.sacerdoteCount} />
+        <Stat label="Convites emitidos" value={counts.invitesIssued} />
+        <Stat label="Convites utilizados" value={counts.invitesUsed} />
       </div>
 
       <Card>
@@ -138,30 +148,65 @@ export default async function AdminDashboardPage() {
         />
       </Card>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-lg text-foreground">Avisos</p>
-              <p className="text-sm text-muted">{publishedAvisoCount} publicados</p>
-            </div>
-            <LinkButton href="/painel/avisos" variant="secondary">
-              Gerenciar
-            </LinkButton>
-          </div>
+      {/* Áreas de gestão — uma lista só, em vez de oito cards iguais
+          empilhados, cada um com seu próprio botão "Gerenciar". */}
+      <section>
+        <Eyebrow tone="accent" className="mb-3">
+          Áreas da paróquia
+        </Eyebrow>
+        <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/painel/avisos"
+            icon={Megaphone}
+            title="Avisos"
+            subtitle={`${publishedAvisoCount} ${publishedAvisoCount === 1 ? "publicado" : "publicados"}`}
+          />
+          <RowLink
+            href="/painel/eventos"
+            icon={PartyPopper}
+            title="Eventos"
+            subtitle={`${events.length} ${events.length === 1 ? "futuro" : "futuros"}`}
+          />
+          <RowLink
+            href="/painel/servir"
+            icon={HeartHandshake}
+            title="Servir"
+            subtitle={`${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`}
+          />
+          <RowLink
+            href="/painel/catequese"
+            icon={BookOpen}
+            title="Catequese"
+            subtitle={`${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`}
+          />
+          <RowLink
+            href="/painel/liturgia"
+            icon={Music}
+            title="Liturgia"
+            subtitle={`${liturgicalAvailabilityCount} ${liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}`}
+          />
+          <RowLink
+            href="/painel/dizimo"
+            icon={HandCoins}
+            title="Dízimo"
+            subtitle={`${titheContributionCount} ${titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em ${formatPeriodLabel(currentPeriod())}`}
+          />
+          <RowLink
+            href="/painel/sacramentos"
+            icon={ScrollText}
+            title="Sacramentos"
+            subtitle={`${pendingSacramentCount} ${pendingSacramentCount === 1 ? "aguardando validação" : "aguardando validação"}`}
+          />
+          {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+            <RowLink
+              href="/painel/permissoes"
+              icon={KeyRound}
+              title="Delegar permissões"
+              subtitle="Conceda ou revogue permissões por pessoa"
+            />
+          )}
         </Card>
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-lg text-foreground">Eventos</p>
-              <p className="text-sm text-muted">{events.length} futuros</p>
-            </div>
-            <LinkButton href="/painel/eventos" variant="secondary">
-              Gerenciar
-            </LinkButton>
-          </div>
-        </Card>
-      </div>
+      </section>
 
       <Card>
         <p className="mb-3 font-serif text-lg text-foreground">Convites</p>
@@ -186,7 +231,11 @@ export default async function AdminDashboardPage() {
                   <tr key={invitation.id} className="border-b border-border">
                     <td className="py-2 pr-4 font-mono">/convite/{invitation.code}</td>
                     <td className="py-2 pr-4">{invitation.type}</td>
-                    <td className="py-2 pr-4">{STATUS_LABEL[invitation.status] ?? invitation.status}</td>
+                    <td className="py-2 pr-4">
+                      <Badge tone={STATUS_TONE[invitation.status] ?? "muted"}>
+                        {STATUS_LABEL[invitation.status] ?? invitation.status}
+                      </Badge>
+                    </td>
                     <td className="py-2 pr-4">{invitation.usedByUser?.fullName ?? "—"}</td>
                     <td className="py-2 pr-4">
                       {invitation.status === "pending" && (
@@ -249,89 +298,6 @@ export default async function AdminDashboardPage() {
           </ul>
         )}
       </Card>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-serif text-lg text-foreground">Servir</p>
-            <p className="text-sm text-muted">
-              {volunteerCount} {volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} ·{" "}
-              {openOpportunities.length} {openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}
-            </p>
-          </div>
-          <LinkButton href="/painel/servir" variant="secondary">
-            Gerenciar
-          </LinkButton>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-serif text-lg text-foreground">Catequese</p>
-            <p className="text-sm text-muted">{catechismGroupCount} {catechismGroupCount === 1 ? "turma" : "turmas"}</p>
-          </div>
-          <LinkButton href="/painel/catequese" variant="secondary">
-            Gerenciar
-          </LinkButton>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-serif text-lg text-foreground">Liturgia</p>
-            <p className="text-sm text-muted">
-              {liturgicalAvailabilityCount} {liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}
-            </p>
-          </div>
-          <LinkButton href="/painel/liturgia" variant="secondary">
-            Gerenciar
-          </LinkButton>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-serif text-lg text-foreground">Dízimo</p>
-            <p className="text-sm text-muted">
-              {titheContributionCount} {titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em {formatPeriodLabel(currentPeriod())}
-            </p>
-          </div>
-          <LinkButton href="/painel/dizimo" variant="secondary">
-            Gerenciar
-          </LinkButton>
-        </div>
-      </Card>
-
-      <Card>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-serif text-lg text-foreground">Sacramentos</p>
-            <p className="text-sm text-muted">
-              {pendingSacramentCount} {pendingSacramentCount === 1 ? "sacramento aguardando validação" : "sacramentos aguardando validação"}
-            </p>
-          </div>
-          <LinkButton href="/painel/sacramentos" variant="secondary">
-            Gerenciar
-          </LinkButton>
-        </div>
-      </Card>
-
-      {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
-        <Card>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-serif text-lg text-foreground">Delegar permissões</p>
-              <p className="text-sm text-muted">Conceda ou revogue permissões específicas por pessoa</p>
-            </div>
-            <LinkButton href="/painel/permissoes" variant="secondary">
-              Gerenciar
-            </LinkButton>
-          </div>
-        </Card>
-      )}
 
       <Card>
         <p className="font-serif text-lg text-foreground">Minha Caminhada</p>

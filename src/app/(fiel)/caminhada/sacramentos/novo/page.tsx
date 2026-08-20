@@ -2,6 +2,7 @@ import { getSessionContext } from "@/server/auth/session";
 import { listPriests } from "@/server/modules/priests/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/Typography";
 import { SacramentForm } from "./SacramentForm";
 import { HandHeart } from "lucide-react";
 
@@ -20,9 +21,14 @@ export default async function NewSacramentPage() {
   const priests = await listPriests(session.membership.parishId);
 
   return (
-    <Card>
-      <h1 className="mb-4 font-serif text-xl text-foreground">Registrar sacramento</h1>
-      <SacramentForm priests={priests} />
-    </Card>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Registrar sacramento"
+        description="Registre um marco da sua vida de fé. A paróquia pode depois validar com o registro oficial."
+      />
+      <Card>
+        <SacramentForm priests={priests} />
+      </Card>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listActiveMembers } from "@/server/modules/parishes/service";
@@ -6,6 +7,10 @@ import { setContributionAction } from "@/server/actions/dizimo-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Stat } from "@/components/ui/Stat";
+import { Avatar } from "@/components/ui/Avatar";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 
 const PERIOD_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -19,7 +24,8 @@ export default async function DizimoAdminPage({
   if (!session.membership) return null;
 
   const requestedPeriod = (await searchParams).period;
-  const period = requestedPeriod && PERIOD_RE.test(requestedPeriod) ? requestedPeriod : currentPeriod();
+  const period =
+    requestedPeriod && PERIOD_RE.test(requestedPeriod) ? requestedPeriod : currentPeriod();
 
   const [members, contributions] = await Promise.all([
     listActiveMembers(session.membership.parishId),
@@ -29,63 +35,86 @@ export default async function DizimoAdminPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Dízimo</h1>
-      <p className="text-sm text-muted">
-        Registro de presença de contribuição por período — sem valores. Contribuições em dinheiro/pagamento entram
-        numa fase futura.
-      </p>
+      <PageHeader
+        title="Dízimo"
+        description="Registro de participação por período, sem valores. O app não guarda nem exibe quantias."
+      />
 
       <Card>
-        <form className="flex items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm text-muted">
-            Período
+        <form className="flex flex-wrap items-end gap-3">
+          <div className="flex-1">
+            <label
+              htmlFor="period"
+              className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.06em] text-muted"
+            >
+              Período
+            </label>
             <input
+              id="period"
               type="month"
               name="period"
               defaultValue={period}
-              className="rounded-lg border border-border px-3 py-2 text-sm text-foreground"
+              className={INPUT_CLASSES}
             />
-          </label>
-          <Button type="submit" variant="secondary">
+          </div>
+          <Button type="submit" variant="ghost">
             Ver
           </Button>
         </form>
       </Card>
 
-      <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">
-          {formatPeriodLabel(period)} · {contributedUserIds.size} de {members.length}
-        </p>
+      <div className="grid grid-cols-2 gap-3">
+        <Stat label={`Contribuíram em ${formatPeriodLabel(period)}`} value={contributedUserIds.size} />
+        <Stat label="Membros ativos" value={members.length} />
+      </div>
 
+      <section>
+        <Eyebrow tone="accent" className="mb-3">
+          Membros
+        </Eyebrow>
         {members.length === 0 ? (
-          <p className="text-sm text-muted">Nenhum membro ativo nesta paróquia.</p>
+          <Card>
+            <p className="text-[13.5px] text-muted">Nenhum membro ativo nesta paróquia.</p>
+          </Card>
         ) : (
-          <ul className="flex flex-col gap-1.5">
+          <Card className="px-3.5 py-1.5">
             {members.map((membership) => {
               const contributed = contributedUserIds.has(membership.user.id);
               return (
-                <li
+                <div
                   key={membership.user.id}
-                  className="flex items-center justify-between border-b border-border py-2 text-sm"
+                  className="flex flex-wrap items-center gap-3 border-b border-border py-3 last:border-b-0"
                 >
-                  <span className="text-foreground">{membership.user.fullName}</span>
-                  <div className="flex items-center gap-2">
-                    <Badge>{contributed ? "Contribuiu" : "Sem registro"}</Badge>
+                  <Avatar name={membership.user.fullName} size="sm" />
+                  <p className="min-w-0 flex-1 text-[14.5px] text-foreground">
+                    {membership.user.fullName}
+                  </p>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {contributed && (
+                      <Badge tone="success">
+                        <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                        Contribuiu
+                      </Badge>
+                    )}
                     <form action={setContributionAction}>
                       <input type="hidden" name="userId" value={membership.user.id} />
                       <input type="hidden" name="period" value={period} />
-                      <input type="hidden" name="contributed" value={contributed ? "false" : "true"} />
-                      <Button type="submit" variant="ghost">
+                      <input
+                        type="hidden"
+                        name="contributed"
+                        value={contributed ? "false" : "true"}
+                      />
+                      <Button type="submit" variant="ghost" size="sm">
                         {contributed ? "Desmarcar" : "Marcar"}
                       </Button>
                     </form>
                   </div>
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </Card>
         )}
-      </Card>
+      </section>
     </div>
   );
 }

@@ -33,7 +33,7 @@ export default async function LiturgiaAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Liturgia</h1>
+      <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">Liturgia</h1>
 
       {celebrations.length === 0 ? (
         <EmptyState

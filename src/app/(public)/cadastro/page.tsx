@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Eyebrow } from "@/components/ui/Typography";
 import { validateInvitation } from "@/server/modules/invitations/service";
 import { RegisterForm } from "./RegisterForm";
 import { Mail } from "lucide-react";
@@ -33,9 +34,11 @@ export default async function RegisterPage({
   }
 
   return (
-    <Card>
-      <p className="mb-1 text-sm text-primary">Você foi convidado para</p>
-      <h1 className="mb-4 font-serif text-xl text-foreground">{validation.invitation.parish.name}</h1>
+    <Card className="p-6 shadow">
+      <Eyebrow tone="accent">Você foi convidado para</Eyebrow>
+      <h1 className="mb-5 mt-1 font-serif text-2xl font-semibold leading-tight text-foreground">
+        {validation.invitation.parish.name}
+      </h1>
       <RegisterForm inviteCode={convite} />
     </Card>
   );

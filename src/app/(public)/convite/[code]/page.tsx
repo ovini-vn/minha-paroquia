@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Eyebrow } from "@/components/ui/Typography";
 import { validateInvitation, type InvitationValidation } from "@/server/modules/invitations/service";
 import { Mail } from "lucide-react";
 
@@ -29,15 +30,20 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
   }
 
   return (
-    <Card className="text-center">
-      <p className="mb-1 text-sm text-primary">Você foi convidado para fazer parte da</p>
-      <h1 className="mb-2 font-serif text-2xl text-foreground">{validation.invitation.parish.name}</h1>
-      <p className="mb-6 text-sm text-muted">Seja bem-vindo à sua comunidade.</p>
-      <div className="flex flex-col gap-3">
+    <Card className="p-6 text-center shadow">
+      <Eyebrow tone="accent">Você foi convidado para fazer parte da</Eyebrow>
+      <h1 className="mb-2 mt-1.5 font-serif text-[28px] font-semibold leading-tight text-foreground">
+        {validation.invitation.parish.name}
+      </h1>
+      <p className="text-[13.5px] text-muted">Seja bem-vindo à sua comunidade.</p>
+
+      <div className="rule-gold my-5" />
+
+      <div className="flex flex-col gap-2.5">
         <LinkButton href={`/cadastro?convite=${code}`} className="w-full">
           Criar conta
         </LinkButton>
-        <LinkButton href={`/login?convite=${code}`} variant="secondary" className="w-full">
+        <LinkButton href={`/login?convite=${code}`} variant="ghost" className="w-full">
           Já tenho conta
         </LinkButton>
       </div>

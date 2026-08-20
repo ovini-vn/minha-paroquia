@@ -128,7 +128,7 @@ export default async function AdminDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-foreground">{session.membership.parishName}</h1>
+        <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{session.membership.parishName}</h1>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -139,7 +139,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Perfil da paróquia</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Perfil da paróquia</p>
         <p className="mb-3 text-sm text-muted">
           Essas informações aparecem para o fiel em Minha Comunidade.
         </p>
@@ -226,7 +226,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Convites</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Convites</p>
         <CreateInviteForm />
 
         {invitations.length === 0 ? (
@@ -273,7 +273,7 @@ export default async function AdminDashboardPage() {
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Sacerdotes</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Sacerdotes</p>
         {priests.length === 0 ? (
           <p className="text-sm text-muted">
             Nenhum sacerdote cadastrado ainda — crie um convite acima com vínculo &ldquo;Sacerdote&rdquo;.
@@ -290,7 +290,7 @@ export default async function AdminDashboardPage() {
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Agenda</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Agenda</p>
         <div className="flex flex-col gap-4">
           <CreateCelebrationForm priests={priests} />
           <CreateEventForm />
@@ -317,7 +317,7 @@ export default async function AdminDashboardPage() {
       </Card>
 
       <Card>
-        <p className="font-serif text-lg text-foreground">Minha Caminhada</p>
+        <p className="font-serif text-lg font-semibold text-foreground">Minha Caminhada</p>
         {reflectionAggregate.available ? (
           <p className="mt-1 text-sm text-muted">
             Nos últimos 30 dias, {reflectionAggregate.total} participações em missa foram registradas e{" "}

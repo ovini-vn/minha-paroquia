@@ -1,6 +1,7 @@
 import { requireSessionForPage } from "@/server/auth/guards";
 import { findUserById } from "@/server/modules/users/repository";
 import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/Typography";
 import { ProfileForm } from "./ProfileForm";
 
 export default async function ProfileEditPage() {
@@ -9,8 +10,11 @@ export default async function ProfileEditPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-foreground">Editar perfil</h1>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Editar perfil"
+        description="Como a comunidade vê você. Só seu nome aparece para os outros."
+      />
       <Card>
         <ProfileForm
           fullName={user.fullName}

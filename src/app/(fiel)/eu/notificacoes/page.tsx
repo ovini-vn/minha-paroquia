@@ -1,3 +1,4 @@
+import { Bell, Check, CheckCheck } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyNotifications, listMyPreferences } from "@/server/modules/notifications/service";
 import {
@@ -5,13 +6,14 @@ import {
   markAllNotificationsReadAction,
   setPreferenceAction,
 } from "@/server/actions/notification-actions";
-import { Bell } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { NOTIFICATION_CATEGORY_LABELS } from "@/lib/notification-labels";
+import { cn } from "@/lib/cn";
 
 export default async function NotificationsPage() {
   const session = await getSessionContext();
@@ -29,70 +31,117 @@ export default async function NotificationsPage() {
     listMyNotifications(session.membership.parishId, session.userId),
     listMyPreferences(session.userId),
   ]);
-  const hasUnread = notifications.some((n) => !n.readAt);
+  const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-serif text-xl text-foreground">Notificações</h1>
-        {hasUnread && (
-          <form action={markAllNotificationsReadAction}>
-            <Button type="submit" variant="ghost">
-              Marcar todas como lidas
-            </Button>
-          </form>
-        )}
-      </div>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Notificações"
+        description="O que aconteceu na sua comunidade desde a última visita."
+      />
+
+      {unreadCount > 0 && (
+        <form action={markAllNotificationsReadAction} className="mb-4">
+          <Button type="submit" variant="ghost" size="sm">
+            <CheckCheck className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+            Marcar {unreadCount === 1 ? "a não lida" : `as ${unreadCount} não lidas`}
+          </Button>
+        </form>
+      )}
 
       {notifications.length === 0 ? (
-        <EmptyState icon={Bell} title="Nenhuma notificação ainda" description="Avisos da sua paróquia aparecem aqui." />
+        <EmptyState
+          icon={Bell}
+          title="Nenhuma notificação ainda"
+          description="Avisos, escalas e respostas da sua paróquia aparecem aqui."
+        />
       ) : (
-        <div className="flex flex-col gap-2">
-          {notifications.map((notification) => (
-            <Card key={notification.id} className={notification.readAt ? "opacity-60" : undefined}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Badge>{NOTIFICATION_CATEGORY_LABELS[notification.category]}</Badge>
-                    <p className="text-sm font-medium text-foreground">{notification.title}</p>
-                  </div>
-                  <p className="mt-1 text-sm text-muted">{notification.body}</p>
-                  <p className="mt-1 text-xs text-muted">{formatDateTime(notification.createdAt)}</p>
+        <Card className="px-3.5 py-1.5">
+          {notifications.map((notification) => {
+            const lida = Boolean(notification.readAt);
+            return (
+              <div
+                key={notification.id}
+                className={cn(
+                  "flex gap-3.5 border-b border-border py-3.5 last:border-b-0",
+                  lida && "opacity-60",
+                )}
+              >
+                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                  <Bell className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-2 text-[14.5px] font-medium text-foreground">
+                    {notification.title}
+                    {/* Ponto dourado no lugar de texto: o não lido se vê de relance. */}
+                    {!lida && (
+                      <span
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold"
+                        aria-label="Não lida"
+                      />
+                    )}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                    {notification.body}
+                  </p>
+                  <p className="mt-1.5 text-[11px] uppercase tracking-[0.04em] text-muted">
+                    {NOTIFICATION_CATEGORY_LABELS[notification.category]} ·{" "}
+                    {formatDateTime(notification.createdAt)}
+                  </p>
                 </div>
-                {!notification.readAt && (
-                  <form action={markNotificationReadAction}>
+                {!lida && (
+                  <form action={markNotificationReadAction} className="shrink-0 self-center">
                     <input type="hidden" name="id" value={notification.id} />
-                    <Button type="submit" variant="ghost">
-                      Marcar como lida
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="sm"
+                      className="px-2.5"
+                      aria-label="Marcar como lida"
+                    >
+                      <Check className="h-4 w-4" strokeWidth={1.5} aria-hidden />
                     </Button>
                   </form>
                 )}
               </div>
-            </Card>
-          ))}
-        </div>
+            );
+          })}
+        </Card>
       )}
 
-      <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Preferências</p>
-        <ul className="flex flex-col gap-1.5">
+      <section className="pt-7">
+        <Eyebrow tone="accent" className="mb-3">
+          O que quero receber
+        </Eyebrow>
+        <Card className="px-3.5 py-1.5">
           {preferences.map((preference) => (
-            <li key={preference.category} className="flex items-center justify-between border-b border-border py-2 text-sm">
-              <span className="text-foreground">{NOTIFICATION_CATEGORY_LABELS[preference.category]}</span>
-              <div className="flex items-center gap-2">
-                <Badge>{preference.enabled ? "Ativada" : "Desativada"}</Badge>
+            <div
+              key={preference.category}
+              className="flex items-center justify-between gap-3 border-b border-border py-3 last:border-b-0"
+            >
+              <div className="min-w-0">
+                <p className="text-[14.5px] text-foreground">
+                  {NOTIFICATION_CATEGORY_LABELS[preference.category]}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Badge tone={preference.enabled ? "success" : "muted"}>
+                  {preference.enabled ? "Ativada" : "Desativada"}
+                </Badge>
                 <form action={setPreferenceAction}>
                   <input type="hidden" name="category" value={preference.category} />
                   <input type="hidden" name="enabled" value={preference.enabled ? "false" : "true"} />
-                  <Button type="submit" variant="ghost">
+                  <Button type="submit" variant="ghost" size="sm">
                     {preference.enabled ? "Desativar" : "Ativar"}
                   </Button>
                 </form>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
-      </Card>
+        </Card>
+      </section>
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

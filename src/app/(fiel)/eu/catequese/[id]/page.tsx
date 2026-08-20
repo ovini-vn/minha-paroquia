@@ -38,13 +38,13 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-foreground">
+        <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">
           {group.name} · {group.year}
         </h1>
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Encontros</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Encontros</p>
         <CreateSessionForm groupId={id} />
 
         {sessions.length === 0 ? (
@@ -67,7 +67,7 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Matriculados e ritos</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Matriculados e ritos</p>
         {enrollments.length === 0 ? (
           <EmptyState
             icon={BookOpen}

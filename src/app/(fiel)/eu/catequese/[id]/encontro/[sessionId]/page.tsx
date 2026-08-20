@@ -28,7 +28,7 @@ export default async function AttendancePage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-foreground">Chamada — {group.name}</h1>
+      <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">Chamada — {group.name}</h1>
 
       {enrollments.length === 0 ? (
         <EmptyState icon={BookOpen} title="Ninguém matriculado ainda" description="Nada para chamar por enquanto." />

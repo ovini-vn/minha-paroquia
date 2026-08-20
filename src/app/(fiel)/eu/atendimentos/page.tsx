@@ -1,14 +1,27 @@
+import { CalendarDays, UserRound } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getOwnPriestProfile } from "@/server/modules/priests/service";
 import { listMyAppointments, listReceivedAppointments } from "@/server/modules/appointments/service";
-import { updateAppointmentStatusAction, cancelOwnAppointmentAction } from "@/server/actions/appointment-actions";
+import {
+  updateAppointmentStatusAction,
+  cancelOwnAppointmentAction,
+} from "@/server/actions/appointment-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/date";
 import { APPOINTMENT_CATEGORY_LABELS, APPOINTMENT_STATUS_LABELS } from "@/lib/pastoral-care-labels";
-import { CalendarDays } from "lucide-react";
+
+/** Tom do badge por situação — cor reforça o texto, nunca o substitui. */
+const STATUS_TONE: Record<string, "warning" | "success" | "muted" | "error"> = {
+  solicitado: "warning",
+  confirmado: "success",
+  concluido: "muted",
+  cancelado: "error",
+};
 
 export default async function AppointmentsPage() {
   const session = await getSessionContext();
@@ -22,76 +35,103 @@ export default async function AppointmentsPage() {
   const received = priest ? await listReceivedAppointments(parishId, priest.id) : [];
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-xl text-foreground">Meus atendimentos</h1>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Atendimentos"
+        description="Conversas e confissões que você pediu — e, se você é sacerdote, as que pediram a você."
+      />
 
       <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Meus pedidos</p>
+        <Eyebrow tone="accent" className="mb-3">
+          Meus pedidos
+        </Eyebrow>
         {myAppointments.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
             title="Nenhum pedido ainda"
-            description="Peça um atendimento a partir do perfil de um sacerdote em Comunidade."
+            description="Peça um atendimento a partir do perfil de um sacerdote, em Comunidade."
           />
         ) : (
-          <div className="flex flex-col gap-2">
+          <Card className="px-3.5 py-1.5">
             {myAppointments.map((appointment) => (
-              <Card key={appointment.id} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {APPOINTMENT_CATEGORY_LABELS[appointment.category]} com {appointment.priestProfile.user.fullName}
+              <div
+                key={appointment.id}
+                className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+              >
+                <Avatar name={appointment.priestProfile.user.fullName} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14.5px] font-medium text-foreground">
+                    {APPOINTMENT_CATEGORY_LABELS[appointment.category]}
                   </p>
-                  <p className="text-xs text-muted">{formatDateTime(appointment.scheduledAt)}</p>
+                  <p className="mt-0.5 text-[12.5px] text-muted">
+                    {appointment.priestProfile.user.fullName} ·{" "}
+                    {formatDateTime(appointment.scheduledAt)}
+                  </p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge>{APPOINTMENT_STATUS_LABELS[appointment.status]}</Badge>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
+                    {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                  </Badge>
                   {appointment.status === "solicitado" && (
                     <form action={cancelOwnAppointmentAction}>
                       <input type="hidden" name="id" value={appointment.id} />
-                      <Button type="submit" variant="ghost">
+                      <Button type="submit" variant="ghost" size="sm">
                         Cancelar
                       </Button>
                     </form>
                   )}
                 </div>
-              </Card>
+              </div>
             ))}
-          </div>
+          </Card>
         )}
       </section>
 
       {priest && (
-        <section>
-          <p className="mb-2 text-xs uppercase tracking-wide text-primary">Pedidos recebidos</p>
+        <section className="pt-7">
+          <Eyebrow tone="accent" className="mb-3">
+            Pedidos recebidos
+          </Eyebrow>
           {received.length === 0 ? (
-            <Card>
-              <p className="text-sm text-muted">Nenhum pedido recebido ainda.</p>
-            </Card>
+            <EmptyState
+              icon={UserRound}
+              title="Nenhum pedido recebido"
+              description="Quando alguém da comunidade pedir um atendimento com você, ele aparece aqui."
+            />
           ) : (
-            <div className="flex flex-col gap-2">
+            <Card className="px-3.5 py-1.5">
               {received.map((appointment) => (
-                <Card key={appointment.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {APPOINTMENT_CATEGORY_LABELS[appointment.category]} com {appointment.fiel.fullName}
+                <div
+                  key={appointment.id}
+                  className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+                >
+                  <Avatar name={appointment.fiel.fullName} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14.5px] font-medium text-foreground">
+                      {appointment.fiel.fullName}
                     </p>
-                    <p className="text-xs text-muted">{formatDateTime(appointment.scheduledAt)}</p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {APPOINTMENT_CATEGORY_LABELS[appointment.category]} ·{" "}
+                      {formatDateTime(appointment.scheduledAt)}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge>{APPOINTMENT_STATUS_LABELS[appointment.status]}</Badge>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
+                      {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                    </Badge>
                     {appointment.status === "solicitado" && (
                       <>
                         <form action={updateAppointmentStatusAction}>
                           <input type="hidden" name="id" value={appointment.id} />
                           <input type="hidden" name="status" value="confirmado" />
-                          <Button type="submit" variant="secondary">
+                          <Button type="submit" size="sm">
                             Confirmar
                           </Button>
                         </form>
                         <form action={updateAppointmentStatusAction}>
                           <input type="hidden" name="id" value={appointment.id} />
                           <input type="hidden" name="status" value="cancelado" />
-                          <Button type="submit" variant="ghost">
+                          <Button type="submit" variant="ghost" size="sm">
                             Recusar
                           </Button>
                         </form>
@@ -101,18 +141,20 @@ export default async function AppointmentsPage() {
                       <form action={updateAppointmentStatusAction}>
                         <input type="hidden" name="id" value={appointment.id} />
                         <input type="hidden" name="status" value="concluido" />
-                        <Button type="submit" variant="secondary">
+                        <Button type="submit" variant="ghost" size="sm">
                           Concluir
                         </Button>
                       </form>
                     )}
                   </div>
-                </Card>
+                </div>
               ))}
-            </div>
+            </Card>
           )}
         </section>
       )}
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

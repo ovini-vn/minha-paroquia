@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { PartyPopper } from "lucide-react";
 
@@ -17,49 +18,64 @@ export default async function EventsAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-serif text-2xl text-foreground">Eventos</h1>
-        <LinkButton href="/painel" variant="secondary">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <PageHeader
+          title="Eventos"
+          description="Festas, encontros e celebrações especiais da paróquia."
+        />
+        <LinkButton href="/painel" variant="ghost" size="sm">
           Criar evento
         </LinkButton>
       </div>
-      <p className="text-sm text-muted">Novos eventos são criados no painel principal, na seção Agenda.</p>
 
-      {events.length === 0 ? (
-        <EmptyState icon={PartyPopper} title="Nenhum evento criado ainda" description="Crie um no painel principal." />
-      ) : (
-        <div className="flex flex-col gap-2">
-          {events.map((event) => {
-            const archived = event.status === "archived";
-            return (
-              <Card key={event.id}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{event.title}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {formatDateTime(event.startsAt)}
-                      {event.location ? ` · ${event.location}` : ""}
-                    </p>
+      <section>
+        <Eyebrow tone="accent" className="mb-3">
+          Cadastrados
+        </Eyebrow>
+        {events.length === 0 ? (
+          <EmptyState
+            icon={PartyPopper}
+            title="Nenhum evento criado"
+            description="Novos eventos são criados no painel principal, na seção Agenda."
+          />
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {events.map((event) => {
+              const archived = event.status === "archived";
+              return (
+                <Card key={event.id} className={archived ? "opacity-60" : undefined}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-serif text-lg font-semibold leading-tight text-foreground">
+                        {event.title}
+                      </p>
+                      <p className="mt-1 text-[12.5px] text-muted">
+                        {formatDateTime(event.startsAt)}
+                        {event.location ? ` · ${event.location}` : ""}
+                      </p>
+                    </div>
+                    <Badge tone={archived ? "muted" : "success"}>
+                      {archived ? "Arquivado" : "Publicado"}
+                    </Badge>
                   </div>
-                  <Badge>{archived ? "Arquivado" : "Publicado"}</Badge>
-                </div>
-                <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
-                  <LinkButton href={`/painel/eventos/${event.id}`} variant="secondary">
-                    Editar
-                  </LinkButton>
-                  <form action={setEventStatusAction}>
-                    <input type="hidden" name="id" value={event.id} />
-                    <input type="hidden" name="status" value={archived ? "published" : "archived"} />
-                    <Button type="submit" variant="ghost">
-                      {archived ? "Republicar" : "Arquivar"}
-                    </Button>
-                  </form>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+                    <LinkButton href={`/painel/eventos/${event.id}`} variant="ghost" size="sm">
+                      Editar
+                    </LinkButton>
+                    <form action={setEventStatusAction}>
+                      <input type="hidden" name="id" value={event.id} />
+                      <input type="hidden" name="status" value={archived ? "published" : "archived"} />
+                      <Button type="submit" variant="ghost" size="sm">
+                        {archived ? "Republicar" : "Arquivar"}
+                      </Button>
+                    </form>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

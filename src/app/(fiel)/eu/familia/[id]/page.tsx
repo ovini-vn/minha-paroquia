@@ -30,7 +30,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-xl text-foreground">{member.fullName}</h1>
+        <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{member.fullName}</h1>
         <p className="mt-1 text-sm text-muted">
           {RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}
           {member.birthDate ? ` · ${formatDateOnly(member.birthDate)}` : ""}
@@ -38,7 +38,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Responsáveis</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Responsáveis</p>
         <p className="mb-3 text-sm text-muted">
           Mais de uma pessoa pode ser responsável ao mesmo tempo (ex.: pai e mãe) — todas enxergam e gerenciam este
           cadastro.

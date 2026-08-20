@@ -2,6 +2,7 @@ import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/Typography";
 import { PostForm } from "./PostForm";
 import { Mic } from "lucide-react";
 
@@ -19,9 +20,14 @@ export default async function NewPostPage() {
   }
 
   return (
-    <Card>
-      <h1 className="mb-4 font-serif text-xl text-foreground">Palavra do Padre</h1>
-      <PostForm />
-    </Card>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Palavra do Padre"
+        description="Uma mensagem para a comunidade. Aparece no Início e em Comunidade."
+      />
+      <Card>
+        <PostForm />
+      </Card>
+    </div>
   );
 }

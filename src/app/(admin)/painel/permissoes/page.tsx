@@ -23,7 +23,7 @@ export default async function PermissionOverridesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Delegar permissões</h1>
+      <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">Delegar permissões</h1>
       <p className="text-sm text-muted">
         Conceda ou revogue uma permissão específica para alguém, além do que o papel dela já dá — ex.: um coordenador
         que pode editar catequese, mas não liturgia.

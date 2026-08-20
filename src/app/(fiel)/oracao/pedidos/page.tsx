@@ -5,9 +5,10 @@ import {
   listCommunityPrayerRequests,
   listPrivatePrayerRequests,
 } from "@/server/modules/prayer-requests/service";
-import { HandHeart } from "lucide-react";
+import { HandHeart, Lock } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { PrayerRequestForm } from "./PrayerRequestForm";
 
@@ -31,31 +32,33 @@ export default async function PrayerRequestsPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-serif text-xl text-foreground">Pedidos de oração</h1>
-        <p className="mt-1 text-sm text-muted">
-          Envie ao pároco/sacerdote, ou compartilhe no mural para a comunidade rezar com você.
-        </p>
-      </div>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Pedidos de oração"
+        description="Envie ao pároco, ou compartilhe no mural para a comunidade rezar com você."
+      />
 
       <Card>
         <PrayerRequestForm />
       </Card>
 
       {canViewPrivate && (
-        <section>
-          <p className="mb-2 text-xs uppercase tracking-wide text-primary">Pedidos privados</p>
+        <section className="pt-7">
+          <SectionTitle eyebrow="Reservado ao sacerdote" title="Pedidos privados" />
           {privateRequests.length === 0 ? (
-            <Card>
-              <p className="text-sm text-muted">Nenhum pedido privado ainda.</p>
-            </Card>
+            <EmptyState
+              icon={Lock}
+              title="Nenhum pedido privado"
+              description="Pedidos enviados diretamente ao sacerdote aparecem aqui, e só para ele."
+            />
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {privateRequests.map((request) => (
                 <Card key={request.id}>
-                  <p className="text-sm text-foreground">{request.contentText}</p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="font-serif text-[17px] leading-relaxed text-foreground">
+                    {request.contentText}
+                  </p>
+                  <p className="mt-2 text-xs text-muted">
                     {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                   </p>
                 </Card>
@@ -65,18 +68,22 @@ export default async function PrayerRequestsPage() {
         </section>
       )}
 
-      <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Mural da comunidade</p>
+      <section className="pt-7">
+        <SectionTitle eyebrow="Mural" title="Rezar uns pelos outros" />
         {communityRequests.length === 0 ? (
-          <Card>
-            <p className="text-sm text-muted">Nenhum pedido compartilhado ainda.</p>
-          </Card>
+          <EmptyState
+            icon={HandHeart}
+            title="Nenhum pedido no mural"
+            description="Quando alguém compartilhar um pedido com a comunidade, ele aparece aqui."
+          />
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {communityRequests.map((request) => (
               <Card key={request.id}>
-                <p className="text-sm text-foreground">{request.contentText}</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="font-serif text-[17px] leading-relaxed text-foreground">
+                  {request.contentText}
+                </p>
+                <p className="mt-2 text-xs text-muted">
                   {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                 </p>
               </Card>
@@ -85,23 +92,29 @@ export default async function PrayerRequestsPage() {
         )}
       </section>
 
-      <section>
-        <p className="mb-2 text-xs uppercase tracking-wide text-primary">Meus pedidos</p>
+      <section className="pt-7">
+        <SectionTitle eyebrow="Seus" title="Meus pedidos" />
         {myRequests.length === 0 ? (
-          <Card>
-            <p className="text-sm text-muted">Você ainda não enviou nenhum pedido.</p>
-          </Card>
+          <EmptyState
+            icon={HandHeart}
+            title="Você ainda não enviou nenhum pedido"
+            description="Use o formulário acima para pedir oração."
+          />
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {myRequests.map((request) => (
               <Card key={request.id}>
-                <p className="text-sm text-foreground">{request.contentText}</p>
-                <p className="mt-1 text-xs text-muted">{formatDateTime(request.createdAt)}</p>
+                <p className="font-serif text-[17px] leading-relaxed text-foreground">
+                  {request.contentText}
+                </p>
+                <p className="mt-2 text-xs text-muted">{formatDateTime(request.createdAt)}</p>
               </Card>
             ))}
           </div>
         )}
       </section>
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

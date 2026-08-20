@@ -2,6 +2,7 @@ import { getSessionContext } from "@/server/auth/session";
 import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PageHeader } from "@/components/ui/Typography";
 import { VolunteerProfileForm } from "./VolunteerProfileForm";
 import { HeartHandshake } from "lucide-react";
 
@@ -20,13 +21,11 @@ export default async function VolunteerProfilePage() {
   const existing = await getOwnVolunteerProfile(session.membership.parishId, session.userId);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-serif text-xl text-foreground">Eu posso ajudar</h1>
-        <p className="mt-1 text-sm text-muted">
-          Conte pra sua comunidade como você pode contribuir. Não é um compromisso — é só um ponto de partida.
-        </p>
-      </div>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Eu posso ajudar"
+        description="Conte pra sua comunidade como você pode contribuir. Não é um compromisso — é só um ponto de partida."
+      />
       <Card>
         <VolunteerProfileForm existing={existing} />
       </Card>

@@ -25,7 +25,7 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-foreground">
+        <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">
           {group.name} · {group.year}
         </h1>
         <p className="text-sm text-muted">
@@ -34,7 +34,7 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Matricular dependente</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Matricular dependente</p>
         {available.length === 0 ? (
           <p className="text-sm text-muted">
             Todos os dependentes cadastrados já estão matriculados nesta turma, ou nenhum dependente foi
@@ -46,7 +46,7 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Matriculados</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Matriculados</p>
         {enrollments.length === 0 ? (
           <p className="text-sm text-muted">Ninguém matriculado ainda.</p>
         ) : (

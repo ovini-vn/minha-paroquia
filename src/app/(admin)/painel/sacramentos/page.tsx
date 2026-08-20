@@ -1,3 +1,4 @@
+import { ScrollText, Check } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listSacramentsForValidation } from "@/server/modules/caminhada/service";
@@ -6,58 +7,90 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateOnly } from "@/lib/date";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
-import { ScrollText } from "lucide-react";
 
 export default async function SacramentsAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.SACRAMENTS_VALIDATE);
   if (!session.membership) return null;
 
   const sacraments = await listSacramentsForValidation(session.membership.parishId);
+  const pendentes = sacraments.filter((s) => s.status !== "validated");
+  const validados = sacraments.filter((s) => s.status === "validated");
+
+  const linha = (sacrament: (typeof sacraments)[number]) => {
+    const validated = sacrament.status === "validated";
+    return (
+      <div
+        key={sacrament.id}
+        className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+      >
+        <Avatar name={sacrament.user.fullName} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="text-[14.5px] font-medium text-foreground">
+            {SACRAMENT_TYPE_LABELS[sacrament.type]}
+          </p>
+          <p className="mt-0.5 text-[12.5px] text-muted">
+            {sacrament.user.fullName} · {formatDateOnly(sacrament.date)}
+            {sacrament.location ? ` · ${sacrament.location}` : ""}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Badge tone={validated ? "success" : "muted"}>
+            {validated && <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
+            {SACRAMENT_STATUS_LABELS[sacrament.status]}
+          </Badge>
+          <form action={setSacramentValidationAction}>
+            <input type="hidden" name="id" value={sacrament.id} />
+            <input type="hidden" name="validated" value={validated ? "false" : "true"} />
+            <Button type="submit" variant={validated ? "ghost" : "primary"} size="sm">
+              {validated ? "Reverter" : "Validar"}
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Validação de sacramentos</h1>
-      <p className="text-sm text-muted">
-        Sacramentos são autodeclarados pelo fiel. Validar confirma que batem com o registro oficial da paróquia.
-      </p>
+      <PageHeader
+        title="Validação de sacramentos"
+        description="Sacramentos são autodeclarados pelo fiel. Validar confirma que batem com o registro oficial da paróquia."
+      />
 
       {sacraments.length === 0 ? (
         <EmptyState
           icon={ScrollText}
-          title="Nenhum sacramento registrado ainda"
+          title="Nenhum sacramento registrado"
           description="Assim que um fiel registrar um sacramento em Minha Caminhada, ele aparece aqui."
         />
       ) : (
-        <div className="flex flex-col gap-2">
-          {sacraments.map((sacrament) => {
-            const validated = sacrament.status === "validated";
-            return (
-              <Card key={sacrament.id} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {SACRAMENT_TYPE_LABELS[sacrament.type]} · {sacrament.user.fullName}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {formatDateOnly(sacrament.date)}
-                    {sacrament.location ? ` · ${sacrament.location}` : ""}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge>{SACRAMENT_STATUS_LABELS[sacrament.status]}</Badge>
-                  <form action={setSacramentValidationAction}>
-                    <input type="hidden" name="id" value={sacrament.id} />
-                    <input type="hidden" name="validated" value={validated ? "false" : "true"} />
-                    <Button type="submit" variant="ghost">
-                      {validated ? "Reverter" : "Validar"}
-                    </Button>
-                  </form>
-                </div>
+        <>
+          <section>
+            <Eyebrow tone="accent" className="mb-3">
+              Aguardando validação {pendentes.length > 0 && `(${pendentes.length})`}
+            </Eyebrow>
+            {pendentes.length === 0 ? (
+              <Card>
+                <p className="text-[13.5px] text-muted">Nada pendente — tudo validado.</p>
               </Card>
-            );
-          })}
-        </div>
+            ) : (
+              <Card className="px-3.5 py-1.5">{pendentes.map(linha)}</Card>
+            )}
+          </section>
+
+          {validados.length > 0 && (
+            <section>
+              <Eyebrow tone="accent" className="mb-3">
+                Já validados
+              </Eyebrow>
+              <Card className="px-3.5 py-1.5">{validados.map(linha)}</Card>
+            </section>
+          )}
+        </>
       )}
     </div>
   );

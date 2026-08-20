@@ -4,6 +4,8 @@ import { listMyFamilyMembers } from "@/server/modules/family/service";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Avatar } from "@/components/ui/Avatar";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { FamilyMemberForm } from "./FamilyMemberForm";
@@ -24,35 +26,51 @@ export default async function FamilyPage() {
   const members = await listMyFamilyMembers(session.membership.parishId, session.userId);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-serif text-xl text-foreground">Minha família</h1>
-        <p className="mt-1 text-sm text-muted">
-          Cadastre seus dependentes aqui — é assim que eles podem ser matriculados na catequese.
-        </p>
-      </div>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Minha família"
+        description="Cadastre seus dependentes aqui — é assim que eles podem ser matriculados na catequese."
+      />
 
       <Card>
         <FamilyMemberForm />
       </Card>
 
-      {members.length === 0 ? (
-        <EmptyState icon={Users} title="Nenhum dependente cadastrado" description="Adicione acima." />
-      ) : (
-        <div className="flex flex-col gap-2">
-          {members.map((member) => (
-            <Link key={member.id} href={`/eu/familia/${member.id}`}>
-              <Card className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{member.fullName}</p>
-                  {member.birthDate && <p className="text-xs text-muted">{formatDateOnly(member.birthDate)}</p>}
+      <section className="pt-7">
+        <Eyebrow tone="accent" className="mb-3">
+          Dependentes
+        </Eyebrow>
+        {members.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="Nenhum dependente cadastrado"
+            description="Adicione acima quem faz parte da sua família na paróquia."
+          />
+        ) : (
+          <Card className="px-3.5 py-1.5">
+            {members.map((member) => (
+              <Link
+                key={member.id}
+                href={`/eu/familia/${member.id}`}
+                className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
+              >
+                <Avatar name={member.fullName} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14.5px] font-medium text-foreground">{member.fullName}</p>
+                  {member.birthDate && (
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {formatDateOnly(member.birthDate)}
+                    </p>
+                  )}
                 </div>
                 <Badge>{RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}</Badge>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+              </Link>
+            ))}
+          </Card>
+        )}
+      </section>
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

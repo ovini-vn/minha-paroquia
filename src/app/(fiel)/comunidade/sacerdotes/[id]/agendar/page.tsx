@@ -4,6 +4,7 @@ import { getPriestProfile } from "@/server/modules/priests/service";
 import { getAvailableSlots } from "@/server/modules/appointments/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Eyebrow } from "@/components/ui/Typography";
 import { AppointmentBookingForm } from "./AppointmentBookingForm";
 import { CalendarDays } from "lucide-react";
 
@@ -19,9 +20,11 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <p className="text-xs uppercase tracking-wide text-primary">Solicitar atendimento com</p>
-        <h1 className="font-serif text-xl text-foreground">{priest.user.fullName}</h1>
+      <div className="mb-1">
+        <Eyebrow tone="accent">Solicitar atendimento com</Eyebrow>
+        <h1 className="mt-1 font-serif text-[29px] font-semibold leading-tight text-foreground">
+          {priest.user.fullName}
+        </h1>
       </div>
 
       {slots.length === 0 ? (

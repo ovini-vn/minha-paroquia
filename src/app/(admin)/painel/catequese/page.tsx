@@ -17,10 +17,10 @@ export default async function CatequeseAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-foreground">Catequese</h1>
+      <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">Catequese</h1>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Nova turma</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova turma</p>
         <CreateGroupForm catechists={catechists} />
       </Card>
 

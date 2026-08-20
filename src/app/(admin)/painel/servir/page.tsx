@@ -23,7 +23,7 @@ export default async function ServirAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-foreground">Servir</h1>
+        <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">Servir</h1>
         <p className="mt-1 text-sm text-muted">
           {volunteerCount} {volunteerCount === 1 ? "pessoa se colocou" : "pessoas se colocaram"} à disposição para
           ajudar.
@@ -36,7 +36,7 @@ export default async function ServirAdminPage() {
       </div>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Nova oportunidade</p>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova oportunidade</p>
         <CreateOpportunityForm />
       </Card>
 

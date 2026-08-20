@@ -15,8 +15,10 @@ export default async function ResetPasswordPage({
   }
 
   return (
-    <Card>
-      <h1 className="mb-4 font-serif text-xl text-foreground">Escolha uma nova senha</h1>
+    <Card className="p-6 shadow">
+      <h1 className="mb-5 font-serif text-2xl font-semibold text-foreground">
+        Escolha uma nova senha
+      </h1>
       <ResetPasswordForm token={token} />
     </Card>
   );

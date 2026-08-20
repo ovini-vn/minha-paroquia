@@ -1,10 +1,11 @@
+import { BookOpen } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS, isFullAdmin } from "@/server/auth/rbac";
 import { listGroups, listGroupsForCatechist } from "@/server/modules/catequese/service";
 import { Card } from "@/components/ui/Card";
-import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { BookOpen } from "lucide-react";
+import { RowLink } from "@/components/ui/RowLink";
+import { PageHeader } from "@/components/ui/Typography";
 
 export default async function MyCatequesePage() {
   const session = await getSessionContext();
@@ -26,8 +27,11 @@ export default async function MyCatequesePage() {
     : await listGroupsForCatechist(session.membership.parishId, session.userId);
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="font-serif text-xl text-foreground">Minha catequese</h1>
+    <div className="flex flex-col">
+      <PageHeader
+        title="Minha catequese"
+        description="As turmas que você acompanha. Abra uma para registrar encontros e presença."
+      />
 
       {groups.length === 0 ? (
         <EmptyState
@@ -36,19 +40,20 @@ export default async function MyCatequesePage() {
           description="Peça ao pároco ou à secretaria para te designar como catequista de uma turma."
         />
       ) : (
-        <div className="flex flex-col gap-2">
+        <Card className="px-3.5 py-1.5">
           {groups.map((group) => (
-            <Card key={group.id} className="flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">
-                {group.name} · {group.year}
-              </p>
-              <LinkButton href={`/eu/catequese/${group.id}`} variant="secondary">
-                Abrir
-              </LinkButton>
-            </Card>
+            <RowLink
+              key={group.id}
+              href={`/eu/catequese/${group.id}`}
+              icon={BookOpen}
+              title={group.name}
+              subtitle={`Turma de ${group.year}`}
+            />
           ))}
-        </div>
+        </Card>
       )}
+
+      <div className="rule-gold my-7" />
     </div>
   );
 }

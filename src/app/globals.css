@@ -45,6 +45,6 @@
 }
 
 body {
-  background-color: theme("colors.cream.100");
-  color: theme("colors.ink.900");
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
 }

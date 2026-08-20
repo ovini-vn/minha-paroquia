@@ -58,10 +58,11 @@ describe("getLiturgicalSeason", () => {
     expect(getLiturgicalSeason(utc(2026, 7, 1)).season).toBe("tempo_comum");
   });
 
-  it("cada tempo retorna nome e cores próprias", () => {
+  it("cada tempo retorna seu nome de exibição", () => {
+    // As cores não são testadas aqui de propósito: vivem só no CSS
+    // ([data-season] em globals.css), não neste módulo.
     const quaresma = getLiturgicalSeason(utc(2026, 3, 1));
+    expect(quaresma.season).toBe("quaresma");
     expect(quaresma.name).toBe("Quaresma");
-    expect(quaresma.primaryColor).toBe("#5B2890");
-    expect(quaresma.accentColor).toBe("#C9A44C");
   });
 });

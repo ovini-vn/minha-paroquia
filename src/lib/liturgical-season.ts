@@ -21,62 +21,22 @@ export type LiturgicalSeasonCode = (typeof LITURGICAL_SEASONS)[number];
 export type LiturgicalSeasonInfo = {
   season: LiturgicalSeasonCode;
   name: string;
-  primaryColor: string;
-  primaryHoverColor: string;
-  primaryLightColor: string;
-  accentColor: string;
 };
 
-const SEASON_TOKENS: Record<LiturgicalSeasonCode, Omit<LiturgicalSeasonInfo, "season">> = {
-  advento: {
-    name: "Advento",
-    primaryColor: "#6B4E8E",
-    primaryHoverColor: "#5A4078",
-    primaryLightColor: "#8E63B0",
-    accentColor: "#C9A44C",
-  },
-  natal: {
-    name: "Natal",
-    primaryColor: "#C9A44C",
-    primaryHoverColor: "#B08F3F",
-    primaryLightColor: "#D9BE7A",
-    accentColor: "#8E63B0",
-  },
-  tempo_comum: {
-    name: "Tempo Comum",
-    primaryColor: "#6E8B5B",
-    primaryHoverColor: "#5C7549",
-    primaryLightColor: "#8FA87F",
-    accentColor: "#C9A44C",
-  },
-  quaresma: {
-    name: "Quaresma",
-    primaryColor: "#5B2890",
-    primaryHoverColor: "#4A2073",
-    primaryLightColor: "#8E63B0",
-    accentColor: "#C9A44C",
-  },
-  triduo_pascal: {
-    name: "Tríduo Pascal",
-    primaryColor: "#2A2A2A",
-    primaryHoverColor: "#1A1A1A",
-    primaryLightColor: "#4A4A4A",
-    accentColor: "#C9A44C",
-  },
-  pascoa: {
-    name: "Páscoa",
-    primaryColor: "#C9A44C",
-    primaryHoverColor: "#B08F3F",
-    primaryLightColor: "#D9BE7A",
-    accentColor: "#8E63B0",
-  },
-  pentecostes: {
-    name: "Pentecostes",
-    primaryColor: "#A83232",
-    primaryHoverColor: "#8A2828",
-    primaryLightColor: "#C15A5A",
-    accentColor: "#C9A44C",
-  },
+/**
+ * Só o nome de exibição vive aqui. As CORES de cada tempo moram exclusivamente
+ * em src/app/globals.css, nos blocos [data-season="..."] — este módulo
+ * responde "que tempo é hoje", o CSS responde "como esse tempo se parece".
+ * Manter as duas coisas juntas já criou divergência antes.
+ */
+export const SEASON_NAMES: Record<LiturgicalSeasonCode, string> = {
+  advento: "Advento",
+  natal: "Natal",
+  tempo_comum: "Tempo Comum",
+  quaresma: "Quaresma",
+  triduo_pascal: "Tríduo Pascal",
+  pascoa: "Páscoa",
+  pentecostes: "Pentecostes",
 };
 
 function addDays(date: Date, days: number): Date {
@@ -171,5 +131,5 @@ export function getLiturgicalSeason(date: Date): LiturgicalSeasonInfo {
     season = "natal"; // 25-31 de dezembro
   }
 
-  return { season, ...SEASON_TOKENS[season] };
+  return { season, name: SEASON_NAMES[season] };
 }

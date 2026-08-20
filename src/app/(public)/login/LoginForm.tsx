@@ -13,22 +13,29 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction}>
       {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
       <FormField label="E-mail" name="email" type="email" required autoComplete="email" />
       <FormField label="Senha" name="password" type="password" required autoComplete="current-password" />
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-      <Button type="submit" disabled={pending}>
+      {state.error && <p className="mb-3 text-sm text-error">{state.error}</p>}
+      <Button type="submit" disabled={pending} className="mt-1 flex w-full">
         {pending ? "Entrando..." : "Entrar"}
       </Button>
-      <div className="flex justify-between text-sm text-primary">
-        <Link href="/recuperar-acesso">Esqueci minha senha</Link>
-        <Link href={inviteCode ? `/cadastro?convite=${inviteCode}` : "/cadastro"}>Criar conta</Link>
+      <div className="mt-4 flex justify-between text-[13px] font-medium text-primary">
+        <Link href="/recuperar-acesso" className="hover:underline">
+          Esqueci minha senha
+        </Link>
+        <Link
+          href={inviteCode ? `/cadastro?convite=${inviteCode}` : "/cadastro"}
+          className="hover:underline"
+        >
+          Criar conta
+        </Link>
       </div>
-      <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
-        <span className="h-px flex-1 bg-border" />
+      <div className="my-5 flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-eyebrow text-muted">
+        <span className="rule-gold flex-1" />
         ou
-        <span className="h-px flex-1 bg-border" />
+        <span className="rule-gold flex-1" />
       </div>
       <OAuthButtons inviteCode={inviteCode} />
     </form>

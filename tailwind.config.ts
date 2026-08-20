@@ -1,32 +1,80 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Cores vêm todas de custom properties (src/app/globals.css) — nenhuma cor
+ * literal aqui, pra que o tema litúrgico (que sobrescreve as properties)
+ * alcance a interface inteira sem tocar em componente nenhum.
+ */
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
-        // Design tokens do redesign (docs do redesign, seção 17) — via CSS
-        // custom properties, ver globals.css. Única paleta da aplicação; a
-        // antiga (terracotta/cream/ink) foi removida na migração completa.
         primary: {
           DEFAULT: "rgb(var(--color-primary) / <alpha-value>)",
           hover: "rgb(var(--color-primary-hover) / <alpha-value>)",
           light: "rgb(var(--color-primary-light) / <alpha-value>)",
+          tint: "rgb(var(--color-primary-tint) / <alpha-value>)",
         },
-        accent: "rgb(var(--color-accent) / <alpha-value>)",
+        gold: {
+          DEFAULT: "rgb(var(--color-gold) / <alpha-value>)",
+          soft: "rgb(var(--color-gold-soft) / <alpha-value>)",
+        },
+        // Alias histórico de `gold` — várias telas já usam `accent`.
+        accent: "rgb(var(--color-gold) / <alpha-value>)",
+        background: "rgb(var(--color-background) / <alpha-value>)",
         surface: "rgb(var(--color-surface) / <alpha-value>)",
+        sunken: "rgb(var(--color-sunken) / <alpha-value>)",
+        inverse: "rgb(var(--color-inverse) / <alpha-value>)",
         foreground: "rgb(var(--color-foreground) / <alpha-value>)",
         muted: "rgb(var(--color-muted) / <alpha-value>)",
-        border: "rgb(var(--color-border) / <alpha-value>)",
-        background: "rgb(var(--color-background) / <alpha-value>)",
+        border: {
+          DEFAULT: "rgb(var(--color-border) / <alpha-value>)",
+          strong: "rgb(var(--color-border-strong) / <alpha-value>)",
+        },
+        success: {
+          DEFAULT: "rgb(var(--color-success) / <alpha-value>)",
+          tint: "rgb(var(--color-success-tint) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "rgb(var(--color-warning) / <alpha-value>)",
+          tint: "rgb(var(--color-warning-tint) / <alpha-value>)",
+        },
+        error: {
+          DEFAULT: "rgb(var(--color-error) / <alpha-value>)",
+          tint: "rgb(var(--color-error-tint) / <alpha-value>)",
+        },
+      },
+      backgroundImage: {
+        // Gradiente da atmosfera litúrgica — topbar, hero, capa.
+        wash: "var(--wash)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
         serif: ["var(--font-serif)"],
       },
       borderRadius: {
-        xl: "1rem",
-        "2xl": "1.5rem",
+        md: "0.75rem",
+        lg: "1.125rem",
+        xl: "1.25rem",
+        "2xl": "1.625rem",
+      },
+      boxShadow: {
+        sm: "var(--shadow-1)",
+        DEFAULT: "var(--shadow-2)",
+        lg: "var(--shadow-3)",
+      },
+      letterSpacing: {
+        eyebrow: "0.16em",
+      },
+      keyframes: {
+        enter: {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "none" },
+        },
+      },
+      animation: {
+        enter: "enter 0.3s var(--ease) both",
       },
     },
   },

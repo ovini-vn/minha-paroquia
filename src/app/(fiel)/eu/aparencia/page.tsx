@@ -1,8 +1,10 @@
 import { requireSessionForPage } from "@/server/auth/guards";
-import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { getLiturgicalSeason, LITURGICAL_SEASONS, SEASON_NAMES } from "@/lib/liturgical-season";
 import { setThemePreferenceAction } from "@/server/actions/appearance-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 
 export default async function AppearancePage() {
   const session = await requireSessionForPage();
@@ -11,35 +13,42 @@ export default async function AppearancePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-serif text-xl text-foreground">Aparência</h1>
-        <p className="mt-1 text-sm text-muted">
-          Escolha se o app usa sempre a mesma cor, ou se acompanha o Tempo Litúrgico do dia.
-        </p>
-      </div>
+      <PageHeader
+        title="Aparência"
+        description="Escolha se o app usa sempre a cor da marca, ou se acompanha o Tempo Litúrgico do dia."
+      />
 
       <Card>
-        <p className="mb-1 text-xs uppercase tracking-wide text-primary">Tempo litúrgico de hoje</p>
-        <div className="flex items-center gap-3">
-          <span
-            className="h-8 w-8 shrink-0 rounded-full border border-border"
-            style={{ backgroundColor: season.primaryColor }}
-            aria-hidden
-          />
-          <div>
-            <p className="font-serif text-lg text-foreground">{season.name}</p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="text-xs text-muted">Cor principal</span>
-              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: season.primaryColor }} aria-hidden />
-              <span className="text-xs text-muted">Destaque</span>
-              <span className="h-3 w-3 rounded-full" style={{ backgroundColor: season.accentColor }} aria-hidden />
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <Eyebrow tone="accent">Tempo litúrgico de hoje</Eyebrow>
+          <Badge tone="gold">{season.name}</Badge>
+        </div>
+        {/* Cada amostra carrega seu próprio data-season: a cor sai do CSS,
+            nunca de um valor repetido aqui. */}
+        <div className="flex flex-wrap gap-2">
+          {LITURGICAL_SEASONS.map((code) => (
+            <div
+              key={code}
+              data-season={code}
+              className="flex items-center gap-2 rounded-full border border-border py-1.5 pl-1.5 pr-3"
+            >
+              <span className="h-5 w-5 rounded-full bg-primary" aria-hidden />
+              <span
+                className={
+                  code === season.season
+                    ? "text-xs font-semibold text-foreground"
+                    : "text-xs text-muted"
+                }
+              >
+                {SEASON_NAMES[code]}
+              </span>
             </div>
-          </div>
+          ))}
         </div>
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-lg text-foreground">Tema da aplicação</p>
+        <p className="mb-3 font-serif text-xl font-semibold text-foreground">Tema da aplicação</p>
         <form action={setThemePreferenceAction} className="flex flex-col gap-3">
           <label className="flex items-start gap-3 text-sm text-foreground">
             <input
@@ -47,7 +56,7 @@ export default async function AppearancePage() {
               name="themePreference"
               value="default"
               defaultChecked={!usingLiturgical}
-              className="mt-1"
+              className="mt-1 accent-[rgb(var(--color-primary))]"
             />
             <span>
               <span className="font-medium">Tema padrão</span>
@@ -60,16 +69,16 @@ export default async function AppearancePage() {
               name="themePreference"
               value="liturgical"
               defaultChecked={usingLiturgical}
-              className="mt-1"
+              className="mt-1 accent-[rgb(var(--color-primary))]"
             />
             <span>
               <span className="font-medium">Usar cor do Tempo Litúrgico</span>
               <span className="block text-xs text-muted">
-                A cor de destaque do app muda automaticamente ao longo do ano — hoje seria {season.name}.
+                A atmosfera do app acompanha o calendário da Igreja — hoje seria {season.name}.
               </span>
             </span>
           </label>
-          <Button type="submit" className="self-start">
+          <Button type="submit" className="mt-1 self-start">
             Salvar
           </Button>
         </form>

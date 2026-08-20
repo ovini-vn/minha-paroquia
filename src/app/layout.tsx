@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Cormorant_Garamond, Inter } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const playfairDisplay = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-serif",
+});
 
 export const metadata: Metadata = {
   title: "Minha Paróquia",
@@ -12,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${playfairDisplay.variable}`}>
+    <html lang="pt-BR" className={`${inter.variable} ${cormorant.variable}`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

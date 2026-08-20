@@ -16,9 +16,9 @@ export default async function LoginPage({
   const errorMessage = error ? (OAUTH_ERROR_LABELS[error] ?? error) : null;
 
   return (
-    <Card>
-      <h1 className="mb-4 font-serif text-xl text-foreground">Entrar</h1>
-      {errorMessage && <p className="mb-4 text-sm text-red-600">{errorMessage}</p>}
+    <Card className="p-6 shadow">
+      <h1 className="mb-5 font-serif text-2xl font-semibold text-foreground">Entrar</h1>
+      {errorMessage && <p className="mb-4 text-sm text-error">{errorMessage}</p>}
       <LoginForm inviteCode={convite ?? null} />
     </Card>
   );

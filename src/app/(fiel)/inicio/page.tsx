@@ -1,19 +1,43 @@
 import Link from "next/link";
+import {
+  Church,
+  HandHeart,
+  HeartHandshake,
+  Mic,
+  CalendarDays,
+  Megaphone,
+  Users,
+  BookOpen,
+  Footprints,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
+import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { RowLink } from "@/components/ui/RowLink";
+import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
+import { Avatar } from "@/components/ui/Avatar";
+import { Arch } from "@/components/brand/Arch";
+import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
-import { Church, HeartHandshake, Mic, HandHeart } from "lucide-react";
 
 const POST_PREVIEW_LABEL: Record<string, string> = {
   audio: "Novo áudio disponível — toque para ouvir.",
   video: "Novo vídeo disponível — toque para assistir.",
 };
+
+const SHORTCUTS = [
+  { href: "/comunidade", icon: Church, label: "Comunidade" },
+  { href: "/comunidade/oracao", icon: HandHeart, label: "Oração" },
+  { href: "/comunidade/catequese", icon: BookOpen, label: "Catequese" },
+  { href: "/caminhada", icon: Footprints, label: "Caminhada" },
+] as const;
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -42,77 +66,152 @@ export default async function HomePage() {
     listPublishedAvisos(session.membership.parishId, 1),
   ]);
   const latestAviso = latestAvisos[0] ?? null;
+  const season = getLiturgicalSeason(new Date());
 
   return (
-    <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-serif text-2xl text-foreground">
-          {greeting()}, {firstName}
-        </h1>
+    <div className="flex flex-col">
+      {/* Hero — portal e caminho dourado, a assinatura da marca. */}
+      <BleedTop>
+        <section className="relative overflow-hidden bg-wash px-[18px] pb-[26px] pt-[30px] text-white">
+          <Arch className="pointer-events-none absolute inset-0 h-full w-full opacity-50" />
+          <div className="relative">
+            <p className="text-[12.5px] tracking-[0.04em] text-white/70">
+              {greeting()}, {firstName}
+            </p>
+            <h1 className="mt-1.5 font-serif text-[32px] font-medium leading-[1.1]">
+              {session.membership.parishName}
+            </h1>
+          </div>
+        </section>
+      </BleedTop>
+
+      {/* Próxima celebração — sobreposta ao hero, o "cartão de hoje". */}
+      <div className="relative z-[2] -mt-[22px] rounded-lg border border-border bg-surface px-[18px] py-4 shadow">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <Eyebrow>Próxima celebração</Eyebrow>
+            {nextCelebration ? (
+              <>
+                <p className="mt-1.5 font-serif text-[29px] font-semibold leading-none text-primary">
+                  {nextCelebration.title || CELEBRATION_TYPE_LABELS[nextCelebration.type]}
+                </p>
+                <p className="mt-1 text-[13px] text-muted">
+                  {formatDateTime(nextCelebration.startsAt)}
+                  {nextCelebration.location ? ` · ${nextCelebration.location}` : ""}
+                </p>
+              </>
+            ) : (
+              <p className="mt-1.5 text-[13px] text-muted">Nenhuma celebração agendada ainda.</p>
+            )}
+          </div>
+          <Badge tone="gold">{season.name}</Badge>
+        </div>
       </div>
 
-      <Link href="/comunidade">
-        <Card>
-          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-primary">
-            <Mic className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
-            Palavra do Padre
-          </p>
-          {latestPost ? (
-            <p className="mt-1 line-clamp-3 text-sm text-muted">
+      {/* Atalhos — "a vida da paróquia" a um toque. */}
+      <section className="pt-[26px]">
+        <Eyebrow tone="accent" className="mb-3">
+          A vida da paróquia
+        </Eyebrow>
+        <div className="grid grid-cols-4 gap-1.5">
+          {SHORTCUTS.map((shortcut) => {
+            const Icon = shortcut.icon;
+            return (
+              <Link
+                key={shortcut.href}
+                href={shortcut.href}
+                className="flex flex-col items-center gap-[7px] rounded-md px-1 pb-[11px] pt-[13px] text-center transition-[background-color,transform] hover:-translate-y-px hover:bg-primary-tint"
+              >
+                <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-border bg-surface text-primary">
+                  <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="text-[10.5px] font-medium leading-tight text-muted">
+                  {shortcut.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Palavra do Padre — tratamento editorial, não "mais um card". */}
+      {latestPost && (
+        <section className="pt-[30px]">
+          <SectionTitle
+            eyebrow="Palavra do Padre"
+            title="Uma mensagem para esta semana"
+            actionLabel="Ver todas"
+            actionHref="/comunidade"
+          />
+          <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
+            <div className="flex items-center gap-3">
+              <Avatar name={latestPost.priestProfile.user.fullName} size="sm" />
+              <div>
+                <p className="text-[13px] font-medium text-foreground">
+                  {latestPost.priestProfile.user.fullName}
+                </p>
+                <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
+              </div>
+            </div>
+            <p className="mt-3 font-serif text-[18px] leading-[1.62] text-foreground">
               {latestPost.mediaType === "texto"
                 ? latestPost.contentText
                 : POST_PREVIEW_LABEL[latestPost.mediaType]}
             </p>
-          ) : (
-            <p className="mt-1 text-sm text-muted">Ainda não há publicações — em breve, aqui.</p>
+            <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
+              <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+              Ler mensagem
+            </LinkButton>
+          </article>
+        </section>
+      )}
+
+      {/* Hoje — o princípio "quero dar uma olhadinha". */}
+      <section className="pt-[30px]">
+        <SectionTitle eyebrow="Hoje" title="O que tem na comunidade" />
+        <Card className="px-3.5 py-1.5">
+          {latestAviso && (
+            <RowLink
+              href="/inicio"
+              icon={Megaphone}
+              title={latestAviso.title}
+              subtitle={latestAviso.body}
+            />
           )}
+          <RowLink
+            href="/comunidade"
+            icon={Users}
+            title="Sacerdotes e pastorais"
+            subtitle="Conheça quem caminha com você"
+          />
+          <RowLink
+            href="/eu/atendimentos"
+            icon={CalendarDays}
+            title="Meus atendimentos"
+            subtitle="Agende uma conversa ou confissão"
+          />
         </Card>
-      </Link>
+      </section>
 
-      <Card>
-        <p className="text-xs uppercase tracking-wide text-primary">Seu próximo compromisso</p>
-        {nextCelebration ? (
-          <p className="mt-1 text-sm text-muted">
-            {nextCelebration.title || CELEBRATION_TYPE_LABELS[nextCelebration.type]} ·{" "}
-            {formatDateTime(nextCelebration.startsAt)}
-            {nextCelebration.location ? ` · ${nextCelebration.location}` : ""}
+      {/* Serviço — a fé que vira ação. */}
+      <section className="pt-[30px]">
+        <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-[18px]">
+          <Eyebrow className="text-[#8a6b24] dark:text-gold">Serviço</Eyebrow>
+          <h3 className="mb-2 mt-2 font-serif text-2xl font-semibold leading-tight text-foreground">
+            Cada pessoa tem um dom.
+          </h3>
+          <p className="max-w-[34ch] text-[13.5px] text-muted">
+            Diga como você gostaria de servir e a paróquia procura você quando houver uma
+            necessidade.
           </p>
-        ) : (
-          <p className="mt-1 text-sm text-muted">Nenhum compromisso agendado ainda.</p>
-        )}
-      </Card>
+          <LinkButton href="/servir" className="mt-4 flex w-full">
+            <HeartHandshake className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+            Eu posso ajudar
+          </LinkButton>
+        </div>
+      </section>
 
-      <LinkButton href="/servir" className="w-full gap-2 text-base">
-        <HeartHandshake className="h-5 w-5" strokeWidth={1.5} aria-hidden />
-        Eu posso ajudar
-      </LinkButton>
-
-      <Card>
-        <p className="text-xs uppercase tracking-wide text-primary">Avisos</p>
-        {latestAviso ? (
-          <>
-            <p className="mt-1 text-sm font-medium text-foreground">{latestAviso.title}</p>
-            <p className="mt-1 text-sm text-muted">{latestAviso.body}</p>
-          </>
-        ) : (
-          <p className="mt-1 text-sm text-muted">Nenhum aviso por enquanto.</p>
-        )}
-      </Card>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/comunidade">
-          <Card className="flex flex-col items-center gap-1 text-center">
-            <Church className="h-6 w-6 text-primary" strokeWidth={1.5} aria-hidden />
-            <p className="mt-1 text-sm font-medium text-foreground">Minha Comunidade</p>
-          </Card>
-        </Link>
-        <Link href="/caminhada">
-          <Card className="flex flex-col items-center gap-1 text-center">
-            <HandHeart className="h-6 w-6 text-primary" strokeWidth={1.5} aria-hidden />
-            <p className="mt-1 text-sm font-medium text-foreground">Minha Caminhada</p>
-          </Card>
-        </Link>
-      </div>
+      <div className="rule-gold my-7" />
     </div>
   );
 }

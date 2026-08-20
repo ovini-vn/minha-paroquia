@@ -3,48 +3,208 @@
 @tailwind utilities;
 
 /*
- * Fundação do redesign visual — design tokens como CSS custom properties,
- * não cores espalhadas pelos componentes (docs do redesign, seção 17).
+ * MINHA PARÓQUIA — design tokens.
  *
- * Paleta padrão (seção 2 do prompt de redesign): violeta profundo + dourado
- * sobre marfim. Quando o usuário ativa "Usar cor do Tempo Litúrgico"
- * (/eu/aparencia), só --color-primary/--color-primary-hover/
- * --color-primary-light/--color-accent são sobrescritos via `style` inline
- * no wrapper de (fiel)/layout.tsx, calculados por
- * src/lib/liturgical-season.ts — única fonte de verdade das cores por
- * tempo litúrgico. Nunca duplicar esses valores aqui em CSS.
+ * Duas famílias de token, de propósito:
  *
- * Valores em "R G B" (não "#rrggbb"): tailwind.config.ts consome via
- * `rgb(var(--x) / <alpha-value>)`, o único jeito de opacidade (`bg-x/50`)
- * funcionar com cor vinda de CSS custom property — ver src/lib/color.ts.
+ * 1. MARCA (fixa): --color-gold, --color-ivory, superfícies, bordas, estados.
+ *    Nunca muda com o tempo litúrgico — é o que dá continuidade visual.
+ * 2. ATMOSFERA (--color-primary/-hover/-light/-tint + --wash): sobrescrita
+ *    por [data-season], é o que acompanha o calendário da Igreja.
+ *
+ * Valores em "R G B" (não "#rrggbb") porque tailwind.config.ts consome via
+ * `rgb(var(--x) / <alpha-value>)` — único jeito de `bg-x/50` funcionar com
+ * cor vinda de custom property. Gradientes ficam como valor CSS direto,
+ * já que não precisam de canal alfa.
+ *
+ * O tempo litúrgico vem de src/lib/liturgical-season.ts (única fonte de
+ * verdade de QUE tempo é hoje); aqui mora só COMO cada tempo se parece.
  */
 :root {
-  --color-primary: 91 40 144; /* #5b2890 */
-  --color-primary-hover: 74 32 115; /* #4a2073 */
-  --color-primary-light: 142 99 176; /* #8e63b0 */
-  --color-accent: 201 164 76; /* #c9a44c */
-  --color-background: 248 246 241; /* #f8f6f1 */
-  --color-surface: 255 255 255; /* #ffffff */
-  --color-foreground: 36 33 36; /* #242124 */
+  /* Marca */
+  --color-gold: 201 164 76; /* #c9a44c */
+  --color-gold-soft: 227 206 149; /* #e3ce95 */
+  --color-foreground: 36 33 36; /* #242124 grafite, nunca preto puro */
   --color-muted: 111 106 103; /* #6f6a67 */
-  --color-border: 229 224 216; /* #e5e0d8 */
+
+  /* Superfícies */
+  --color-background: 248 246 241; /* #f8f6f1 marfim */
+  --color-surface: 255 253 248; /* #fffdf8 marfim elevado, não branco puro */
+  --color-sunken: 241 237 229; /* #f1ede5 */
+  --color-inverse: 42 23 64; /* #2a1740 */
+
+  /* Bordas */
+  --color-border: 228 222 211; /* #e4ded3 */
+  --color-border-strong: 211 202 187; /* #d3cabb */
+
+  /* Estados */
+  --color-success: 62 122 94;
+  --color-success-tint: 234 242 237;
+  --color-warning: 180 118 42;
+  --color-warning-tint: 251 242 229;
+  --color-error: 158 59 51;
+  --color-error-tint: 248 237 235;
+
+  /* Sombras — extremamente suaves, nunca "card pesado" */
+  --shadow-1: 0 1px 2px rgb(36 33 36 / 0.04);
+  --shadow-2: 0 8px 24px -14px rgb(36 33 36 / 0.22);
+  --shadow-3: 0 24px 60px -30px rgb(36 33 36 / 0.38);
+
+  /* Atmosfera — padrão (violeta da marca), sobrescrita por [data-season] */
+  --color-primary: 91 40 144; /* #5b2890 */
+  --color-primary-hover: 142 99 176; /* #8e63b0 */
+  --color-primary-light: 142 99 176;
+  --color-primary-tint: 239 234 246; /* #efeaf6 */
+  --wash: linear-gradient(170deg, #5b2890 0%, #42206b 100%);
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* ---------- Atmosfera por tempo litúrgico ---------- */
+[data-season="tempo_comum"] {
+  --color-primary: 63 107 82;
+  --color-primary-hover: 123 164 140;
+  --color-primary-light: 123 164 140;
+  --color-primary-tint: 234 241 236;
+  --wash: linear-gradient(170deg, #3f6b52 0%, #2c4e3b 100%);
+}
+[data-season="advento"] {
+  --color-primary: 91 40 144;
+  --color-primary-hover: 142 99 176;
+  --color-primary-light: 142 99 176;
+  --color-primary-tint: 239 234 246;
+  --wash: linear-gradient(170deg, #5b2890 0%, #3a1860 100%);
+}
+[data-season="natal"] {
+  --color-primary: 138 107 36;
+  --color-primary-hover: 201 164 76;
+  --color-primary-light: 201 164 76;
+  --color-primary-tint: 251 244 228;
+  --wash: linear-gradient(170deg, #a8862f 0%, #7a5c1c 100%);
+}
+[data-season="quaresma"] {
+  --color-primary: 78 34 119;
+  --color-primary-hover: 126 87 160;
+  --color-primary-light: 126 87 160;
+  --color-primary-tint: 237 231 244;
+  --wash: linear-gradient(170deg, #4e2277 0%, #331550 100%);
+}
+[data-season="triduo_pascal"] {
+  --color-primary: 59 53 64;
+  --color-primary-hover: 110 102 117;
+  --color-primary-light: 110 102 117;
+  --color-primary-tint: 237 235 238;
+  --wash: linear-gradient(170deg, #3b3540 0%, #211d25 100%);
+}
+[data-season="pascoa"] {
+  --color-primary: 154 122 34;
+  --color-primary-hover: 201 164 76;
+  --color-primary-light: 201 164 76;
+  --color-primary-tint: 250 243 226;
+  --wash: linear-gradient(170deg, #b08e33 0%, #7e6318 100%);
+}
+[data-season="pentecostes"] {
+  --color-primary: 138 43 43;
+  --color-primary-hover: 181 106 99;
+  --color-primary-light: 181 106 99;
+  --color-primary-tint: 247 234 232;
+  --wash: linear-gradient(170deg, #8a2b2b 0%, #5e1b1b 100%);
+}
+
+/*
+ * Dark mode — o marfim vira grafite quente e as superfícies invertem, mas o
+ * dourado e a atmosfera litúrgica continuam legíveis (nunca cor pura sobre
+ * preto: usamos a variante -hover, mais clara, como cor de traço).
+ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: 142 99 176; /* #8e63b0 */
-    --color-primary-hover: 161 121 194; /* #a179c2 */
-    --color-primary-light: 91 40 144; /* #5b2890 */
-    --color-accent: 201 164 76; /* #c9a44c */
-    --color-background: 24 21 29; /* #18151d */
-    --color-surface: 34 30 41; /* #221e29 */
-    --color-foreground: 240 236 230; /* #f0ece6 */
-    --color-muted: 176 168 164; /* #b0a8a4 */
-    --color-border: 52 48 60; /* #34303c */
+    --color-foreground: 240 236 230;
+    --color-muted: 176 168 164;
+    --color-background: 24 21 29;
+    --color-surface: 34 30 41;
+    --color-sunken: 20 17 24;
+    --color-inverse: 240 236 230;
+    --color-border: 52 48 60;
+    --color-border-strong: 72 66 82;
+    --color-success-tint: 26 40 33;
+    --color-warning-tint: 45 34 18;
+    --color-error-tint: 48 26 24;
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);
+    --shadow-3: 0 24px 60px -30px rgb(0 0 0 / 0.8);
+    --color-primary: 142 99 176;
+    --color-primary-hover: 161 121 194;
+    --color-primary-light: 91 40 144;
+    --color-primary-tint: 40 32 52;
+  }
+
+  [data-season="tempo_comum"] {
+    --color-primary: 123 164 140;
+    --color-primary-hover: 150 187 166;
+    --color-primary-light: 63 107 82;
+    --color-primary-tint: 28 40 33;
+  }
+  [data-season="advento"],
+  [data-season="quaresma"] {
+    --color-primary: 142 99 176;
+    --color-primary-hover: 161 121 194;
+    --color-primary-light: 91 40 144;
+    --color-primary-tint: 40 32 52;
+  }
+  [data-season="natal"],
+  [data-season="pascoa"] {
+    --color-primary: 201 164 76;
+    --color-primary-hover: 216 186 116;
+    --color-primary-light: 138 107 36;
+    --color-primary-tint: 45 38 22;
+  }
+  [data-season="triduo_pascal"] {
+    --color-primary: 150 142 158;
+    --color-primary-hover: 176 168 184;
+    --color-primary-light: 59 53 64;
+    --color-primary-tint: 36 33 40;
+  }
+  [data-season="pentecostes"] {
+    --color-primary: 200 122 114;
+    --color-primary-hover: 216 148 140;
+    --color-primary-light: 138 43 43;
+    --color-primary-tint: 48 28 26;
   }
 }
 
 body {
-  background-color: rgb(var(--color-background));
+  background-color: rgb(var(--color-sunken));
   color: rgb(var(--color-foreground));
+  text-rendering: optimizeLegibility;
+}
+
+/* Faixa dourada fina — divisor de assinatura da marca (o "caminho"). */
+.rule-gold {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--color-gold) / 0.55),
+    transparent
+  );
+}
+
+/* Capitular editorial — só na leitura da Palavra do Padre. */
+.dropcap::first-letter {
+  font-family: var(--font-serif);
+  font-size: 3.25rem;
+  float: left;
+  line-height: 0.86;
+  padding: 0.25rem 0.5rem 0 0;
+  color: rgb(var(--color-primary));
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

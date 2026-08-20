@@ -21,10 +21,11 @@ const RESET_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h — só pra dar folga na 
 function readArg(name: string): string {
   const flag = `--${name}`;
   const index = process.argv.indexOf(flag);
-  if (index === -1 || !process.argv[index + 1]) {
+  const value = index === -1 ? undefined : process.argv[index + 1];
+  if (!value) {
     throw new Error(`Argumento obrigatório faltando: ${flag}`);
   }
-  return process.argv[index + 1];
+  return value;
 }
 
 async function main() {

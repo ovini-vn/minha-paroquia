@@ -23,6 +23,17 @@ enum ThemePreference {
   liturgical
 }
 
+// Claro vs. escuro. Eixo SEPARADO de ThemePreference (que é sobre o tempo
+// litúrgico) — dá para usar a cor do tempo tanto no claro quanto no escuro.
+//
+// Sem opção "seguir o sistema" de propósito: o padrão é claro, e o escuro é
+// escolha explícita. Antes o app seguia prefers-color-scheme e virava escuro
+// sozinho, o que ninguém tinha pedido.
+enum ColorScheme {
+  light
+  dark
+}
+
 model User {
   id              String    @id @default(uuid())
   email           String    @unique
@@ -38,6 +49,7 @@ model User {
   // Redesign visual: "Tema padrão" vs. "Usar cor do Tempo Litúrgico" — ver
   // src/lib/liturgical-season.ts (fonte única do cálculo) e /eu/aparencia.
   themePreference ThemePreference @default(default) @map("theme_preference")
+  colorScheme     ColorScheme     @default(light) @map("color_scheme")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 

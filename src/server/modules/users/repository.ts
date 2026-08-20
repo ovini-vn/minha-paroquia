@@ -1,5 +1,5 @@
 import { prisma } from "@/server/db/prisma";
-import type { OAuthProvider, ThemePreference } from "@prisma/client";
+import type { OAuthProvider, ThemePreference, ColorScheme } from "@prisma/client";
 
 /**
  * users é uma tabela global (não tenant-scoped) — um usuário existe
@@ -26,6 +26,10 @@ export function updateUserProfile(
 
 export function updateUserThemePreference(id: string, themePreference: ThemePreference) {
   return prisma.user.update({ where: { id }, data: { themePreference } });
+}
+
+export function updateUserColorScheme(id: string, colorScheme: ColorScheme) {
+  return prisma.user.update({ where: { id }, data: { colorScheme } });
 }
 
 export function findOAuthAccount(provider: OAuthProvider, providerAccountId: string) {

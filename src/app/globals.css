@@ -112,64 +112,72 @@
 }
 
 /*
- * Dark mode — o marfim vira grafite quente e as superfícies invertem, mas o
+ * Modo escuro — o marfim vira grafite quente e as superfícies invertem, mas o
  * dourado e a atmosfera litúrgica continuam legíveis (nunca cor pura sobre
  * preto: usamos a variante -hover, mais clara, como cor de traço).
+ *
+ * Ligado por ATRIBUTO, não por `prefers-color-scheme`. O padrão do app é
+ * claro e o escuro é escolha explícita do usuário (User.colorScheme, em
+ * /eu/aparencia) — antes o app virava escuro sozinho junto com o sistema
+ * operacional, o que ninguém tinha pedido. O atributo é renderizado no
+ * servidor, no <html>, então não há piscada de tema na carga.
  */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-foreground: 240 236 230;
-    --color-muted: 176 168 164;
-    --color-background: 24 21 29;
-    --color-surface: 34 30 41;
-    --color-sunken: 20 17 24;
-    --color-inverse: 240 236 230;
-    --color-border: 52 48 60;
-    --color-border-strong: 72 66 82;
-    --color-success-tint: 26 40 33;
-    --color-warning-tint: 45 34 18;
-    --color-error-tint: 48 26 24;
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);
-    --shadow-3: 0 24px 60px -30px rgb(0 0 0 / 0.8);
-    --color-primary: 142 99 176;
-    --color-primary-hover: 161 121 194;
-    --color-primary-light: 91 40 144;
-    --color-primary-tint: 40 32 52;
-  }
+:root[data-color-scheme="dark"] {
+  --color-foreground: 240 236 230;
+  --color-muted: 176 168 164;
+  --color-background: 24 21 29;
+  --color-surface: 34 30 41;
+  --color-sunken: 20 17 24;
+  --color-inverse: 240 236 230;
+  --color-border: 52 48 60;
+  --color-border-strong: 72 66 82;
+  --color-success-tint: 26 40 33;
+  --color-warning-tint: 45 34 18;
+  --color-error-tint: 48 26 24;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);
+  --shadow-3: 0 24px 60px -30px rgb(0 0 0 / 0.8);
+  --color-primary: 142 99 176;
+  --color-primary-hover: 161 121 194;
+  --color-primary-light: 91 40 144;
+  --color-primary-tint: 40 32 52;
+}
 
-  [data-season="tempo_comum"] {
-    --color-primary: 123 164 140;
-    --color-primary-hover: 150 187 166;
-    --color-primary-light: 63 107 82;
-    --color-primary-tint: 28 40 33;
-  }
-  [data-season="advento"],
-  [data-season="quaresma"] {
-    --color-primary: 142 99 176;
-    --color-primary-hover: 161 121 194;
-    --color-primary-light: 91 40 144;
-    --color-primary-tint: 40 32 52;
-  }
-  [data-season="natal"],
-  [data-season="pascoa"] {
-    --color-primary: 201 164 76;
-    --color-primary-hover: 216 186 116;
-    --color-primary-light: 138 107 36;
-    --color-primary-tint: 45 38 22;
-  }
-  [data-season="triduo_pascal"] {
-    --color-primary: 150 142 158;
-    --color-primary-hover: 176 168 184;
-    --color-primary-light: 59 53 64;
-    --color-primary-tint: 36 33 40;
-  }
-  [data-season="pentecostes"] {
-    --color-primary: 200 122 114;
-    --color-primary-hover: 216 148 140;
-    --color-primary-light: 138 43 43;
-    --color-primary-tint: 48 28 26;
-  }
+/*
+ * As cores do tempo litúrgico no escuro. `data-season` fica num wrapper
+ * dentro do <html>, por isso o seletor é descendente.
+ */
+:root[data-color-scheme="dark"] [data-season="tempo_comum"] {
+  --color-primary: 123 164 140;
+  --color-primary-hover: 150 187 166;
+  --color-primary-light: 63 107 82;
+  --color-primary-tint: 28 40 33;
+}
+:root[data-color-scheme="dark"] [data-season="advento"],
+:root[data-color-scheme="dark"] [data-season="quaresma"] {
+  --color-primary: 142 99 176;
+  --color-primary-hover: 161 121 194;
+  --color-primary-light: 91 40 144;
+  --color-primary-tint: 40 32 52;
+}
+:root[data-color-scheme="dark"] [data-season="natal"],
+:root[data-color-scheme="dark"] [data-season="pascoa"] {
+  --color-primary: 201 164 76;
+  --color-primary-hover: 216 186 116;
+  --color-primary-light: 138 107 36;
+  --color-primary-tint: 45 38 22;
+}
+:root[data-color-scheme="dark"] [data-season="triduo_pascal"] {
+  --color-primary: 150 142 158;
+  --color-primary-hover: 176 168 184;
+  --color-primary-light: 59 53 64;
+  --color-primary-tint: 36 33 40;
+}
+:root[data-color-scheme="dark"] [data-season="pentecostes"] {
+  --color-primary: 200 122 114;
+  --color-primary-hover: 216 148 140;
+  --color-primary-light: 138 43 43;
+  --color-primary-tint: 48 28 26;
 }
 
 body {

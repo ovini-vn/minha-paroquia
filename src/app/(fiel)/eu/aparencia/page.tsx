@@ -1,6 +1,10 @@
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getLiturgicalSeason, LITURGICAL_SEASONS, SEASON_NAMES } from "@/lib/liturgical-season";
-import { setThemePreferenceAction } from "@/server/actions/appearance-actions";
+import { Sun, Moon } from "lucide-react";
+import {
+  setThemePreferenceAction,
+  setColorSchemeAction,
+} from "@/server/actions/appearance-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -48,7 +52,43 @@ export default async function AppearancePage() {
       </Card>
 
       <Card>
-        <p className="mb-3 font-serif text-xl font-semibold text-foreground">Tema da aplicação</p>
+        <p className="mb-1 font-serif text-xl font-semibold text-foreground">Claro ou escuro</p>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          O app abre no tema claro. O escuro é escolha sua — não acompanha mais o sistema
+          operacional sozinho.
+        </p>
+        <form action={setColorSchemeAction} className="flex flex-wrap gap-2">
+          {(
+            [
+              { value: "light", label: "Claro", icon: Sun },
+              { value: "dark", label: "Escuro", icon: Moon },
+            ] as const
+          ).map((option) => {
+            const Icon = option.icon;
+            const atual = session.colorScheme === option.value;
+            return (
+              <button
+                key={option.value}
+                type="submit"
+                name="colorScheme"
+                value={option.value}
+                aria-pressed={atual}
+                className={
+                  atual
+                    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white"
+                    : "inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                }
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                {option.label}
+              </button>
+            );
+          })}
+        </form>
+      </Card>
+
+      <Card>
+        <p className="mb-3 font-serif text-xl font-semibold text-foreground">Cor do tema</p>
         <form action={setThemePreferenceAction} className="flex flex-col gap-3">
           <label className="flex items-start gap-3 text-sm text-foreground">
             <input

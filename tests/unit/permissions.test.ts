@@ -10,6 +10,7 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     fullName: "Sessão de Teste",
     isPlatformAdmin: false,
     themePreference: "default",
+    colorScheme: "light",
     membership: null,
     dioceses: [],
     provinces: [],

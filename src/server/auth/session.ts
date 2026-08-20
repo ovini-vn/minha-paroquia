@@ -1,10 +1,17 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
-import type { ThemePreference, DioceseRole, ProvinceRole, NationalRole } from "@prisma/client";
+import type {
+  ThemePreference,
+  ColorScheme,
+  DioceseRole,
+  ProvinceRole,
+  NationalRole,
+} from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -15,6 +22,8 @@ export type SessionContext = {
   fullName: string;
   isPlatformAdmin: boolean;
   themePreference: ThemePreference;
+  /** Claro ou escuro — eixo separado do tema litúrgico. */
+  colorScheme: ColorScheme;
   membership: {
     parishId: string;
     parishName: string;
@@ -73,8 +82,12 @@ export async function destroySession(): Promise<void> {
  * Lê o cookie de sessão e resolve o contexto completo: usuário, vínculo
  * ativo (paróquia + papel) e as permissões desse papel. Retorna null se não
  * houver sessão válida — nunca lança erro, quem chama decide o que fazer.
+ *
+ * Memoizado por requisição com `cache()` do React: layout raiz, layout de
+ * grupo e página chamam isto na mesma renderização, e sem o cache seriam
+ * três idas ao banco para responder exatamente a mesma pergunta.
  */
-export async function getSessionContext(): Promise<SessionContext | null> {
+export const getSessionContext = cache(async (): Promise<SessionContext | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -134,6 +147,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
       fullName: user.fullName,
       isPlatformAdmin: user.isPlatformAdmin,
       themePreference: user.themePreference,
+      colorScheme: user.colorScheme,
       membership: null,
       dioceses,
       provinces,
@@ -150,6 +164,7 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     fullName: user.fullName,
     isPlatformAdmin: user.isPlatformAdmin,
     themePreference: user.themePreference,
+    colorScheme: user.colorScheme,
     membership: {
       parishId: membershipRow.parishId,
       parishName: membershipRow.parish.name,
@@ -163,4 +178,4 @@ export async function getSessionContext(): Promise<SessionContext | null> {
     national,
     permissions: computeEffectivePermissions(rolePermissions, overrides),
   };
-}
+});

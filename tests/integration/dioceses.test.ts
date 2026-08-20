@@ -31,6 +31,7 @@ function sessionWith(
     fullName: "Teste",
     isPlatformAdmin,
     themePreference: "default",
+    colorScheme: "light",
     membership: null,
     dioceses,
     provinces: [],

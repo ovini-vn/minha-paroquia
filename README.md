@@ -65,6 +65,38 @@ Usamos `.env` (não `.env.local`) de propósito: é o único arquivo que tanto o
 Next.js quanto o Prisma CLI leem automaticamente. **Nunca** commite `.env`
 (já está no `.gitignore`).
 
+### Login social (Google/Facebook) — opcional
+
+Sem `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` ou `FACEBOOK_CLIENT_ID`/
+`FACEBOOK_CLIENT_SECRET`, os botões "Entrar com Google/Facebook" simplesmente
+redirecionam de volta pro login com um aviso — o resto do app funciona
+normalmente.
+
+- **Google**: [Google Cloud Console](https://console.cloud.google.com/) →
+  criar projeto → "APIs e Serviços" → "Credenciais" → "Criar credenciais" →
+  "ID do cliente OAuth" (tipo "Aplicativo da Web"). Em "URIs de redirecionamento
+  autorizados", adicione `http://localhost:3000/api/auth/google/callback` em
+  dev e `https://<seu-domínio>/api/auth/google/callback` em produção.
+- **Facebook**: [Facebook for Developers](https://developers.facebook.com/) →
+  criar app → produto "Facebook Login" → "Configurações" → em "URIs de
+  redirecionamento do OAuth válidos", adicione as mesmas URLs (trocando
+  `google` por `facebook`).
+
+### E-mail transacional (Resend) — obrigatório em produção
+
+O e-mail de recuperação de senha é enviado via [Resend](https://resend.com).
+Sem `RESEND_API_KEY`/`EMAIL_FROM` configurados, o app só loga o link no
+console do servidor — funciona para dev, mas em produção significa que
+ninguém consegue redefinir a senha.
+
+1. Crie uma conta em resend.com e um domínio de envio verificado (ou use o
+   domínio de teste deles para começar).
+2. Gere uma API key em "API Keys" e coloque em `RESEND_API_KEY`.
+3. `EMAIL_FROM` precisa ser um remetente do domínio verificado (ex.:
+   `Minha Paróquia <naoresponda@seudominio.com>`).
+4. `APP_URL` precisa apontar pro domínio real (ex.: `https://minhaparoquia.app`)
+   — é usado para montar o link que vai dentro do e-mail.
+
 ## Banco de dados
 
 ### 1. Criar a role de aplicação (uma vez, por banco novo)
@@ -149,7 +181,8 @@ numa aba anônima.
 | `npm run db:generate` | Regenera o Prisma Client após mudar o schema |
 | `npm run db:migrate` | Cria/aplica uma migration |
 | `npm run db:deploy` | Aplica migrations pendentes (uso em produção/CI) |
-| `npm run db:seed` | Popula papéis, permissões e dados demo |
+| `npm run db:seed` | Popula papéis, permissões e dados demo (dev) |
+| `npm run db:seed:prod` | Popula só papéis e permissões — sem dados demo (produção) |
 | `npm run db:studio` | Abre o Prisma Studio (explorador de dados) |
 
 ## Testes
@@ -195,6 +228,40 @@ docs/
   ARQUITETURA.md            visão de arquitetura completa (todas as fases do PRD)
   FUNDACAO.md                escopo e decisões desta fatia específica
 ```
+
+## Deploy (produção)
+
+Recomendado: [Vercel](https://vercel.com) (integração nativa com Next.js —
+build, HTTPS e CDN automáticos). Passo a passo:
+
+1. **Banco de produção**: crie um projeto/branch Neon **separado** do usado em
+   dev — nunca reuse o banco de dev em produção (ele tem contas demo com
+   senha conhecida, criadas pelo `db:seed`). Aplique a role `app_user` e o
+   RLS nesse banco novo (mesmos passos da seção "Banco de dados" acima).
+2. **Conecte o repositório** do GitHub a um novo projeto na Vercel — ela
+   detecta Next.js automaticamente, sem configuração extra de build.
+3. **Variáveis de ambiente** (Vercel → Settings → Environment Variables),
+   todas em "Production":
+   - `DATABASE_URL` e `DIRECT_URL` do banco de produção (passo 1)
+   - `APP_URL` com o domínio final (ex.: `https://minhaparoquia.app`)
+   - `RESEND_API_KEY` e `EMAIL_FROM` (seção "E-mail transacional" acima)
+   - `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`,
+     `FACEBOOK_CLIENT_ID`/`FACEBOOK_CLIENT_SECRET` (opcional — se for
+     habilitar login social em produção, lembre de cadastrar as URIs de
+     redirecionamento `https://<domínio>/api/auth/<provider>/callback` no
+     Google Cloud Console / Facebook for Developers)
+   - `NODE_ENV` a Vercel já define como `production` sozinha — não precisa setar.
+4. **Aplique as migrations no banco de produção antes do primeiro deploy**:
+   rode `npm run db:deploy` localmente com `DIRECT_URL` apontando pro banco
+   de produção (só para essa execução — não deixe essa variável configurada
+   assim no seu `.env` de dev depois). Repita isso a cada deploy que inclua
+   uma migration nova.
+5. **Popule papéis e permissões** rodando `npm run db:seed:prod` (com
+   `DATABASE_URL`/`DIRECT_URL` apontando pro banco de produção) — **nunca**
+   rode `npm run db:seed` em produção, esse é só para dev e cria contas demo
+   com senha pública.
+6. Deploy. Depois de no ar, crie a primeira paróquia e o primeiro Pároco real
+   pela própria aplicação (tela de cadastro), não via seed.
 
 Regra de dependência: nada em `app/` ou `components/` importa Prisma
 diretamente ou contém regra de negócio — só chama funções de

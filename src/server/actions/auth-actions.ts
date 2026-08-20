@@ -14,6 +14,8 @@ import {
   createPasswordResetToken,
   resetPasswordWithToken,
 } from "@/server/modules/users/password-reset-service";
+import { sendPasswordResetEmail } from "@/server/email/password-reset-email";
+import { appBaseUrl } from "@/lib/url";
 
 export type ActionState = { error?: string };
 
@@ -102,11 +104,17 @@ export async function requestPasswordResetAction(_prev: ActionState, formData: F
   const email = (formData.get("email") as string | null)?.trim();
   if (!email) return { error: "Informe seu e-mail." };
 
-  const link = await createPasswordResetToken(email);
-  // Sem provedor de e-mail configurado ainda (docs/FUNDACAO.md, decisão 5):
-  // o link fica só no log do servidor em dev.
-  if (link) {
-    console.log(`[dev] Link de recuperação de acesso: ${link}`);
+  const path = await createPasswordResetToken(email);
+  if (path) {
+    const resetUrl = new URL(path, appBaseUrl()).toString();
+    try {
+      await sendPasswordResetEmail(email, resetUrl);
+    } catch (error) {
+      // Não propaga pro usuário — a tela seguinte é a mesma independente de
+      // sucesso, de propósito (não revela se o e-mail existe nem se o envio
+      // falhou). Falha real de envio fica só no log do servidor.
+      console.error("Falha ao enviar e-mail de recuperação de acesso:", error);
+    }
   }
 
   redirect("/recuperar-acesso/enviado");

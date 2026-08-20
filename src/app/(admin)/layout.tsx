@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Mark } from "@/components/brand/Mark";
+import { Symbol } from "@/components/brand/Symbol";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-sunken">
       <header className="sticky top-0 z-40 bg-wash px-5 py-3.5 text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gold after:to-transparent after:opacity-80">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
-          <Mark className="h-7 w-7 shrink-0 text-white" />
+          <Symbol className="h-9 w-auto shrink-0 text-white" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-serif text-[19px] font-semibold leading-tight">
               Painel da Paróquia

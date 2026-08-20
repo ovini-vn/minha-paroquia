@@ -1,36 +1,34 @@
 import { cn } from "@/lib/cn";
-import { Symbol } from "./Symbol";
+import {
+  LOCKUP_VIEWBOX,
+  EMBLEM_VIOLET_PATH,
+  EMBLEM_GOLD_PATH,
+  MINHA_GOLD_PATH,
+  PAROQUIA_VIOLET_PATH,
+} from "./logo-paths";
 
 /**
- * Lockup completo: emblema + "MINHA PARÓQUIA".
+ * Lockup completo: emblema + "MINHA PARÓQUIA", no traçado oficial.
  *
- * O texto é texto de verdade (Cormorant Garamond, a serif da identidade) e
- * não contorno vetorizado — assim continua nítido em qualquer tamanho,
- * legível por leitor de tela e coerente com a tipografia do resto do app.
+ * O texto é contorno vetorial (não fonte), então não depende de nenhuma
+ * fonte instalada e serve também para impressão. Como não é texto de
+ * verdade, o SVG leva `role="img"` + `<title>` para leitores de tela.
  */
-export function Wordmark({
-  className,
-  symbolClassName,
-}: {
-  className?: string;
-  symbolClassName?: string;
-}) {
+export function Wordmark({ className }: { className?: string }) {
   return (
-    <div className={cn("flex flex-col items-center", className)}>
-      <Symbol className={cn("h-24 w-auto", symbolClassName)} />
-
-      {/* "MINHA" entre dois filetes dourados com estrela, como no logo. */}
-      <div className="mt-4 flex w-full items-center justify-center gap-2.5">
-        <span className="rule-gold w-10 max-w-[15%]" />
-        <span className="text-[13px] font-medium uppercase tracking-[0.42em] text-gold">
-          Minha
-        </span>
-        <span className="rule-gold w-10 max-w-[15%]" />
-      </div>
-
-      <p className="mt-1 font-serif text-[40px] font-semibold uppercase leading-none tracking-[0.02em]">
-        Paróquia
-      </p>
-    </div>
+    <svg
+      viewBox={LOCKUP_VIEWBOX}
+      className={cn(className)}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Minha Paróquia"
+    >
+      <title>Minha Paróquia</title>
+      <path d={EMBLEM_VIOLET_PATH} fill="currentColor" />
+      <path d={EMBLEM_GOLD_PATH} fill="rgb(var(--color-gold))" />
+      <path d={MINHA_GOLD_PATH} fill="rgb(var(--color-gold))" />
+      <path d={PAROQUIA_VIOLET_PATH} fill="currentColor" />
+    </svg>
   );
 }

@@ -1,7 +1,13 @@
 <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!--
+    Favicon: versão simplificada do emblema. O traçado completo (portal +
+    sete figuras + mãos) vira borrão a 16px, então aqui ficam só os quatro
+    elementos que ainda se leem nesse tamanho: estrela, portal, cruz e o
+    caminho dourado. Cores oficiais da marca.
+  -->
   <rect width="64" height="64" rx="14" fill="#F8F6F1"/>
-  <path d="M32 4 Q33.5 11 40.5 12.5 Q33.5 14 32 21 Q30.5 14 23.5 12.5 Q30.5 11 32 4 Z" fill="#C9A44C"/>
-  <path d="M12 57 V33 A20 20 0 0 1 52 33 V57" stroke="#5B2890" stroke-width="4.5" stroke-linecap="round"/>
-  <path d="M30.4 23 h3.2 v7 h7 v3.2 h-7 v15 h-3.2 v-15 h-7 V30 h7 z" fill="#C9A44C"/>
-  <path d="M29.5 47 C28.5 51 32 53 32.5 57 L38 57 C37 53 33 51 33.5 47 Z" fill="#C9A44C"/>
+  <path d="M32 4 Q33.5 11 40.5 12.5 Q33.5 14 32 21 Q30.5 14 23.5 12.5 Q30.5 11 32 4 Z" fill="#BE9448"/>
+  <path d="M12 57 V33 A20 20 0 0 1 52 33 V57" stroke="#3D1663" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M30.4 23 h3.2 v7 h7 v3.2 h-7 v15 h-3.2 v-15 h-7 V30 h7 z" fill="#BE9448"/>
+  <path d="M29.5 47 C28.5 51 32 53 32.5 57 L38 57 C37 53 33 51 33.5 47 Z" fill="#BE9448"/>
 </svg>

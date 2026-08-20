@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Mark } from "@/components/brand/Mark";
+import { Symbol } from "@/components/brand/Symbol";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
 
 /**
@@ -18,7 +18,7 @@ export function Rail({ parishName, city }: { parishName: string; city?: string |
   return (
     <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 flex-col border-r border-border bg-surface px-[18px] py-6 lg:flex">
       <div className="flex items-center gap-3 px-2 pb-6">
-        <Mark className="h-7 w-7 shrink-0 text-primary" />
+        <Symbol className="h-9 w-auto shrink-0 text-primary" />
         <div>
           <p className="font-serif text-[19px] font-semibold leading-tight text-foreground">Minha Paróquia</p>
           <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">

@@ -39,13 +39,13 @@ export const SEASON_NAMES: Record<LiturgicalSeasonCode, string> = {
   pentecostes: "Pentecostes",
 };
 
-function addDays(date: Date, days: number): Date {
+export function addDays(date: Date, days: number): Date {
   const result = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   result.setUTCDate(result.getUTCDate() + days);
   return result;
 }
 
-function toUtcDateOnly(date: Date): Date {
+export function toUtcDateOnly(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
@@ -69,7 +69,7 @@ export function computeEasterSunday(year: number): Date {
 }
 
 /** Domingo de Epifania (Reis) no calendário brasileiro/CNBB: o domingo entre 2 e 8 de janeiro. */
-function computeEpiphanySunday(year: number): Date {
+export function computeEpiphanySunday(year: number): Date {
   for (let day = 2; day <= 8; day++) {
     const candidate = new Date(Date.UTC(year, 0, day));
     if (candidate.getUTCDay() === 0) return candidate;
@@ -85,7 +85,7 @@ function computeBaptismOfTheLord(year: number): Date {
 }
 
 /** 4º domingo antes do Natal (domingo mais próximo de 30 de novembro). */
-function computeFirstSundayOfAdvent(year: number): Date {
+export function computeFirstSundayOfAdvent(year: number): Date {
   const stAndrew = new Date(Date.UTC(year, 10, 30));
   const weekday = stAndrew.getUTCDay();
   const offset = weekday === 0 ? 0 : -weekday;

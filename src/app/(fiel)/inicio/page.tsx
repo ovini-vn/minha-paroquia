@@ -24,6 +24,7 @@ import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { Avatar } from "@/components/ui/Avatar";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
+import { FeastList } from "@/components/domain/FeastList";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 
@@ -201,9 +202,17 @@ export default async function HomePage() {
       </section>
       </div>
 
+      {/* Coluna da direita no desktop. */}
+      <div className="flex flex-col lg:sticky lg:top-24">
+      {/* Calendário da Igreja — o que vem por aí. */}
+      <section className="pt-[30px]">
+        <SectionTitle eyebrow="Calendário da Igreja" title="Próximas celebrações" />
+        <FeastList from={new Date()} limit={4} />
+      </section>
+
       {/* Serviço — a fé que vira ação. */}
       <section className="pt-[30px]">
-        <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-[18px] lg:sticky lg:top-24">
+        <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-[18px]">
           <Eyebrow className="text-[#8a6b24] dark:text-gold">Serviço</Eyebrow>
           <h3 className="mb-2 mt-2 font-serif text-2xl font-semibold leading-tight text-foreground">
             Cada pessoa tem um dom.
@@ -218,6 +227,7 @@ export default async function HomePage() {
           </LinkButton>
         </div>
       </section>
+      </div>
       </div>
 
       <div className="rule-gold my-7 lg:hidden" />

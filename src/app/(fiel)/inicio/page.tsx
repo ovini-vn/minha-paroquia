@@ -134,6 +134,13 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/*
+       * Daqui para baixo, duas colunas no desktop: a leitura (Palavra do
+       * Padre + Hoje) à esquerda e a chamada de serviço à direita. No
+       * celular vira uma coluna só, na mesma ordem de antes.
+       */}
+      <div className="lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8">
+      <div className="flex flex-col">
       {/* Palavra do Padre — tratamento editorial, não "mais um card". */}
       {latestPost && (
         <section className="pt-[30px]">
@@ -192,10 +199,11 @@ export default async function HomePage() {
           />
         </Card>
       </section>
+      </div>
 
       {/* Serviço — a fé que vira ação. */}
       <section className="pt-[30px]">
-        <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-[18px]">
+        <div className="rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent p-[18px] lg:sticky lg:top-24">
           <Eyebrow className="text-[#8a6b24] dark:text-gold">Serviço</Eyebrow>
           <h3 className="mb-2 mt-2 font-serif text-2xl font-semibold leading-tight text-foreground">
             Cada pessoa tem um dom.
@@ -210,8 +218,9 @@ export default async function HomePage() {
           </LinkButton>
         </div>
       </section>
+      </div>
 
-      <div className="rule-gold my-7" />
+      <div className="rule-gold my-7 lg:hidden" />
     </div>
   );
 }

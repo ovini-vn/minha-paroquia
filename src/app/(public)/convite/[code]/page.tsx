@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { validateInvitation, type InvitationValidation } from "@/server/modules/invitations/service";
+import { Mail } from "lucide-react";
 
 type InvalidReason = Extract<InvitationValidation, { valid: false }>["reason"];
 
@@ -20,7 +21,7 @@ export default async function InvitePage({ params }: { params: Promise<{ code: s
   if (!validation.valid) {
     return (
       <EmptyState
-        icon="✉️"
+        icon={Mail}
         title="Convite indisponível"
         description={INVALID_REASON_MESSAGE[validation.reason]}
       />

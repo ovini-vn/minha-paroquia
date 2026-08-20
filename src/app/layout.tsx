@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
-const nunito = Nunito({ subsets: ["latin"], variable: "--font-sans" });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-serif" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const playfairDisplay = Playfair_Display({ subsets: ["latin"], variable: "--font-serif" });
 
 export const metadata: Metadata = {
   title: "Minha Paróquia",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${nunito.variable} ${fraunces.variable}`}>
+    <html lang="pt-BR" className={`${inter.variable} ${playfairDisplay.variable}`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );

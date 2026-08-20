@@ -9,13 +9,14 @@ import { formatDateTime } from "@/lib/date";
 import { WEEKDAY_LABELS } from "@/lib/pastoral-care-labels";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { AvailabilityForm } from "./AvailabilityForm";
+import { Music } from "lucide-react";
 
 export default async function LiturgiaPage() {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="🎵"
+        icon={Music}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

@@ -7,13 +7,14 @@ import { Button, LinkButton } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
+import { HeartHandshake } from "lucide-react";
 
 export default async function ServirPage() {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="❤️"
+        icon={HeartHandshake}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

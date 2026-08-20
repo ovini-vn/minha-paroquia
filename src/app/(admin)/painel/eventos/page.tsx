@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
+import { PartyPopper } from "lucide-react";
 
 export default async function EventsAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AGENDA_MANAGE);
@@ -25,7 +26,7 @@ export default async function EventsAdminPage() {
       <p className="text-sm text-muted">Novos eventos são criados no painel principal, na seção Agenda.</p>
 
       {events.length === 0 ? (
-        <EmptyState icon="🎉" title="Nenhum evento criado ainda" description="Crie um no painel principal." />
+        <EmptyState icon={PartyPopper} title="Nenhum evento criado ainda" description="Crie um no painel principal." />
       ) : (
         <div className="flex flex-col gap-2">
           {events.map((event) => {

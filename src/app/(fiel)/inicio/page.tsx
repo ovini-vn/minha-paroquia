@@ -8,6 +8,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { Church, HeartHandshake, Mic, HandHeart } from "lucide-react";
 
 const POST_PREVIEW_LABEL: Record<string, string> = {
   audio: "Novo áudio disponível — toque para ouvir.",
@@ -28,7 +29,7 @@ export default async function HomePage() {
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="⛪"
+        icon={Church}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />
@@ -52,7 +53,10 @@ export default async function HomePage() {
 
       <Link href="/comunidade">
         <Card>
-          <p className="text-xs uppercase tracking-wide text-primary">🎙️ Palavra do Padre</p>
+          <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-primary">
+            <Mic className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+            Palavra do Padre
+          </p>
           {latestPost ? (
             <p className="mt-1 line-clamp-3 text-sm text-muted">
               {latestPost.mediaType === "texto"
@@ -78,8 +82,9 @@ export default async function HomePage() {
         )}
       </Card>
 
-      <LinkButton href="/servir" className="w-full text-base">
-        ❤️ EU POSSO AJUDAR
+      <LinkButton href="/servir" className="w-full gap-2 text-base">
+        <HeartHandshake className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+        Eu posso ajudar
       </LinkButton>
 
       <Card>
@@ -96,18 +101,14 @@ export default async function HomePage() {
 
       <div className="grid grid-cols-2 gap-3">
         <Link href="/comunidade">
-          <Card className="text-center">
-            <span className="text-2xl" aria-hidden>
-              ⛪
-            </span>
+          <Card className="flex flex-col items-center gap-1 text-center">
+            <Church className="h-6 w-6 text-primary" strokeWidth={1.5} aria-hidden />
             <p className="mt-1 text-sm font-medium text-foreground">Minha Comunidade</p>
           </Card>
         </Link>
         <Link href="/caminhada">
-          <Card className="text-center">
-            <span className="text-2xl" aria-hidden>
-              🙏
-            </span>
+          <Card className="flex flex-col items-center gap-1 text-center">
+            <HandHeart className="h-6 w-6 text-primary" strokeWidth={1.5} aria-hidden />
             <p className="mt-1 text-sm font-medium text-foreground">Minha Caminhada</p>
           </Card>
         </Link>

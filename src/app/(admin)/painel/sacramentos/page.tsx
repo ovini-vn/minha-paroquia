@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateOnly } from "@/lib/date";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
+import { ScrollText } from "lucide-react";
 
 export default async function SacramentsAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.SACRAMENTS_VALIDATE);
@@ -24,7 +25,7 @@ export default async function SacramentsAdminPage() {
 
       {sacraments.length === 0 ? (
         <EmptyState
-          icon="📜"
+          icon={ScrollText}
           title="Nenhum sacramento registrado ainda"
           description="Assim que um fiel registrar um sacramento em Minha Caminhada, ele aparece aqui."
         />

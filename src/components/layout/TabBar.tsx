@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home, Footprints, Church, HeartHandshake, User } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const TABS = [
-  { href: "/inicio", label: "Início", icon: "🏠" },
-  { href: "/caminhada", label: "Caminhada", icon: "🙏" },
-  { href: "/comunidade", label: "Comunidade", icon: "⛪" },
-  { href: "/servir", label: "Servir", icon: "❤️" },
-  { href: "/eu", label: "Eu", icon: "👤" },
+  { href: "/inicio", label: "Início", icon: Home },
+  { href: "/caminhada", label: "Caminhada", icon: Footprints },
+  { href: "/comunidade", label: "Comunidade", icon: Church },
+  { href: "/servir", label: "Servir", icon: HeartHandshake },
+  { href: "/eu", label: "Eu", icon: User },
 ] as const;
 
 export function TabBar() {
@@ -20,6 +21,7 @@ export function TabBar() {
       <ul className="mx-auto flex max-w-lg justify-between px-2 py-2">
         {TABS.map((tab) => {
           const active = pathname === tab.href;
+          const Icon = tab.icon;
           return (
             <li key={tab.href} className="flex-1">
               <Link
@@ -29,9 +31,7 @@ export function TabBar() {
                   active ? "text-primary" : "text-muted",
                 )}
               >
-                <span className="text-xl" aria-hidden>
-                  {tab.icon}
-                </span>
+                <Icon className="h-5 w-5" strokeWidth={active ? 2 : 1.5} aria-hidden />
                 {tab.label}
               </Link>
             </li>

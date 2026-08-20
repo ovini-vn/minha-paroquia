@@ -25,6 +25,7 @@ import { CreateInviteForm } from "./CreateInviteForm";
 import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
+import { Church } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -48,7 +49,7 @@ export default async function AdminDashboardPage() {
   if (!session.membership) {
     return (
       <EmptyState
-        icon="⛪"
+        icon={Church}
         title="Sem paróquia vinculada"
         description="Esta conta administra a plataforma, mas não está vinculada a uma paróquia específica ainda."
       />

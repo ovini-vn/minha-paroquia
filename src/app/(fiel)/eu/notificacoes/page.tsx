@@ -5,6 +5,7 @@ import {
   markAllNotificationsReadAction,
   setPreferenceAction,
 } from "@/server/actions/notification-actions";
+import { Bell } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -17,7 +18,7 @@ export default async function NotificationsPage() {
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="🔔"
+        icon={Bell}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />
@@ -44,7 +45,7 @@ export default async function NotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <EmptyState icon="🔔" title="Nenhuma notificação ainda" description="Avisos da sua paróquia aparecem aqui." />
+        <EmptyState icon={Bell} title="Nenhuma notificação ainda" description="Avisos da sua paróquia aparecem aqui." />
       ) : (
         <div className="flex flex-col gap-2">
           {notifications.map((notification) => (

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WEEKDAY_LABELS, AVAILABILITY_TYPE_LABELS } from "@/lib/pastoral-care-labels";
 import { CreateAvailabilityForm } from "./CreateAvailabilityForm";
+import { CalendarDays } from "lucide-react";
 
 export default async function AvailabilityPage() {
   const session = await getSessionContext();
@@ -15,7 +16,7 @@ export default async function AvailabilityPage() {
   if (!session?.membership || !session.permissions.includes(PERMISSIONS.AVAILABILITY_MANAGE)) {
     return (
       <EmptyState
-        icon="🗓️"
+        icon={CalendarDays}
         title="Esta área é para sacerdotes"
         description="Gerenciar horários de atendimento é reservado a quem tem um perfil de sacerdote na paróquia."
       />
@@ -26,7 +27,7 @@ export default async function AvailabilityPage() {
   if (!priest) {
     return (
       <EmptyState
-        icon="🗓️"
+        icon={CalendarDays}
         title="Perfil de sacerdote não encontrado"
         description="Fale com a secretaria da sua paróquia."
       />
@@ -45,7 +46,7 @@ export default async function AvailabilityPage() {
 
       {windows.length === 0 ? (
         <EmptyState
-          icon="🗓️"
+          icon={CalendarDays}
           title="Nenhum horário cadastrado"
           description="Adicione um horário acima para que os fiéis possam solicitar atendimento."
         />

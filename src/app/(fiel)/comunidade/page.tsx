@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PostCard } from "@/components/domain/PostCard";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { Church } from "lucide-react";
 
 type AgendaItem = {
   id: string;
@@ -25,7 +26,7 @@ export default async function ComunidadePage() {
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="⛪"
+        icon={Church}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />
@@ -178,7 +179,7 @@ export default async function ComunidadePage() {
       <Link href="/comunidade/oracao">
         <Card className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-foreground">🙏 Pedidos de oração</p>
+            <p className="text-sm font-medium text-foreground">Pedidos de oração</p>
             <p className="text-xs text-muted">Envie ao pároco ou compartilhe no mural da comunidade</p>
           </div>
           <span aria-hidden>→</span>

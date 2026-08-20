@@ -5,6 +5,7 @@ import { getAvailableSlots } from "@/server/modules/appointments/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AppointmentBookingForm } from "./AppointmentBookingForm";
+import { CalendarDays } from "lucide-react";
 
 export default async function BookAppointmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +26,7 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
 
       {slots.length === 0 ? (
         <EmptyState
-          icon="🗓️"
+          icon={CalendarDays}
           title="Nenhum horário disponível no momento"
           description="Este sacerdote ainda não abriu horários de atendimento, ou todos já foram reservados. Tente novamente em breve."
         />

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ResetPasswordForm } from "./ResetPasswordForm";
+import { TriangleAlert } from "lucide-react";
 
 export default async function ResetPasswordPage({
   searchParams,
@@ -10,7 +11,7 @@ export default async function ResetPasswordPage({
   const { token } = await searchParams;
 
   if (!token) {
-    return <EmptyState icon="⚠️" title="Link inválido" description="Peça um novo link de recuperação de acesso." />;
+    return <EmptyState icon={TriangleAlert} title="Link inválido" description="Peça um novo link de recuperação de acesso." />;
   }
 
   return (

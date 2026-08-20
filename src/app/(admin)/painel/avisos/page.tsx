@@ -8,6 +8,7 @@ import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
 import { CreateAvisoForm } from "./CreateAvisoForm";
+import { Megaphone } from "lucide-react";
 
 export default async function AvisosAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AVISOS_MANAGE);
@@ -25,7 +26,7 @@ export default async function AvisosAdminPage() {
       </Card>
 
       {avisos.length === 0 ? (
-        <EmptyState icon="📣" title="Nenhum aviso publicado ainda" description="Crie o primeiro acima." />
+        <EmptyState icon={Megaphone} title="Nenhum aviso publicado ainda" description="Crie o primeiro acima." />
       ) : (
         <div className="flex flex-col gap-2">
           {avisos.map((aviso) => {

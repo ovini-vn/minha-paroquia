@@ -7,13 +7,14 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { FamilyMemberForm } from "./FamilyMemberForm";
+import { Users } from "lucide-react";
 
 export default async function FamilyPage() {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="👨‍👩‍👧"
+        icon={Users}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />
@@ -36,7 +37,7 @@ export default async function FamilyPage() {
       </Card>
 
       {members.length === 0 ? (
-        <EmptyState icon="👨‍👩‍👧" title="Nenhum dependente cadastrado" description="Adicione acima." />
+        <EmptyState icon={Users} title="Nenhum dependente cadastrado" description="Adicione acima." />
       ) : (
         <div className="flex flex-col gap-2">
           {members.map((member) => (

@@ -3,13 +3,14 @@ import { listPriests } from "@/server/modules/priests/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SacramentForm } from "./SacramentForm";
+import { HandHeart } from "lucide-react";
 
 export default async function NewSacramentPage() {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="🙏"
+        icon={HandHeart}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

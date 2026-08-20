@@ -5,6 +5,7 @@ import {
   listCommunityPrayerRequests,
   listPrivatePrayerRequests,
 } from "@/server/modules/prayer-requests/service";
+import { HandHeart } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
@@ -15,7 +16,7 @@ export default async function PrayerRequestsPage() {
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="🙏"
+        icon={HandHeart}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

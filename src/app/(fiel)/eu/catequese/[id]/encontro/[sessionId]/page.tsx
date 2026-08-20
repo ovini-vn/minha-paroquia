@@ -5,6 +5,7 @@ import { getGroup, listEnrollments, listAttendanceForSession } from "@/server/mo
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AttendanceForm } from "./AttendanceForm";
+import { BookOpen } from "lucide-react";
 
 export default async function AttendancePage({
   params,
@@ -30,7 +31,7 @@ export default async function AttendancePage({
       <h1 className="font-serif text-xl text-foreground">Chamada — {group.name}</h1>
 
       {enrollments.length === 0 ? (
-        <EmptyState icon="📖" title="Ninguém matriculado ainda" description="Nada para chamar por enquanto." />
+        <EmptyState icon={BookOpen} title="Ninguém matriculado ainda" description="Nada para chamar por enquanto." />
       ) : (
         <Card>
           <AttendanceForm

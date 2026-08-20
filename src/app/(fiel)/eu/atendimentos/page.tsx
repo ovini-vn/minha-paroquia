@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateTime } from "@/lib/date";
 import { APPOINTMENT_CATEGORY_LABELS, APPOINTMENT_STATUS_LABELS } from "@/lib/pastoral-care-labels";
+import { CalendarDays } from "lucide-react";
 
 export default async function AppointmentsPage() {
   const session = await getSessionContext();
@@ -28,7 +29,7 @@ export default async function AppointmentsPage() {
         <p className="mb-2 text-xs uppercase tracking-wide text-primary">Meus pedidos</p>
         {myAppointments.length === 0 ? (
           <EmptyState
-            icon="🗓️"
+            icon={CalendarDays}
             title="Nenhum pedido ainda"
             description="Peça um atendimento a partir do perfil de um sacerdote em Comunidade."
           />

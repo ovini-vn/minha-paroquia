@@ -23,6 +23,7 @@
   "dependencies": {
     "@node-rs/argon2": "^2.0.0",
     "@prisma/client": "^5.20.0",
+    "lucide-react": "^1.33.0",
     "nanoid": "^5.0.7",
     "next": "^15.0.0",
     "react": "^19.0.0",

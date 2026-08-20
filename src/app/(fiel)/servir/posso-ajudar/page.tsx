@@ -3,13 +3,14 @@ import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { VolunteerProfileForm } from "./VolunteerProfileForm";
+import { HeartHandshake } from "lucide-react";
 
 export default async function VolunteerProfilePage() {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="❤️"
+        icon={HeartHandshake}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

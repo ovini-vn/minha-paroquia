@@ -4,6 +4,7 @@ import {
   listMySacraments,
   listMyConfessions,
 } from "@/server/modules/caminhada/service";
+import { HandHeart } from "lucide-react";
 import { registerConfessionAction } from "@/server/actions/caminhada-actions";
 import { Card } from "@/components/ui/Card";
 import { LinkButton, Button } from "@/components/ui/Button";
@@ -17,7 +18,7 @@ export default async function CaminhadaPage() {
   if (!session?.membership) {
     return (
       <EmptyState
-        icon="🙏"
+        icon={HandHeart}
         title="Você ainda não pertence a uma comunidade"
         description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
       />

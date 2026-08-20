@@ -4,6 +4,7 @@ import { listGroups, listGroupsForCatechist } from "@/server/modules/catequese/s
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { BookOpen } from "lucide-react";
 
 export default async function MyCatequesePage() {
   const session = await getSessionContext();
@@ -13,7 +14,7 @@ export default async function MyCatequesePage() {
   if (!session?.membership || (!canManage && !canTeach)) {
     return (
       <EmptyState
-        icon="📖"
+        icon={BookOpen}
         title="Esta área é para catequistas"
         description="Gerenciar encontros e presença é reservado a quem tem um vínculo de catequista na paróquia."
       />
@@ -30,7 +31,7 @@ export default async function MyCatequesePage() {
 
       {groups.length === 0 ? (
         <EmptyState
-          icon="📖"
+          icon={BookOpen}
           title="Nenhuma turma atribuída"
           description="Peça ao pároco ou à secretaria para te designar como catequista de uma turma."
         />

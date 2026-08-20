@@ -1,11 +1,12 @@
 import { EmptyState } from "@/components/ui/EmptyState";
+import { MailCheck } from "lucide-react";
 
 export default function ResetSentPage() {
   const isDev = process.env.NODE_ENV !== "production";
 
   return (
     <EmptyState
-      icon="📬"
+      icon={MailCheck}
       title="Se este e-mail existir, enviamos um link"
       description={
         isDev

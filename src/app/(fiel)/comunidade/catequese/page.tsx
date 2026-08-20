@@ -3,6 +3,7 @@ import { listGroups, listMyChildrenEnrollments, getNextSessionForGroup, listRite
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { formatDateOnly } from "@/lib/date";
+import { BookOpen } from "lucide-react";
 
 export default async function CatequeseComunidadePage() {
   const session = await getSessionContext();
@@ -53,7 +54,7 @@ export default async function CatequeseComunidadePage() {
       <section>
         <p className="mb-2 text-xs uppercase tracking-wide text-primary">Turmas da paróquia</p>
         {groups.length === 0 ? (
-          <EmptyState icon="📖" title="Nenhuma turma ainda" description="Em breve, novas turmas por aqui." />
+          <EmptyState icon={BookOpen} title="Nenhuma turma ainda" description="Em breve, novas turmas por aqui." />
         ) : (
           <div className="flex flex-col gap-2">
             {groups.map((group) => (

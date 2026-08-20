@@ -7,6 +7,7 @@ import {
   listSessions,
   listRitesForEnrollment,
 } from "@/server/modules/catequese/service";
+import { BookOpen } from "lucide-react";
 import { completeRiteAction } from "@/server/actions/catequese-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -69,7 +70,7 @@ export default async function CatequeseGroupPage({ params }: { params: Promise<{
         <p className="mb-3 font-serif text-lg text-foreground">Matriculados e ritos</p>
         {enrollments.length === 0 ? (
           <EmptyState
-            icon="📖"
+            icon={BookOpen}
             title="Ninguém matriculado ainda"
             description="Peça ao pároco ou à secretaria para matricular dependentes nesta turma."
           />

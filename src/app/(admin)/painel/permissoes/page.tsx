@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SetOverrideForm } from "./SetOverrideForm";
+import { KeyRound } from "lucide-react";
 
 export default async function PermissionOverridesPage() {
   const session = await requirePermissionForPage(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);
@@ -33,7 +34,7 @@ export default async function PermissionOverridesPage() {
       </Card>
 
       {overrides.length === 0 ? (
-        <EmptyState icon="🔑" title="Nenhuma permissão delegada ainda" description="Use o formulário acima." />
+        <EmptyState icon={KeyRound} title="Nenhuma permissão delegada ainda" description="Use o formulário acima." />
       ) : (
         <div className="flex flex-col gap-2">
           {overrides.map((override) => (

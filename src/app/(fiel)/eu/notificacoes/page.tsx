@@ -1,4 +1,4 @@
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { Bell, BellRing, Check, CheckCheck } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyNotifications, listMyPreferences } from "@/server/modules/notifications/service";
 import {
@@ -13,7 +13,20 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { NOTIFICATION_CATEGORY_LABELS } from "@/lib/notification-labels";
+import { PushToggle } from "@/components/domain/PushToggle";
+import { getPublicVapidKey, listOwnSubscriptions } from "@/server/modules/push/service";
+import { unsubscribeFromPushAction } from "@/server/actions/push-actions";
 import { cn } from "@/lib/cn";
+
+/** Nome legível do aparelho, para a pessoa saber qual está removendo. */
+function descreverAparelho(userAgent: string | null): string {
+  if (!userAgent) return "Aparelho desconhecido";
+  if (/iPhone|iPad/i.test(userAgent)) return "iPhone ou iPad";
+  if (/Android/i.test(userAgent)) return "Android";
+  if (/Windows/i.test(userAgent)) return "Computador (Windows)";
+  if (/Mac OS/i.test(userAgent)) return "Computador (Mac)";
+  return "Este navegador";
+}
 
 export default async function NotificationsPage() {
   const session = await getSessionContext();
@@ -27,10 +40,12 @@ export default async function NotificationsPage() {
     );
   }
 
-  const [notifications, preferences] = await Promise.all([
+  const [notifications, preferences, aparelhos] = await Promise.all([
     listMyNotifications(session.membership.parishId, session.userId),
     listMyPreferences(session.userId),
+    listOwnSubscriptions(session.userId),
   ]);
+  const vapidPublicKey = getPublicVapidKey();
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   return (
@@ -39,6 +54,47 @@ export default async function NotificationsPage() {
         title="Notificações"
         description="O que aconteceu na sua comunidade desde a última visita."
       />
+
+      {/* Notificação FORA do app — a que lembra do compromisso assumido. */}
+      <Card className="mb-4 border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
+            <BellRing className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[14.5px] font-medium text-foreground">Avisos no aparelho</p>
+            <p className="mb-3 mt-1 text-[13px] leading-relaxed text-muted">
+              Receba um lembrete na véspera e no dia dos compromissos que você assumiu — escala da
+              liturgia, mutirão em que se ofereceu, atendimento marcado. Chega mesmo com o app
+              fechado.
+            </p>
+            <PushToggle vapidPublicKey={vapidPublicKey} />
+
+            {aparelhos.length > 0 && (
+              <div className="mt-4 border-t border-border pt-3">
+                <Eyebrow className="mb-2">Aparelhos registrados</Eyebrow>
+                <div className="flex flex-col gap-1.5">
+                  {aparelhos.map((aparelho) => (
+                    <form
+                      key={aparelho.id}
+                      action={unsubscribeFromPushAction}
+                      className="flex items-center gap-2"
+                    >
+                      <input type="hidden" name="endpoint" value={aparelho.endpoint} />
+                      <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted">
+                        {descreverAparelho(aparelho.userAgent)}
+                      </span>
+                      <Button type="submit" variant="ghost" size="sm">
+                        Remover
+                      </Button>
+                    </form>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {unreadCount > 0 && (
         <form action={markAllNotificationsReadAction} className="mb-4">

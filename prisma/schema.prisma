@@ -34,6 +34,29 @@ enum ColorScheme {
   dark
 }
 
+// Inscrição de um NAVEGADOR/dispositivo para receber notificação fora do
+// app (Web Push). Uma pessoa pode ter várias: celular, computador do
+// trabalho, etc. — por isso a chave é o endpoint, não o usuário.
+//
+// O endpoint é uma credencial: quem o tem consegue enviar notificação
+// àquele dispositivo. Por isso a tabela leva RLS.
+model WebPushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  // URL do serviço de push do navegador (FCM, Mozilla, WNS...).
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  // Só para a pessoa reconhecer o aparelho ao desativar.
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("web_push_subscriptions")
+}
+
 model User {
   id              String    @id @default(uuid())
   email           String    @unique
@@ -66,6 +89,7 @@ model User {
   dioceseMemberships  DioceseMembership[]
   provinceMemberships ProvinceMembership[]
   nationalMembership  NationalMembership?
+  pushSubscriptions   WebPushSubscription[]
   massParticipations  MassParticipation[]
   sacraments          Sacrament[]
   confessionLogs      ConfessionLog[]

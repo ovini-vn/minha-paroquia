@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Sparkles } from "lucide-react";
+import { Bell, Sparkles, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Symbol } from "@/components/brand/Symbol";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
@@ -20,10 +20,18 @@ export function SiteHeader({
   parishName,
   seasonName,
   unreadCount = 0,
+  managementHref,
 }: {
   parishName: string;
   seasonName: string;
   unreadCount?: number;
+  /**
+   * Para onde vai o atalho de gestão, ou null para quem não administra nada.
+   * O destino é decidido no servidor (ver getManagementAccess): quem tem o
+   * painel da paróquia entra direto nele; catequista e bispo vão ao /gestao,
+   * que lista o que cada um alcança.
+   */
+  managementHref?: string | null;
 }) {
   const pathname = usePathname();
 
@@ -93,6 +101,22 @@ export function SiteHeader({
             <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           </Link>
         </div>
+
+        {/* Gestão — só aparece para quem administra alguma coisa. O fiel
+            comum não vê diferença nenhuma no cabeçalho.
+
+            Fica aqui, e não na aba "Eu", porque trabalho da paróquia não é
+            vida pessoal: "Eu" voltou a ser só quem eu sou na comunidade. */}
+        {managementHref && (
+          <Link
+            href={managementHref}
+            className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
+            aria-label="Gestão da paróquia"
+            title="Gestão"
+          >
+            <LayoutDashboard className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+          </Link>
+        )}
 
         <Link
           href="/eu/notificacoes"

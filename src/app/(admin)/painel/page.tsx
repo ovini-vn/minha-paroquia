@@ -1,4 +1,5 @@
 import { requirePermissionForPage } from "@/server/auth/guards";
+import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
 import { listAllAvisos } from "@/server/modules/avisos/service";
@@ -40,6 +41,10 @@ import {
   KeyRound,
   Users,
   Repeat,
+  Landmark,
+  Crown,
+  Flag,
+  Settings,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -58,6 +63,10 @@ const STATUS_TONE: Record<string, "success" | "muted" | "warning" | "error"> = {
 
 export default async function AdminDashboardPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);
+  // Quem chega aqui é a secretaria; as visões acima da paróquia entram
+  // no fim da página para que tudo o que NÃO é vida pessoal fique num
+  // lugar só. Ver src/app/(fiel)/gestao para quem não tem o painel.
+  const acesso = getManagementAccess(session);
 
   if (!session.membership) {
     return (
@@ -203,6 +212,14 @@ export default async function AdminDashboardPage() {
             title="Catequese"
             subtitle={`${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`}
           />
+          {acesso.catequese && (
+            <RowLink
+              href="/eu/catequese"
+              icon={BookOpen}
+              title="Minha catequese"
+              subtitle="As turmas que eu mesmo acompanho"
+            />
+          )}
           <RowLink
             href="/painel/liturgia"
             icon={Music}
@@ -231,6 +248,57 @@ export default async function AdminDashboardPage() {
           )}
         </Card>
       </section>
+
+      {(acesso.national || acesso.provinces || acesso.dioceses || acesso.platform) && (
+        <section>
+          <Eyebrow tone="accent" className="mb-3">
+            Acompanhamento
+          </Eyebrow>
+          <Card className="px-3.5 py-1.5">
+            {acesso.national && (
+              <RowLink
+                href="/nacional"
+                icon={Flag}
+                title="Visão nacional"
+                subtitle="Províncias e dioceses do país"
+              />
+            )}
+            {session.provinces.map((province) => (
+              <RowLink
+                key={province.id}
+                href={`/provincia/${province.id}`}
+                icon={Crown}
+                title={province.name}
+                subtitle="Província eclesiástica"
+              />
+            ))}
+            {acesso.dioceses && (
+              <RowLink
+                href="/diocese"
+                icon={Landmark}
+                title={session.dioceses.length === 1 ? session.dioceses[0]!.name : "Dioceses"}
+                subtitle="Visão do conjunto das paróquias"
+              />
+            )}
+            {acesso.platform && (
+              <>
+                <RowLink
+                  href="/plataforma/dioceses"
+                  icon={Settings}
+                  title="Dioceses e paróquias"
+                  subtitle="Administração da plataforma"
+                />
+                <RowLink
+                  href="/plataforma/estrutura"
+                  icon={Settings}
+                  title="Estrutura eclesiástica"
+                  subtitle="Províncias, sedes e acesso nacional"
+                />
+              </>
+            )}
+          </Card>
+        </section>
+      )}
 
       <Card>
         <p className="mb-3 font-serif text-lg font-semibold text-foreground">Convites</p>

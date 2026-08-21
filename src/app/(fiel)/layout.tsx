@@ -1,4 +1,5 @@
 import { requireSessionForPage } from "@/server/auth/guards";
+import { getManagementAccess } from "@/server/auth/management";
 import { countUnreadNotifications } from "@/server/modules/notifications/service";
 import { getParish } from "@/server/modules/parishes/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
@@ -21,6 +22,12 @@ export default async function FielLayout({ children }: { children: React.ReactNo
   // atmosfera padrão da marca — nenhuma cor é calculada em JS.
   const seasonAttr = session.themePreference === "liturgical" ? season.season : undefined;
 
+  // Quem tem o painel entra direto nele — é o uso diário da secretaria e
+  // não pode custar dois cliques. Quem não tem (catequista, bispo) vai ao
+  // /gestao, que lista só o que aquela pessoa alcança.
+  const acesso = getManagementAccess(session);
+  const managementHref = acesso.parishPanel ? "/painel" : acesso.any ? "/gestao" : null;
+
   const parishName = session.membership?.parishName ?? "Sem comunidade ativa";
   const cityLabel = parish?.city ? [parish.city, parish.state].filter(Boolean).join(" · ") : null;
 
@@ -35,7 +42,12 @@ export default async function FielLayout({ children }: { children: React.ReactNo
      * trilha lateral que dava cara de aplicativo.
      */
     <div className="flex min-h-dvh flex-col bg-sunken lg:bg-background" data-season={seasonAttr}>
-      <SiteHeader parishName={parishName} seasonName={season.name} unreadCount={unreadCount} />
+      <SiteHeader
+        parishName={parishName}
+        seasonName={season.name}
+        unreadCount={unreadCount}
+        managementHref={managementHref}
+      />
 
       <div className="flex flex-1 justify-center lg:block">
         <main className="w-full max-w-[440px] flex-1 animate-enter bg-background px-[18px] pb-24 pt-6 shadow-lg lg:mx-auto lg:max-w-4xl lg:px-8 lg:pb-16 lg:pt-10 lg:shadow-none">

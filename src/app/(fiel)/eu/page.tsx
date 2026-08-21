@@ -1,18 +1,4 @@
-import {
-  UserPen,
-  Sparkles,
-  CalendarDays,
-  Users,
-  HandCoins,
-  Clock,
-  BookOpen,
-  LayoutDashboard,
-  LogOut,
-  Landmark,
-  Settings,
-  Crown,
-  Flag,
-} from "lucide-react";
+import { UserPen, Sparkles, CalendarDays, Users, HandCoins, Clock, LogOut } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { findUserById } from "@/server/modules/users/repository";
@@ -30,12 +16,10 @@ export default async function ProfilePage() {
   if (!session) return null;
   const user = await findUserById(session.userId);
 
-  const canSeeAdminPanel =
-    session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.DASHBOARD_PARISH_VIEW);
+  // Disponibilidade continua aqui: "quando posso atender" é decisão
+  // pessoal do sacerdote, não trabalho da secretaria. Painel, catequese e
+  // as visões de diocese saíram para /gestao — ver src/server/auth/management.ts.
   const canManageAvailability = session.permissions.includes(PERMISSIONS.AVAILABILITY_MANAGE);
-  const canTeachCatequese =
-    session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH) ||
-    session.permissions.includes(PERMISSIONS.CATEQUESE_MANAGE);
 
   const detalhes = [user?.phone, user?.birthDate ? formatDateOnly(user.birthDate) : null]
     .filter(Boolean)
@@ -83,90 +67,18 @@ export default async function ProfilePage() {
         </Card>
       </section>
 
-      {(session.dioceses.length > 0 ||
-        session.provinces.length > 0 ||
-        session.national !== null ||
-        session.isPlatformAdmin) && (
-        <section>
-          <Eyebrow tone="accent" className="mb-3">
-            Acompanhamento
-          </Eyebrow>
-          <Card className="px-3.5 py-1.5">
-            {(session.national !== null || session.isPlatformAdmin) && (
-              <RowLink
-                href="/nacional"
-                icon={Flag}
-                title="Visão nacional"
-                subtitle="Províncias e dioceses do país"
-              />
-            )}
-            {session.provinces.map((province) => (
-              <RowLink
-                key={province.id}
-                href={`/provincia/${province.id}`}
-                icon={Crown}
-                title={province.name}
-                subtitle="Província eclesiástica"
-              />
-            ))}
-            {(session.dioceses.length > 0 || session.isPlatformAdmin) && (
-              <RowLink
-                href="/diocese"
-                icon={Landmark}
-                title={session.dioceses.length === 1 ? session.dioceses[0]!.name : "Dioceses"}
-                subtitle="Visão do conjunto das paróquias"
-              />
-            )}
-            {session.isPlatformAdmin && (
-              <>
-                <RowLink
-                  href="/plataforma/dioceses"
-                  icon={Settings}
-                  title="Dioceses e paróquias"
-                  subtitle="Administração da plataforma"
-                />
-                <RowLink
-                  href="/plataforma/estrutura"
-                  icon={Settings}
-                  title="Estrutura eclesiástica"
-                  subtitle="Províncias, sedes e acesso nacional"
-                />
-              </>
-            )}
-          </Card>
-        </section>
-      )}
-
-      {(canManageAvailability || canTeachCatequese || canSeeAdminPanel) && (
+      {canManageAvailability && (
         <section>
           <Eyebrow tone="accent" className="mb-3">
             Meu serviço
           </Eyebrow>
           <Card className="px-3.5 py-1.5">
-            {canManageAvailability && (
-              <RowLink
-                href="/eu/disponibilidade"
-                icon={Clock}
-                title="Minha disponibilidade"
-                subtitle="Quando posso atender"
-              />
-            )}
-            {canTeachCatequese && (
-              <RowLink
-                href="/eu/catequese"
-                icon={BookOpen}
-                title="Minha catequese"
-                subtitle="Turmas que acompanho"
-              />
-            )}
-            {canSeeAdminPanel && (
-              <RowLink
-                href="/painel"
-                icon={LayoutDashboard}
-                title="Painel da paróquia"
-                subtitle="Gestão da comunidade"
-              />
-            )}
+            <RowLink
+              href="/eu/disponibilidade"
+              icon={Clock}
+              title="Minha disponibilidade"
+              subtitle="Quando posso atender"
+            />
           </Card>
         </section>
       )}

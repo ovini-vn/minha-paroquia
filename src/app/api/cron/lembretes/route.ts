@@ -1,8 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { sendCommitmentReminders } from "@/server/modules/reminders/service";
+import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/service";
 
 /**
- * Job diário de lembretes — disparado pelo cron da Vercel (ver vercel.json).
+ * Job diário — disparado pelo cron da Vercel (ver vercel.json).
+ *
+ * Faz duas coisas, no mesmo job de propósito: o plano Hobby da Vercel
+ * permite pouquíssimos crons, e as duas tarefas são diárias e baratas.
+ *
+ *   1. repõe o horizonte das missas que se repetem;
+ *   2. avisa quem tem compromisso hoje ou amanhã.
+ *
+ * Nessa ordem, e a ordem importa: uma missa recém-gerada pode já ter
+ * escala para amanhã, e o aviso precisa enxergá-la.
  *
  * PROTEÇÃO: a Vercel envia `Authorization: Bearer $CRON_SECRET` quando a
  * variável existe. Sem o segredo configurado a rota recusa TUDO, em vez de
@@ -24,8 +34,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "não autorizado" }, { status: 401 });
   }
 
-  const resultado = await sendCommitmentReminders(new Date());
-  console.log("Lembretes do dia:", JSON.stringify(resultado));
+  const agora = new Date();
 
-  return NextResponse.json({ ok: true, ...resultado });
+  // Falhar a geração não pode impedir os lembretes: são independentes, e
+  // silenciar o aviso de quem já se comprometeu é o pior dos dois males.
+  let ocorrencias: { paroquias: number; criadas: number } | { erro: string };
+  try {
+    ocorrencias = await generateAllUpcomingOccurrences(agora);
+  } catch (error) {
+    console.error("Falha ao gerar ocorrências:", error);
+    ocorrencias = { erro: error instanceof Error ? error.message : "desconhecido" };
+  }
+
+  const lembretes = await sendCommitmentReminders(agora);
+  console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes }));
+
+  return NextResponse.json({ ok: true, ocorrencias, ...lembretes });
 }

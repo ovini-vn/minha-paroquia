@@ -1,5 +1,17 @@
-import { withTenantContext } from "@/server/db/tenant-context";
-import type { CreateCelebrationInput } from "./schema";
+import type { Prisma } from "@prisma/client";
+import { withTenantContext, withPlatformContext } from "@/server/db/tenant-context";
+import { occurrencesBetween, type RecurrenceRule } from "@/lib/recurrence";
+import { ValidationError } from "@/server/shared/errors";
+import type { CreateCelebrationInput, CreateCelebrationScheduleInput } from "./schema";
+
+/**
+ * Quanto tempo à frente as ocorrências ficam criadas.
+ *
+ * Precisa ser longo o bastante para a secretaria montar escala com folga,
+ * e curto o bastante para mudar a regra não significar mexer em centenas
+ * de linhas. Um trimestre cobre o planejamento real de uma paróquia.
+ */
+export const HORIZONTE_DIAS = 120;
 
 export function createCelebration(input: CreateCelebrationInput & { parishId: string; createdBy: string }) {
   return withTenantContext(input.parishId, (tx) =>
@@ -20,7 +32,10 @@ export function createCelebration(input: CreateCelebrationInput & { parishId: st
 export function listUpcomingCelebrations(parishId: string, limit = 10) {
   return withTenantContext(parishId, (tx) =>
     tx.celebration.findMany({
-      where: { parishId, startsAt: { gte: new Date() } },
+      // canceledAt: null — missa cancelada não some da base (a escala
+      // dela continua apontando para cá), mas não pode aparecer como se
+      // fosse acontecer.
+      where: { parishId, startsAt: { gte: new Date() }, canceledAt: null },
       orderBy: { startsAt: "asc" },
       take: limit,
       include: { priestProfile: { include: { user: { select: { fullName: true } } } } },
@@ -31,4 +46,239 @@ export function listUpcomingCelebrations(parishId: string, limit = 10) {
 export async function getNextCelebration(parishId: string) {
   const [next] = await listUpcomingCelebrations(parishId, 1);
   return next ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Repetição
+// ---------------------------------------------------------------------------
+
+function toRule(schedule: {
+  frequency: string;
+  weekday: number;
+  weekOfMonth: number | null;
+  timeMinutes: number;
+  startsOn: Date;
+  endsOn: Date | null;
+}): RecurrenceRule {
+  return {
+    frequency: schedule.frequency as "semanal" | "mensal",
+    weekday: schedule.weekday,
+    weekOfMonth: schedule.weekOfMonth,
+    timeMinutes: schedule.timeMinutes,
+    startsOn: schedule.startsOn,
+    endsOn: schedule.endsOn,
+  };
+}
+
+type ScheduleRow = {
+  id: string;
+  parishId: string;
+  type: string;
+  title: string | null;
+  location: string | null;
+  priestProfileId: string | null;
+  createdBy: string;
+  frequency: string;
+  weekday: number;
+  weekOfMonth: number | null;
+  timeMinutes: number;
+  startsOn: Date;
+  endsOn: Date | null;
+};
+
+/**
+ * Cria as ocorrências que faltam de UMA regra, dentro do horizonte.
+ *
+ * Idempotente por construção: `skipDuplicates` somado à restrição única
+ * (schedule_id, starts_at) faz a segunda passagem não criar nada. Isso
+ * importa porque a geração roda todo dia — sem isso, uma semana de job
+ * viraria sete missas empilhadas no mesmo horário.
+ *
+ * Nunca apaga nem altera ocorrência existente: se a secretaria ajustou o
+ * horário de uma missa específica, ou se já há escala montada, mexer aqui
+ * desfaria trabalho feito à mão.
+ */
+async function generateForSchedule(
+  tx: Prisma.TransactionClient,
+  schedule: ScheduleRow,
+  agora: Date,
+): Promise<number> {
+  const ate = new Date(agora.getTime() + HORIZONTE_DIAS * 24 * 3_600_000);
+  const instantes = occurrencesBetween(toRule(schedule), agora, ate);
+  if (instantes.length === 0) return 0;
+
+  const { count } = await tx.celebration.createMany({
+    data: instantes.map((startsAt) => ({
+      parishId: schedule.parishId,
+      type: schedule.type as never,
+      title: schedule.title,
+      startsAt,
+      location: schedule.location,
+      priestProfileId: schedule.priestProfileId,
+      scheduleId: schedule.id,
+      createdBy: schedule.createdBy,
+    })),
+    skipDuplicates: true,
+  });
+
+  return count;
+}
+
+export async function createCelebrationSchedule(
+  input: CreateCelebrationScheduleInput & { parishId: string; createdBy: string },
+) {
+  return withTenantContext(input.parishId, async (tx) => {
+    // Barra a regra repetida. Sem isso, cadastrar "domingo 19h" duas vezes
+    // faz a MESMA missa aparecer duplicada na agenda do fiel — as duas
+    // regras geram ocorrências distintas no mesmo horário, e a restrição
+    // única (schedule_id, starts_at) não pega, porque os schedule_id
+    // diferem. Quem vê a agenda não entende o que aconteceu.
+    const igual = await tx.celebrationSchedule.findFirst({
+      where: {
+        parishId: input.parishId,
+        active: true,
+        type: input.type,
+        frequency: input.frequency,
+        weekday: input.weekday,
+        weekOfMonth: input.frequency === "mensal" ? (input.weekOfMonth ?? 1) : null,
+        timeMinutes: input.timeMinutes,
+      },
+    });
+    if (igual) {
+      throw new ValidationError(
+        "Já existe uma repetição igual nesse dia e horário. Encerre a anterior antes de criar outra.",
+      );
+    }
+
+    const schedule = await tx.celebrationSchedule.create({
+      data: {
+        parishId: input.parishId,
+        type: input.type,
+        title: input.title || null,
+        location: input.location || null,
+        priestProfileId: input.priestProfileId || null,
+        frequency: input.frequency,
+        weekday: input.weekday,
+        weekOfMonth: input.frequency === "mensal" ? (input.weekOfMonth ?? 1) : null,
+        timeMinutes: input.timeMinutes,
+        startsOn: input.startsOn,
+        endsOn: input.endsOn ?? null,
+        createdBy: input.createdBy,
+      },
+    });
+
+    // Gera na hora, para a secretaria ver o resultado imediatamente em vez
+    // de esperar o job da madrugada e achar que não funcionou.
+    const criadas = await generateForSchedule(tx, schedule, new Date());
+    return { schedule, criadas };
+  });
+}
+
+export function listCelebrationSchedules(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.celebrationSchedule.findMany({
+      where: { parishId },
+      orderBy: [{ active: "desc" }, { weekday: "asc" }, { timeMinutes: "asc" }],
+      include: { priestProfile: { include: { user: { select: { fullName: true } } } } },
+    }),
+  );
+}
+
+/**
+ * Desativa a regra e remove as ocorrências FUTURAS que ninguém tocou.
+ *
+ * "Que ninguém tocou" é a parte que importa: ocorrência com escala montada
+ * ou presença registrada fica de pé. Apagar levaria a escala junto (a FK é
+ * Cascade) e o registro de quem participou perderia o vínculo — trabalho de
+ * gente desfeito por uma mudança de configuração.
+ */
+export async function deactivateCelebrationSchedule(parishId: string, scheduleId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const schedule = await tx.celebrationSchedule.findFirst({ where: { id: scheduleId, parishId } });
+    if (!schedule) throw new ValidationError("Repetição não encontrada.");
+
+    await tx.celebrationSchedule.update({ where: { id: scheduleId }, data: { active: false } });
+
+    const { count } = await tx.celebration.deleteMany({
+      where: {
+        parishId,
+        scheduleId,
+        startsAt: { gte: new Date() },
+        liturgicalSchedules: { none: {} },
+        massParticipations: { none: {} },
+      },
+    });
+
+    const mantidas = await tx.celebration.count({
+      where: { parishId, scheduleId, startsAt: { gte: new Date() } },
+    });
+
+    return { removidas: count, mantidas };
+  });
+}
+
+/**
+ * Lista para o painel: inclui as CANCELADAS, ao contrário da agenda pública.
+ * Quem administra precisa enxergar o que cancelou para poder reabrir.
+ */
+export function listCelebrationsForAdmin(parishId: string, limit = 30) {
+  return withTenantContext(parishId, (tx) =>
+    tx.celebration.findMany({
+      where: { parishId, startsAt: { gte: new Date() } },
+      orderBy: { startsAt: "asc" },
+      take: limit,
+      include: {
+        priestProfile: { include: { user: { select: { fullName: true } } } },
+        schedule: { select: { id: true } },
+        _count: { select: { liturgicalSchedules: true } },
+      },
+    }),
+  );
+}
+
+/** Cancelar/reabrir UMA ocorrência — a missa que não vai ter neste feriado. */
+export function setCelebrationCanceled(parishId: string, celebrationId: string, canceled: boolean) {
+  return withTenantContext(parishId, (tx) =>
+    tx.celebration.updateMany({
+      where: { id: celebrationId, parishId },
+      data: { canceledAt: canceled ? new Date() : null },
+    }),
+  );
+}
+
+/**
+ * Repõe o horizonte de todas as paróquias. Roda no job diário.
+ *
+ * Percorre paróquia por paróquia dentro do contexto de cada uma, em vez de
+ * uma consulta global com bypass: o job é global, mas nenhuma leitura
+ * atravessa o isolamento entre paróquias.
+ */
+export async function generateAllUpcomingOccurrences(agora = new Date()): Promise<{
+  paroquias: number;
+  criadas: number;
+}> {
+  const parishIds = await withPlatformContext(async (tx) => {
+    const rows = await tx.celebrationSchedule.findMany({
+      where: { active: true },
+      select: { parishId: true },
+      distinct: ["parishId"],
+    });
+    return rows.map((r) => r.parishId);
+  });
+
+  let criadas = 0;
+  for (const parishId of parishIds) {
+    criadas += await withTenantContext(parishId, async (tx) => {
+      const schedules = await tx.celebrationSchedule.findMany({
+        where: { parishId, active: true },
+      });
+      let total = 0;
+      for (const schedule of schedules) {
+        total += await generateForSchedule(tx, schedule, agora);
+      }
+      return total;
+    });
+  }
+
+  return { paroquias: parishIds.length, criadas };
 }

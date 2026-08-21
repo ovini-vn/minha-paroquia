@@ -39,6 +39,7 @@ import {
   ScrollText,
   KeyRound,
   Users,
+  Repeat,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -160,6 +161,12 @@ export default async function AdminDashboardPage() {
           Áreas da paróquia
         </Eyebrow>
         <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/painel/missas"
+            icon={Repeat}
+            title="Horários das missas"
+            subtitle="O que se repete toda semana ou todo mês"
+          />
           <RowLink
             href="/painel/avisos"
             icon={Megaphone}

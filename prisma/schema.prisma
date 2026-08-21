@@ -58,55 +58,55 @@ model WebPushSubscription {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
+  id              String          @id @default(uuid())
+  email           String          @unique
   // Opcional: quem entra só via Google/Facebook nunca define uma senha.
   // authenticateUser() trata null como "e-mail ou senha inválidos", nunca
   // revela que a conta é OAuth-only.
-  passwordHash    String?   @map("password_hash")
-  fullName        String    @map("full_name")
-  photoUrl        String?   @map("photo_url")
+  passwordHash    String?         @map("password_hash")
+  fullName        String          @map("full_name")
+  photoUrl        String?         @map("photo_url")
   phone           String?
-  birthDate       DateTime? @map("birth_date") @db.Date
-  isPlatformAdmin Boolean   @default(false) @map("is_platform_admin")
+  birthDate       DateTime?       @map("birth_date") @db.Date
+  isPlatformAdmin Boolean         @default(false) @map("is_platform_admin")
   // Redesign visual: "Tema padrão" vs. "Usar cor do Tempo Litúrgico" — ver
   // src/lib/liturgical-season.ts (fonte única do cálculo) e /eu/aparencia.
   themePreference ThemePreference @default(default) @map("theme_preference")
   colorScheme     ColorScheme     @default(light) @map("color_scheme")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
-  memberships         ParishMembership[]
-  sessions            Session[]
-  passwordResetTokens PasswordResetToken[]
-  invitationsCreated  Invitation[]          @relation("InvitationCreatedBy")
-  invitationsUsed     Invitation[]          @relation("InvitationUsedBy")
-  priestProfiles      PriestProfile[]
-  appointments        Appointment[]
-  volunteerProfiles   VolunteerProfile[]
-  serviceInterests    ServiceInterest[]
-  pastoralInterests   PastoralGroupInterest[]
-  dioceseMemberships  DioceseMembership[]
-  provinceMemberships ProvinceMembership[]
-  nationalMembership  NationalMembership?
-  pushSubscriptions   WebPushSubscription[]
-  massParticipations  MassParticipation[]
-  sacraments          Sacrament[]
-  confessionLogs      ConfessionLog[]
-  familyMembersResponsible FamilyMember[] @relation("FamilyMemberResponsible")
-  familyMemberLinkedTo     FamilyMember[] @relation("FamilyMemberLinked")
-  catechismGroupsTaught    CatechismGroup[]
-  liturgicalAvailability   LiturgicalAvailability[]
-  liturgicalSchedules      LiturgicalSchedule[]
-  titheParticipations      TitheParticipation[] @relation("TitheParticipationUser")
-  titheParticipationsRegistered TitheParticipation[] @relation("TitheParticipationRegisteredBy")
-  notifications            Notification[]
-  notificationPreferences  NotificationPreference[]
-  prayerRequests           PrayerRequest[]
-  familyMemberGuardianOf   FamilyMemberGuardian[]
-  permissionOverrides         PermissionOverride[] @relation("PermissionOverrideUser")
-  permissionOverridesGranted  PermissionOverride[] @relation("PermissionOverrideGrantedBy")
-  oauthAccounts               OAuthAccount[]
+  memberships                   ParishMembership[]
+  sessions                      Session[]
+  passwordResetTokens           PasswordResetToken[]
+  invitationsCreated            Invitation[]             @relation("InvitationCreatedBy")
+  invitationsUsed               Invitation[]             @relation("InvitationUsedBy")
+  priestProfiles                PriestProfile[]
+  appointments                  Appointment[]
+  volunteerProfiles             VolunteerProfile[]
+  serviceInterests              ServiceInterest[]
+  pastoralInterests             PastoralGroupInterest[]
+  dioceseMemberships            DioceseMembership[]
+  provinceMemberships           ProvinceMembership[]
+  nationalMembership            NationalMembership?
+  pushSubscriptions             WebPushSubscription[]
+  massParticipations            MassParticipation[]
+  sacraments                    Sacrament[]
+  confessionLogs                ConfessionLog[]
+  familyMembersResponsible      FamilyMember[]           @relation("FamilyMemberResponsible")
+  familyMemberLinkedTo          FamilyMember[]           @relation("FamilyMemberLinked")
+  catechismGroupsTaught         CatechismGroup[]
+  liturgicalAvailability        LiturgicalAvailability[]
+  liturgicalSchedules           LiturgicalSchedule[]
+  titheParticipations           TitheParticipation[]     @relation("TitheParticipationUser")
+  titheParticipationsRegistered TitheParticipation[]     @relation("TitheParticipationRegisteredBy")
+  notifications                 Notification[]
+  notificationPreferences       NotificationPreference[]
+  prayerRequests                PrayerRequest[]
+  familyMemberGuardianOf        FamilyMemberGuardian[]
+  permissionOverrides           PermissionOverride[]     @relation("PermissionOverrideUser")
+  permissionOverridesGranted    PermissionOverride[]     @relation("PermissionOverrideGrantedBy")
+  oauthAccounts                 OAuthAccount[]
 
   @@map("users")
 }
@@ -180,17 +180,17 @@ model NationalMembership {
 // tenants. Ver src/server/modules/dioceses/service.ts para como o acesso do
 // bispo é resolvido sem afrouxar o isolamento por paróquia.
 model Diocese {
-  id             String   @id @default(uuid())
-  name           String
-  slug           String   @unique
-  state          String?
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  state         String?
   // Sede metropolitana da província (a arquidiocese). No máximo uma por
   // província, mas não travamos isso no banco: durante a montagem do mapa
   // eclesiástico a paróquia/diocese pode ficar temporariamente sem sede.
-  isArchdiocese  Boolean  @default(false) @map("is_archdiocese")
-  provinceId     String?  @map("province_id")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  isArchdiocese Boolean  @default(false) @map("is_archdiocese")
+  provinceId    String?  @map("province_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   province    EcclesiasticalProvince? @relation(fields: [provinceId], references: [id], onDelete: SetNull)
   parishes    Parish[]
@@ -242,31 +242,32 @@ model Parish {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  diocese            Diocese?           @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
-  memberships        ParishMembership[]
-  invitations        Invitation[]
-  priestProfiles     PriestProfile[]
-  celebrations       Celebration[]
-  events             Event[]
-  avisos             Aviso[]
-  liturgyOfTheDay    LiturgyOfTheDay[]
-  pastoralGroups     PastoralGroup[]
-  pastoralInterests  PastoralGroupInterest[]
-  posts              Post[]
-  priestAvailability  PriestAvailability[]
-  appointments        Appointment[]
-  volunteerProfiles   VolunteerProfile[]
-  serviceOpportunities ServiceOpportunity[]
-  serviceInterests    ServiceInterest[]
-  massParticipations  MassParticipation[]
-  sacraments          Sacrament[]
-  confessionLogs      ConfessionLog[]
-  familyMembers       FamilyMember[]
-  catechismGroups     CatechismGroup[]
-  catechismEnrollments CatechismEnrollment[]
-  catechismSessions   CatechismSession[]
-  catechismAttendance CatechismAttendance[]
-  catechismRites      CatechismRite[]
+  diocese                Diocese?                 @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
+  memberships            ParishMembership[]
+  invitations            Invitation[]
+  priestProfiles         PriestProfile[]
+  celebrations           Celebration[]
+  celebrationSchedules   CelebrationSchedule[]
+  events                 Event[]
+  avisos                 Aviso[]
+  liturgyOfTheDay        LiturgyOfTheDay[]
+  pastoralGroups         PastoralGroup[]
+  pastoralInterests      PastoralGroupInterest[]
+  posts                  Post[]
+  priestAvailability     PriestAvailability[]
+  appointments           Appointment[]
+  volunteerProfiles      VolunteerProfile[]
+  serviceOpportunities   ServiceOpportunity[]
+  serviceInterests       ServiceInterest[]
+  massParticipations     MassParticipation[]
+  sacraments             Sacrament[]
+  confessionLogs         ConfessionLog[]
+  familyMembers          FamilyMember[]
+  catechismGroups        CatechismGroup[]
+  catechismEnrollments   CatechismEnrollment[]
+  catechismSessions      CatechismSession[]
+  catechismAttendance    CatechismAttendance[]
+  catechismRites         CatechismRite[]
   liturgicalAvailability LiturgicalAvailability[]
   liturgicalSchedules    LiturgicalSchedule[]
   titheParticipations    TitheParticipation[]
@@ -355,22 +356,22 @@ enum InvitationStatus {
 }
 
 model Invitation {
-  id        String           @id @default(uuid())
-  parishId  String           @map("parish_id")
-  code      String           @unique
-  type      InvitationType   @default(link)
-  status    InvitationStatus @default(pending)
-  maxUses   Int?             @map("max_uses")
-  usedCount Int              @default(0) @map("used_count")
-  createdBy String           @map("created_by")
-  expiresAt DateTime?        @map("expires_at")
-  usedBy    String?          @map("used_by")
-  usedAt    DateTime?        @map("used_at")
-  createdAt DateTime         @default(now()) @map("created_at")
+  id               String           @id @default(uuid())
+  parishId         String           @map("parish_id")
+  code             String           @unique
+  type             InvitationType   @default(link)
+  status           InvitationStatus @default(pending)
+  maxUses          Int?             @map("max_uses")
+  usedCount        Int              @default(0) @map("used_count")
+  createdBy        String           @map("created_by")
+  expiresAt        DateTime?        @map("expires_at")
+  usedBy           String?          @map("used_by")
+  usedAt           DateTime?        @map("used_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
   // Papel que o vínculo recebe ao aceitar. Null = FIEL (o caso comum — a
   // maioria dos convites é para fiéis). Só PAROCO/SECRETARIA podem criar um
   // convite com outro valor (ex.: SACERDOTE) — ver invitation-actions.ts.
-  intendedRoleCode String? @map("intended_role_code")
+  intendedRoleCode String?          @map("intended_role_code")
 
   parish           Parish            @relation(fields: [parishId], references: [id], onDelete: Cascade)
   creator          User              @relation("InvitationCreatedBy", fields: [createdBy], references: [id])
@@ -452,13 +453,14 @@ model PriestProfile {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  celebrations  Celebration[]
-  posts         Post[]
-  availability  PriestAvailability[]
-  appointments  Appointment[]
-  sacraments    Sacrament[]
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parish               Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  celebrations         Celebration[]
+  celebrationSchedules CelebrationSchedule[]
+  posts                Post[]
+  availability         PriestAvailability[]
+  appointments         Appointment[]
+  sacraments           Sacrament[]
 
   @@unique([userId, parishId])
   @@index([parishId])
@@ -482,16 +484,67 @@ model Celebration {
   startsAt        DateTime        @map("starts_at")
   location        String?
   priestProfileId String?         @map("priest_profile_id")
+  // Preenchido quando a celebração nasceu de uma regra de repetição; nulo
+  // quando foi lançada avulsa (a missa extra). SetNull ao apagar a regra:
+  // as celebrações que já aconteceram continuam existindo.
+  scheduleId      String?         @map("schedule_id")
+  // Cancelar UMA ocorrência ("nesse feriado não vai ter") é marcação, nunca
+  // exclusão: liturgical_schedules.celebration_id é onDelete Cascade, então
+  // apagar a celebração levaria junto a escala de quem ia servir.
+  canceledAt      DateTime?       @map("canceled_at")
   createdBy       String          @map("created_by")
   createdAt       DateTime        @default(now()) @map("created_at")
 
-  parish        Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  priestProfile PriestProfile?      @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
-  massParticipations MassParticipation[]
+  parish              Parish               @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile       PriestProfile?       @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
+  schedule            CelebrationSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  massParticipations  MassParticipation[]
   liturgicalSchedules LiturgicalSchedule[]
 
+  // Impede a geração diária de duplicar a mesma ocorrência. scheduleId nulo
+  // não entra na restrição (o Postgres trata NULL como distinto), então
+  // celebração avulsa segue livre.
+  @@unique([scheduleId, startsAt])
   @@index([parishId, startsAt])
   @@map("celebrations")
+}
+
+enum RecurrenceFrequency {
+  semanal
+  mensal
+}
+
+// Regra de repetição: "toda quarta às 19h30", "primeira sexta na capela".
+//
+// As ocorrências são geradas como Celebration de verdade, não calculadas na
+// hora de exibir, porque escala e presença apontam para celebration_id — sem
+// linha real não há como escalar ninguém.
+model CelebrationSchedule {
+  id              String              @id @default(uuid())
+  parishId        String              @map("parish_id")
+  type            CelebrationType     @default(missa)
+  title           String?
+  location        String?
+  priestProfileId String?             @map("priest_profile_id")
+  frequency       RecurrenceFrequency
+  /// 0 = domingo.
+  weekday         Int
+  /// 1..5 quando mensal (5 = ÚLTIMA do mês); nulo quando semanal.
+  weekOfMonth     Int?                @map("week_of_month")
+  /// Minutos desde a meia-noite, horário de Brasília — hora de parede, não instante.
+  timeMinutes     Int                 @map("time_minutes")
+  startsOn        DateTime            @map("starts_on") @db.Date
+  endsOn          DateTime?           @map("ends_on") @db.Date
+  active          Boolean             @default(true)
+  createdBy       String              @map("created_by")
+  createdAt       DateTime            @default(now()) @map("created_at")
+
+  parish        Parish         @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile? @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
+  celebrations  Celebration[]
+
+  @@index([parishId, active])
+  @@map("celebration_schedules")
 }
 
 enum EventStatus {
@@ -546,20 +599,20 @@ model Aviso {
 // texto bíblico, que vem de traduções licenciadas. Ver
 // src/server/modules/liturgia/daily-service.ts.
 model LiturgyOfTheDay {
-  id               String   @id @default(uuid())
-  parishId         String   @map("parish_id")
+  id              String   @id @default(uuid())
+  parishId        String   @map("parish_id")
   // Dia a que se refere, sem hora (uma publicação por paróquia por dia).
-  date             DateTime @db.Date
-  gospelReference  String   @map("gospel_reference")
-  gospelTitle      String?  @map("gospel_title")
-  firstReading     String?  @map("first_reading")
-  psalm            String?
-  secondReading    String?  @map("second_reading")
+  date            DateTime @db.Date
+  gospelReference String   @map("gospel_reference")
+  gospelTitle     String?  @map("gospel_title")
+  firstReading    String?  @map("first_reading")
+  psalm           String?
+  secondReading   String?  @map("second_reading")
   // Reflexão do pároco: conteúdo autoral da paróquia, esse sim pode ir na íntegra.
-  reflection       String?
-  createdBy        String   @map("created_by")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  reflection      String?
+  createdBy       String   @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
 
@@ -606,15 +659,15 @@ enum AvailabilityType {
 // startTime/endTime como string "HH:mm": mais simples que modelar
 // recorrência com DateTime, e suficiente para este escopo.
 model PriestAvailability {
-  id              String            @id @default(uuid())
-  parishId        String            @map("parish_id")
-  priestProfileId String            @map("priest_profile_id")
+  id              String           @id @default(uuid())
+  parishId        String           @map("parish_id")
+  priestProfileId String           @map("priest_profile_id")
   weekday         Int // 0 = domingo ... 6 = sábado
-  startTime       String            @map("start_time")
-  endTime         String            @map("end_time")
-  type            AvailabilityType  @default(atendimento)
-  slotMinutes     Int               @default(30) @map("slot_minutes")
-  createdAt       DateTime          @default(now()) @map("created_at")
+  startTime       String           @map("start_time")
+  endTime         String           @map("end_time")
+  type            AvailabilityType @default(atendimento)
+  slotMinutes     Int              @default(30) @map("slot_minutes")
+  createdAt       DateTime         @default(now()) @map("created_at")
 
   parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
   priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
@@ -719,19 +772,19 @@ enum PastoralGroupStatus {
 // Diferente de ServiceOpportunity, que é pontual ("preciso de gente pra
 // festa"): uma pastoral é permanente e tem coordenador, horário e local.
 model PastoralGroup {
-  id           String              @id @default(uuid())
-  parishId     String              @map("parish_id")
-  name         String
-  description  String?
+  id          String              @id @default(uuid())
+  parishId    String              @map("parish_id")
+  name        String
+  description String?
   // Coordenador como texto: nem todo coordenador tem conta no app, e
   // travar o cadastro nisso impediria a paróquia de listar suas pastorais.
-  leaderName   String?             @map("leader_name")
-  meetsWhen    String?             @map("meets_when")
-  meetsWhere   String?             @map("meets_where")
-  status       PastoralGroupStatus @default(ativa)
-  createdBy    String              @map("created_by")
-  createdAt    DateTime            @default(now()) @map("created_at")
-  updatedAt    DateTime            @updatedAt @map("updated_at")
+  leaderName  String?             @map("leader_name")
+  meetsWhen   String?             @map("meets_when")
+  meetsWhere  String?             @map("meets_where")
+  status      PastoralGroupStatus @default(ativa)
+  createdBy   String              @map("created_by")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
 
   parish    Parish                  @relation(fields: [parishId], references: [id], onDelete: Cascade)
   interests PastoralGroupInterest[]
@@ -793,13 +846,13 @@ model ServiceInterest {
 // celebrationId opcional: nem toda missa que o fiel frequenta tem uma
 // Celebration cadastrada pelo admin.
 model MassParticipation {
-  id             String    @id @default(uuid())
-  userId         String    @map("user_id")
-  parishId       String    @map("parish_id")
-  celebrationId  String?   @map("celebration_id")
-  participatedAt DateTime  @map("participated_at") @db.Date
-  reflectionText String?   @map("reflection_text")
-  createdAt      DateTime  @default(now()) @map("created_at")
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  parishId       String   @map("parish_id")
+  celebrationId  String?  @map("celebration_id")
+  participatedAt DateTime @map("participated_at") @db.Date
+  reflectionText String?  @map("reflection_text")
+  createdAt      DateTime @default(now()) @map("created_at")
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   parish      Parish       @relation(fields: [parishId], references: [id], onDelete: Cascade)
@@ -879,9 +932,9 @@ model FamilyMember {
   birthDate         DateTime? @map("birth_date") @db.Date
   createdAt         DateTime  @default(now()) @map("created_at")
 
-  parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  responsible User                  @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: Cascade)
-  linkedUser  User?                 @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
+  parish      Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  responsible User                   @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: Cascade)
+  linkedUser  User?                  @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
   guardians   FamilyMemberGuardian[]
 
@@ -938,9 +991,9 @@ model CatechismEnrollment {
   familyMemberId   String   @map("family_member_id")
   enrolledAt       DateTime @default(now()) @map("enrolled_at")
 
-  parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  group        CatechismGroup         @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
-  familyMember FamilyMember           @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  parish       Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group        CatechismGroup        @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  familyMember FamilyMember          @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
   attendances  CatechismAttendance[]
   rites        CatechismRite[]
 

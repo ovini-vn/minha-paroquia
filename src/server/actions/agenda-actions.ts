@@ -5,8 +5,16 @@ import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { createCelebration } from "@/server/modules/celebrations/service";
-import { createCelebrationInputSchema } from "@/server/modules/celebrations/schema";
+import {
+  createCelebration,
+  createCelebrationSchedule,
+  deactivateCelebrationSchedule,
+  setCelebrationCanceled,
+} from "@/server/modules/celebrations/service";
+import {
+  createCelebrationInputSchema,
+  createCelebrationScheduleInputSchema,
+} from "@/server/modules/celebrations/schema";
 import { createEvent, updateEvent, setEventStatus } from "@/server/modules/events/service";
 import { createEventInputSchema, updateEventInputSchema } from "@/server/modules/events/schema";
 import { AppError } from "@/server/shared/errors";
@@ -106,4 +114,120 @@ export async function setEventStatusAction(formData: FormData): Promise<void> {
   revalidatePath("/painel/eventos");
   revalidatePath("/painel");
   revalidatePath("/comunidade");
+}
+
+export type ScheduleActionState = { error?: string; ok?: string };
+
+/**
+ * Cria a regra de repetição e já materializa as próximas ocorrências.
+ *
+ * Devolve quantas foram criadas em vez de só "salvou": a diferença entre
+ * "criei a regra" e "as missas já estão na agenda" é justamente o que a
+ * secretaria precisa enxergar para confiar no recurso.
+ */
+export async function createCelebrationScheduleAction(
+  _prev: ScheduleActionState,
+  formData: FormData,
+): Promise<ScheduleActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.AGENDA_MANAGE);
+
+  let criadas = 0;
+  try {
+    const priestProfileId = formData.get("priestProfileId");
+    const weekOfMonth = formData.get("weekOfMonth");
+    const endsOn = formData.get("endsOn");
+
+    const input = createCelebrationScheduleInputSchema.parse({
+      type: formData.get("type") || "missa",
+      title: formData.get("title") || undefined,
+      location: formData.get("location") || undefined,
+      priestProfileId: priestProfileId ? priestProfileId : undefined,
+      frequency: formData.get("frequency"),
+      weekday: formData.get("weekday"),
+      weekOfMonth: weekOfMonth ? weekOfMonth : undefined,
+      timeMinutes: formData.get("timeMinutes"),
+      startsOn: formData.get("startsOn"),
+      endsOn: endsOn ? endsOn : undefined,
+    });
+
+    const resultado = await createCelebrationSchedule({
+      ...input,
+      parishId: session.membership.parishId,
+      createdBy: session.userId,
+    });
+    criadas = resultado.criadas;
+  } catch (error) {
+    if (error instanceof ZodError) return { error: error.issues[0]?.message ?? "Dados inválidos." };
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/liturgia");
+  revalidatePath("/painel");
+  revalidatePath("/agenda");
+  revalidatePath("/comunidade");
+  revalidatePath("/inicio");
+
+  return {
+    ok:
+      criadas === 0
+        ? "Repetição criada. Nenhuma data caiu no período à frente ainda."
+        : `Repetição criada — ${criadas} ${criadas === 1 ? "data lançada" : "datas lançadas"} na agenda.`,
+  };
+}
+
+export async function deactivateCelebrationScheduleAction(
+  _prev: ScheduleActionState,
+  formData: FormData,
+): Promise<ScheduleActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.AGENDA_MANAGE);
+
+  const scheduleId = formData.get("scheduleId") as string;
+  if (!scheduleId) return { error: "Repetição não informada." };
+
+  let resultado: { removidas: number; mantidas: number };
+  try {
+    resultado = await deactivateCelebrationSchedule(session.membership.parishId, scheduleId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/liturgia");
+  revalidatePath("/painel");
+  revalidatePath("/agenda");
+  revalidatePath("/comunidade");
+  revalidatePath("/inicio");
+
+  // Diz o que ficou de pé, e por quê — senão parece que a desativação
+  // funcionou pela metade.
+  return {
+    ok:
+      resultado.mantidas > 0
+        ? `Repetição encerrada. ${resultado.removidas} data(s) futura(s) removida(s); ${resultado.mantidas} continuam na agenda porque já têm escala ou presença registrada.`
+        : `Repetição encerrada. ${resultado.removidas} data(s) futura(s) removida(s).`,
+  };
+}
+
+/** Cancela ou reabre UMA data — "neste feriado não vai ter". */
+export async function toggleCelebrationCanceledAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.AGENDA_MANAGE);
+
+  const id = formData.get("celebrationId") as string;
+  const canceled = formData.get("canceled") === "true";
+  if (!id) return;
+
+  await setCelebrationCanceled(session.membership.parishId, id, canceled);
+
+  revalidatePath("/painel/liturgia");
+  revalidatePath("/painel");
+  revalidatePath("/agenda");
+  revalidatePath("/comunidade");
+  revalidatePath("/inicio");
 }

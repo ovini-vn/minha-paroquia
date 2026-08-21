@@ -1,5 +1,6 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
+import { notifyManyUsers } from "@/server/modules/notifications/service";
 import type { PastoralGroupStatus } from "@prisma/client";
 
 /**
@@ -97,13 +98,53 @@ export async function expressGroupInterest(parishId: string, groupId: string, us
     throw new ValidationError("Esta pastoral não está recebendo interessados no momento.");
   }
 
-  return withTenantContext(parishId, (tx) =>
-    tx.pastoralGroupInterest.upsert({
+  return withTenantContext(parishId, async (tx) => {
+    const jaExistia = await tx.pastoralGroupInterest.findUnique({
+      where: { groupId_userId: { groupId, userId } },
+    });
+
+    const interest = await tx.pastoralGroupInterest.upsert({
       where: { groupId_userId: { groupId, userId } },
       update: {},
       create: { parishId, groupId, userId },
-    }),
-  );
+    });
+
+    // Mesmo problema das oportunidades de serviço: sem aviso, o interesse
+    // ficava numa lista que alguém precisava lembrar de abrir.
+    //
+    // leaderName é texto livre (nem todo coordenador tem conta), então não
+    // dá para avisar "o coordenador" diretamente — avisa quem criou a
+    // pastoral e quem responde pela área.
+    if (!jaExistia) {
+      const quem = await tx.user.findUnique({
+        where: { id: userId },
+        select: { fullName: true, phone: true },
+      });
+
+      const responsaveis = await tx.parishMembership.findMany({
+        where: {
+          parishId,
+          status: "active",
+          role: { rolePermissions: { some: { permission: { code: "opportunities.manage" } } } },
+        },
+        select: { userId: true },
+      });
+      const destinatarios = new Set([group.createdBy, ...responsaveis.map((r) => r.userId)]);
+      destinatarios.delete(userId);
+
+      const contato = quem?.phone ? ` · ${quem.phone}` : "";
+      await notifyManyUsers(
+        tx,
+        parishId,
+        [...destinatarios],
+        "pastoral",
+        "Alguém quer entrar numa pastoral",
+        `${quem?.fullName ?? "Um fiel"} demonstrou interesse em ${group.name}${contato}. Entre em contato para acolher.`,
+      );
+    }
+
+    return interest;
+  });
 }
 
 export function withdrawGroupInterest(parishId: string, groupId: string, userId: string) {

@@ -1,5 +1,6 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
+import { notifyManyUsers } from "@/server/modules/notifications/service";
 import type { CreateOpportunityInput } from "./schema";
 
 export function createOpportunity(input: CreateOpportunityInput & { parishId: string; createdBy: string }) {
@@ -70,11 +71,53 @@ export async function expressInterest(parishId: string, opportunityId: string, u
       throw new ValidationError("Esta oportunidade não está mais disponível.");
     }
 
-    return tx.serviceInterest.upsert({
+    const jaExistia = await tx.serviceInterest.findUnique({
+      where: { opportunityId_userId: { opportunityId, userId } },
+    });
+
+    const interest = await tx.serviceInterest.upsert({
       where: { opportunityId_userId: { opportunityId, userId } },
       update: {},
       create: { opportunityId, userId, parishId },
     });
+
+    // Avisa quem responde pela oportunidade. Antes, o fiel se oferecia e
+    // NINGUÉM era avisado: o interesse ficava numa lista que alguém
+    // precisava lembrar de abrir. Quem se dispõe a servir e não recebe
+    // resposta não se dispõe uma segunda vez.
+    //
+    // Só na primeira vez: reapertar o botão não pode gerar aviso repetido.
+    if (!jaExistia) {
+      const quem = await tx.user.findUnique({
+        where: { id: userId },
+        select: { fullName: true, phone: true },
+      });
+
+      // Quem criou, mais quem responde pela área — se a pessoa que criou
+      // saiu da paróquia, o aviso ainda chega a alguém.
+      const responsaveis = await tx.parishMembership.findMany({
+        where: {
+          parishId,
+          status: "active",
+          role: { rolePermissions: { some: { permission: { code: "opportunities.manage" } } } },
+        },
+        select: { userId: true },
+      });
+      const destinatarios = new Set([opportunity.createdBy, ...responsaveis.map((r) => r.userId)]);
+      destinatarios.delete(userId); // quem se ofereceu não precisa se avisar
+
+      const contato = quem?.phone ? ` · ${quem.phone}` : "";
+      await notifyManyUsers(
+        tx,
+        parishId,
+        [...destinatarios],
+        "pastoral",
+        "Alguém se ofereceu para servir",
+        `${quem?.fullName ?? "Um fiel"} se ofereceu para "${opportunity.title}"${contato}. Entre em contato para acolher.`,
+      );
+    }
+
+    return interest;
   });
 }
 

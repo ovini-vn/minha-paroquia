@@ -73,6 +73,31 @@ export function listMembersByRole(parishId: string, roleCode: string) {
   );
 }
 
+/**
+ * Ids de quem tem uma permissão nesta paróquia, pelo papel.
+ *
+ * Serve para avisar "o responsável" sem depender de UMA pessoa: quem criou
+ * a oportunidade pode ter saído da paróquia, e aí o aviso não chegaria a
+ * ninguém — que é exatamente o problema que a notificação existe para
+ * resolver.
+ *
+ * Não considera overrides individuais de propósito: aqui a pergunta é "quem
+ * responde por isso", e responsabilidade vem do papel.
+ */
+export async function listUserIdsWithPermission(parishId: string, permissionCode: string) {
+  const membros = await withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: {
+        parishId,
+        status: "active",
+        role: { rolePermissions: { some: { permission: { code: permissionCode } } } },
+      },
+      select: { userId: true },
+    }),
+  );
+  return membros.map((m) => m.userId);
+}
+
 /** Todos os membros ativos, qualquer papel — usado para registrar dízimo. */
 export function listActiveMembers(parishId: string) {
   return withTenantContext(parishId, (tx) =>

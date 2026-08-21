@@ -49,12 +49,17 @@ describe("troca de papel de um membro", () => {
     outroParocoId = outro.id;
     userIds.push(paroco.id, fiel.id, outro.id);
 
-    const c1 = await createInvitation({ parishId, createdBy: parocoId, type: "link", role: "PAROCO" });
+    // Convite não oferece PAROCO de propósito (ver invitations/schema.ts):
+    // até agora, pároco só nascia pelo seed. Promover pela troca de papel é
+    // justamente o caminho que passou a existir.
+    const c1 = await createInvitation({ parishId, createdBy: parocoId, type: "link", role: "SACERDOTE" });
     await acceptInvitation({ code: c1.code, userId: parocoId });
     const c2 = await createInvitation({ parishId, createdBy: parocoId, type: "link", role: "FIEL" });
     await acceptInvitation({ code: c2.code, userId: fielId });
     const c3 = await createInvitation({ parishId, createdBy: parocoId, type: "link", role: "FIEL" });
     await acceptInvitation({ code: c3.code, userId: outroParocoId });
+
+    await changeMemberRole(parishId, parocoId, "PAROCO", fielId);
   });
 
   afterAll(async () => {

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sem conexão — Minha Paróquia</title>
+    <!--
+      Página mostrada quando a navegação falha por falta de rede.
+
+      De propósito ela NÃO mostra dado da paróquia guardado de antes. Escala,
+      aviso e horário de missa mudam, e mostrar uma versão velha sem avisar é
+      pior do que dizer com todas as letras que não há conexão: a pessoa
+      confiaria num horário que já não vale.
+
+      Tudo embutido num arquivo só — quando ela aparece, não há rede para
+      buscar CSS nem fonte.
+    -->
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: #f8f6f1;
+        color: #242124;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+      }
+      .caixa { max-width: 320px; }
+      .emblema {
+        width: 64px; height: 64px;
+        margin: 0 auto 20px;
+        display: block;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+        font-size: 25px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      p { margin: 0; font-size: 14.5px; line-height: 1.6; color: #6b656b; }
+      .regra {
+        width: 56px; height: 1px;
+        margin: 22px auto;
+        background: linear-gradient(to right, transparent, #c9a44c, transparent);
+      }
+      button {
+        margin-top: 22px;
+        padding: 11px 22px;
+        border: 0;
+        border-radius: 9px;
+        background: #5b2890;
+        color: #fff;
+        font: inherit;
+        font-size: 14.5px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:hover { background: #6d31ab; }
+    </style>
+  </head>
+  <body>
+    <div class="caixa">
+      <img class="emblema" src="/icons/icon-192.png" alt="" />
+      <h1>Sem conexão</h1>
+      <div class="regra"></div>
+      <p>
+        Não conseguimos falar com o servidor agora. Assim que a internet voltar,
+        a vida da sua comunidade aparece aqui de novo.
+      </p>
+      <button type="button" onclick="location.reload()">Tentar de novo</button>
+    </div>
+  </body>
+</html>

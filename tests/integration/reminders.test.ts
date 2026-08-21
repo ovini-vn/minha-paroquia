@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { prisma } from "@/server/db/prisma";
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import { registerParish } from "@/server/modules/parishes/service";

@@ -17,6 +17,7 @@ export const ROLE_CODES = [
   "SECRETARIA",
   "COORDENADOR_PASTORAL",
   "COORDENADOR_LITURGIA",
+  "COORDENADOR_CATEQUESE",
 ] as const;
 
 export type RoleCode = (typeof ROLE_CODES)[number];
@@ -30,6 +31,7 @@ export const ROLE_NAMES: Record<RoleCode, string> = {
   SECRETARIA: "Secretaria",
   COORDENADOR_PASTORAL: "Coordenador de Pastoral",
   COORDENADOR_LITURGIA: "Coordenador de Liturgia",
+  COORDENADOR_CATEQUESE: "Coordenador de Catequese",
 };
 
 export const PERMISSIONS = {
@@ -118,6 +120,9 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   CATEQUISTA: [PERMISSIONS.CATEQUESE_TEACH],
   COORDENADOR_PASTORAL: [PERMISSIONS.OPPORTUNITIES_MANAGE],
   COORDENADOR_LITURGIA: [PERMISSIONS.LITURGIA_MANAGE],
+  // Coordena a catequese inteira: enxerga todas as turmas e matricula.
+  // CATEQUESE_TEACH junto porque coordenador quase sempre também dá aula.
+  COORDENADOR_CATEQUESE: [PERMISSIONS.CATEQUESE_MANAGE, PERMISSIONS.CATEQUESE_TEACH],
 };
 
 /**

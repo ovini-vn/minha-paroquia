@@ -240,6 +240,14 @@ export default async function AdminDashboardPage() {
           />
           {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
+              href="/painel/membros"
+              icon={Users}
+              title="Membros e papéis"
+              subtitle="Quem é catequista, coordenador, secretaria"
+            />
+          )}
+          {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+            <RowLink
               href="/painel/permissoes"
               icon={KeyRound}
               title="Delegar permissões"

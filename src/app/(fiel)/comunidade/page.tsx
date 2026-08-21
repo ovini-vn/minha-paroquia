@@ -256,7 +256,7 @@ export default async function ComunidadePage() {
             subtitle="Onde a comunidade se organiza para servir"
           />
           <RowLink
-            href="/comunidade/catequese"
+            href="/catequese"
             icon={BookOpen}
             title="Catequese"
             subtitle="Turmas, encontros e ritos"

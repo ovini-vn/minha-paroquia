@@ -68,6 +68,6 @@ export async function changeMemberRoleAction(
 
   revalidatePath("/painel/membros");
   revalidatePath("/painel");
-  revalidatePath("/painel/catequese");
+  revalidatePath("/catequese");
   return { ok: `Papel de ${fullName} atualizado.` };
 }

@@ -242,39 +242,40 @@ model Parish {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  diocese                Diocese?                 @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
-  memberships            ParishMembership[]
-  invitations            Invitation[]
-  priestProfiles         PriestProfile[]
-  celebrations           Celebration[]
-  celebrationSchedules   CelebrationSchedule[]
-  events                 Event[]
-  avisos                 Aviso[]
-  liturgyOfTheDay        LiturgyOfTheDay[]
-  pastoralGroups         PastoralGroup[]
-  pastoralInterests      PastoralGroupInterest[]
-  posts                  Post[]
-  priestAvailability     PriestAvailability[]
-  appointments           Appointment[]
-  volunteerProfiles      VolunteerProfile[]
-  serviceOpportunities   ServiceOpportunity[]
-  serviceInterests       ServiceInterest[]
-  massParticipations     MassParticipation[]
-  sacraments             Sacrament[]
-  confessionLogs         ConfessionLog[]
-  familyMembers          FamilyMember[]
-  catechismGroups        CatechismGroup[]
-  catechismEnrollments   CatechismEnrollment[]
-  catechismSessions      CatechismSession[]
-  catechismAttendance    CatechismAttendance[]
-  catechismRites         CatechismRite[]
-  liturgicalAvailability LiturgicalAvailability[]
-  liturgicalSchedules    LiturgicalSchedule[]
-  titheParticipations    TitheParticipation[]
-  notifications          Notification[]
-  prayerRequests         PrayerRequest[]
-  familyMemberGuardians  FamilyMemberGuardian[]
-  permissionOverrides    PermissionOverride[]
+  diocese                 Diocese?                  @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
+  memberships             ParishMembership[]
+  invitations             Invitation[]
+  priestProfiles          PriestProfile[]
+  celebrations            Celebration[]
+  celebrationSchedules    CelebrationSchedule[]
+  events                  Event[]
+  avisos                  Aviso[]
+  liturgyOfTheDay         LiturgyOfTheDay[]
+  pastoralGroups          PastoralGroup[]
+  pastoralInterests       PastoralGroupInterest[]
+  posts                   Post[]
+  priestAvailability      PriestAvailability[]
+  appointments            Appointment[]
+  volunteerProfiles       VolunteerProfile[]
+  serviceOpportunities    ServiceOpportunity[]
+  serviceInterests        ServiceInterest[]
+  massParticipations      MassParticipation[]
+  sacraments              Sacrament[]
+  confessionLogs          ConfessionLog[]
+  familyMembers           FamilyMember[]
+  catechismGroups         CatechismGroup[]
+  catechismEnrollments    CatechismEnrollment[]
+  catechismSessions       CatechismSession[]
+  catechismAttendance     CatechismAttendance[]
+  catechismRites          CatechismRite[]
+  liturgicalAvailability  LiturgicalAvailability[]
+  liturgicalSchedules     LiturgicalSchedule[]
+  titheParticipations     TitheParticipation[]
+  notifications           Notification[]
+  prayerRequests          PrayerRequest[]
+  familyMemberGuardians   FamilyMemberGuardian[]
+  permissionOverrides     PermissionOverride[]
+  CatechismMassAttendance CatechismMassAttendance[]
 
   @@map("parishes")
 }
@@ -495,11 +496,12 @@ model Celebration {
   createdBy       String          @map("created_by")
   createdAt       DateTime        @default(now()) @map("created_at")
 
-  parish              Parish               @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  priestProfile       PriestProfile?       @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
-  schedule            CelebrationSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
-  massParticipations  MassParticipation[]
-  liturgicalSchedules LiturgicalSchedule[]
+  parish                   Parish                    @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  priestProfile            PriestProfile?            @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
+  schedule                 CelebrationSchedule?      @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  massParticipations       MassParticipation[]
+  liturgicalSchedules      LiturgicalSchedule[]
+  catechismMassAttendances CatechismMassAttendance[]
 
   // Impede a geração diária de duplicar a mesma ocorrência. scheduleId nulo
   // não entra na restrição (o Postgres trata NULL como distinto), então
@@ -1004,11 +1006,12 @@ model CatechismEnrollment {
   familyMemberId   String   @map("family_member_id")
   enrolledAt       DateTime @default(now()) @map("enrolled_at")
 
-  parish       Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  group        CatechismGroup        @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
-  familyMember FamilyMember          @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
-  attendances  CatechismAttendance[]
-  rites        CatechismRite[]
+  parish          Parish                    @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group           CatechismGroup            @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  familyMember    FamilyMember              @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
+  attendances     CatechismAttendance[]
+  rites           CatechismRite[]
+  massAttendances CatechismMassAttendance[]
 
   @@unique([catechismGroupId, familyMemberId])
   @@index([parishId])
@@ -1047,6 +1050,37 @@ model CatechismAttendance {
   @@unique([sessionId, enrollmentId])
   @@index([parishId])
   @@map("catechism_attendance")
+}
+
+// Presença do CATEQUIZANDO na missa.
+//
+// Não dá para reaproveitar MassParticipation: aquilo é o fiel registrando a
+// própria participação, e catequizando quase nunca tem conta no app. Aqui
+// quem lança é o catequista, e o vínculo é com a matrícula.
+//
+// celebrationId é opcional de propósito: a paróquia pode não ter aquela
+// missa cadastrada, e travar a chamada nisso faria o catequista desistir de
+// lançar. A data sempre existe; a celebração é um detalhe a mais quando há.
+model CatechismMassAttendance {
+  id            String   @id @default(uuid())
+  parishId      String   @map("parish_id")
+  enrollmentId  String   @map("enrollment_id")
+  celebrationId String?  @map("celebration_id")
+  /// Dia da missa, no calendário — não instante.
+  attendedOn    DateTime @map("attended_on") @db.Date
+  /// Quem lançou, para a família saber a quem perguntar.
+  notedBy       String   @map("noted_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  parish      Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  enrollment  CatechismEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  celebration Celebration?        @relation(fields: [celebrationId], references: [id], onDelete: SetNull)
+
+  // Uma presença por dia por catequizando — lançar duas vezes o mesmo
+  // domingo não pode inflar o acompanhamento da família.
+  @@unique([enrollmentId, attendedOn])
+  @@index([parishId, enrollmentId])
+  @@map("catechism_mass_attendance")
 }
 
 model CatechismRite {

@@ -42,9 +42,9 @@ export default async function GestaoPage() {
             )}
             {acesso.catequese && (
               <RowLink
-                href="/eu/catequese"
+                href="/catequese"
                 icon={BookOpen}
-                title="Minha catequese"
+                title="Catequese"
                 subtitle="Turmas que acompanho"
               />
             )}

@@ -206,20 +206,16 @@ export default async function AdminDashboardPage() {
             title="Grupos e pastorais"
             subtitle={`${pastoralGroupCount} ${pastoralGroupCount === 1 ? "pastoral cadastrada" : "pastorais cadastradas"}`}
           />
+          {/* Uma entrada só: a tela mostra coordenação, minhas turmas e
+              meus filhos conforme o papel de quem abre. Antes eram
+              "Catequese" e "Minha catequese" lado a lado, sem que a
+              diferença ficasse clara. */}
           <RowLink
-            href="/painel/catequese"
+            href="/catequese"
             icon={BookOpen}
             title="Catequese"
             subtitle={`${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`}
           />
-          {acesso.catequese && (
-            <RowLink
-              href="/eu/catequese"
-              icon={BookOpen}
-              title="Minha catequese"
-              subtitle="As turmas que eu mesmo acompanho"
-            />
-          )}
           <RowLink
             href="/painel/liturgia"
             icon={Music}

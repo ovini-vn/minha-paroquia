@@ -36,7 +36,7 @@ const POST_PREVIEW_LABEL: Record<string, string> = {
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
   { href: "/oracao", icon: HandHeart, label: "Oração" },
-  { href: "/comunidade/catequese", icon: BookOpen, label: "Catequese" },
+  { href: "/catequese", icon: BookOpen, label: "Catequese" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
 ] as const;
 

@@ -11,6 +11,9 @@ import {
   recordAttendance,
   createRite,
   completeRite,
+  setMassAttendance,
+  getGroup,
+  getEnrollmentProgress,
 } from "@/server/modules/catequese/service";
 import { createGroupInputSchema, createSessionInputSchema, createRiteInputSchema } from "@/server/modules/catequese/schema";
 import {
@@ -48,7 +51,7 @@ export async function createGroupAction(_prev: ActionState, formData: FormData):
     throw error;
   }
 
-  revalidatePath("/painel/catequese");
+  revalidatePath("/catequese");
   return {};
 }
 
@@ -68,7 +71,7 @@ export async function enrollFamilyMemberAction(_prev: ActionState, formData: For
     throw error;
   }
 
-  revalidatePath(`/painel/catequese/${groupId}`);
+  revalidatePath(`/catequese/turma/${groupId}`);
   return {};
 }
 
@@ -94,7 +97,7 @@ export async function createSessionAction(_prev: ActionState, formData: FormData
     throw error;
   }
 
-  revalidatePath(`/eu/catequese/${groupId}`);
+  revalidatePath(`/catequese/turma/${groupId}`);
   return {};
 }
 
@@ -114,7 +117,7 @@ export async function recordAttendanceAction(formData: FormData): Promise<void> 
   }));
 
   await recordAttendance(session.membership.parishId, sessionId, entries);
-  revalidatePath(`/eu/catequese/${groupId}`);
+  revalidatePath(`/catequese/turma/${groupId}`);
 }
 
 export async function createRiteAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -139,7 +142,7 @@ export async function createRiteAction(_prev: ActionState, formData: FormData): 
     throw error;
   }
 
-  revalidatePath("/eu/catequese");
+  revalidatePath("/catequese");
   return {};
 }
 
@@ -152,7 +155,7 @@ export async function completeRiteAction(formData: FormData): Promise<void> {
 
   const riteId = formData.get("riteId") as string;
   await completeRite(session.membership.parishId, riteId);
-  revalidatePath("/eu/catequese");
+  revalidatePath("/catequese");
 }
 
 export type PersonActionState = { error?: string; ok?: string };
@@ -189,7 +192,7 @@ export async function createParishPersonAction(
     throw error;
   }
 
-  revalidatePath("/painel/catequese");
+  revalidatePath("/catequese");
   return { ok: `${fullName} cadastrado. Já pode ser matriculado numa turma.` };
 }
 
@@ -212,7 +215,7 @@ export async function linkParishPersonAction(
     throw error;
   }
 
-  revalidatePath("/painel/catequese");
+  revalidatePath("/catequese");
   return { ok: "Vinculado. O responsável já enxerga o cadastro em Minha família." };
 }
 
@@ -234,6 +237,60 @@ export async function removeParishPersonAction(
     throw error;
   }
 
-  revalidatePath("/painel/catequese");
+  revalidatePath("/catequese");
   return { ok: "Cadastro excluído." };
+}
+
+export type MassAttendanceState = { error?: string; ok?: string };
+
+/**
+ * Lança a presença de um catequizando na missa.
+ *
+ * Autoriza pela TURMA, não só pela permissão: quem apenas leciona precisa
+ * ser catequista daquela turma. Sem isso, um catequista lançaria presença
+ * para aluno de turma alheia.
+ */
+export async function setMassAttendanceAction(
+  _prev: MassAttendanceState,
+  formData: FormData,
+): Promise<MassAttendanceState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+
+  const parishId = session.membership.parishId;
+  const coordena =
+    session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.CATEQUESE_MANAGE);
+  const leciona =
+    session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH);
+  if (!coordena && !leciona) return { error: "Você não pode lançar presença." };
+
+  const enrollmentId = formData.get("enrollmentId") as string;
+  const attendedOnRaw = formData.get("attendedOn") as string;
+  const celebrationId = (formData.get("celebrationId") as string) || null;
+  if (!enrollmentId || !attendedOnRaw) return { error: "Informe o dia da missa." };
+
+  const attendedOn = new Date(`${attendedOnRaw}T00:00:00.000Z`);
+  if (Number.isNaN(attendedOn.getTime())) return { error: "Data inválida." };
+
+  try {
+    const progresso = await getEnrollmentProgress(parishId, enrollmentId);
+    if (!progresso) return { error: "Matrícula não encontrada." };
+
+    if (!coordena) {
+      const daMinhaTurma = await getGroup(
+        parishId,
+        progresso.enrollment.catechismGroupId,
+        session.userId,
+      );
+      if (!daMinhaTurma) return { error: "Esta turma não é sua." };
+    }
+
+    await setMassAttendance(parishId, enrollmentId, attendedOn, true, session.userId, celebrationId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath(`/catequese/aluno/${enrollmentId}`);
+  return { ok: "Presença lançada." };
 }

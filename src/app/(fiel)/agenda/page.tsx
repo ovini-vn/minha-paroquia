@@ -1,6 +1,8 @@
 import { CalendarDays, Church, PartyPopper, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
+import { PERMISSIONS } from "@/server/auth/rbac";
+import { listPriests } from "@/server/modules/priests/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { listMyAppointments } from "@/server/modules/appointments/service";
@@ -9,6 +11,9 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
+import { CreateCelebrationForm } from "@/app/(admin)/painel/CreateCelebrationForm";
+import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 
 type AgendaItem = {
   id: string;
@@ -93,12 +98,37 @@ export default async function AgendaPage() {
     return acc;
   }, []);
 
+  // Lançar de onde se está olhando. Só para quem administra a agenda — o
+  // fiel comum não recebe nenhuma ação e não vê barra alguma.
+  const podeLancar =
+    session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.AGENDA_MANAGE);
+  const priests = podeLancar && session.membership ? await listPriests(session.membership.parishId) : [];
+
   return (
     <div className="flex flex-col">
       <PageHeader
         title="Agenda"
         description="Missas, celebrações, eventos da paróquia e os seus atendimentos, em um lugar só."
       />
+
+      {podeLancar && (
+        <AcoesRapidas
+          acoes={[
+            {
+              id: "celebracao",
+              label: "Celebração avulsa",
+              icone: <Church className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
+              conteudo: <CreateCelebrationForm priests={priests} />,
+            },
+            {
+              id: "evento",
+              label: "Evento",
+              icone: <PartyPopper className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
+              conteudo: <CreateEventForm />,
+            },
+          ]}
+        />
+      )}
 
       {days.length === 0 ? (
         <EmptyState

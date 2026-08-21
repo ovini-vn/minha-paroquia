@@ -18,6 +18,9 @@ import { BleedTop } from "@/components/layout/Bleed";
 import { PostCard } from "@/components/domain/PostCard";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
+import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
+import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 
 type AgendaItem = {
   id: string;
@@ -66,6 +69,33 @@ export default async function ComunidadePage() {
 
   const localizacao = [parish?.city, parish?.state].filter(Boolean).join(" · ");
 
+  // Publicar de onde se está lendo. Cada ação é adicionada só se a pessoa
+  // tem a permissão dela — a lista vazia faz a barra sumir por inteiro.
+  const pode = (code: string) =>
+    session.isPlatformAdmin || session.permissions.includes(code as never);
+  const acoes = [
+    ...(pode(PERMISSIONS.AVISOS_MANAGE)
+      ? [
+          {
+            id: "aviso",
+            label: "Publicar aviso",
+            icone: <Megaphone className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
+            conteudo: <CreateAvisoForm />,
+          },
+        ]
+      : []),
+    ...(pode(PERMISSIONS.AGENDA_MANAGE)
+      ? [
+          {
+            id: "evento",
+            label: "Novo evento",
+            icone: <CalendarDays className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
+            conteudo: <CreateEventForm />,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <div className="flex flex-col">
       {/* Capa — a paróquia como lugar, não como cabeçalho de formulário. */}
@@ -104,6 +134,12 @@ export default async function ComunidadePage() {
           )}
         </section>
       </BleedTop>
+
+      {acoes.length > 0 && (
+        <div className="pt-5">
+          <AcoesRapidas acoes={acoes} />
+        </div>
+      )}
 
       {(parish?.address || parish?.phone) && (
         <p className="pt-4 text-[12.5px] text-muted">

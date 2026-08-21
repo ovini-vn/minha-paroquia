@@ -1,5 +1,6 @@
 import { HeartHandshake, Music, Check, CalendarDays } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
+import { PERMISSIONS } from "@/server/auth/rbac";
 import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities, listMyInterests } from "@/server/modules/opportunities/service";
 import { expressInterestAction } from "@/server/actions/opportunity-actions";
@@ -10,6 +11,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
+import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
+import { CreateOpportunityForm } from "@/app/(admin)/painel/servir/CreateOpportunityForm";
 
 export default async function ServirPage() {
   const session = await getSessionContext();
@@ -30,6 +33,11 @@ export default async function ServirPage() {
     listMyInterests(parishId, session.userId),
   ]);
   const interestedOpportunityIds = new Set(myInterests.map((i) => i.opportunityId));
+
+  // Só quem gerencia oportunidades vê a ação; o fiel comum não recebe
+  // nenhuma e a barra nem aparece.
+  const podeLancar =
+    session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.OPPORTUNITIES_MANAGE);
 
   return (
     <div className="flex flex-col">
@@ -63,6 +71,18 @@ export default async function ServirPage() {
 
       <section className="pt-7">
         <SectionTitle eyebrow="Oportunidades" title="Onde precisam de você" />
+        {podeLancar && (
+          <AcoesRapidas
+            acoes={[
+              {
+                id: "oportunidade",
+                label: "Nova oportunidade",
+                icone: <HeartHandshake className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
+                conteudo: <CreateOpportunityForm />,
+              },
+            ]}
+          />
+        )}
         {opportunities.length === 0 ? (
           <EmptyState
             icon={CalendarDays}

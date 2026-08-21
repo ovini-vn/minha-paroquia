@@ -925,20 +925,33 @@ model ConfessionLog {
 model FamilyMember {
   id                String    @id @default(uuid())
   parishId          String    @map("parish_id")
-  responsibleUserId String    @map("responsible_user_id")
+  // NULO quando a secretaria cadastrou a pessoa e nenhuma conta do app
+  // ainda respondeu por ela — o caso do catequizando cujo pai não usa o
+  // aplicativo. Deixa de ser nulo quando alguém é vinculado.
+  responsibleUserId String?   @map("responsible_user_id")
+  // Preenchido se a própria pessoa vier a ter conta no app.
   linkedUserId      String?   @map("linked_user_id")
   fullName          String    @map("full_name")
-  relationship      String
+  // NULO no cadastro feito pela secretaria: "filho de quem?" não faz
+  // sentido quando não há um responsável no app a que se referir.
+  relationship      String?
   birthDate         DateTime? @map("birth_date") @db.Date
+  // Contato do responsável que NÃO está no app. É o que a secretaria
+  // precisa para ligar quando falta alguém na catequese.
+  guardianName      String?   @map("guardian_name")
+  guardianPhone     String?   @map("guardian_phone")
   createdAt         DateTime  @default(now()) @map("created_at")
 
   parish      Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  responsible User                   @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: Cascade)
+  // SetNull, não Cascade: se a secretaria que cadastrou sair da paróquia, o
+  // cadastro do catequizando não pode ir junto.
+  responsible User?                  @relation("FamilyMemberResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
   linkedUser  User?                  @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
   guardians   FamilyMemberGuardian[]
 
   @@index([parishId, responsibleUserId])
+  @@index([parishId, fullName])
   @@map("family_members")
 }
 

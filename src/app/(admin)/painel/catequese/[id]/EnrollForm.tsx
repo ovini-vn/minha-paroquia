@@ -6,7 +6,12 @@ import { Button } from "@/components/ui/Button";
 
 const initialState: ActionState = {};
 
-type FamilyMemberOption = { id: string; fullName: string; responsible: { fullName: string } };
+type FamilyMemberOption = {
+  id: string;
+  fullName: string;
+  responsible: { fullName: string } | null;
+  guardianName: string | null;
+};
 
 export function EnrollForm({ groupId, familyMembers }: { groupId: string; familyMembers: FamilyMemberOption[] }) {
   const [state, formAction, pending] = useActionState(enrollFamilyMemberAction, initialState);
@@ -27,7 +32,15 @@ export function EnrollForm({ groupId, familyMembers }: { groupId: string; family
           <option value="">Selecione...</option>
           {familyMembers.map((fm) => (
             <option key={fm.id} value={fm.id}>
-              {fm.fullName} (responsável: {fm.responsible.fullName})
+              {fm.fullName}
+              {/* Sem conta no app o responsável é só um nome anotado —
+                  ainda assim precisa aparecer, é como a secretaria
+                  distingue dois alunos de mesmo nome. */}
+              {fm.responsible
+                ? ` (responsável: ${fm.responsible.fullName})`
+                : fm.guardianName
+                  ? ` (responsável: ${fm.guardianName})`
+                  : ""}
             </option>
           ))}
         </select>

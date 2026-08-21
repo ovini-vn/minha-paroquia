@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
-import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
+import { describeRelationship } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { FamilyMemberForm } from "./FamilyMemberForm";
 import { Users } from "lucide-react";
@@ -63,7 +63,7 @@ export default async function FamilyPage() {
                     </p>
                   )}
                 </div>
-                <Badge>{RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}</Badge>
+                <Badge>{describeRelationship(member.relationship)}</Badge>
               </Link>
             ))}
           </Card>

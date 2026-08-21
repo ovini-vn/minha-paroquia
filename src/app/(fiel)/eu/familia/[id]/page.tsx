@@ -5,7 +5,7 @@ import { listActiveMembers } from "@/server/modules/parishes/service";
 import { removeGuardianAction } from "@/server/actions/family-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
+import { describeRelationship } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { AddGuardianForm } from "./AddGuardianForm";
 import { RemoveFamilyMemberButton } from "./RemoveFamilyMemberButton";
@@ -33,7 +33,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
       <div>
         <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{member.fullName}</h1>
         <p className="mt-1 text-sm text-muted">
-          {RELATIONSHIP_LABELS[member.relationship] ?? member.relationship}
+          {describeRelationship(member.relationship)}
           {member.birthDate ? ` · ${formatDateOnly(member.birthDate)}` : ""}
         </p>
       </div>

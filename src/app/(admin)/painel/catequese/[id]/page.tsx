@@ -55,7 +55,11 @@ export default async function CatequeseGroupAdminPage({ params }: { params: Prom
               <li key={enrollment.id} className="text-sm text-foreground">
                 {enrollment.familyMember.fullName}{" "}
                 <span className="text-xs text-muted">
-                  (responsável: {enrollment.familyMember.responsible.fullName})
+                  {enrollment.familyMember.responsible
+                    ? `(responsável: ${enrollment.familyMember.responsible.fullName})`
+                    : enrollment.familyMember.guardianName
+                      ? `(responsável: ${enrollment.familyMember.guardianName} — fora do app)`
+                      : "(sem responsável cadastrado)"}
                 </span>
               </li>
             ))}

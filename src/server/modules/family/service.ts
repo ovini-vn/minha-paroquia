@@ -126,6 +126,122 @@ export function listAllFamilyMembers(parishId: string) {
       where: { parishId },
       orderBy: { fullName: "asc" },
       include: { responsible: { select: { fullName: true } } },
+      // guardianName cobre quem foi cadastrado pela secretaria e não tem
+      // responsible: sem ele a lista mostraria só o nome, e dois alunos
+      // homônimos ficariam indistinguíveis.
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Cadastro feito pela secretaria — pessoa que ainda não usa o app
+// ---------------------------------------------------------------------------
+
+/**
+ * Cadastra alguém que NÃO tem conta no aplicativo.
+ *
+ * É o caso normal da catequese: a criança é matriculada pela secretaria, e o
+ * pai pode nunca baixar o app. Sem isso, matricular exigia que a família
+ * primeiro se cadastrasse — o que trava o trabalho da paróquia numa coisa que
+ * ela não controla.
+ *
+ * NÃO cria guardião de propósito. É essa ausência que mantém o registro fora
+ * de "Minha família" de qualquer pessoa: o acesso do fiel sempre vem de
+ * guardião, nunca de responsibleUserId. Se um dia a família entrar no app,
+ * linkParishPersonToUser costura os dois lados sem refazer nada.
+ */
+export function createParishPerson(
+  parishId: string,
+  input: {
+    fullName: string;
+    birthDate?: Date | null;
+    guardianName?: string | null;
+    guardianPhone?: string | null;
+  },
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.familyMember.create({
+      data: {
+        parishId,
+        responsibleUserId: null,
+        relationship: null,
+        fullName: input.fullName,
+        birthDate: input.birthDate ?? null,
+        guardianName: input.guardianName || null,
+        guardianPhone: input.guardianPhone || null,
+      },
+    }),
+  );
+}
+
+/**
+ * Liga um cadastro da secretaria a uma conta do app.
+ *
+ * A partir daqui a pessoa passa a enxergar o dependente em "Minha família",
+ * com o histórico de catequese que já existia — nada é recriado.
+ */
+export async function linkParishPersonToUser(
+  parishId: string,
+  familyMemberId: string,
+  userId: string,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const pessoa = await tx.familyMember.findFirst({ where: { id: familyMemberId, parishId } });
+    if (!pessoa) throw new ValidationError("Cadastro não encontrado.");
+
+    const jaTemGuardiao = await tx.familyMemberGuardian.count({ where: { familyMemberId } });
+    if (jaTemGuardiao > 0) {
+      throw new ValidationError(
+        "Este cadastro já tem responsável no app. O próprio responsável pode adicionar outro pela tela da família.",
+      );
+    }
+
+    await tx.familyMember.update({
+      where: { id: familyMemberId },
+      // relationship fica como "dependente": a secretaria não sabe o
+      // parentesco exato, e quem foi vinculado pode corrigir depois.
+      data: { responsibleUserId: userId, relationship: pessoa.relationship ?? "dependente" },
+    });
+
+    return tx.familyMemberGuardian.create({ data: { parishId, familyMemberId, userId } });
+  });
+}
+
+/** Cadastros da secretaria que ninguém do app assumiu ainda. */
+export function listUnlinkedParishPeople(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.familyMember.findMany({
+      where: { parishId, guardians: { none: {} } },
+      orderBy: { fullName: "asc" },
+      include: { _count: { select: { enrollments: true } } },
+    }),
+  );
+}
+
+/**
+ * Exclusão pela secretaria, para cadastro que ninguém do app assumiu.
+ *
+ * Recusa quem tem matrícula pela mesma razão de removeFamilyMember: o
+ * histórico da catequese e os ritos iriam junto em cascata. E recusa quem já
+ * tem guardião — a partir daí o cadastro é da família, e quem decide excluir
+ * é ela, não a secretaria.
+ */
+export async function removeParishPerson(parishId: string, familyMemberId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const guardioes = await tx.familyMemberGuardian.count({ where: { familyMemberId } });
+    if (guardioes > 0) {
+      throw new ValidationError(
+        "Este cadastro já tem responsável no app. A exclusão passa a ser dele, pela tela da família.",
+      );
+    }
+
+    const matriculas = await tx.catechismEnrollment.count({ where: { familyMemberId } });
+    if (matriculas > 0) {
+      throw new ValidationError(
+        "Esta pessoa está matriculada na catequese. Desfaça a matrícula antes de excluir o cadastro.",
+      );
+    }
+
+    return tx.familyMember.deleteMany({ where: { id: familyMemberId, parishId } });
+  });
 }

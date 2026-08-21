@@ -13,6 +13,11 @@ import {
   completeRite,
 } from "@/server/modules/catequese/service";
 import { createGroupInputSchema, createSessionInputSchema, createRiteInputSchema } from "@/server/modules/catequese/schema";
+import {
+  createParishPerson,
+  linkParishPersonToUser,
+  removeParishPerson,
+} from "@/server/modules/family/service";
 import { AppError } from "@/server/shared/errors";
 import type { SessionContext } from "@/server/auth/session";
 
@@ -148,4 +153,87 @@ export async function completeRiteAction(formData: FormData): Promise<void> {
   const riteId = formData.get("riteId") as string;
   await completeRite(session.membership.parishId, riteId);
   revalidatePath("/eu/catequese");
+}
+
+export type PersonActionState = { error?: string; ok?: string };
+
+/**
+ * Cadastra um catequizando que não tem conta no app.
+ *
+ * Fica em catequese-actions e não em family-actions porque a permissão é a
+ * da catequese: é a secretaria trabalhando, não um fiel cuidando da própria
+ * família.
+ */
+export async function createParishPersonAction(
+  _prev: PersonActionState,
+  formData: FormData,
+): Promise<PersonActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const fullName = ((formData.get("fullName") as string) ?? "").trim();
+  if (fullName.length < 2) return { error: "Informe o nome completo." };
+
+  const birthDateRaw = (formData.get("birthDate") as string) ?? "";
+
+  try {
+    await createParishPerson(session.membership.parishId, {
+      fullName,
+      birthDate: birthDateRaw ? new Date(birthDateRaw) : null,
+      guardianName: ((formData.get("guardianName") as string) ?? "").trim() || null,
+      guardianPhone: ((formData.get("guardianPhone") as string) ?? "").trim() || null,
+    });
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/catequese");
+  return { ok: `${fullName} cadastrado. Já pode ser matriculado numa turma.` };
+}
+
+export async function linkParishPersonAction(
+  _prev: PersonActionState,
+  formData: FormData,
+): Promise<PersonActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const familyMemberId = formData.get("familyMemberId") as string;
+  const userId = formData.get("userId") as string;
+  if (!familyMemberId || !userId) return { error: "Escolha a pessoa e a conta." };
+
+  try {
+    await linkParishPersonToUser(session.membership.parishId, familyMemberId, userId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/catequese");
+  return { ok: "Vinculado. O responsável já enxerga o cadastro em Minha família." };
+}
+
+export async function removeParishPersonAction(
+  _prev: PersonActionState,
+  formData: FormData,
+): Promise<PersonActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const familyMemberId = formData.get("familyMemberId") as string;
+  if (!familyMemberId) return { error: "Cadastro não informado." };
+
+  try {
+    await removeParishPerson(session.membership.parishId, familyMemberId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/catequese");
+  return { ok: "Cadastro excluído." };
 }

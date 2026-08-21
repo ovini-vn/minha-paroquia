@@ -17,6 +17,10 @@ import {
   listMassAttendance,
   getGroup,
   getEnrollmentGroupId,
+  requireEnrollmentAccess,
+  requireSessionAccess,
+  requireRiteAccess,
+  listAttendanceForSession,
 } from "@/server/modules/catequese/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
@@ -175,5 +179,56 @@ describe("catequese: as três visões", () => {
     expect(progresso?.resumo.missas).toBe(1);
     expect(progresso?.ritos).toHaveLength(1);
     expect(progresso?.encontros).toHaveLength(2); // a lista mostra os dois
+  });
+  it("catequista não escreve na turma alheia — presença, rito, nem conclusão", async () => {
+    // A permissão CATEQUESE_TEACH diz "é catequista", não "é catequista
+    // DESTA turma". A leitura já respeitava esse limite; as ações de
+    // escrita recebiam os ids do formulário e gravavam sem conferir.
+    const encontroDaAna = await createSession(parishId, turmaId, {
+      date: new Date("2026-09-01"),
+      topic: "Só da Ana",
+    });
+    const rito = await createRite(parishId, matriculaId, { name: "Crisma" });
+
+    // Bia é catequista, mas de OUTRA turma.
+    await expect(
+      requireEnrollmentAccess(parishId, matriculaId, outroCatequistaId, false),
+    ).rejects.toThrow(/não é sua/i);
+    await expect(
+      requireSessionAccess(parishId, encontroDaAna.id, outroCatequistaId, false),
+    ).rejects.toThrow(/não é sua/i);
+    await expect(requireRiteAccess(parishId, rito.id, outroCatequistaId, false)).rejects.toThrow(
+      /não é sua/i,
+    );
+
+    // Ana, dona da turma, passa.
+    expect(await requireEnrollmentAccess(parishId, matriculaId, catequistaId, false)).toBe(turmaId);
+    expect(await requireSessionAccess(parishId, encontroDaAna.id, catequistaId, false)).toBe(turmaId);
+
+    // E quem coordena alcança qualquer turma.
+    expect(await requireEnrollmentAccess(parishId, matriculaId, outroCatequistaId, true)).toBe(
+      turmaId,
+    );
+  });
+
+  it("chamada ignora matrícula que não é da turma do encontro", async () => {
+    // Mesmo que o id chegue no formulário, não pode virar linha de presença:
+    // seria gravar presença de aluno de outra turma.
+    const alunoDaOutra = await createParishPerson(parishId, { fullName: "Aluno da Outra Turma" });
+    const matriculaAlheia = await enrollFamilyMember(parishId, outraTurmaId, alunoDaOutra.id);
+
+    const encontro = await createSession(parishId, turmaId, {
+      date: new Date("2026-09-08"),
+      topic: "Chamada",
+    });
+
+    await recordAttendance(parishId, encontro.id, [
+      { enrollmentId: matriculaId, present: true },
+      { enrollmentId: matriculaAlheia.id, present: true },
+    ]);
+
+    const presencas = await listAttendanceForSession(parishId, encontro.id);
+    expect(presencas).toHaveLength(1);
+    expect(presencas[0]?.enrollmentId).toBe(matriculaId);
   });
 });

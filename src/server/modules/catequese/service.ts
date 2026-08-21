@@ -130,23 +130,43 @@ export function listAttendanceForSession(parishId: string, sessionId: string) {
   );
 }
 
-/** Um upsert por matrícula — a chamada re-grava a lista inteira da chamada de um encontro. */
+/**
+ * Um upsert por matrícula — a chamada re-grava a lista inteira do encontro.
+ *
+ * Ignora matrícula que não seja da turma DO ENCONTRO. Os ids vêm do
+ * formulário, e sem esse filtro dava para gravar presença de aluno de outra
+ * turma passando o id dele.
+ */
 export function recordAttendance(
   parishId: string,
   sessionId: string,
   entries: { enrollmentId: string; present: boolean }[],
 ) {
-  return withTenantContext(parishId, (tx) =>
-    Promise.all(
-      entries.map((entry) =>
-        tx.catechismAttendance.upsert({
-          where: { sessionId_enrollmentId: { sessionId, enrollmentId: entry.enrollmentId } },
-          update: { present: entry.present },
-          create: { parishId, sessionId, enrollmentId: entry.enrollmentId, present: entry.present },
-        }),
-      ),
-    ),
-  );
+  return withTenantContext(parishId, async (tx) => {
+    const encontro = await tx.catechismSession.findFirst({
+      where: { id: sessionId, parishId },
+      select: { catechismGroupId: true },
+    });
+    if (!encontro) throw new ValidationError("Encontro não encontrado.");
+
+    const daTurma = await tx.catechismEnrollment.findMany({
+      where: { parishId, catechismGroupId: encontro.catechismGroupId },
+      select: { id: true },
+    });
+    const permitidas = new Set(daTurma.map((e) => e.id));
+
+    return Promise.all(
+      entries
+        .filter((entry) => permitidas.has(entry.enrollmentId))
+        .map((entry) =>
+          tx.catechismAttendance.upsert({
+            where: { sessionId_enrollmentId: { sessionId, enrollmentId: entry.enrollmentId } },
+            update: { present: entry.present },
+            create: { parishId, sessionId, enrollmentId: entry.enrollmentId, present: entry.present },
+          }),
+        ),
+    );
+  });
 }
 
 // ---- Ritos ------------------------------------------------------------------
@@ -346,4 +366,75 @@ export function listEnrollmentsForCatechist(parishId: string, catechistUserId: s
       },
     }),
   );
+}
+
+// ---- Autorização por turma ---------------------------------------------------
+
+/**
+ * Confirma que a pessoa pode agir sobre ESTA matrícula, e devolve a turma.
+ *
+ * Existe porque a permissão sozinha não basta: CATEQUESE_TEACH diz "é
+ * catequista", não "é catequista DESTA turma". As telas já respeitavam esse
+ * limite na leitura (getGroup com catechistOnly), mas as ações de escrita
+ * recebiam enrollmentId/sessionId do formulário e gravavam sem conferir —
+ * qualquer catequista da paróquia podia lançar presença ou registrar rito
+ * de aluno de outra turma.
+ */
+export async function requireEnrollmentAccess(
+  parishId: string,
+  enrollmentId: string,
+  userId: string,
+  coordena: boolean,
+): Promise<string> {
+  const linha = await withTenantContext(parishId, (tx) =>
+    tx.catechismEnrollment.findFirst({
+      where: { id: enrollmentId, parishId },
+      select: { catechismGroupId: true, group: { select: { catechistUserId: true } } },
+    }),
+  );
+  if (!linha) throw new ValidationError("Matrícula não encontrada.");
+  if (!coordena && linha.group.catechistUserId !== userId) {
+    throw new ValidationError("Esta turma não é sua.");
+  }
+  return linha.catechismGroupId;
+}
+
+/** Idem para um encontro. */
+export async function requireSessionAccess(
+  parishId: string,
+  sessionId: string,
+  userId: string,
+  coordena: boolean,
+): Promise<string> {
+  const linha = await withTenantContext(parishId, (tx) =>
+    tx.catechismSession.findFirst({
+      where: { id: sessionId, parishId },
+      select: { catechismGroupId: true, group: { select: { catechistUserId: true } } },
+    }),
+  );
+  if (!linha) throw new ValidationError("Encontro não encontrado.");
+  if (!coordena && linha.group.catechistUserId !== userId) {
+    throw new ValidationError("Esta turma não é sua.");
+  }
+  return linha.catechismGroupId;
+}
+
+/** Idem para um rito já registrado. */
+export async function requireRiteAccess(
+  parishId: string,
+  riteId: string,
+  userId: string,
+  coordena: boolean,
+): Promise<string> {
+  const linha = await withTenantContext(parishId, (tx) =>
+    tx.catechismRite.findFirst({
+      where: { id: riteId, parishId },
+      select: { enrollment: { select: { catechismGroupId: true, group: { select: { catechistUserId: true } } } } },
+    }),
+  );
+  if (!linha) throw new ValidationError("Rito não encontrado.");
+  if (!coordena && linha.enrollment.group.catechistUserId !== userId) {
+    throw new ValidationError("Esta turma não é sua.");
+  }
+  return linha.enrollment.catechismGroupId;
 }

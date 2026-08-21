@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
-import { PERMISSIONS, isFullAdmin } from "@/server/auth/rbac";
+import { PERMISSIONS } from "@/server/auth/rbac";
 import {
   createGroup,
   enrollFamilyMember,
@@ -14,6 +14,9 @@ import {
   setMassAttendance,
   getGroup,
   getEnrollmentProgress,
+  requireEnrollmentAccess,
+  requireSessionAccess,
+  requireRiteAccess,
 } from "@/server/modules/catequese/service";
 import { createGroupInputSchema, createSessionInputSchema, createRiteInputSchema } from "@/server/modules/catequese/schema";
 import {
@@ -26,9 +29,23 @@ import type { SessionContext } from "@/server/auth/session";
 
 export type ActionState = { error?: string };
 
-/** CATEQUESE_MANAGE enxerga tudo; só CATEQUESE_TEACH fica restrito à própria turma — mesmo padrão de Servir. */
+/**
+ * Quem coordena alcança qualquer turma; quem só leciona, apenas as suas.
+ *
+ * Decide pela PERMISSÃO, não pelo papel. Antes isto era
+ * `isFullAdmin(roleCode)`, que é só Pároco e Secretaria — apesar de o
+ * comentário já dizer "CATEQUESE_MANAGE enxerga tudo". A diferença passou a
+ * importar com o papel Coordenador de Catequese, que tem a permissão e não
+ * é "full admin": ele seria tratado como catequista comum na própria área
+ * que coordena.
+ */
+function coordenaCatequese(session: SessionContext): boolean {
+  return session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.CATEQUESE_MANAGE);
+}
+
+/** undefined = alcança qualquer turma; userId = restrito às próprias. */
 function catechistScope(session: SessionContext): string | undefined {
-  return isFullAdmin(session.membership!.roleCode) ? undefined : session.userId;
+  return coordenaCatequese(session) ? undefined : session.userId;
 }
 
 export async function createGroupAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -109,15 +126,28 @@ export async function recordAttendanceAction(formData: FormData): Promise<void> 
   }
 
   const sessionId = formData.get("sessionId") as string;
-  const groupId = formData.get("groupId") as string;
   const enrollmentIds = formData.getAll("enrollmentId") as string[];
   const entries = enrollmentIds.map((enrollmentId) => ({
     enrollmentId,
     present: formData.get(`present_${enrollmentId}`) === "on",
   }));
 
-  await recordAttendance(session.membership.parishId, sessionId, entries);
-  revalidatePath(`/catequese/turma/${groupId}`);
+  try {
+    // A permissão diz "é catequista", não "é catequista DESTA turma".
+    // groupId vem daqui, não do formulário: o do formulário é palpite do
+    // cliente.
+    const groupId = await requireSessionAccess(
+      session.membership.parishId,
+      sessionId,
+      session.userId,
+      coordenaCatequese(session),
+    );
+    await recordAttendance(session.membership.parishId, sessionId, entries);
+    revalidatePath(`/catequese/turma/${groupId}`);
+  } catch {
+    // Ação sem retorno: falha silenciosa é o comportamento existente aqui.
+    return;
+  }
 }
 
 export async function createRiteAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -130,6 +160,15 @@ export async function createRiteAction(_prev: ActionState, formData: FormData): 
   const enrollmentId = formData.get("enrollmentId") as string;
 
   try {
+    // Rito é registro de sacramento. Sem esta checagem, um catequista
+    // registraria "Crisma realizada" para criança de outra turma.
+    await requireEnrollmentAccess(
+      session.membership.parishId,
+      enrollmentId,
+      session.userId,
+      coordenaCatequese(session),
+    );
+
     const input = createRiteInputSchema.parse({
       name: formData.get("name"),
       scheduledAt: formData.get("scheduledAt") || undefined,
@@ -154,6 +193,16 @@ export async function completeRiteAction(formData: FormData): Promise<void> {
   }
 
   const riteId = formData.get("riteId") as string;
+  try {
+    await requireRiteAccess(
+      session.membership.parishId,
+      riteId,
+      session.userId,
+      coordenaCatequese(session),
+    );
+  } catch {
+    return;
+  }
   await completeRite(session.membership.parishId, riteId);
   revalidatePath("/catequese");
 }

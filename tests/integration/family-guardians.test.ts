@@ -9,7 +9,9 @@ import {
   listGuardians,
   addGuardian,
   removeGuardian,
+  removeFamilyMember,
 } from "@/server/modules/family/service";
+import { createGroup, enrollFamilyMember } from "@/server/modules/catequese/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 describe("família: múltiplos vínculos simultâneos (P2)", () => {
@@ -120,5 +122,49 @@ describe("família: múltiplos vínculos simultâneos (P2)", () => {
 
     const guardians = await listGuardians(parishId, child.id);
     expect(guardians.map((g) => g.userId)).toEqual([motherId]);
+  });
+  it("um guardião exclui o cadastro do dependente", async () => {
+    const child = await createFamilyMember({
+      parishId,
+      responsibleUserId: motherId,
+      fullName: "Cadastro Duplicado",
+      relationship: "filho",
+    });
+
+    await removeFamilyMember(parishId, child.id, motherId);
+
+    expect(await getOwnFamilyMember(parishId, child.id, motherId)).toBeNull();
+  });
+
+  it("quem não é guardião não exclui o dependente alheio", async () => {
+    const child = await createFamilyMember({
+      parishId,
+      responsibleUserId: motherId,
+      fullName: "Filho Protegido",
+      relationship: "filho",
+    });
+
+    await expect(removeFamilyMember(parishId, child.id, strangerId)).rejects.toThrow();
+    expect(await getOwnFamilyMember(parishId, child.id, motherId)).not.toBeNull();
+  });
+
+  it("NÃO exclui quem está matriculado — o histórico da catequese iria junto", async () => {
+    // Regressão de perda de dado: FamilyMember -> CatechismEnrollment ->
+    // CatechismRite é tudo onDelete: Cascade. Sem esta recusa, excluir o
+    // cadastro apagaria em silêncio as presenças e as datas de Primeira
+    // Eucaristia e Crisma da criança.
+    const child = await createFamilyMember({
+      parishId,
+      responsibleUserId: motherId,
+      fullName: "Filho Catequizando",
+      relationship: "filho",
+    });
+    const group = await createGroup({ parishId, name: `Turma ${Date.now()}`, year: 2026 });
+    await enrollFamilyMember(parishId, group.id, child.id);
+
+    await expect(removeFamilyMember(parishId, child.id, motherId)).rejects.toThrow(/catequese/i);
+
+    // Continua lá, inteiro.
+    expect(await getOwnFamilyMember(parishId, child.id, motherId)).not.toBeNull();
   });
 });

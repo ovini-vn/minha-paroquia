@@ -1,9 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { requireSession } from "@/server/auth/guards";
-import { createFamilyMember, addGuardian, removeGuardian } from "@/server/modules/family/service";
+import {
+  createFamilyMember,
+  addGuardian,
+  removeGuardian,
+  removeFamilyMember,
+} from "@/server/modules/family/service";
 import { createFamilyMemberInputSchema } from "@/server/modules/family/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -64,4 +70,34 @@ export async function removeGuardianAction(formData: FormData): Promise<void> {
     throw error;
   }
   revalidatePath(`/eu/familia/${familyMemberId}`);
+}
+
+/**
+ * Exclui o cadastro do dependente.
+ *
+ * Devolve o erro em vez de redirecionar quando o serviço recusa (dependente
+ * matriculado na catequese): a pessoa precisa LER o motivo, senão fica
+ * apertando um botão que não faz nada.
+ */
+export async function removeFamilyMemberAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+
+  const familyMemberId = formData.get("familyMemberId") as string;
+  if (!familyMemberId) return { error: "Dependente não informado." };
+
+  try {
+    await removeFamilyMember(session.membership.parishId, familyMemberId, session.userId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/eu/familia");
+  // Fora do try: redirect() sinaliza jogando uma exceção, e um catch acima
+  // a engoliria como se fosse falha.
+  redirect("/eu/familia");
 }

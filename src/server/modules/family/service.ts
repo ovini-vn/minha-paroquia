@@ -91,6 +91,34 @@ export async function removeGuardian(
   });
 }
 
+/**
+ * Exclui o cadastro do dependente. Guardiões saem em cascata junto.
+ *
+ * RECUSA se houver matrícula na catequese, e isso não é excesso de zelo:
+ * FamilyMember → CatechismEnrollment → CatechismRite é tudo `onDelete:
+ * Cascade`, então excluir apagaria em silêncio as presenças E os ritos —
+ * a data da Primeira Eucaristia e da Crisma da criança. Some sem aviso e
+ * não volta. Quem precisa desfazer uma matrícula faz isso pela catequese,
+ * onde a consequência está à vista.
+ */
+export async function removeFamilyMember(parishId: string, familyMemberId: string, actingUserId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const isGuardian = await tx.familyMemberGuardian.findUnique({
+      where: { familyMemberId_userId: { familyMemberId, userId: actingUserId } },
+    });
+    if (!isGuardian) throw new ValidationError("Você não é responsável por este dependente.");
+
+    const matriculas = await tx.catechismEnrollment.count({ where: { familyMemberId } });
+    if (matriculas > 0) {
+      throw new ValidationError(
+        "Este dependente está matriculado na catequese. Fale com a secretaria para desfazer a matrícula antes de excluir o cadastro.",
+      );
+    }
+
+    return tx.familyMember.deleteMany({ where: { id: familyMemberId, parishId } });
+  });
+}
+
 /** Só pra quem administra catequese (CATEQUESE_MANAGE) — matricular exige achar o dependente certo. */
 export function listAllFamilyMembers(parishId: string) {
   return withTenantContext(parishId, (tx) =>

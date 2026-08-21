@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { AddGuardianForm } from "./AddGuardianForm";
+import { RemoveFamilyMemberButton } from "./RemoveFamilyMemberButton";
 
 export default async function FamilyMemberDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireSessionForPage();
@@ -60,6 +61,18 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
           ))}
         </ul>
         <AddGuardianForm familyMemberId={id} candidates={candidates} />
+      </Card>
+
+      {/* Separado do cartão de responsáveis: excluir o cadastro inteiro é
+          outra ordem de gravidade do que tirar um responsável. */}
+      <Card>
+        <p className="mb-1 font-serif text-lg font-semibold text-foreground">Excluir cadastro</p>
+        <p className="mb-3 text-sm leading-relaxed text-muted">
+          Se este cadastro foi feito por engano ou está duplicado, pode ser removido. Para passar o
+          dependente para outra conta sem perder nada, adicione essa pessoa como responsável acima e
+          depois remova a sua — nada é perdido nesse caminho.
+        </p>
+        <RemoveFamilyMemberButton familyMemberId={id} fullName={member.fullName} />
       </Card>
     </div>
   );

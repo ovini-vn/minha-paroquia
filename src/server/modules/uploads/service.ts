@@ -21,42 +21,31 @@ const TAMANHO_MAXIMO = 5 * 1024 * 1024;
 const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 
 /**
- * Duas formas de autenticar, porque a Vercel mudou o padrão.
+ * Quem resolve a credencial é a PRÓPRIA biblioteca, não este arquivo.
  *
- * O jeito clássico é BLOB_READ_WRITE_TOKEN. O jeito novo é OIDC: a Vercel
- * injeta VERCEL_OIDC_TOKEN em tempo de execução e o store aparece como
- * BLOB_STORE_ID. Criar um Blob store hoje configura o SEGUNDO — e o
- * primeiro nem sempre existe.
+ * Ela tenta, nesta ordem: token passado na chamada, OIDC (inclusive obtendo
+ * o token do runtime da Vercel por conta própria), e por fim
+ * BLOB_READ_WRITE_TOKEN do ambiente.
  *
- * A biblioteca lê BLOB_READ_WRITE_TOKEN e BLOB_STORE_ID do ambiente
- * sozinha, mas NÃO lê o token OIDC: ele precisa ser passado na chamada.
+ * Passar o token explicitamente — como este código fazia — CURTO-CIRCUITA
+ * essa cadeia: a biblioteca usa o que recebeu e nunca tenta o OIDC. Com um
+ * token inválido no ambiente, isso transformava uma configuração que
+ * funcionaria por OIDC em "Access denied".
+ *
+ * Por isso aqui só se decide SE há alguma configuração; o COMO fica com
+ * quem sabe.
  */
-function credenciais(): { token?: string; oidcToken?: string } | null {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    return { token: process.env.BLOB_READ_WRITE_TOKEN };
-  }
-  if (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN) {
-    return { oidcToken: process.env.VERCEL_OIDC_TOKEN };
-  }
-  return null;
-}
-
 export function isUploadConfigured(): boolean {
-  return credenciais() !== null;
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 }
 
 /**
- * Diz QUAL credencial falta, para a tela poder orientar em vez de só
- * informar que não dá.
- *
- * Só o nome das variáveis presentes ou ausentes — nunca o valor delas.
+ * Diz o que falta, para a tela poder orientar em vez de só informar que não
+ * dá. Só nomes de variáveis, nunca valores.
  */
 export function diagnosticoDoUpload(): string {
   if (process.env.BLOB_READ_WRITE_TOKEN) return "pronto (token)";
-  if (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN) return "pronto (OIDC)";
-  if (process.env.BLOB_STORE_ID) {
-    return "store conectado, mas sem token: gere um BLOB_READ_WRITE_TOKEN no painel do Blob";
-  }
+  if (process.env.BLOB_STORE_ID) return "pronto (OIDC)";
   return "nenhum Blob store conectado ao projeto";
 }
 
@@ -84,9 +73,8 @@ export async function uploadImagem(
   arquivo: File,
   pasta: string,
 ): Promise<string> {
-  const auth = credenciais();
-  if (!auth) {
-    throw new ValidationError("O envio de imagens ainda não está configurado nesta instalação.");
+  if (!isUploadConfigured()) {
+    throw new ValidationError("O envio de imagens ainda não está disponível.");
   }
   if (arquivo.size === 0) {
     throw new ValidationError("O arquivo chegou vazio. Tente escolher a imagem de novo.");
@@ -101,8 +89,9 @@ export async function uploadImagem(
   const nome = `${pasta}/${parishId}/${crypto.randomUUID()}.${extensaoDe(arquivo.type)}`;
 
   try {
+    // Sem `token` nem `oidcToken`: deixa a biblioteca escolher, para que o
+    // OIDC continue disponível como alternativa.
     const { url } = await put(nome, arquivo, {
-      ...auth,
       access: "public",
       // O conteúdo é público de qualquer forma (vai numa <img> para os
       // fiéis); o nome aleatório é que evita adivinhar o de outra paróquia.

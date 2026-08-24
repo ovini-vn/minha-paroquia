@@ -26,34 +26,23 @@ describe("upload de imagem", () => {
   it("fica indisponível sem credencial nenhuma, em vez de estourar", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("BLOB_STORE_ID", "");
-    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
     expect(isUploadConfigured()).toBe(false);
   });
 
-  it("aceita o caminho OIDC, que é como a Vercel configura hoje", () => {
-    // Criar um Blob store hoje gera BLOB_STORE_ID e a Vercel injeta
-    // VERCEL_OIDC_TOKEN em execução; BLOB_READ_WRITE_TOKEN nem sempre
-    // existe. Checar só o token clássico escondia o recurso de quem tinha
-    // tudo configurado corretamente.
+  it("store conectado basta — o OIDC é resolvido pela biblioteca", () => {
+    // Não exigimos VERCEL_OIDC_TOKEN no ambiente: a biblioteca obtém o
+    // token OIDC do runtime da Vercel por conta própria. Exigir a variável
+    // escondia o recurso de quem tinha o store configurado e funcionando.
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("BLOB_STORE_ID", "store_abc123");
-    vi.stubEnv("VERCEL_OIDC_TOKEN", "eyJhbGciOi...");
     expect(isUploadConfigured()).toBe(true);
-  });
-
-  it("store sem token OIDC não basta", () => {
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "store_abc123");
-    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
-    expect(isUploadConfigured()).toBe(false);
   });
 
   it("recusa upload quando não está configurado", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
     vi.stubEnv("BLOB_STORE_ID", "");
-    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
     await expect(uploadImagem("p1", arquivo("image/png", 10), "eventos")).rejects.toThrow(
-      /não está configurado/i,
+      /não está disponível/i,
     );
   });
 

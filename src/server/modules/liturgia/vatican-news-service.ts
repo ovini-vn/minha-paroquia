@@ -3,12 +3,15 @@ import "server-only";
 /**
  * "Palavra do dia" do Vatican News — o Evangelho do dia em áudio.
  *
- * LIMITE DELIBERADO: o feed traz o texto completo das leituras, e ele vem
- * marcado "© Dicasterium pro Communicatione". Guardamos e exibimos apenas
- * TÍTULO, DATA, ÁUDIO e LINK, com crédito — que é exatamente o uso para o
- * qual um feed RSS com <enclosure> é publicado. O texto das leituras não é
- * copiado para dentro do app, pela mesma razão que as traduções da Bíblia
- * não foram: não temos os direitos.
+ * O feed traz título, áudio e o texto das leituras. Tudo vem marcado
+ * "© Dicasterium pro Communicatione — todos os direitos reservados": ter
+ * RSS não é licença de uso, e exibir o texto é decisão de risco do dono do
+ * app, tomada com consciência disso. O crédito é explícito e o link leva à
+ * fonte, que é o mínimo devido.
+ *
+ * O texto é convertido para PARÁGRAFOS DE TEXTO PURO antes de sair daqui.
+ * O HTML do feed nunca chega à página: é conteúdo de terceiro, e injetá-lo
+ * direto seria abrir a porta para script alheio dentro do app.
  *
  * O áudio é servido direto pelo media.vaticannews.va — não reidratamos nem
  * reempacotamos o arquivo.
@@ -25,7 +28,61 @@ export type PalavraDoDia = {
   /** "00:05:25" como vem do feed, ou null. */
   duracao: string | null;
   publicadoEm: Date | null;
+  /** Leituras em parágrafos de texto puro. Nunca HTML. */
+  leituras: string[];
 };
+
+/**
+ * HTML do feed -> parágrafos de texto puro.
+ *
+ * Não é um sanitizador de HTML: é uma extração. Toda tag é descartada, e o
+ * que sobra é texto. Isso torna impossível qualquer script ou atributo do
+ * feed alcançar a página, sem depender de eu ter previsto cada vetor.
+ */
+function extrairParagrafos(html: string): string[] {
+  return html
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
+    // script/style saem COM o conteúdo. Só descartar as tags deixaria o
+    // corpo delas virar "texto" no meio das leituras — não é falha de
+    // segurança (o React escapa), mas apareceria lixo para o fiel ler.
+    .replace(/<\s*(script|style)[\s\S]*?<\/\s*\1\s*>/gi, " ")
+    // <br> e </p> viram quebra antes de as tags sumirem, senão o texto
+    // inteiro colaria numa linha só.
+    .replace(/<\s*br\s*\/?\s*>/gi, "\n")
+    .replace(/<\/\s*(p|div|h[1-6])\s*>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    // Entidades nomeadas de letra acentuada. Sem isto, "S&atilde;o Jo&atilde;o"
+    // vira "S o Jo o": o feed escapa TODO acento, e trocar entidade
+    // desconhecida por espaço apagaria o português inteiro.
+    .replace(/&([a-zA-Z]+)(acute|grave|circ|tilde|uml|cedil|ring|slash);/g, (todo, letra, marca) => {
+      const mapa: Record<string, string> = {
+        acute: "́",
+        grave: "̀",
+        circ: "̂",
+        tilde: "̃",
+        uml: "̈",
+        cedil: "̧",
+        ring: "̊",
+      };
+      const combinante = mapa[marca];
+      if (!combinante || letra.length !== 1) return todo;
+      return (letra + combinante).normalize("NFC");
+    })
+    // Numéricas, decimais e hexadecimais.
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    // O que sobrou não é entidade conhecida; sai para não virar ruído.
+    .replace(/&[a-zA-Z]+\d*;/g, " ")
+    .split("\n")
+    .map((l) => l.replace(/\s+/g, " ").trim())
+    .filter((l) => l.length > 0);
+}
 
 /** Tira CDATA e entidades básicas de um pedaço de texto do feed. */
 function limpar(bruto: string): string {
@@ -81,12 +138,15 @@ export async function getPalavraDoDia(): Promise<PalavraDoDia | null> {
     const pubDate = extrair(bloco, "pubDate");
     const publicadoEm = pubDate ? new Date(pubDate) : null;
 
+    const descricaoBruta = /<description>([\s\S]*?)<\/description>/.exec(bloco)?.[1] ?? "";
+
     return {
       titulo,
       link,
       audioUrl,
       duracao: extrair(bloco, "itunes:duration"),
       publicadoEm: publicadoEm && !Number.isNaN(publicadoEm.getTime()) ? publicadoEm : null,
+      leituras: extrairParagrafos(descricaoBruta),
     };
   } catch {
     return null;

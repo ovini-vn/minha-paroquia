@@ -1,5 +1,6 @@
 import { ExternalLink, Headphones, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { LeiturasDoDia } from "./LeiturasDoDia";
 import { Eyebrow } from "@/components/ui/Typography";
 import type { PalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
 import { SANTO_DO_DIA_URL } from "@/server/modules/liturgia/vatican-news-service";
@@ -56,6 +57,8 @@ export function PalavraDoDiaCard({
         >
           Seu navegador não reproduz áudio.
         </audio>
+        <LeiturasDoDia leituras={palavra.leituras} />
+
         {/* O crédito acompanha o conteúdo em qualquer lugar onde ele apareça. */}
         <p className="mt-2 text-[11px] text-muted">Vatican News · Dicastério para a Comunicação</p>
       </div>
@@ -92,13 +95,15 @@ export function PalavraDoDiaCard({
             Seu navegador não reproduz áudio.
           </audio>
 
+          <LeiturasDoDia leituras={palavra.leituras} />
+
           <a
             href={palavra.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-primary hover:underline"
+            className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-primary"
           >
-            Ler no Vatican News
+            Abrir no site do Vatican News
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
           </a>
         </div>

@@ -117,13 +117,15 @@ export default async function HomePage() {
           A vida da paróquia
         </Eyebrow>
         {/*
-          data-season SEMPRE, e não só quando a pessoa escolheu o tema
-          litúrgico: aqui a cor do tempo é o ponto. As variáveis de cor
-          herdam para os filhos, então estes botões ficam verdes no Tempo
-          Comum, roxos na Quaresma, e assim por diante — sem arrastar o
-          resto do app junto.
+          SEM data-season próprio: a cor vem do tema que a pessoa escolheu
+          em /eu/aparencia, herdada do layout. Quem está no tema padrão vê
+          violeta; quem escolheu "cor do Tempo Litúrgico" vê o verde do
+          Tempo Comum, o roxo da Quaresma, e assim por diante.
+
+          Forçar a cor litúrgica aqui — como estava — passava por cima de
+          uma preferência explícita do usuário.
         */}
-        <div className="grid grid-cols-4 gap-2.5" data-season={season.season}>
+        <div className="grid grid-cols-4 gap-2.5">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (
@@ -132,10 +134,10 @@ export default async function HomePage() {
                 href={shortcut.href}
                 className="flex flex-col items-center gap-2 rounded-xl px-1 pb-3 pt-3 text-center transition-transform hover:-translate-y-px"
               >
-                <span className="grid h-[62px] w-[62px] place-items-center rounded-[20px] bg-primary text-white shadow-sm transition-colors">
-                  <Icon className="h-7 w-7" strokeWidth={1.5} aria-hidden />
+                <span className="grid h-[74px] w-[74px] place-items-center rounded-[22px] bg-primary text-white shadow-sm transition-colors">
+                  <Icon className="h-8 w-8" strokeWidth={1.5} aria-hidden />
                 </span>
-                <span className="text-[12px] font-medium leading-tight text-foreground">
+                <span className="text-[12.5px] font-medium leading-tight text-foreground">
                   {shortcut.label}
                 </span>
               </Link>

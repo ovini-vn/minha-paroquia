@@ -17,7 +17,7 @@ const FEED_OK = `<?xml version="1.0" encoding="UTF-8"?>
     <enclosure url="https://media.vaticannews.va/media2/audio/s1/2026/08/24/139237737.mp3" type="audio/mp3" length="5204352"/>
     <itunes:duration>00:05:25</itunes:duration>
     <pubDate>Mon, 24 Aug 2026 00:00:00 +0200</pubDate>
-    <description><![CDATA[<p>Texto integral das leituras que NÃO deve ser guardado.</p>]]></description>
+    <description><![CDATA[<p>Leitura do Livro do Apocalipse de S&atilde;o Jo&atilde;o&nbsp;</p><p>21,9b-14<br /> <br /> </p><p>Um anjo falou comigo e disse:</p><p>&quot;Vem!<br />Vou mostrar-te a noiva&quot;.</p><script>alert(1)</script>]]></description>
   </item>
   <item>
     <title>Evangelho e palavra do dia 23 agosto 2026</title>
@@ -49,20 +49,31 @@ describe("palavra do dia do Vatican News", () => {
     expect(p?.publicadoEm?.toISOString()).toBe("2026-08-23T22:00:00.000Z");
   });
 
-  it("NÃO guarda o texto das leituras", async () => {
-    // O feed traz o texto integral e ele é do Dicastério para a Comunicação.
-    // Se algum dia alguém acrescentar esse campo aqui, este teste falha.
+  it("converte as leituras em parágrafos de TEXTO PURO", async () => {
     responderCom(FEED_OK);
     const p = await getPalavraDoDia();
 
-    expect(JSON.stringify(p)).not.toContain("Texto integral");
-    expect(Object.keys(p ?? {}).sort()).toEqual([
-      "audioUrl",
-      "duracao",
-      "link",
-      "publicadoEm",
-      "titulo",
-    ]);
+    // Acento vindo como entidade tem que voltar a ser acento: o feed escapa
+    // TODO acento, e trocá-los por espaço apagaria o português.
+    expect(p?.leituras[0]).toBe("Leitura do Livro do Apocalipse de São João");
+    expect(p?.leituras).toContain("21,9b-14");
+    // <br> vira quebra: sem isso o texto inteiro colaria numa linha só.
+    expect(p?.leituras).toContain('"Vem!');
+    expect(p?.leituras).toContain("Vou mostrar-te a noiva\".");
+  });
+
+  it("nenhuma tag do feed sobrevive — nem script", async () => {
+    // O feed é conteúdo de terceiro. O texto sai como texto puro e é
+    // renderizado como texto — script não roda. E script/style saem COM o
+    // conteúdo, senão o corpo deles viraria lixo no meio das leituras.
+    responderCom(FEED_OK);
+    const p = await getPalavraDoDia();
+
+    const tudo = p!.leituras.join(" ");
+    expect(tudo).not.toContain("<");
+    expect(tudo).not.toContain(">");
+    expect(tudo).not.toContain("alert");
+    expect(tudo).not.toContain("&nbsp;");
   });
 
   it("devolve null quando o Vaticano responde erro", async () => {

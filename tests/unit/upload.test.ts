@@ -25,30 +25,48 @@ afterEach(() => {
 describe("upload de imagem", () => {
   it("fica indisponível sem credencial nenhuma, em vez de estourar", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "");
+    vi.stubEnv("CARTAZES_STORE_ID", "");
     expect(isUploadConfigured()).toBe(false);
   });
 
-  it("store conectado basta — o OIDC é resolvido pela biblioteca", () => {
-    // Não exigimos VERCEL_OIDC_TOKEN no ambiente: a biblioteca obtém o
-    // token OIDC do runtime da Vercel por conta própria. Exigir a variável
-    // escondia o recurso de quem tinha o store configurado e funcionando.
+  it("basta o store de cartazes conectado — o OIDC vem da Vercel", () => {
+    // Conectar um store cria STORE_ID mas NÃO cria token de escrita.
+    // Exigir token escondia o recurso de quem estava configurado certo.
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "");
+    vi.stubEnv("CARTAZES_STORE_ID", "store_publico");
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "store_abc123");
+    expect(isUploadConfigured()).toBe(true);
+  });
+
+  it("NUNCA cai no store padrão quando o de cartazes existe", () => {
+    // Regressão do erro "Cannot use public access on a private store": o
+    // store antigo é privado, e deixar a biblioteca escolher sozinha levava
+    // até ele.
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "");
+    vi.stubEnv("CARTAZES_STORE_ID", "store_publico");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token_do_store_privado");
+    expect(isUploadConfigured()).toBe(true);
+  });
+
+  it("aceita o nome padrão quando há um store só", () => {
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "");
+    vi.stubEnv("CARTAZES_STORE_ID", "");
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "vercel_blob_rw_padrao");
     expect(isUploadConfigured()).toBe(true);
   });
 
   it("recusa upload quando não está configurado", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "");
+    vi.stubEnv("CARTAZES_STORE_ID", "");
     await expect(uploadImagem("p1", arquivo("image/png", 10), "eventos")).rejects.toThrow(
       /não está disponível/i,
     );
   });
 
   it("recusa arquivo acima de 5 MB", async () => {
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "token-de-teste");
     await expect(
       uploadImagem("p1", arquivo("image/jpeg", 5 * 1024 * 1024 + 1), "eventos"),
     ).rejects.toThrow(/5 MB/);
@@ -57,24 +75,21 @@ describe("upload de imagem", () => {
   it("recusa SVG, que pode conter script", async () => {
     // Servido do nosso domínio, um SVG com script rodaria como se fosse
     // nosso — com a sessão do fiel junto.
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "token-de-teste");
     await expect(uploadImagem("p1", arquivo("image/svg+xml", 100), "eventos")).rejects.toThrow(
       /Formato não aceito/i,
     );
   });
 
   it("recusa PDF e outros que não são imagem", async () => {
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "token-de-teste");
     await expect(uploadImagem("p1", arquivo("application/pdf", 100), "eventos")).rejects.toThrow(
       /Formato não aceito/i,
     );
   });
 
   it("recusa arquivo vazio", async () => {
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "token-de-teste");
     await expect(uploadImagem("p1", arquivo("image/png", 0), "eventos")).rejects.toThrow(/vazio/i);
   });
 
@@ -82,8 +97,7 @@ describe("upload de imagem", () => {
     // Regressão: o erro da biblioteca subia até o topo e derrubava a
     // página com "Application error". A pessoa perdia o formulário
     // preenchido e não ficava sabendo o motivo.
-    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-invalido");
-    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("CARTAZES_READ_WRITE_TOKEN", "token-invalido");
 
     await expect(uploadImagem("p1", arquivo("image/png", 100), "eventos")).rejects.toThrow(
       /recusou a credencial/i,

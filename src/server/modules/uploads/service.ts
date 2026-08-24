@@ -21,32 +21,45 @@ const TAMANHO_MAXIMO = 5 * 1024 * 1024;
 const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 
 /**
- * Quem resolve a credencial é a PRÓPRIA biblioteca, não este arquivo.
+ * Como autenticar no store de cartazes.
  *
- * Ela tenta, nesta ordem: token passado na chamada, OIDC (inclusive obtendo
- * o token do runtime da Vercel por conta própria), e por fim
- * BLOB_READ_WRITE_TOKEN do ambiente.
+ * O projeto tem DOIS Blob stores conectados: o antigo (privado, nomes
+ * BLOB_*) e o nosso (público, em São Paulo, sob o prefixo CARTAZES_ que a
+ * Vercel exige ao conectar um segundo). Cartaz precisa abrir no navegador
+ * de qualquer fiel, sem login e sem expirar — por isso público.
  *
- * Passar o token explicitamente — como este código fazia — CURTO-CIRCUITA
- * essa cadeia: a biblioteca usa o que recebeu e nunca tenta o OIDC. Com um
- * token inválido no ambiente, isso transformava uma configuração que
- * funcionaria por OIDC em "Access denied".
+ * Conectar um store cria STORE_ID mas NÃO cria token de escrita. A saída é
+ * o OIDC: a biblioteca obtém o token do runtime da Vercel sozinha, e só
+ * precisa saber QUAL store usar. Sem passar o storeId, ela leria
+ * BLOB_STORE_ID e acabaria no store privado — que recusa access "public".
  *
- * Por isso aqui só se decide SE há alguma configuração; o COMO fica com
- * quem sabe.
+ * A ordem tenta token explícito primeiro porque, existindo, é mais direto e
+ * funciona também fora da Vercel.
  */
-export function isUploadConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+function credenciaisDoBlob(): { token?: string; storeId?: string } | null {
+  if (process.env.CARTAZES_READ_WRITE_TOKEN) {
+    return { token: process.env.CARTAZES_READ_WRITE_TOKEN };
+  }
+  if (process.env.CARTAZES_STORE_ID) {
+    return { storeId: process.env.CARTAZES_STORE_ID };
+  }
+  // Instalação com um store só, usando os nomes padrão.
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return { token: process.env.BLOB_READ_WRITE_TOKEN };
+  }
+  return null;
 }
 
-/**
- * Diz o que falta, para a tela poder orientar em vez de só informar que não
- * dá. Só nomes de variáveis, nunca valores.
- */
+export function isUploadConfigured(): boolean {
+  return credenciaisDoBlob() !== null;
+}
+
+/** Diz o que falta, para a tela orientar. Só nomes, nunca valores. */
 export function diagnosticoDoUpload(): string {
-  if (process.env.BLOB_READ_WRITE_TOKEN) return "pronto (token)";
-  if (process.env.BLOB_STORE_ID) return "pronto (OIDC)";
-  return "nenhum Blob store conectado ao projeto";
+  if (process.env.CARTAZES_READ_WRITE_TOKEN) return "pronto (token)";
+  if (process.env.CARTAZES_STORE_ID) return "pronto (OIDC)";
+  if (process.env.BLOB_READ_WRITE_TOKEN) return "pronto (store padrão)";
+  return "nenhum store de imagens conectado ao projeto";
 }
 
 function extensaoDe(tipo: string): string {
@@ -89,9 +102,10 @@ export async function uploadImagem(
   const nome = `${pasta}/${parishId}/${crypto.randomUUID()}.${extensaoDe(arquivo.type)}`;
 
   try {
-    // Sem `token` nem `oidcToken`: deixa a biblioteca escolher, para que o
-    // OIDC continue disponível como alternativa.
     const { url } = await put(nome, arquivo, {
+      // token OU storeId, nunca os nomes padrão: sozinha, a biblioteca
+      // acharia o store ANTIGO — privado, e que recusa access "public".
+      ...credenciaisDoBlob(),
       access: "public",
       // O conteúdo é público de qualquer forma (vai numa <img> para os
       // fiéis); o nome aleatório é que evita adivinhar o de outra paróquia.
@@ -110,7 +124,7 @@ export async function uploadImagem(
     const mensagem = error instanceof Error ? error.message : "";
     if (/access denied|valid token|unauthorized/i.test(mensagem)) {
       throw new ValidationError(
-        "O serviço de arquivos recusou a credencial. Verifique se o BLOB_READ_WRITE_TOKEN foi copiado inteiro, sem aspas, e se não foi revogado.",
+        "O serviço de arquivos recusou a credencial. Verifique a conexão do store de imagens no painel.",
       );
     }
     throw new ValidationError(

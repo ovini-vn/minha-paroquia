@@ -23,7 +23,45 @@ function duracaoCurta(duracao: string | null): string | null {
  * O áudio pesa mais que o texto para quem tem dificuldade de leitura, que
  * é boa parte de quem frequenta a paróquia.
  */
-export function PalavraDoDiaCard({ palavra }: { palavra: PalavraDoDia | null }) {
+export function PalavraDoDiaCard({
+  palavra,
+  variante = "completo",
+}: {
+  palavra: PalavraDoDia | null;
+  /**
+   * "compacto" é a versão do Início: só o áudio, sem o santo do dia e sem
+   * o cartão em volta. É o gancho diário; a versão completa mora na aba
+   * Oração, que é o destino.
+   */
+  variante?: "completo" | "compacto";
+}) {
+  if (variante === "compacto") {
+    if (!palavra) return null; // No Início, um erro de rede não vira ruído.
+
+    return (
+      <div className="rounded-lg border border-border bg-surface p-3.5">
+        <p className="flex items-center gap-2 text-[14.5px] font-medium leading-snug text-foreground">
+          <Headphones className="h-[17px] w-[17px] shrink-0 text-primary" strokeWidth={1.5} aria-hidden />
+          Evangelho de hoje
+          {duracaoCurta(palavra.duracao) && (
+            <span className="font-normal text-muted">· {duracaoCurta(palavra.duracao)}</span>
+          )}
+        </p>
+        <audio
+          controls
+          preload="none"
+          src={palavra.audioUrl}
+          className="mt-2.5 w-full"
+          aria-label="Evangelho de hoje, em áudio"
+        >
+          Seu navegador não reproduz áudio.
+        </audio>
+        {/* O crédito acompanha o conteúdo em qualquer lugar onde ele apareça. */}
+        <p className="mt-2 text-[11px] text-muted">Vatican News · Dicastério para a Comunicação</p>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <Eyebrow tone="accent" className="mb-3">

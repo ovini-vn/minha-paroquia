@@ -14,6 +14,8 @@ import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
+import { PalavraDoDiaCard } from "@/components/domain/PalavraDoDiaCard";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
@@ -60,10 +62,11 @@ export default async function HomePage() {
     );
   }
 
-  const [nextCelebration, latestPost, latestAvisos] = await Promise.all([
+  const [nextCelebration, latestPost, latestAvisos, palavraDoDia] = await Promise.all([
     getNextCelebration(session.membership.parishId),
     getLatestPost(session.membership.parishId),
     listPublishedAvisos(session.membership.parishId, 1),
+    getPalavraDoDia(),
   ]);
   const latestAviso = latestAvisos[0] ?? null;
   const season = getLiturgicalSeason(new Date());
@@ -138,6 +141,16 @@ export default async function HomePage() {
               </Link>
             );
           })}
+        </div>
+
+        {/*
+          O único conteúdo que muda TODO dia e não depende de a paróquia
+          publicar nada. Fica logo abaixo dos atalhos: alto o bastante para
+          ser o motivo de abrir o app, sem passar na frente do que a
+          própria comunidade tem a dizer.
+        */}
+        <div className="pt-4">
+          <PalavraDoDiaCard palavra={palavraDoDia} variante="compacto" />
         </div>
       </section>
 

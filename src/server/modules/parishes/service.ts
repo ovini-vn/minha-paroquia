@@ -1,4 +1,8 @@
-import { withTenantContext } from "@/server/db/tenant-context";
+import {
+  withTenantContext,
+  withPlatformContext,
+  withOwnMembershipLookup,
+} from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
 import { slugify } from "@/server/shared/slug";
 import { ensurePriestProfile, isPriestRole } from "@/server/modules/priests/ensure-priest-profile";
@@ -257,4 +261,113 @@ export async function findMemberByExactName(
     userId: iguais[0]!.userId,
     fullName: iguais[0]!.user.fullName,
   };
+}
+
+/**
+ * Paróquias que alguém pode escolher ao entrar no app.
+ *
+ * Diferente de listActiveMembers: paróquia é entidade pública — nome, cidade
+ * e estado estão na placa da igreja. Listar não expõe ninguém.
+ *
+ * `busca` filtra por nome ou cidade. Sem busca, devolve as primeiras em
+ * ordem alfabética, para quem só quer olhar.
+ */
+export function listParishesForJoin(busca?: string, limit = 30) {
+  const termo = busca?.trim();
+  return withPlatformContext((tx) =>
+    tx.parish.findMany({
+      where: termo
+        ? {
+            OR: [
+              { name: { contains: termo, mode: "insensitive" } },
+              { city: { contains: termo, mode: "insensitive" } },
+            ],
+          }
+        : undefined,
+      orderBy: [{ city: "asc" }, { name: "asc" }],
+      take: limit,
+      select: { id: true, name: true, city: true, state: true },
+    }),
+  );
+}
+
+/**
+ * A pessoa escolhe a paróquia e entra na hora, como PENDENTE.
+ *
+ * Pendente enxerga a vida pública da paróquia — missas, agenda, avisos,
+ * eventos, sacerdotes, pastorais. NÃO enxerga as outras pessoas. A
+ * secretaria confirma depois, e aí vira membro pleno.
+ *
+ * A trava está no acesso às pessoas, não na porta de entrada: exigir
+ * convite para simplesmente ver o horário da missa afastava justamente quem
+ * o app deveria alcançar.
+ */
+export async function joinParishAsPending(parishId: string, userId: string) {
+  const paroquia = await withPlatformContext((tx) =>
+    tx.parish.findUnique({ where: { id: parishId }, select: { id: true } }),
+  );
+  if (!paroquia) throw new ValidationError("Paróquia não encontrada.");
+
+  const role = await withPlatformContext((tx) =>
+    tx.role.findUniqueOrThrow({ where: { code: "FIEL" } }),
+  );
+
+  // O vínculo anterior pode ser de OUTRA paróquia, e dentro do contexto da
+  // nova ele é invisível — o RLS filtra por parish_id. Por isso a leitura
+  // acontece pelo caminho de "minhas próprias linhas", que é justamente o
+  // que a política permite ler por user_id.
+  const anterior = await withOwnMembershipLookup(userId, (tx) =>
+    tx.parishMembership.findFirst({ where: { userId, status: { in: ["active", "pendente"] } } }),
+  );
+
+  if (anterior?.parishId === parishId) return anterior;
+
+  if (anterior) {
+    // Uma paróquia por vez: entrar numa nova encerra a anterior, mesmo
+    // comportamento do aceite de convite. A baixa acontece no contexto da
+    // paróquia ANTIGA, senão o RLS recusa a escrita.
+    await withTenantContext(anterior.parishId, (tx) =>
+      tx.parishMembership.update({
+        where: { id: anterior.id },
+        data: { status: "inactive", leftAt: new Date() },
+      }),
+    );
+  }
+
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.create({
+      data: { userId, parishId, roleId: role.id, status: "pendente" },
+    }),
+  );
+}
+
+/** Quem escolheu a paróquia e aguarda confirmação — tela da secretaria. */
+export function listPendingMembers(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: { parishId, status: "pendente" },
+      orderBy: { joinedAt: "asc" },
+      include: { user: { select: { id: true, fullName: true, email: true } } },
+    }),
+  );
+}
+
+/** Confirma o vínculo: a pessoa passa a enxergar a comunidade por inteiro. */
+export function confirmMember(parishId: string, userId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.updateMany({
+      where: { parishId, userId, status: "pendente" },
+      data: { status: "active" },
+    }),
+  );
+}
+
+/** Recusa: o vínculo é encerrado e a pessoa deixa de ver a paróquia. */
+export function rejectMember(parishId: string, userId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishMembership.updateMany({
+      where: { parishId, userId, status: "pendente" },
+      data: { status: "inactive", leftAt: new Date() },
+    }),
+  );
 }

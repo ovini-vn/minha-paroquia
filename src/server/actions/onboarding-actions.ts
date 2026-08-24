@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/server/auth/guards";
 import { prisma } from "@/server/db/prisma";
 import { expressGroupInterest } from "@/server/modules/pastorais/service";
+import { joinParishAsPending } from "@/server/modules/parishes/service";
+import { AppError } from "@/server/shared/errors";
 
 /**
  * Marca as boas-vindas como vistas e leva para o Início.
@@ -45,4 +47,32 @@ export async function entrarNaPastoralAction(groupId: string): Promise<void> {
   } catch (error) {
     console.error("Interesse em pastoral nas boas-vindas falhou:", error);
   }
+}
+
+export type JoinState = { error?: string };
+
+/**
+ * A pessoa escolhe a paróquia e entra na hora, como pendente.
+ *
+ * Não há aprovação prévia de propósito: quem quer só ver o horário da missa
+ * não deve esperar ninguém. A secretaria confirma depois, e é a confirmação
+ * que libera enxergar as outras pessoas.
+ */
+export async function entrarNaParoquiaAction(
+  _prev: JoinState,
+  formData: FormData,
+): Promise<JoinState> {
+  const session = await requireSession();
+  const parishId = formData.get("parishId") as string;
+  if (!parishId) return { error: "Escolha uma paróquia." };
+
+  try {
+    await joinParishAsPending(parishId, session.userId);
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/bem-vindo");
 }

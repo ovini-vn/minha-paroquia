@@ -27,7 +27,12 @@ export default async function PrayerRequestsPage() {
   const canViewPrivate = session.permissions.includes(PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE);
   const [myRequests, communityRequests, privateRequests] = await Promise.all([
     listMyPrayerRequests(session.membership.parishId, session.userId),
-    listCommunityPrayerRequests(session.membership.parishId),
+    // Mural só para quem a paróquia confirmou: o pedido traz o NOME de
+    // quem pediu, e é informação de outra pessoa. Quem acabou de
+    // escolher a paróquia sozinho ainda não alcança isso.
+    session.membership.confirmado
+      ? listCommunityPrayerRequests(session.membership.parishId)
+      : Promise.resolve([]),
     canViewPrivate ? listPrivatePrayerRequests(session.membership.parishId) : Promise.resolve([]),
   ]);
 

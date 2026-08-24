@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { updateOwnParishProfile, changeMemberRole } from "@/server/modules/parishes/service";
+import {
+  updateOwnParishProfile,
+  changeMemberRole,
+  confirmMember,
+  rejectMember,
+} from "@/server/modules/parishes/service";
 import { updateParishProfileInputSchema } from "@/server/modules/parishes/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -70,4 +75,29 @@ export async function changeMemberRoleAction(
   revalidatePath("/painel");
   revalidatePath("/catequese");
   return { ok: `Papel de ${fullName} atualizado.` };
+}
+
+/**
+ * Confirma ou recusa quem escolheu a paróquia sozinho.
+ *
+ * É esta confirmação que libera enxergar as outras pessoas — antes dela a
+ * pessoa vê a vida pública da paróquia e mais nada.
+ */
+export async function decidirMembroPendenteAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);
+
+  const userId = formData.get("userId") as string;
+  const decisao = formData.get("decisao");
+  if (!userId) return;
+
+  if (decisao === "confirmar") {
+    await confirmMember(session.membership.parishId, userId);
+  } else {
+    await rejectMember(session.membership.parishId, userId);
+  }
+
+  revalidatePath("/painel/membros");
+  revalidatePath("/painel");
 }

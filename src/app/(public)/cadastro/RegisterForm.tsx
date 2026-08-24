@@ -9,12 +9,13 @@ import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 const initialState: ActionState = {};
 
-export function RegisterForm({ inviteCode }: { inviteCode: string }) {
+/** Sem inviteCode, a paróquia é escolhida depois de criar a conta. */
+export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
   const [state, formAction, pending] = useActionState(registerAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <input type="hidden" name="convite" value={inviteCode} />
+      {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
       <FormField label="Nome completo" name="fullName" required autoComplete="name" />
       <FormField label="E-mail" name="email" type="email" required autoComplete="email" />
       <FormField
@@ -30,7 +31,7 @@ export function RegisterForm({ inviteCode }: { inviteCode: string }) {
         {pending ? "Criando conta..." : "Criar conta e entrar na comunidade"}
       </Button>
       <p className="text-center text-sm text-primary">
-        Já tem conta? <Link href={`/login?convite=${inviteCode}`}>Entrar</Link>
+        Já tem conta? <Link href={inviteCode ? `/login?convite=${inviteCode}` : "/login"}>Entrar</Link>
       </p>
       <div className="flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
         <span className="h-px flex-1 bg-border" />

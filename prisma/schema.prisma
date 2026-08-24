@@ -321,10 +321,13 @@ model RolePermission {
 
 enum MembershipStatus {
   active
+  // Escolheu a paróquia sozinho e ainda não foi confirmado pela secretaria.
+  // Enxerga a vida pública da paróquia; não enxerga as outras pessoas.
+  pendente
   inactive
 }
 
-// unique(user_id) WHERE status = 'active' é reforçado por índice parcial
+// unique(user_id) WHERE status IN ('active','pendente') é reforçado por índice parcial
 // (migration SQL manual) + checagem na camada de serviço — Prisma não
 // suporta unique constraint condicional nativamente.
 model ParishMembership {

@@ -12,13 +12,22 @@ export default async function RegisterPage({
 }) {
   const { convite } = await searchParams;
 
+  // Sem convite, a conta é criada do mesmo jeito e a paróquia é escolhida
+  // no passo seguinte. Exigir convite para ver o horário da missa afastava
+  // justamente quem o app deveria alcançar; a trava agora está no acesso às
+  // pessoas, não na porta de entrada.
   if (!convite) {
     return (
-      <EmptyState
-        icon={Mail}
-        title="Você precisa de um convite"
-        description="Minha Paróquia cresce por convite da própria paróquia — peça ao seu pároco, secretaria ou a alguém da comunidade o link ou QR Code de convite."
-      />
+      <Card className="p-6 shadow">
+        <Eyebrow tone="accent">Criar conta</Eyebrow>
+        <h1 className="mb-2 mt-1 font-serif text-2xl font-semibold leading-tight text-foreground">
+          Bem-vindo ao Minha Paróquia
+        </h1>
+        <p className="mb-5 text-[13.5px] leading-relaxed text-muted">
+          Você escolhe a sua paróquia logo depois de criar a conta.
+        </p>
+        <RegisterForm />
+      </Card>
     );
   }
 

@@ -33,6 +33,12 @@ export type SessionContext = {
     roleId: string;
     roleCode: RoleCode;
     roleName: string;
+    /**
+     * Falso enquanto a secretaria não confirmou o vínculo. Quem não está
+     * confirmado vê a vida pública da paróquia, mas NÃO vê as outras
+     * pessoas — mural de oração, nomes, contatos.
+     */
+    confirmado: boolean;
   } | null;
   /**
    * Dioceses que este usuário supervisiona. Escopo SEPARADO de `membership`:
@@ -111,7 +117,10 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   const { membershipRow, overrides, dioceseRows, provinceRows, nationalRow } =
     await withOwnMembershipLookup(user.id, async (tx) => {
       const membershipRow = await tx.parishMembership.findFirst({
-        where: { userId: user.id, status: "active" },
+        // Inclui o pendente: quem escolheu a paróquia sozinho JÁ enxerga a
+        // vida pública dela. O que o pendente não alcança é decidido pelo
+        // campo `confirmado` abaixo, tela por tela — não aqui.
+        where: { userId: user.id, status: { in: ["active", "pendente"] } },
         include: { parish: true, role: { include: { rolePermissions: { include: { permission: true } } } } },
       });
       const overrides = await tx.permissionOverride.findMany({ where: { userId: user.id } });
@@ -170,6 +179,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     colorScheme: user.colorScheme,
     onboardedAt: user.onboardedAt,
     membership: {
+      confirmado: membershipRow.status === "active",
       parishId: membershipRow.parishId,
       parishName: membershipRow.parish.name,
       parishSlug: membershipRow.parish.slug,

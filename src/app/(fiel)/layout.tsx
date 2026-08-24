@@ -11,6 +11,10 @@ import { TabBar } from "@/components/layout/TabBar";
 export default async function FielLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSessionForPage();
 
+  // Sem paróquia nenhuma: escolher é o primeiro passo, antes de qualquer
+  // tela do app. Quem chega por convite já tem vínculo e não passa por aqui.
+  if (!session.membership) redirect("/escolher-paroquia");
+
   // Quem tem paróquia e ainda não passou pelas boas-vindas vai para lá
   // antes de qualquer outra tela. Fica no layout do grupo (fiel) porque é
   // onde o convite entrega as pessoas; /bem-vindo mora fora dele, senão

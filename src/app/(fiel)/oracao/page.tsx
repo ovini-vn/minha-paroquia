@@ -30,7 +30,12 @@ export default async function OracaoPage() {
   const context = getTodayContext(today);
   const [liturgy, communityRequests, palavraDoDia] = await Promise.all([
     getLiturgyForDate(session.membership.parishId, today),
-    listCommunityPrayerRequests(session.membership.parishId, 3),
+    // Mural só para quem a paróquia confirmou: o pedido traz o NOME de
+    // quem pediu, e é informação de outra pessoa. Quem acabou de
+    // escolher a paróquia sozinho ainda não alcança isso.
+    session.membership.confirmado
+      ? listCommunityPrayerRequests(session.membership.parishId, 3)
+      : Promise.resolve([]),
     getPalavraDoDia(),
   ]);
 

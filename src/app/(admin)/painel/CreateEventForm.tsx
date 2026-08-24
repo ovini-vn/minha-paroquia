@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/Button";
 
 const initialState: ActionState = {};
 
-export function CreateEventForm({ podeEnviarArquivo = false }: { podeEnviarArquivo?: boolean }) {
+export function CreateEventForm({
+  podeEnviarArquivo = false,
+  motivoIndisponivel = "",
+}: {
+  podeEnviarArquivo?: boolean;
+  /** Só para quem administra: por que o envio não está disponível. */
+  motivoIndisponivel?: string;
+}) {
   const [state, formAction, pending] = useActionState(createEventAction, initialState);
 
   return (
@@ -46,6 +53,20 @@ export function CreateEventForm({ podeEnviarArquivo = false }: { podeEnviarArqui
         />
       </div>
       <div className="flex w-full flex-col gap-1.5">
+        <label htmlFor="event-description" className="text-sm font-medium text-muted">
+          Descrição (opcional)
+        </label>
+        <textarea
+          id="event-description"
+          name="description"
+          rows={3}
+          maxLength={500}
+          placeholder="O que vai acontecer, quem pode participar, o que levar…"
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+        />
+      </div>
+
+      <div className="flex w-full flex-col gap-1.5">
         <label htmlFor="event-imageFile" className="text-sm font-medium text-muted">
           Cartaz do evento (opcional)
         </label>
@@ -64,7 +85,8 @@ export function CreateEventForm({ podeEnviarArquivo = false }: { podeEnviarArqui
           </>
         ) : (
           <p className="text-[12px] text-muted">
-            O envio de arquivo não está configurado nesta instalação. Cole o link da imagem abaixo.
+            O envio de arquivo não está disponível. Cole o link da imagem abaixo.
+            {motivoIndisponivel ? ` (${motivoIndisponivel})` : ""}
           </p>
         )}
         <input

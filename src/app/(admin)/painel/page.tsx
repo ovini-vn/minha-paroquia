@@ -29,7 +29,7 @@ import { CreateInviteForm } from "./CreateInviteForm";
 import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
-import { isUploadConfigured } from "@/server/modules/uploads/service";
+import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import {
   Church,
   Megaphone,
@@ -373,7 +373,10 @@ export default async function AdminDashboardPage() {
         <p className="mb-3 font-serif text-lg font-semibold text-foreground">Agenda</p>
         <div className="flex flex-col gap-4">
           <CreateCelebrationForm priests={priests} />
-          <CreateEventForm podeEnviarArquivo={isUploadConfigured()} />
+          <CreateEventForm
+              podeEnviarArquivo={isUploadConfigured()}
+              motivoIndisponivel={diagnosticoDoUpload()}
+            />
         </div>
 
         {agendaItems.length === 0 ? (

@@ -21,15 +21,16 @@ import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
-import { isUploadConfigured } from "@/server/modules/uploads/service";
+import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 
 type AgendaItem = {
   id: string;
   startsAt: Date;
   label: string;
   location: string | null;
-  /** Só eventos têm cartaz; celebração vem sempre nula. */
+  /** Só eventos têm cartaz e descrição; celebração vem sempre nula. */
   imageUrl: string | null;
+  description: string | null;
 };
 
 export default async function ComunidadePage() {
@@ -62,6 +63,7 @@ export default async function ComunidadePage() {
       label: c.title || CELEBRATION_TYPE_LABELS[c.type],
       location: c.location,
       imageUrl: null,
+      description: null,
     })),
     ...events.map((e) => ({
       id: `event-${e.id}`,
@@ -69,6 +71,7 @@ export default async function ComunidadePage() {
       label: e.title,
       location: e.location,
       imageUrl: e.imageUrl,
+      description: e.description,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
@@ -95,7 +98,10 @@ export default async function ComunidadePage() {
             id: "evento",
             label: "Novo evento",
             icone: <CalendarDays className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
-            conteudo: <CreateEventForm podeEnviarArquivo={isUploadConfigured()} />,
+            conteudo: <CreateEventForm
+              podeEnviarArquivo={isUploadConfigured()}
+              motivoIndisponivel={diagnosticoDoUpload()}
+            />,
           },
         ]
       : []),
@@ -223,6 +229,12 @@ export default async function ComunidadePage() {
                   sabendo o que é e quando é. Fica com o alt vazio porque o
                   título ao lado já diz tudo — repetir seria ler duas vezes.
                 */}
+                {item.description && (
+                  <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-muted">
+                    {item.description}
+                  </p>
+                )}
+
                 {/*
                   <img> e não next/image: a URL é digitada pela secretaria e
                   pode ser de qualquer host. Otimizar exigiria liberar

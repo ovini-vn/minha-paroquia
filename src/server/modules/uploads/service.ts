@@ -45,6 +45,21 @@ export function isUploadConfigured(): boolean {
   return credenciais() !== null;
 }
 
+/**
+ * Diz QUAL credencial falta, para a tela poder orientar em vez de só
+ * informar que não dá.
+ *
+ * Só o nome das variáveis presentes ou ausentes — nunca o valor delas.
+ */
+export function diagnosticoDoUpload(): string {
+  if (process.env.BLOB_READ_WRITE_TOKEN) return "pronto (token)";
+  if (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN) return "pronto (OIDC)";
+  if (process.env.BLOB_STORE_ID) {
+    return "store conectado, mas sem token: gere um BLOB_READ_WRITE_TOKEN no painel do Blob";
+  }
+  return "nenhum Blob store conectado ao projeto";
+}
+
 function extensaoDe(tipo: string): string {
   const mapa: Record<string, string> = {
     "image/jpeg": "jpg",

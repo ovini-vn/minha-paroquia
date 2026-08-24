@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { isUploadConfigured, uploadImagem } from "@/server/modules/uploads/service";
 
+// O envio real é mockado: o que interessa aqui é o app NÃO cair quando o
+// serviço de arquivos recusa.
+vi.mock("@vercel/blob", () => ({
+  put: vi.fn(async () => {
+    throw new Error("Vercel Blob: Access denied, please provide a valid token for this resource.");
+  }),
+}));
+
 /**
  * O que importa aqui é RECUSAR direito. O caminho feliz depende do Vercel
  * Blob e é verificado no navegador; estas são as portas que impedem alguém
@@ -79,5 +87,17 @@ describe("upload de imagem", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
     vi.stubEnv("BLOB_STORE_ID", "");
     await expect(uploadImagem("p1", arquivo("image/png", 0), "eventos")).rejects.toThrow(/vazio/i);
+  });
+
+  it("credencial recusada vira mensagem, não tela branca", async () => {
+    // Regressão: o erro da biblioteca subia até o topo e derrubava a
+    // página com "Application error". A pessoa perdia o formulário
+    // preenchido e não ficava sabendo o motivo.
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-invalido");
+    vi.stubEnv("BLOB_STORE_ID", "");
+
+    await expect(uploadImagem("p1", arquivo("image/png", 100), "eventos")).rejects.toThrow(
+      /recusou a credencial/i,
+    );
   });
 });

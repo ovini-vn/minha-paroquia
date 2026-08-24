@@ -100,14 +100,32 @@ export async function uploadImagem(
 
   const nome = `${pasta}/${parishId}/${crypto.randomUUID()}.${extensaoDe(arquivo.type)}`;
 
-  const { url } = await put(nome, arquivo, {
-    ...auth,
-    access: "public",
-    // O conteúdo é público de qualquer forma (vai numa <img> para os
-    // fiéis); o nome aleatório é que evita adivinhar o de outra paróquia.
-    addRandomSuffix: false,
-    contentType: arquivo.type,
-  });
+  try {
+    const { url } = await put(nome, arquivo, {
+      ...auth,
+      access: "public",
+      // O conteúdo é público de qualquer forma (vai numa <img> para os
+      // fiéis); o nome aleatório é que evita adivinhar o de outra paróquia.
+      addRandomSuffix: false,
+      contentType: arquivo.type,
+    });
 
-  return url;
+    return url;
+  } catch (error) {
+    // Falha do serviço de arquivos NÃO pode derrubar a página. Antes, o
+    // erro da biblioteca subia até o topo e virava tela branca com
+    // "Application error" — a pessoa perdia o formulário preenchido e não
+    // ficava sabendo o que houve.
+    console.error("Falha ao enviar imagem para o Blob:", error);
+
+    const mensagem = error instanceof Error ? error.message : "";
+    if (/access denied|valid token|unauthorized/i.test(mensagem)) {
+      throw new ValidationError(
+        "O serviço de arquivos recusou a credencial. Verifique se o BLOB_READ_WRITE_TOKEN foi copiado inteiro, sem aspas, e se não foi revogado.",
+      );
+    }
+    throw new ValidationError(
+      "Não foi possível enviar a imagem agora. Tente de novo, ou use o link da imagem.",
+    );
+  }
 }

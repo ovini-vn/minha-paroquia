@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Megaphone,
   Users,
-  BookOpen,
   Footprints,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -36,7 +35,7 @@ const POST_PREVIEW_LABEL: Record<string, string> = {
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
   { href: "/oracao", icon: HandHeart, label: "Oração" },
-  { href: "/catequese", icon: BookOpen, label: "Catequese" },
+  { href: "/servir", icon: HeartHandshake, label: "Servir" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
 ] as const;
 
@@ -114,19 +113,26 @@ export default async function HomePage() {
         <Eyebrow tone="accent" className="mb-3">
           A vida da paróquia
         </Eyebrow>
-        <div className="grid grid-cols-4 gap-1.5">
+        {/*
+          data-season SEMPRE, e não só quando a pessoa escolheu o tema
+          litúrgico: aqui a cor do tempo é o ponto. As variáveis de cor
+          herdam para os filhos, então estes botões ficam verdes no Tempo
+          Comum, roxos na Quaresma, e assim por diante — sem arrastar o
+          resto do app junto.
+        */}
+        <div className="grid grid-cols-4 gap-2.5" data-season={season.season}>
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (
               <Link
                 key={shortcut.href}
                 href={shortcut.href}
-                className="flex flex-col items-center gap-[7px] rounded-md px-1 pb-[11px] pt-[13px] text-center transition-[background-color,transform] hover:-translate-y-px hover:bg-primary-tint"
+                className="flex flex-col items-center gap-2 rounded-xl px-1 pb-3 pt-3 text-center transition-transform hover:-translate-y-px"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-[14px] border border-border bg-surface text-primary">
-                  <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+                <span className="grid h-[62px] w-[62px] place-items-center rounded-[20px] bg-primary text-white shadow-sm transition-colors">
+                  <Icon className="h-7 w-7" strokeWidth={1.5} aria-hidden />
                 </span>
-                <span className="text-[10.5px] font-medium leading-tight text-muted">
+                <span className="text-[12px] font-medium leading-tight text-foreground">
                   {shortcut.label}
                 </span>
               </Link>

@@ -47,6 +47,28 @@ export function listMyGroupInterests(parishId: string, userId: string) {
   );
 }
 
+/**
+ * A pastoral da pessoa, para destacar em Servir.
+ *
+ * Havendo mais de uma, devolve a PRIMEIRA em que ela entrou — é a que ela
+ * chama de "minha pastoral". Ordena por createdAt do interesse, não do
+ * grupo: o que importa é quando ela entrou, não quando a paróquia
+ * cadastrou a pastoral.
+ *
+ * Pastoral inativa não conta: mostrar como "minha" algo que a paróquia
+ * encerrou seria informação velha.
+ */
+export async function getMyMainPastoral(parishId: string, userId: string) {
+  const interesse = await withTenantContext(parishId, (tx) =>
+    tx.pastoralGroupInterest.findFirst({
+      where: { parishId, userId, group: { status: "ativa" } },
+      orderBy: { createdAt: "asc" },
+      include: { group: true },
+    }),
+  );
+  return interesse?.group ?? null;
+}
+
 export function listInterestsForParish(parishId: string) {
   return withTenantContext(parishId, (tx) =>
     tx.pastoralGroupInterest.findMany({

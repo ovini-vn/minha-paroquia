@@ -60,6 +60,7 @@ export async function createEventAction(_prev: ActionState, formData: FormData):
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
       location: formData.get("location") || undefined,
+      imageUrl: formData.get("imageUrl") || undefined,
     });
 
     await createEvent({ ...input, parishId: session.membership.parishId, createdBy: session.userId });
@@ -87,6 +88,7 @@ export async function updateEventAction(_prev: ActionState, formData: FormData):
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
       location: formData.get("location") || undefined,
+      imageUrl: formData.get("imageUrl") || undefined,
     });
 
     await updateEvent(session.membership.parishId, id, input);

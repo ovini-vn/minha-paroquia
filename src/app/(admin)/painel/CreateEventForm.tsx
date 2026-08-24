@@ -45,6 +45,18 @@ export function CreateEventForm() {
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="event-imageUrl" className="text-sm font-medium text-muted">
+          Cartaz (link da imagem)
+        </label>
+        <input
+          id="event-imageUrl"
+          name="imageUrl"
+          type="url"
+          placeholder="https://..."
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+        />
+      </div>
       <Button type="submit" disabled={pending}>
         {pending ? "Criando..." : "Novo evento"}
       </Button>

@@ -565,6 +565,9 @@ model Event {
   description String?
   startsAt    DateTime    @map("starts_at")
   location    String?
+  // Cartaz do evento. URL, como logoUrl da paróquia e photoUrl do
+  // sacerdote — o app não tem upload de arquivo em lugar nenhum.
+  imageUrl    String?     @map("image_url")
   status      EventStatus @default(published)
   createdBy   String      @map("created_by")
   createdAt   DateTime    @default(now()) @map("created_at")

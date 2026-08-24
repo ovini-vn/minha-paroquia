@@ -1,9 +1,16 @@
+import { BRASILIA_TIMEZONE } from "./brasilia";
+
+// Todo formatador com HORA fixa o fuso de Brasília. Sem isso ele usa o do
+// processo: certo na máquina de quem desenvolve, três horas adiantado no
+// servidor, que roda em UTC. Os de "só data" fixam UTC, porque campos
+// @db.Date chegam como meia-noite UTC.
 const WEEKDAY_TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   weekday: "short",
   day: "2-digit",
   month: "short",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: BRASILIA_TIMEZONE,
 });
 
 /** Ex.: "seg., 25 de ago., 19:00" */
@@ -15,9 +22,14 @@ const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   weekday: "long",
   day: "2-digit",
   month: "long",
+  timeZone: BRASILIA_TIMEZONE,
 });
 
-const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
+const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: BRASILIA_TIMEZONE,
+});
 
 /** Ex.: "Segunda-feira, 25 de agosto" */
 export function formatDateLabel(date: Date): string {

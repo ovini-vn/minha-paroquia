@@ -10,6 +10,7 @@ export function createEvent(input: CreateEventInput & { parishId: string; create
         description: input.description || null,
         startsAt: input.startsAt,
         location: input.location || null,
+        imageUrl: input.imageUrl || null,
         createdBy: input.createdBy,
       },
     }),
@@ -46,6 +47,7 @@ export function updateEvent(parishId: string, id: string, input: UpdateEventInpu
         description: input.description || null,
         startsAt: input.startsAt,
         location: input.location || null,
+        imageUrl: input.imageUrl || null,
       },
     }),
   );

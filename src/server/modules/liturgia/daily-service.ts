@@ -1,4 +1,5 @@
 import { getLiturgicalSeason, type LiturgicalSeasonCode } from "@/lib/liturgical-season";
+import { BRASILIA_TIMEZONE, brasiliaParts } from "@/lib/brasilia";
 
 /**
  * O "hoje" litúrgico que o app consegue afirmar SOZINHO: a data e o tempo
@@ -39,8 +40,11 @@ export function getTodayContext(date: Date): TodayContext {
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: BRASILIA_TIMEZONE,
     }).format(date),
-    weekdayLabel: WEEKDAYS[date.getDay()] ?? "Hoje",
+    // getDay() do fuso do processo daria o dia da semana errado perto da
+    // meia-noite num servidor em UTC.
+    weekdayLabel: WEEKDAYS[brasiliaParts(date).weekday] ?? "Hoje",
     season: season.season,
     seasonName: season.name,
   };

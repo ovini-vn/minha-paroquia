@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { BRASILIA_TIMEZONE, brasiliaParts } from "@/lib/brasilia";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateCelebrationForm } from "@/app/(admin)/painel/CreateCelebrationForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
@@ -29,11 +30,24 @@ const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   weekday: "long",
   day: "numeric",
   month: "long",
+  timeZone: BRASILIA_TIMEZONE,
 });
-const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
+const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: BRASILIA_TIMEZONE,
+});
 
+/**
+ * Agrupa pelo dia em BRASÍLIA, não no fuso do processo.
+ *
+ * Com getDate() do fuso local, uma missa das 21h (00h UTC do dia seguinte)
+ * era listada no dia errado num servidor em UTC — a pessoa procurava a
+ * missa de sábado e ela aparecia no domingo.
+ */
 function dayKey(date: Date): string {
-  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+  const p = brasiliaParts(date);
+  return `${p.year}-${p.month}-${p.day}`;
 }
 
 export default async function AgendaPage() {

@@ -10,6 +10,16 @@
  * existe, em vez de o número 3 estar espalhado pelo código.
  */
 export const BRASILIA_OFFSET_HOURS = 3;
+
+/**
+ * Para os formatadores de Intl, que sabem lidar com a base IANA sozinhos.
+ *
+ * Todo Intl.DateTimeFormat que exibe HORA precisa disto. Sem fixar, ele usa
+ * o fuso de quem está rodando: no computador de quem desenvolve (São Paulo)
+ * a hora sai certa, e no servidor (UTC) sai três horas adiantada. É um bug
+ * que passa em todo teste local e só aparece em produção.
+ */
+export const BRASILIA_TIMEZONE = "America/Sao_Paulo";
 const HORA_MS = 3_600_000;
 
 /** Partes do calendário de Brasília correspondentes a um instante UTC. */

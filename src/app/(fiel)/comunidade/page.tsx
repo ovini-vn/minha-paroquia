@@ -27,6 +27,8 @@ type AgendaItem = {
   startsAt: Date;
   label: string;
   location: string | null;
+  /** Só eventos têm cartaz; celebração vem sempre nula. */
+  imageUrl: string | null;
 };
 
 export default async function ComunidadePage() {
@@ -58,12 +60,14 @@ export default async function ComunidadePage() {
       startsAt: c.startsAt,
       label: c.title || CELEBRATION_TYPE_LABELS[c.type],
       location: c.location,
+      imageUrl: null,
     })),
     ...events.map((e) => ({
       id: `event-${e.id}`,
       startsAt: e.startsAt,
       label: e.title,
       location: e.location,
+      imageUrl: e.imageUrl,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
@@ -198,20 +202,41 @@ export default async function ComunidadePage() {
         ) : (
           <Card className="px-3.5 py-1.5">
             {agendaItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3.5 border-b border-border py-3.5 last:border-b-0"
-              >
-                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                  <CalendarDays className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[14.5px] font-medium text-foreground">{item.label}</p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
-                    {formatDateTime(item.startsAt)}
-                    {item.location ? ` · ${item.location}` : ""}
-                  </p>
+              <div key={item.id} className="border-b border-border py-3.5 last:border-b-0">
+                <div className="flex items-center gap-3.5">
+                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                    <CalendarDays className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[14.5px] font-medium text-foreground">{item.label}</p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {formatDateTime(item.startsAt)}
+                      {item.location ? ` · ${item.location}` : ""}
+                    </p>
+                  </div>
                 </div>
+
+                {/*
+                  O cartaz vem DEPOIS do texto, não no lugar dele: quem lê
+                  por leitor de tela, ou com a imagem sem carregar, continua
+                  sabendo o que é e quando é. Fica com o alt vazio porque o
+                  título ao lado já diz tudo — repetir seria ler duas vezes.
+                */}
+                {/*
+                  <img> e não next/image: a URL é digitada pela secretaria e
+                  pode ser de qualquer host. Otimizar exigiria liberar
+                  remotePatterns para a internet inteira, o que é pior do que
+                  não otimizar.
+                */}
+                {item.imageUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    loading="lazy"
+                    className="mt-2.5 w-full rounded-lg border border-border object-cover"
+                  />
+                )}
               </div>
             ))}
           </Card>

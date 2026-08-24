@@ -21,6 +21,7 @@ import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
+import { isUploadConfigured } from "@/server/modules/uploads/service";
 
 type AgendaItem = {
   id: string;
@@ -94,7 +95,7 @@ export default async function ComunidadePage() {
             id: "evento",
             label: "Novo evento",
             icone: <CalendarDays className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
-            conteudo: <CreateEventForm />,
+            conteudo: <CreateEventForm podeEnviarArquivo={isUploadConfigured()} />,
           },
         ]
       : []),

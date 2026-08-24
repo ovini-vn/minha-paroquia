@@ -15,6 +15,7 @@ import { BRASILIA_TIMEZONE, brasiliaParts } from "@/lib/brasilia";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateCelebrationForm } from "@/app/(admin)/painel/CreateCelebrationForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
+import { isUploadConfigured } from "@/server/modules/uploads/service";
 
 type AgendaItem = {
   id: string;
@@ -138,7 +139,7 @@ export default async function AgendaPage() {
               id: "evento",
               label: "Evento",
               icone: <PartyPopper className="h-4 w-4" strokeWidth={1.5} aria-hidden />,
-              conteudo: <CreateEventForm />,
+              conteudo: <CreateEventForm podeEnviarArquivo={isUploadConfigured()} />,
             },
           ]}
         />

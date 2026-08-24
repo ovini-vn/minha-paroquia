@@ -18,6 +18,7 @@ import {
 import { createEvent, updateEvent, setEventStatus } from "@/server/modules/events/service";
 import { createEventInputSchema, updateEventInputSchema } from "@/server/modules/events/schema";
 import { AppError } from "@/server/shared/errors";
+import { uploadImagem } from "@/server/modules/uploads/service";
 
 export type ActionState = { error?: string };
 
@@ -49,6 +50,21 @@ export async function createCelebrationAction(_prev: ActionState, formData: Form
   return {};
 }
 
+/**
+ * Resolve o cartaz do evento: arquivo enviado tem prioridade sobre link
+ * digitado. Se a pessoa fez as duas coisas, ela acabou de escolher um
+ * arquivo — é o que ela quer.
+ *
+ * Devolve undefined quando não há nada, para o schema tratar como opcional.
+ */
+async function resolverCartaz(parishId: string, formData: FormData): Promise<string | undefined> {
+  const arquivo = formData.get("imageFile");
+  if (arquivo instanceof File && arquivo.size > 0) {
+    return uploadImagem(parishId, arquivo, "eventos");
+  }
+  return (formData.get("imageUrl") as string) || undefined;
+}
+
 export async function createEventAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireSession();
   if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
@@ -60,7 +76,7 @@ export async function createEventAction(_prev: ActionState, formData: FormData):
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
       location: formData.get("location") || undefined,
-      imageUrl: formData.get("imageUrl") || undefined,
+      imageUrl: await resolverCartaz(session.membership.parishId, formData),
     });
 
     await createEvent({ ...input, parishId: session.membership.parishId, createdBy: session.userId });
@@ -88,7 +104,7 @@ export async function updateEventAction(_prev: ActionState, formData: FormData):
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
       location: formData.get("location") || undefined,
-      imageUrl: formData.get("imageUrl") || undefined,
+      imageUrl: await resolverCartaz(session.membership.parishId, formData),
     });
 
     await updateEvent(session.membership.parishId, id, input);

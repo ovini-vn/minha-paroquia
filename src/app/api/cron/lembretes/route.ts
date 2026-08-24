@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { sendCommitmentReminders } from "@/server/modules/reminders/service";
 import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/service";
+import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/service";
 
 /**
  * Job diário — disparado pelo cron da Vercel (ver vercel.json).
@@ -9,7 +10,11 @@ import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/se
  * permite pouquíssimos crons, e as duas tarefas são diárias e baratas.
  *
  *   1. repõe o horizonte das missas que se repetem;
- *   2. avisa quem tem compromisso hoje ou amanhã.
+ *   2. avisa quem tem compromisso hoje ou amanhã;
+ *   3. aos sábados, manda o resumo da semana para TODA a comunidade.
+ *
+ * O resumo entra aqui, e não num cron próprio, porque o plano Hobby da
+ * Vercel permite pouquíssimos agendamentos — e "é sábado?" é uma linha.
  *
  * Nessa ordem, e a ordem importa: uma missa recém-gerada pode já ter
  * escala para amanhã, e o aviso precisa enxergá-la.
@@ -47,7 +52,21 @@ export async function GET(request: NextRequest) {
   }
 
   const lembretes = await sendCommitmentReminders(agora);
-  console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes }));
 
-  return NextResponse.json({ ok: true, ocorrencias, ...lembretes });
+  // Resumo semanal: só no dia certo, e isolado do resto pelo mesmo motivo
+  // que a geração — uma falha aqui não pode calar os lembretes de quem já
+  // se comprometeu.
+  let resumo: unknown = "não é o dia";
+  if (ehDiaDoResumo(agora)) {
+    try {
+      resumo = await enviarResumoSemanal(agora);
+    } catch (error) {
+      console.error("Falha no resumo semanal:", error);
+      resumo = { erro: error instanceof Error ? error.message : "desconhecido" };
+    }
+  }
+
+  console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo }));
+
+  return NextResponse.json({ ok: true, ocorrencias, resumo, ...lembretes });
 }

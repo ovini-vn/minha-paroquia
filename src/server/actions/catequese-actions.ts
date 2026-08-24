@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
+import { findMemberByExactName } from "@/server/modules/parishes/service";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
   createGroup,
@@ -254,18 +255,26 @@ export async function linkParishPersonAction(
   requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
 
   const familyMemberId = formData.get("familyMemberId") as string;
-  const userId = formData.get("userId") as string;
-  if (!familyMemberId || !userId) return { error: "Escolha a pessoa e a conta." };
+  const fullName = ((formData.get("fullName") as string) ?? "").trim();
+  if (!familyMemberId || !fullName) return { error: "Digite o nome completo do responsável." };
+
+  const busca = await findMemberByExactName(session.membership.parishId, fullName);
+  if (busca.situacao === "nao_encontrado") {
+    return { error: "Não encontramos ninguém com esse nome completo nesta paróquia." };
+  }
+  if (busca.situacao === "ambiguo") {
+    return { error: "Há mais de uma pessoa com esse nome. Confirme com a secretaria antes de vincular." };
+  }
 
   try {
-    await linkParishPersonToUser(session.membership.parishId, familyMemberId, userId);
+    await linkParishPersonToUser(session.membership.parishId, familyMemberId, busca.userId);
   } catch (error) {
     if (error instanceof AppError) return { error: error.message };
     throw error;
   }
 
   revalidatePath("/catequese");
-  return { ok: "Vinculado. O responsável já enxerga o cadastro em Minha família." };
+  return { ok: `Vinculado a ${busca.fullName}. Ele já enxerga o cadastro em Minha família.` };
 }
 
 export async function removeParishPersonAction(

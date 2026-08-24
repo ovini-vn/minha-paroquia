@@ -98,7 +98,15 @@ export async function listUserIdsWithPermission(parishId: string, permissionCode
   return membros.map((m) => m.userId);
 }
 
-/** Todos os membros ativos, qualquer papel — usado para registrar dízimo. */
+/**
+ * Todos os membros ativos. É a LISTA INTEIRA da paróquia — só pode ser
+ * chamada por telas que exigem permissão de gestão da paróquia inteira
+ * (dízimo, membros e papéis, delegar permissões).
+ *
+ * Para vincular uma pessoa a um cadastro, use findMemberByExactName: ela
+ * não devolve lista nenhuma, exige o nome completo, e por isso não permite
+ * descobrir quem frequenta a paróquia.
+ */
 export function listActiveMembers(parishId: string) {
   return withTenantContext(parishId, (tx) =>
     tx.parishMembership.findMany({
@@ -187,4 +195,66 @@ export async function changeMemberRole(
 
     return atualizado;
   });
+}
+
+/**
+ * Normaliza um nome para comparação: sem acento, sem caixa, sem espaço
+ * sobrando. "José  da SILVA" e "Jose da Silva" viram a mesma coisa.
+ */
+function normalizarNome(nome: string): string {
+  return nome
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export type BuscaPorNome =
+  | { situacao: "encontrado"; userId: string; fullName: string }
+  | { situacao: "nao_encontrado" }
+  | { situacao: "ambiguo" };
+
+/**
+ * Acha um membro pelo nome COMPLETO e exato.
+ *
+ * Existe no lugar de listar a paróquia inteira. Antes, qualquer pessoa
+ * logada recebia o nome de todos os membros (era o seletor de "adicionar
+ * responsável"), o que transformava a lista de quem frequenta a paróquia em
+ * informação disponível a quem entrasse.
+ *
+ * Aqui é preciso JÁ SABER o nome inteiro para vincular alguém. Quem não
+ * sabe não descobre: não há busca parcial, não há lista, não há sugestão.
+ *
+ * A comparação acontece no servidor e a lista nunca sai daqui — só o
+ * resultado de um nome específico.
+ *
+ * Nome repetido devolve "ambiguo" em vez de escolher um: vincular a pessoa
+ * errada a uma criança é pior do que pedir ajuda à secretaria.
+ */
+export async function findMemberByExactName(
+  parishId: string,
+  nomeDigitado: string,
+): Promise<BuscaPorNome> {
+  const alvo = normalizarNome(nomeDigitado);
+  // Nome completo de verdade tem sobrenome. Exigir isso evita que "ana"
+  // vire uma varredura barata por quem se chama Ana.
+  if (alvo.length < 5 || !alvo.includes(" ")) return { situacao: "nao_encontrado" };
+
+  const membros = await withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: { parishId, status: "active" },
+      select: { userId: true, user: { select: { fullName: true } } },
+    }),
+  );
+
+  const iguais = membros.filter((m) => normalizarNome(m.user.fullName) === alvo);
+  if (iguais.length === 0) return { situacao: "nao_encontrado" };
+  if (iguais.length > 1) return { situacao: "ambiguo" };
+
+  return {
+    situacao: "encontrado",
+    userId: iguais[0]!.userId,
+    fullName: iguais[0]!.user.fullName,
+  };
 }

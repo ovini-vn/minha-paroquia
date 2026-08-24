@@ -9,7 +9,7 @@ import {
   listMyChildrenEnrollments,
   getCatequeseOverview,
 } from "@/server/modules/catequese/service";
-import { listMembersByRole, listActiveMembers } from "@/server/modules/parishes/service";
+import { listMembersByRole } from "@/server/modules/parishes/service";
 import { listUnlinkedParishPeople } from "@/server/modules/family/service";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -50,13 +50,12 @@ export default async function CatequesePage() {
   const coordena = pode(PERMISSIONS.CATEQUESE_MANAGE);
   const leciona = pode(PERMISSIONS.CATEQUESE_TEACH);
 
-  const [overview, grupos, catequistas, pessoasSoltas, membros, minhasTurmas, meusAlunos, filhos] =
+  const [overview, grupos, catequistas, pessoasSoltas, minhasTurmas, meusAlunos, filhos] =
     await Promise.all([
       coordena ? getCatequeseOverview(parishId) : null,
       coordena ? listGroups(parishId) : [],
       coordena ? listMembersByRole(parishId, "CATEQUISTA") : [],
       coordena ? listUnlinkedParishPeople(parishId) : [],
-      coordena ? listActiveMembers(parishId) : [],
       leciona ? listGroupsForCatechist(parishId, session.userId) : [],
       leciona ? listEnrollmentsForCatechist(parishId, session.userId) : [],
       listMyChildrenEnrollments(parishId, session.userId),
@@ -177,7 +176,6 @@ export default async function CatequesePage() {
                   guardianPhone: p.guardianPhone,
                   matriculas: p._count.enrollments,
                 }))}
-                contas={membros.map((m) => ({ id: m.user.id, fullName: m.user.fullName }))}
               />
             </Card>
           </section>

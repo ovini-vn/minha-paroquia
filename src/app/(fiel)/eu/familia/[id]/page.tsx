@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getOwnFamilyMember, listGuardians } from "@/server/modules/family/service";
-import { listActiveMembers } from "@/server/modules/parishes/service";
 import { removeGuardianAction } from "@/server/actions/family-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -18,15 +17,8 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
   const member = await getOwnFamilyMember(session.membership.parishId, id, session.userId);
   if (!member) notFound();
 
-  const [guardians, activeMembers] = await Promise.all([
-    listGuardians(session.membership.parishId, id),
-    listActiveMembers(session.membership.parishId),
-  ]);
-
-  const guardianUserIds = new Set(guardians.map((g) => g.userId));
-  const candidates = activeMembers
-    .filter((m) => !guardianUserIds.has(m.user.id))
-    .map((m) => ({ id: m.user.id, fullName: m.user.fullName }));
+  // Sem listar a paróquia: o vínculo é feito digitando o nome completo.
+  const guardians = await listGuardians(session.membership.parishId, id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,7 +52,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
             </li>
           ))}
         </ul>
-        <AddGuardianForm familyMemberId={id} candidates={candidates} />
+        <AddGuardianForm familyMemberId={id} />
       </Card>
 
       {/* Separado do cartão de responsáveis: excluir o cadastro inteiro é

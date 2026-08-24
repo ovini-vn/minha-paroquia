@@ -12,8 +12,9 @@ import {
 } from "@/server/modules/family/service";
 import { createFamilyMemberInputSchema } from "@/server/modules/family/schema";
 import { AppError } from "@/server/shared/errors";
+import { findMemberByExactName } from "@/server/modules/parishes/service";
 
-export type ActionState = { error?: string };
+export type ActionState = { error?: string; ok?: string };
 
 export async function createFamilyMemberAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireSession();
@@ -42,18 +43,29 @@ export async function addGuardianAction(_prev: ActionState, formData: FormData):
   if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
 
   const familyMemberId = formData.get("familyMemberId") as string;
-  const userId = formData.get("userId") as string;
-  if (!userId) return { error: "Escolha uma pessoa." };
+  const fullName = ((formData.get("fullName") as string) ?? "").trim();
+  if (!fullName) return { error: "Digite o nome completo da pessoa." };
+
+  // A mensagem não distingue "não existe" de "não está nesta paróquia":
+  // separar as duas transformaria este campo num jeito de descobrir quem
+  // frequenta a paróquia, que é exatamente o que ele existe para evitar.
+  const busca = await findMemberByExactName(session.membership.parishId, fullName);
+  if (busca.situacao === "nao_encontrado") {
+    return { error: "Não encontramos ninguém com esse nome completo nesta paróquia." };
+  }
+  if (busca.situacao === "ambiguo") {
+    return { error: "Há mais de uma pessoa com esse nome. Peça à secretaria para fazer o vínculo." };
+  }
 
   try {
-    await addGuardian(session.membership.parishId, familyMemberId, userId, session.userId);
+    await addGuardian(session.membership.parishId, familyMemberId, busca.userId, session.userId);
   } catch (error) {
     if (error instanceof AppError) return { error: error.message };
     throw error;
   }
 
   revalidatePath(`/eu/familia/${familyMemberId}`);
-  return {};
+  return { ok: `${busca.fullName} agora também é responsável.` };
 }
 
 export async function removeGuardianAction(formData: FormData): Promise<void> {

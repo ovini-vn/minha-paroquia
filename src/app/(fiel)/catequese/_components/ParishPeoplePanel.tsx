@@ -24,8 +24,6 @@ export type Pessoa = {
   matriculas: number;
 };
 
-type Conta = { id: string; fullName: string };
-
 function Cadastrar() {
   const [state, formAction, pending] = useActionState(createParishPersonAction, initialState);
 
@@ -71,7 +69,7 @@ function Cadastrar() {
   );
 }
 
-function Vincular({ pessoa, contas }: { pessoa: Pessoa; contas: Conta[] }) {
+function Vincular({ pessoa }: { pessoa: Pessoa }) {
   const [aberto, setAberto] = useState(false);
   const [state, formAction, pending] = useActionState(linkParishPersonAction, initialState);
 
@@ -89,16 +87,15 @@ function Vincular({ pessoa, contas }: { pessoa: Pessoa; contas: Conta[] }) {
   return (
     <form action={formAction} className="flex flex-wrap items-center justify-end gap-2">
       <input type="hidden" name="familyMemberId" value={pessoa.id} />
-      <select name="userId" required className={`${campo} py-2`} defaultValue="">
-        <option value="" disabled>
-          Escolha o responsável…
-        </option>
-        {contas.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.fullName}
-          </option>
-        ))}
-      </select>
+      {/* Nome completo, não lista: a catequista precisa JÁ SABER quem é o
+          responsável — e assim não descobre quem mais frequenta a paróquia. */}
+      <input
+        name="fullName"
+        required
+        autoComplete="off"
+        placeholder="Nome completo do responsável"
+        className={`${campo} min-w-[15rem] py-2`}
+      />
       <Button type="submit" disabled={pending}>
         {pending ? "Vinculando…" : "Vincular"}
       </Button>
@@ -150,7 +147,7 @@ function Excluir({ pessoa }: { pessoa: Pessoa }) {
  * alguém é vinculado, o cadastro sai daqui e passa a viver em "Minha
  * família" do responsável, com o histórico intacto.
  */
-export function ParishPeoplePanel({ pessoas, contas }: { pessoas: Pessoa[]; contas: Conta[] }) {
+export function ParishPeoplePanel({ pessoas }: { pessoas: Pessoa[] }) {
   return (
     <div className="flex flex-col gap-4">
       <Cadastrar />
@@ -180,7 +177,7 @@ export function ParishPeoplePanel({ pessoas, contas }: { pessoas: Pessoa[]; cont
                     {pessoa.matriculas} {pessoa.matriculas === 1 ? "turma" : "turmas"}
                   </Badge>
                 )}
-                <Vincular pessoa={pessoa} contas={contas} />
+                <Vincular pessoa={pessoa} />
                 <Excluir pessoa={pessoa} />
               </div>
             ))}

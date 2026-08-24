@@ -3,11 +3,13 @@ import { getSessionContext } from "@/server/auth/session";
 import { listCommunityPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getTodayContext } from "@/server/modules/liturgia/daily-service";
 import { getLiturgyForDate } from "@/server/modules/liturgia/liturgy-of-the-day-service";
+import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
+import { PalavraDoDiaCard } from "@/components/domain/PalavraDoDiaCard";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
@@ -26,9 +28,10 @@ export default async function OracaoPage() {
 
   const today = new Date();
   const context = getTodayContext(today);
-  const [liturgy, communityRequests] = await Promise.all([
+  const [liturgy, communityRequests, palavraDoDia] = await Promise.all([
     getLiturgyForDate(session.membership.parishId, today),
     listCommunityPrayerRequests(session.membership.parishId, 3),
+    getPalavraDoDia(),
   ]);
 
   const leituras = liturgy
@@ -90,6 +93,14 @@ export default async function OracaoPage() {
           </p>
         )}
       </div>
+
+      {/* Vem DEPOIS das leituras da própria paróquia: o que o pároco
+          publicou para esta comunidade tem precedência sobre o que vem de
+          fora. Se a paróquia não publicou nada, este cartão é o que a
+          pessoa encontra. */}
+      <section className="pt-[26px]">
+        <PalavraDoDiaCard palavra={palavraDoDia} />
+      </section>
 
       <section className="pt-[26px]">
         <Eyebrow tone="accent" className="mb-3">

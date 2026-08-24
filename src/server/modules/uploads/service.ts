@@ -20,8 +20,29 @@ const TAMANHO_MAXIMO = 5 * 1024 * 1024;
  */
 const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 
+/**
+ * Duas formas de autenticar, porque a Vercel mudou o padrão.
+ *
+ * O jeito clássico é BLOB_READ_WRITE_TOKEN. O jeito novo é OIDC: a Vercel
+ * injeta VERCEL_OIDC_TOKEN em tempo de execução e o store aparece como
+ * BLOB_STORE_ID. Criar um Blob store hoje configura o SEGUNDO — e o
+ * primeiro nem sempre existe.
+ *
+ * A biblioteca lê BLOB_READ_WRITE_TOKEN e BLOB_STORE_ID do ambiente
+ * sozinha, mas NÃO lê o token OIDC: ele precisa ser passado na chamada.
+ */
+function credenciais(): { token?: string; oidcToken?: string } | null {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return { token: process.env.BLOB_READ_WRITE_TOKEN };
+  }
+  if (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN) {
+    return { oidcToken: process.env.VERCEL_OIDC_TOKEN };
+  }
+  return null;
+}
+
 export function isUploadConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return credenciais() !== null;
 }
 
 function extensaoDe(tipo: string): string {
@@ -48,7 +69,8 @@ export async function uploadImagem(
   arquivo: File,
   pasta: string,
 ): Promise<string> {
-  if (!isUploadConfigured()) {
+  const auth = credenciais();
+  if (!auth) {
     throw new ValidationError("O envio de imagens ainda não está configurado nesta instalação.");
   }
   if (arquivo.size === 0) {
@@ -64,6 +86,7 @@ export async function uploadImagem(
   const nome = `${pasta}/${parishId}/${crypto.randomUUID()}.${extensaoDe(arquivo.type)}`;
 
   const { url } = await put(nome, arquivo, {
+    ...auth,
     access: "public",
     // O conteúdo é público de qualquer forma (vai numa <img> para os
     // fiéis); o nome aleatório é que evita adivinhar o de outra paróquia.

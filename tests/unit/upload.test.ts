@@ -15,13 +15,35 @@ afterEach(() => {
 });
 
 describe("upload de imagem", () => {
-  it("fica indisponível sem o token, em vez de estourar", () => {
+  it("fica indisponível sem credencial nenhuma, em vez de estourar", () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
+    expect(isUploadConfigured()).toBe(false);
+  });
+
+  it("aceita o caminho OIDC, que é como a Vercel configura hoje", () => {
+    // Criar um Blob store hoje gera BLOB_STORE_ID e a Vercel injeta
+    // VERCEL_OIDC_TOKEN em execução; BLOB_READ_WRITE_TOKEN nem sempre
+    // existe. Checar só o token clássico escondia o recurso de quem tinha
+    // tudo configurado corretamente.
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("BLOB_STORE_ID", "store_abc123");
+    vi.stubEnv("VERCEL_OIDC_TOKEN", "eyJhbGciOi...");
+    expect(isUploadConfigured()).toBe(true);
+  });
+
+  it("store sem token OIDC não basta", () => {
+    vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("BLOB_STORE_ID", "store_abc123");
+    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
     expect(isUploadConfigured()).toBe(false);
   });
 
   it("recusa upload quando não está configurado", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "");
+    vi.stubEnv("BLOB_STORE_ID", "");
+    vi.stubEnv("VERCEL_OIDC_TOKEN", "");
     await expect(uploadImagem("p1", arquivo("image/png", 10), "eventos")).rejects.toThrow(
       /não está configurado/i,
     );
@@ -29,6 +51,7 @@ describe("upload de imagem", () => {
 
   it("recusa arquivo acima de 5 MB", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
+    vi.stubEnv("BLOB_STORE_ID", "");
     await expect(
       uploadImagem("p1", arquivo("image/jpeg", 5 * 1024 * 1024 + 1), "eventos"),
     ).rejects.toThrow(/5 MB/);
@@ -38,6 +61,7 @@ describe("upload de imagem", () => {
     // Servido do nosso domínio, um SVG com script rodaria como se fosse
     // nosso — com a sessão do fiel junto.
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
+    vi.stubEnv("BLOB_STORE_ID", "");
     await expect(uploadImagem("p1", arquivo("image/svg+xml", 100), "eventos")).rejects.toThrow(
       /Formato não aceito/i,
     );
@@ -45,6 +69,7 @@ describe("upload de imagem", () => {
 
   it("recusa PDF e outros que não são imagem", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
+    vi.stubEnv("BLOB_STORE_ID", "");
     await expect(uploadImagem("p1", arquivo("application/pdf", 100), "eventos")).rejects.toThrow(
       /Formato não aceito/i,
     );
@@ -52,6 +77,7 @@ describe("upload de imagem", () => {
 
   it("recusa arquivo vazio", async () => {
     vi.stubEnv("BLOB_READ_WRITE_TOKEN", "token-de-teste");
+    vi.stubEnv("BLOB_STORE_ID", "");
     await expect(uploadImagem("p1", arquivo("image/png", 0), "eventos")).rejects.toThrow(/vazio/i);
   });
 });

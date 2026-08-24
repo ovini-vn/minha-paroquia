@@ -11,6 +11,7 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     isPlatformAdmin: false,
     themePreference: "default",
     colorScheme: "light",
+  onboardedAt: null,
     membership: null,
     dioceses: [],
     provinces: [],

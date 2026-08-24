@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import { countUnreadNotifications } from "@/server/modules/notifications/service";
@@ -9,6 +10,12 @@ import { TabBar } from "@/components/layout/TabBar";
 
 export default async function FielLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSessionForPage();
+
+  // Quem tem paróquia e ainda não passou pelas boas-vindas vai para lá
+  // antes de qualquer outra tela. Fica no layout do grupo (fiel) porque é
+  // onde o convite entrega as pessoas; /bem-vindo mora fora dele, senão
+  // este redirecionamento se chamaria em laço.
+  if (session.membership && !session.onboardedAt) redirect("/bem-vindo");
   const [unreadCount, parish] = await Promise.all([
     session.membership
       ? countUnreadNotifications(session.membership.parishId, session.userId)

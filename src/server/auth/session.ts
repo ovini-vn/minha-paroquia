@@ -24,6 +24,8 @@ export type SessionContext = {
   themePreference: ThemePreference;
   /** Claro ou escuro — eixo separado do tema litúrgico. */
   colorScheme: ColorScheme;
+  /** Nulo enquanto a pessoa não passou pelas boas-vindas. */
+  onboardedAt: Date | null;
   membership: {
     parishId: string;
     parishName: string;
@@ -148,6 +150,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       isPlatformAdmin: user.isPlatformAdmin,
       themePreference: user.themePreference,
       colorScheme: user.colorScheme,
+      onboardedAt: user.onboardedAt,
       membership: null,
       dioceses,
       provinces,
@@ -165,6 +168,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     isPlatformAdmin: user.isPlatformAdmin,
     themePreference: user.themePreference,
     colorScheme: user.colorScheme,
+    onboardedAt: user.onboardedAt,
     membership: {
       parishId: membershipRow.parishId,
       parishName: membershipRow.parish.name,

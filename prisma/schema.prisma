@@ -73,6 +73,10 @@ model User {
   // src/lib/liturgical-season.ts (fonte única do cálculo) e /eu/aparencia.
   themePreference ThemePreference @default(default) @map("theme_preference")
   colorScheme     ColorScheme     @default(light) @map("color_scheme")
+  // Quando a pessoa passou (ou pulou) as boas-vindas. Nulo = ainda não viu.
+  // Guardar a data em vez de um booleano permite saber QUANDO alguém entrou
+  // de fato na comunidade, que é diferente de quando criou a conta.
+  onboardedAt     DateTime?       @map("onboarded_at")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 

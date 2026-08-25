@@ -1,7 +1,8 @@
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listAllEvents } from "@/server/modules/events/service";
-import { setEventStatusAction } from "@/server/actions/agenda-actions";
+import { setEventStatusAction, excluirEventoAction } from "@/server/actions/agenda-actions";
+import { BotaoExcluir } from "@/components/ui/BotaoExcluir";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
@@ -69,6 +70,13 @@ export default async function EventsAdminPage() {
                         {archived ? "Republicar" : "Arquivar"}
                       </Button>
                     </form>
+                    <div className="ml-auto">
+                      <BotaoExcluir
+                        action={excluirEventoAction}
+                        id={event.id}
+                        descricao={`o evento ${event.title}`}
+                      />
+                    </div>
                   </div>
                 </Card>
               );

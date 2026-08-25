@@ -56,3 +56,17 @@ export function updateEvent(parishId: string, id: string, input: UpdateEventInpu
 export function setEventStatus(parishId: string, id: string, status: "published" | "archived") {
   return withTenantContext(parishId, (tx) => tx.event.updateMany({ where: { id, parishId }, data: { status } }));
 }
+
+/**
+ * Apaga de vez. Arquivar serve para evento que passou; apagar é para
+ * duplicata e teste.
+ *
+ * O cartaz enviado permanece no armazenamento de imagens: apagar o arquivo
+ * exigiria saber que nenhuma outra tela o usa, e imagem órfã custa menos
+ * que imagem que some de onde ainda aparecia.
+ */
+export function deleteEvent(parishId: string, id: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.event.deleteMany({ where: { id, parishId } }),
+  );
+}

@@ -1,7 +1,8 @@
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listAllAvisos } from "@/server/modules/avisos/service";
-import { setAvisoStatusAction } from "@/server/actions/aviso-actions";
+import { setAvisoStatusAction, excluirAvisoAction } from "@/server/actions/aviso-actions";
+import { BotaoExcluir } from "@/components/ui/BotaoExcluir";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
@@ -68,6 +69,15 @@ export default async function AvisosAdminPage() {
                         {archived ? "Republicar" : "Arquivar"}
                       </Button>
                     </form>
+                    {/* Arquivar tira da vista e guarda; excluir é para o que
+                        nunca deveria ter sido publicado. */}
+                    <div className="ml-auto">
+                      <BotaoExcluir
+                        action={excluirAvisoAction}
+                        id={aviso.id}
+                        descricao={`o aviso ${aviso.title}`}
+                      />
+                    </div>
                   </div>
                 </Card>
               );

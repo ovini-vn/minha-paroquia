@@ -15,7 +15,7 @@ import {
   createCelebrationInputSchema,
   createCelebrationScheduleInputSchema,
 } from "@/server/modules/celebrations/schema";
-import { createEvent, updateEvent, setEventStatus } from "@/server/modules/events/service";
+import { createEvent, updateEvent, setEventStatus, deleteEvent } from "@/server/modules/events/service";
 import { createEventInputSchema, updateEventInputSchema } from "@/server/modules/events/schema";
 import { AppError } from "@/server/shared/errors";
 import { uploadImagem } from "@/server/modules/uploads/service";
@@ -244,6 +244,23 @@ export async function toggleCelebrationCanceledAction(formData: FormData): Promi
   await setCelebrationCanceled(session.membership.parishId, id, canceled);
 
   revalidatePath("/painel/liturgia");
+  revalidatePath("/painel");
+  revalidatePath("/agenda");
+  revalidatePath("/comunidade");
+  revalidatePath("/inicio");
+}
+
+/** Apagar de vez — para duplicata e teste, não para evento que já aconteceu. */
+export async function excluirEventoAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.AGENDA_MANAGE);
+
+  const id = formData.get("id") as string;
+  if (!id) return;
+  await deleteEvent(session.membership.parishId, id);
+
+  revalidatePath("/painel/eventos");
   revalidatePath("/painel");
   revalidatePath("/agenda");
   revalidatePath("/comunidade");

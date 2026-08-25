@@ -97,3 +97,19 @@ export function listPublishedAvisos(parishId: string, limit = 5) {
 export function listAllAvisos(parishId: string) {
   return withTenantContext(parishId, (tx) => tx.aviso.findMany({ where: { parishId }, orderBy: { createdAt: "desc" } }));
 }
+
+/**
+ * Apaga de vez.
+ *
+ * Arquivar tira da vista do fiel e serve para aviso que cumpriu seu papel;
+ * apagar é para o que nunca deveria ter existido — duplicata, teste, texto
+ * errado publicado por engano.
+ *
+ * A notificação já enviada COPIA título e texto, então ela sobrevive: quem
+ * recebeu continua vendo o que recebeu, e o histórico não some por baixo.
+ */
+export function deleteAviso(parishId: string, id: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.aviso.deleteMany({ where: { id, parishId } }),
+  );
+}

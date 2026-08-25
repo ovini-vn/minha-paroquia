@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Church, BookOpen, Megaphone, CalendarDays, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Church, Landmark, Megaphone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listPriests } from "@/server/modules/priests/service";
@@ -224,6 +224,12 @@ export default async function ComunidadePage() {
           Também na comunidade
         </Eyebrow>
         <Card className="px-3.5 py-1.5">
+          <RowLink
+            href="/historia"
+            icon={Landmark}
+            title="Nossa História"
+            subtitle="De onde vem esta comunidade"
+          />
           <RowLink
             href="/comunidade/pastorais"
             icon={Users}

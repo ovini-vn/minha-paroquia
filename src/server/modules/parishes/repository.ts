@@ -34,3 +34,10 @@ export function updateParishProfile(
 ) {
   return prisma.parish.update({ where: { id }, data });
 }
+
+export function updateParishHistoria(
+  id: string,
+  data: { historia: string | null; historiaFotoUrl: string | null },
+) {
+  return prisma.parish.update({ where: { id }, data });
+}

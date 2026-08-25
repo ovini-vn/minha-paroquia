@@ -6,7 +6,13 @@ import {
 import { ValidationError } from "@/server/shared/errors";
 import { slugify } from "@/server/shared/slug";
 import { ensurePriestProfile, isPriestRole } from "@/server/modules/priests/ensure-priest-profile";
-import { createParish, findParishBySlug, findParishById, updateParishProfile } from "./repository";
+import {
+  createParish,
+  findParishBySlug,
+  findParishById,
+  updateParishProfile,
+  updateParishHistoria as atualizarHistoria,
+} from "./repository";
 import type { UpdateParishProfileInput } from "./schema";
 
 /**
@@ -404,4 +410,12 @@ export function replaceOfficeHours(
       data: faixas.map((f) => ({ parishId, ...f })),
     });
   });
+}
+
+/** Memorial histórico e foto atual da igreja. */
+export function updateParishHistoria(
+  parishId: string,
+  dados: { historia: string | null; historiaFotoUrl: string | null },
+) {
+  return atualizarHistoria(parishId, dados);
 }

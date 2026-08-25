@@ -246,6 +246,10 @@ model Parish {
   whatsapp     String?
   facebookUrl  String?  @map("facebook_url")
   instagramUrl String?  @map("instagram_url")
+
+  /// Memorial histórico da paróquia, em texto longo, e a foto atual do templo.
+  historia        String? @db.Text
+  historiaFotoUrl String? @map("historia_foto_url")
   description  String?
   logoUrl      String?  @map("logo_url")
   createdAt    DateTime @default(now()) @map("created_at")

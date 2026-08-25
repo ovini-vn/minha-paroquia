@@ -165,6 +165,12 @@ export default async function AdminDashboardPage() {
             subtitle="O que se repete toda semana ou todo mês"
           />
           <RowLink
+            href="/painel/historia"
+            icon={Landmark}
+            title="Nossa História"
+            subtitle="O memorial da paróquia e a foto da igreja"
+          />
+          <RowLink
             href="/painel/expediente"
             icon={Clock}
             title="Horário da secretaria"

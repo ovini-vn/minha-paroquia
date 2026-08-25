@@ -1,7 +1,8 @@
-import { Landmark } from "lucide-react";
+import { Landmark, Phone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getParish } from "@/server/modules/parishes/service";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LinkButton } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/Typography";
 import { TextoRico } from "@/components/ui/TextoRico";
 
@@ -50,6 +51,15 @@ export default async function HistoriaPage() {
           description="A secretaria pode cadastrá-la no Painel da Paróquia, em Nossa História."
         />
       )}
+
+      {/* Quem acabou de ler a história costuma querer a próxima coisa:
+          falar com a paróquia, ou saber quando ela está aberta. */}
+      <div className="pt-7">
+        <LinkButton href="/contato" className="w-full">
+          <Phone className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+          Falar com a paróquia
+        </LinkButton>
+      </div>
 
       <div className="rule-gold my-7" />
     </div>

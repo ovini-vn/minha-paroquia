@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { BookOpen, CalendarDays, Church, Landmark, Megaphone, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Church, Megaphone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { listPriests } from "@/server/modules/priests/service";
+import { listPriests, getParoco } from "@/server/modules/priests/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { listRecentPosts } from "@/server/modules/posts/service";
@@ -12,6 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
 import { RowLink } from "@/components/ui/RowLink";
+import { CartoesDeApresentacao } from "@/components/domain/CartoesDeApresentacao";
 import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
@@ -37,8 +38,9 @@ export default async function ComunidadePage() {
 
   const parishId = session.membership.parishId;
   const canPublish = session.permissions.includes(PERMISSIONS.POSTS_CREATE);
-  const [parish, priests, celebrations, events, posts, avisos] = await Promise.all([
+  const [parish, paroco, priests, celebrations, events, posts, avisos] = await Promise.all([
     getParish(parishId),
+    getParoco(parishId),
     listPriests(parishId),
     listUpcomingCelebrations(parishId, 5),
     listUpcomingEvents(parishId, 5),
@@ -136,6 +138,12 @@ export default async function ComunidadePage() {
         </section>
       </BleedTop>
 
+      <CartoesDeApresentacao
+        fotoIgreja={parish?.historiaFotoUrl ?? null}
+        fotoParoco={paroco?.photoUrl ?? paroco?.user.photoUrl ?? null}
+        nomeParoco={paroco?.user.fullName ?? null}
+      />
+
       {acoes.length > 0 && (
         <div className="pt-5">
           <AcoesRapidas acoes={acoes} />
@@ -224,12 +232,6 @@ export default async function ComunidadePage() {
           Também na comunidade
         </Eyebrow>
         <Card className="px-3.5 py-1.5">
-          <RowLink
-            href="/historia"
-            icon={Landmark}
-            title="Nossa História"
-            subtitle="De onde vem esta comunidade"
-          />
           <RowLink
             href="/comunidade/pastorais"
             icon={Users}

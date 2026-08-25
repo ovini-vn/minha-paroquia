@@ -30,7 +30,7 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import { BookOpen, Church, Clock, Crown, Flag, HandCoins, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, Users } from "lucide-react";
+import { BookOpen, Church, Clock, Crown, Flag, HandCoins, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserRound, Users } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -163,6 +163,12 @@ export default async function AdminDashboardPage() {
             icon={Repeat}
             title="Horários das missas"
             subtitle="O que se repete toda semana ou todo mês"
+          />
+          <RowLink
+            href="/painel/paroco"
+            icon={UserRound}
+            title="Nosso Pároco"
+            subtitle="A apresentação do pároco e a foto dele"
           />
           <RowLink
             href="/painel/historia"

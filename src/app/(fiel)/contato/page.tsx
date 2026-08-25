@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { calcularExpediente, agruparPorDia } from "@/lib/expediente";
+import { LinkRede } from "./LinkRede";
 
 /*
  * Instagram e Facebook desenhados aqui: a lucide tirou os ícones de marca
@@ -149,9 +150,7 @@ export default async function ContatoPage() {
                 <span className="block text-[14.5px] font-medium text-foreground">
                   Enviar mensagem
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-muted">
-                  Abre o WhatsApp com a mensagem pronta
-                </span>
+                <span className="mt-0.5 block text-[12.5px] text-muted">{parish.whatsapp}</span>
               </span>
             </a>
           )}
@@ -190,26 +189,24 @@ export default async function ContatoPage() {
           </Eyebrow>
           <div className="flex gap-2.5">
             {parish.instagramUrl && (
-              <a
+              <LinkRede
                 href={parish.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                rede="instagram"
                 className="flex flex-1 items-center gap-2.5 rounded-lg border border-border bg-surface p-3.5 transition-colors hover:border-primary"
               >
                 <IconeInstagram className="h-5 w-5 shrink-0 text-[#C13584]" />
                 <span className="text-[14px] font-medium text-foreground">Instagram</span>
-              </a>
+              </LinkRede>
             )}
             {parish.facebookUrl && (
-              <a
+              <LinkRede
                 href={parish.facebookUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                rede="facebook"
                 className="flex flex-1 items-center gap-2.5 rounded-lg border border-border bg-surface p-3.5 transition-colors hover:border-primary"
               >
                 <IconeFacebook className="h-5 w-5 shrink-0 text-[#1877F2]" />
                 <span className="text-[14px] font-medium text-foreground">Facebook</span>
-              </a>
+              </LinkRede>
             )}
           </div>
         </section>

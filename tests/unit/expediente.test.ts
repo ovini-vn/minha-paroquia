@@ -59,12 +59,46 @@ describe("expediente da secretaria", () => {
     if (!r.aberta) expect(r.proxima).toBeNull();
   });
 
-  it("agrupa para exibição começando na segunda, com as faixas juntas", () => {
+  it("junta a semana inteira numa linha quando o horário é o mesmo", () => {
     const linhas = agruparPorDia(SEGUNDA_A_SEXTA);
-    expect(linhas[0]).toEqual({ dia: "Segunda-feira", horarios: "08:00–12:00, 14:00–17:00" });
-    expect(linhas).toHaveLength(5);
-    // Domingo viria por último, se existisse.
-    expect(linhas.map((l) => l.dia)).not.toContain("Domingo");
+    expect(linhas).toEqual([{ dia: "Segunda a sexta", horarios: "08:00–12:00, 14:00–17:00" }]);
+  });
+
+  it("só junta dias vizinhos: um dia diferente no meio parte o bloco", () => {
+    const faixas: Faixa[] = [
+      { weekday: 1, opensAt: 480, closesAt: 1020 },
+      { weekday: 2, opensAt: 480, closesAt: 1020 },
+      { weekday: 3, opensAt: 480, closesAt: 720 }, // quarta fecha mais cedo
+      { weekday: 4, opensAt: 480, closesAt: 1020 },
+      { weekday: 5, opensAt: 480, closesAt: 1020 },
+    ];
+    expect(agruparPorDia(faixas)).toEqual([
+      { dia: "Segunda e terça", horarios: "08:00–17:00" },
+      { dia: "Quarta-feira", horarios: "08:00–12:00" },
+      { dia: "Quinta e sexta", horarios: "08:00–17:00" },
+    ]);
+  });
+
+  it("dia fechado no meio interrompe a sequência, mesmo com horário igual", () => {
+    // Sem isso, "Segunda a quarta" incluiria a terça, em que ninguém atende.
+    const faixas: Faixa[] = [
+      { weekday: 1, opensAt: 480, closesAt: 720 },
+      { weekday: 3, opensAt: 480, closesAt: 720 },
+    ];
+    expect(agruparPorDia(faixas)).toEqual([
+      { dia: "Segunda-feira", horarios: "08:00–12:00" },
+      { dia: "Quarta-feira", horarios: "08:00–12:00" },
+    ]);
+  });
+
+  it("sábado e domingo ficam vizinhos, porque a semana começa na segunda", () => {
+    const faixas: Faixa[] = [
+      { weekday: 6, opensAt: 480, closesAt: 720 },
+      { weekday: 0, opensAt: 480, closesAt: 720 },
+    ];
+    expect(agruparPorDia(faixas)).toEqual([
+      { dia: "Sábado e domingo", horarios: "08:00–12:00" },
+    ]);
   });
 });
 

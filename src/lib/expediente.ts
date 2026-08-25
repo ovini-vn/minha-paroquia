@@ -77,27 +77,78 @@ export function calcularExpediente(faixas: Faixa[], agora: Date): Expediente {
   return { aberta: false, proxima: null };
 }
 
-/** Agrupa as faixas por dia, para exibir "Segunda-feira · 08:00–12:00, 14:00–17:00". */
+/** Nomes curtos, para caber em "Segunda a sexta" sem virar uma frase. */
+const DIAS_CURTOS = [
+  "Domingo",
+  "Segunda",
+  "Terça",
+  "Quarta",
+  "Quinta",
+  "Sexta",
+  "Sábado",
+] as const;
+
+/** A semana começa na segunda: é como um cartaz de horário na porta é lido. */
+const ORDEM_DE_EXIBICAO = [1, 2, 3, 4, 5, 6, 0];
+
+function rotuloDoIntervalo(dias: number[]): string {
+  if (dias.length === 1) return DIAS_DA_SEMANA[dias[0]!]!;
+
+  const primeiro = DIAS_CURTOS[dias[0]!]!;
+  const ultimo = DIAS_CURTOS[dias[dias.length - 1]!]!.toLowerCase();
+  // Dois dias não formam intervalo: "sábado a domingo" soa errado, "e" não.
+  return dias.length === 2 ? `${primeiro} e ${ultimo}` : `${primeiro} a ${ultimo}`;
+}
+
+/**
+ * Monta as linhas do quadro de horários, juntando dias seguidos iguais.
+ *
+ * Cinco linhas dizendo 08:00–17:00 são cinco vezes a mesma informação; uma
+ * linha "Segunda a sexta" é o que estaria escrito no cartaz da secretaria.
+ * Só junta dias VIZINHOS na ordem de exibição — juntar segunda com quarta
+ * pulando a terça fechada faria a linha mentir.
+ */
 export function agruparPorDia(faixas: Faixa[]): { dia: string; horarios: string }[] {
   const porDia = new Map<number, Faixa[]>();
   for (const f of faixas) {
-    const lista = porDia.get(f.weekday) ?? [];
-    lista.push(f);
-    porDia.set(f.weekday, lista);
+    porDia.set(f.weekday, [...(porDia.get(f.weekday) ?? []), f]);
   }
 
-  // Começa na segunda: é como um cartaz de horário é lido, não no domingo.
-  const ordem = [1, 2, 3, 4, 5, 6, 0];
-  return ordem
-    .filter((d) => porDia.has(d))
-    .map((d) => ({
-      dia: DIAS_DA_SEMANA[d]!,
-      horarios: porDia
-        .get(d)!
-        .sort((a, b) => a.opensAt - b.opensAt)
-        .map((f) => `${formatMinutes(f.opensAt)}–${formatMinutes(f.closesAt)}`)
-        .join(", "),
-    }));
+  const textoDoDia = (d: number) =>
+    porDia
+      .get(d)!
+      .slice()
+      .sort((a, b) => a.opensAt - b.opensAt)
+      .map((f) => `${formatMinutes(f.opensAt)}–${formatMinutes(f.closesAt)}`)
+      .join(", ");
+
+  const linhas: { dia: string; horarios: string }[] = [];
+  let bloco: number[] = [];
+  let horariosDoBloco = "";
+
+  const fechaBloco = () => {
+    if (bloco.length > 0) linhas.push({ dia: rotuloDoIntervalo(bloco), horarios: horariosDoBloco });
+    bloco = [];
+  };
+
+  for (const d of ORDEM_DE_EXIBICAO) {
+    if (!porDia.has(d)) {
+      // Dia fechado interrompe a sequência.
+      fechaBloco();
+      continue;
+    }
+    const horarios = textoDoDia(d);
+    if (bloco.length > 0 && horarios === horariosDoBloco) {
+      bloco.push(d);
+    } else {
+      fechaBloco();
+      bloco = [d];
+      horariosDoBloco = horarios;
+    }
+  }
+  fechaBloco();
+
+  return linhas;
 }
 
 /**

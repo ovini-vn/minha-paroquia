@@ -89,10 +89,26 @@ describe("troca de papel de um membro", () => {
     expect(await papelDe(parocoId)).toBe("PAROCO");
   });
 
-  it("não deixa a paróquia sem nenhum pároco", async () => {
+  it("não deixa a paróquia sem ninguém que administre", async () => {
+    // Secretaria administra o dia a dia, mas não mexe nos papéis dos
+    // outros: a paróquia ficaria sem quem desfizesse a mudança.
     await expect(changeMemberRole(parishId, parocoId, "SECRETARIA", fielId)).rejects.toThrow(
-      /única conta com papel de Pároco/i,
+      /única conta que administra/i,
     );
+  });
+
+  it("mas o pároco PODE virar Administrador da paróquia", async () => {
+    // Pároco é o cargo eclesial; administrador é quem opera a ferramenta.
+    // O papel novo carrega os mesmos poderes, então ninguém fica sem
+    // comando — e é isto que a guarda antiga impedia.
+    await changeMemberRole(parishId, parocoId, "ADMINISTRADOR_PAROQUIAL", fielId);
+    expect(await papelDe(parocoId)).toBe("ADMINISTRADOR_PAROQUIAL");
+
+    // E deixa de ser clero: sai da lista de sacerdotes.
+    const perfis = await listPriests(parishId);
+    expect(perfis.some((p) => p.userId === parocoId)).toBe(false);
+
+    await changeMemberRole(parishId, parocoId, "PAROCO", fielId);
   });
 
   it("virar sacerdote cria o perfil, senão o papel não serviria de nada", async () => {
@@ -131,11 +147,32 @@ describe("troca de papel de um membro", () => {
       });
     });
 
+    // A mensagem nomeia o que trava, para quem lê saber o que resolver.
     await expect(changeMemberRole(parishId, outroParocoId, "FIEL", parocoId)).rejects.toThrow(
-      /atendimentos|celebrações|sacramentos/i,
+      /1 atendimento\(s\) marcado\(s\)/i,
     );
 
     // Continua sacerdote, e o atendimento segue de pé.
+    expect(await papelDe(outroParocoId)).toBe("SACERDOTE");
+  });
+
+  it("NÃO deixa rebaixar sacerdote que já publicou a Palavra do Padre", async () => {
+    // posts.priest_profile_id também é onDelete Cascade: a guarda contava
+    // atendimentos, celebrações e sacramentos, mas esquecia os posts — e
+    // mudar o papel apagava a palavra publicada, sem avisar.
+    await withTenantContext(parishId, async (tx) => {
+      const perfil = await tx.priestProfile.findFirstOrThrow({
+        where: { parishId, userId: outroParocoId },
+      });
+      await tx.appointment.deleteMany({ where: { priestProfileId: perfil.id } });
+      await tx.post.create({
+        data: { parishId, priestProfileId: perfil.id, mediaType: "texto", contentText: "Paz e bem." },
+      });
+    });
+
+    await expect(changeMemberRole(parishId, outroParocoId, "FIEL", parocoId)).rejects.toThrow(
+      /Palavra do Padre/i,
+    );
     expect(await papelDe(outroParocoId)).toBe("SACERDOTE");
   });
 

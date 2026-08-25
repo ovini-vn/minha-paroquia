@@ -3,6 +3,7 @@ import {
   withPlatformContext,
   withOwnMembershipLookup,
 } from "@/server/db/tenant-context";
+import { ROLES_QUE_ADMINISTRAM, type RoleCode } from "@/server/auth/rbac";
 import { ValidationError } from "@/server/shared/errors";
 import { slugify } from "@/server/shared/slug";
 import { ensurePriestProfile, isPriestRole } from "@/server/modules/priests/ensure-priest-profile";
@@ -157,41 +158,72 @@ export async function changeMemberRole(
 
     const membership = await tx.parishMembership.findFirst({
       where: { parishId, userId: targetUserId, status: "active" },
-      include: { role: true },
+      include: { role: true, user: { select: { isPlatformAdmin: true } } },
     });
     if (!membership) throw new ValidationError("Esta pessoa não pertence à paróquia.");
     if (membership.roleId === role.id) return membership;
 
     // A paróquia não pode ficar sem ninguém que administre.
-    if (membership.role.code === "PAROCO" && roleCode !== "PAROCO") {
-      const parocos = await tx.parishMembership.count({
-        where: { parishId, status: "active", role: { code: "PAROCO" } },
+    //
+    // A conta não é "sem Pároco": pároco é o cargo eclesial, e a paróquia
+    // pode ser administrada por quem não é padre. O que não pode faltar é
+    // alguém capaz de mexer nos papéis dos outros — seja pelo papel que
+    // tem, seja por administrar a plataforma inteira.
+    const administraHoje =
+      ROLES_QUE_ADMINISTRAM.includes(membership.role.code as RoleCode) ||
+      membership.user.isPlatformAdmin;
+    const continuaAdministrando =
+      ROLES_QUE_ADMINISTRAM.includes(roleCode as RoleCode) || membership.user.isPlatformAdmin;
+
+    if (administraHoje && !continuaAdministrando) {
+      const outros = await tx.parishMembership.count({
+        where: {
+          parishId,
+          status: "active",
+          userId: { not: targetUserId },
+          OR: [
+            { role: { code: { in: ROLES_QUE_ADMINISTRAM } } },
+            { user: { isPlatformAdmin: true } },
+          ],
+        },
       });
-      if (parocos <= 1) {
+      if (outros === 0) {
         throw new ValidationError(
-          "Esta é a única conta com papel de Pároco. Defina outro Pároco antes de mudar este.",
+          "Esta é a única conta que administra a paróquia. Defina outro Pároco ou Administrador da paróquia antes de mudar este.",
         );
       }
     }
 
     // Deixar de ser sacerdote: o perfil não pode simplesmente sumir.
-    // appointments.priest_profile_id é onDelete Cascade, então apagar o
-    // perfil levaria junto os atendimentos marcados; celebrações e
-    // sacramentos perderiam o vínculo. Só removo o perfil vazio.
+    //
+    // appointments e posts têm priest_profile_id em onDelete Cascade, então
+    // apagar o perfil levaria junto os atendimentos marcados E a Palavra do
+    // Padre já publicada; celebrações e sacramentos perderiam o vínculo.
+    // Só removo o perfil que não deixou rastro nenhum.
     if (isPriestRole(membership.role.code) && !isPriestRole(roleCode)) {
       const perfil = await tx.priestProfile.findUnique({
         where: { userId_parishId: { userId: targetUserId, parishId } },
         include: {
-          _count: { select: { appointments: true, celebrations: true, sacraments: true } },
+          _count: {
+            select: { appointments: true, celebrations: true, sacraments: true, posts: true },
+          },
         },
       });
 
       if (perfil) {
-        const vinculos =
-          perfil._count.appointments + perfil._count.celebrations + perfil._count.sacraments;
-        if (vinculos > 0) {
+        // Nomear o que trava vale mais que uma frase genérica: quem lê
+        // precisa saber o que ir resolver.
+        const rastros = [
+          [perfil._count.appointments, "atendimento(s) marcado(s)"],
+          [perfil._count.celebrations, "celebração(ões)"],
+          [perfil._count.sacraments, "sacramento(s)"],
+          [perfil._count.posts, "publicação(ões) da Palavra do Padre"],
+        ] as const;
+        const impedimentos = rastros.filter(([n]) => n > 0).map(([n, o]) => `${n} ${o}`);
+
+        if (impedimentos.length > 0) {
           throw new ValidationError(
-            "Este sacerdote tem atendimentos, celebrações ou sacramentos registrados. Reatribua ou conclua esses registros antes de mudar o papel.",
+            `Este sacerdote tem ${impedimentos.join(", ")}. Esses registros seriam perdidos ao mudar o papel — reatribua, conclua ou remova antes.`,
           );
         }
         await tx.priestProfile.delete({ where: { id: perfil.id } });

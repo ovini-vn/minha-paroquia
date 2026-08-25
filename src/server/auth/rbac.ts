@@ -14,6 +14,7 @@ export const ROLE_CODES = [
   "CATEQUISTA",
   "SACERDOTE",
   "PAROCO",
+  "ADMINISTRADOR_PAROQUIAL",
   "SECRETARIA",
   "COORDENADOR_PASTORAL",
   "COORDENADOR_LITURGIA",
@@ -28,6 +29,7 @@ export const ROLE_NAMES: Record<RoleCode, string> = {
   CATEQUISTA: "Catequista",
   SACERDOTE: "Sacerdote",
   PAROCO: "Pároco",
+  ADMINISTRADOR_PAROQUIAL: "Administrador da paróquia",
   SECRETARIA: "Secretaria",
   COORDENADOR_PASTORAL: "Coordenador de Pastoral",
   COORDENADOR_LITURGIA: "Coordenador de Liturgia",
@@ -96,12 +98,41 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE,
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
   ],
+  /**
+   * Administra a paróquia sem ser clero.
+   *
+   * Pároco é o cargo eclesial; administrador é quem opera a ferramenta. Na
+   * maioria das paróquias são a mesma pessoa, mas não precisam ser — e
+   * quando não são, o administrador não pode aparecer como sacerdote, entrar
+   * na lista de padres nem receber pedido de atendimento.
+   *
+   * Por isso este papel NÃO está em PRIEST_TITLES (ver ensure-priest-profile):
+   * tem os poderes do Pároco e nenhuma das aparições dele.
+   */
+  ADMINISTRADOR_PAROQUIAL: [
+    PERMISSIONS.INVITATIONS_CREATE,
+    PERMISSIONS.INVITATIONS_VIEW,
+    PERMISSIONS.MEMBERS_VIEW,
+    PERMISSIONS.DASHBOARD_PARISH_VIEW,
+    PERMISSIONS.AGENDA_MANAGE,
+    PERMISSIONS.POSTS_CREATE,
+    PERMISSIONS.OPPORTUNITIES_MANAGE,
+    PERMISSIONS.CATEQUESE_MANAGE,
+    PERMISSIONS.LITURGIA_MANAGE,
+    PERMISSIONS.DIZIMO_MANAGE,
+    PERMISSIONS.SACRAMENTS_VALIDATE,
+    PERMISSIONS.AVISOS_MANAGE,
+    PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
+  ],
   SECRETARIA: [
     PERMISSIONS.INVITATIONS_CREATE,
     PERMISSIONS.INVITATIONS_VIEW,
     PERMISSIONS.MEMBERS_VIEW,
     PERMISSIONS.DASHBOARD_PARISH_VIEW,
     PERMISSIONS.AGENDA_MANAGE,
+    // Publicar em nome do pároco: em paróquia onde o padre não usa o
+    // aplicativo, é a secretaria que leva a palavra dele à comunidade.
+    PERMISSIONS.POSTS_CREATE,
     PERMISSIONS.OPPORTUNITIES_MANAGE,
     PERMISSIONS.CATEQUESE_MANAGE,
     PERMISSIONS.LITURGIA_MANAGE,
@@ -151,5 +182,20 @@ export function computeEffectivePermissions(
  * src/server/modules/opportunities/service.ts.
  */
 export function isFullAdmin(roleCode: RoleCode): boolean {
-  return roleCode === "PAROCO" || roleCode === "SECRETARIA";
+  return (
+    roleCode === "PAROCO" ||
+    roleCode === "ADMINISTRADOR_PAROQUIAL" ||
+    roleCode === "SECRETARIA"
+  );
 }
+
+/**
+ * Papéis que podem administrar a paróquia inteira — inclusive mexer nos
+ * papéis dos outros. Deriva do catálogo em vez de repetir uma lista: um
+ * papel novo com essa permissão entra aqui sozinho.
+ *
+ * Serve à guarda que impede uma paróquia de ficar sem ninguém no comando.
+ */
+export const ROLES_QUE_ADMINISTRAM: RoleCode[] = ROLE_CODES.filter((code) =>
+  ROLE_PERMISSIONS[code].includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE),
+);

@@ -113,3 +113,22 @@ describe("quem assina a Palavra do Padre", () => {
     expect(assinaturaDoPost(autor, paroco).titulo).toBe("Administrador paroquial");
   });
 });
+
+describe("post publicado por quem não é clero", () => {
+  const comParoco = resolverParoco(
+    { parocoNome: "Pe. Sandro", parocoTitulo: null, parocoHistoria: null, parocoFotoUrl: null },
+    null,
+  );
+
+  it("assina com o pároco da paróquia", () => {
+    // A secretaria publica; a palavra é do pároco.
+    expect(assinaturaDoPost(null, comParoco)).toEqual({ nome: "Pe. Sandro", titulo: "Pároco" });
+  });
+
+  it("sem pároco cadastrado, assina como a paróquia — nunca com nome inventado", () => {
+    expect(assinaturaDoPost(null, null)).toEqual({
+      nome: "Paróquia",
+      titulo: "Palavra do Padre",
+    });
+  });
+});

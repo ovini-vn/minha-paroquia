@@ -17,8 +17,10 @@ export async function createPostAction(_prev: ActionState, formData: FormData): 
   if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
   requirePermission(session, PERMISSIONS.POSTS_CREATE);
 
+  // Quem é clero assina o próprio post. Quem não é — secretaria,
+  // administrador — publica em nome do pároco cadastrado na paróquia, e o
+  // post fica sem perfil de sacerdote. A permissão acima já disse quem pode.
   const priest = await getOwnPriestProfile(session.membership.parishId, session.userId);
-  if (!priest) return { error: "Você precisa ter um perfil de sacerdote nesta paróquia para publicar." };
 
   try {
     const input = createPostInputSchema.parse({
@@ -27,7 +29,7 @@ export async function createPostAction(_prev: ActionState, formData: FormData): 
       mediaUrl: formData.get("mediaUrl") || undefined,
     });
 
-    await createPost({ ...input, parishId: session.membership.parishId, priestProfileId: priest.id });
+    await createPost({ ...input, parishId: session.membership.parishId, priestProfileId: priest?.id ?? null });
   } catch (error) {
     if (error instanceof ZodError) return { error: error.issues[0]?.message ?? "Dados inválidos." };
     if (error instanceof AppError) return { error: error.message };

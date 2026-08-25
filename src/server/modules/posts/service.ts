@@ -2,7 +2,7 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { notifyManyUsers } from "@/server/modules/notifications/service";
 import type { CreatePostInput } from "./schema";
 
-export function createPost(input: CreatePostInput & { parishId: string; priestProfileId: string }) {
+export function createPost(input: CreatePostInput & { parishId: string; priestProfileId: string | null }) {
   return withTenantContext(input.parishId, async (tx) => {
     const post = await tx.post.create({
       data: {

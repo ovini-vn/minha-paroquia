@@ -68,9 +68,15 @@ export function resolverParoco(
  * assinados por eles.
  */
 export function assinaturaDoPost(
-  autor: { id: string; title: string; user: { fullName: string } },
+  autor: { id: string; title: string; user: { fullName: string } } | null,
   paroco: Paroco | null,
 ): { nome: string; titulo: string } {
+  // Sem autor: publicado por quem não é clero, em nome do pároco.
+  if (!autor) {
+    return paroco
+      ? { nome: paroco.nome, titulo: paroco.titulo }
+      : { nome: "Paróquia", titulo: "Palavra do Padre" };
+  }
   if (paroco && paroco.contaId === autor.id) {
     return { nome: paroco.nome, titulo: paroco.titulo };
   }

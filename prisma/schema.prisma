@@ -684,7 +684,10 @@ enum PostMediaType {
 model Post {
   id              String        @id @default(uuid())
   parishId        String        @map("parish_id")
-  priestProfileId String        @map("priest_profile_id")
+  /// NULO quando quem publicou não é clero — a secretaria ou o administrador
+  /// levando a palavra do pároco à comunidade. A assinatura, nesse caso, vem
+  /// do pároco cadastrado na paróquia (ver parishes.paroco_nome).
+  priestProfileId String?       @map("priest_profile_id")
   mediaType       PostMediaType @default(texto)
   contentText     String?       @map("content_text")
   mediaUrl        String?       @map("media_url")
@@ -692,7 +695,7 @@ model Post {
   createdAt       DateTime      @default(now()) @map("created_at")
 
   parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile? @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
 
   @@index([parishId, publishedAt])
   @@map("posts")
@@ -720,7 +723,7 @@ model PriestAvailability {
   createdAt       DateTime         @default(now()) @map("created_at")
 
   parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile  @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
 
   @@index([parishId, priestProfileId])
   @@map("priest_availability")
@@ -757,7 +760,7 @@ model Appointment {
   updatedAt       DateTime            @updatedAt @map("updated_at")
 
   parish        Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  priestProfile PriestProfile @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
+  priestProfile PriestProfile  @relation(fields: [priestProfileId], references: [id], onDelete: Cascade)
   fiel          User          @relation(fields: [fielUserId], references: [id], onDelete: Cascade)
 
   @@index([parishId, priestProfileId, scheduledAt])

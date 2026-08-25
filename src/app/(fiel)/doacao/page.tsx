@@ -87,21 +87,27 @@ export default async function DoacaoPage() {
           <Eyebrow tone="accent" className="mb-3">
             Sua doação ajuda
           </Eyebrow>
-          {/* Três colunas a partir do tablet. No celular fica uma só: cada
-              card carrega uma frase inteira, e em um terço de uma tela de
-              375px ela viraria duas palavras por linha. */}
-          <div className="grid gap-2.5 sm:grid-cols-3">
+          {/* Três colunas em qualquer tela. No celular cada card tem cerca
+              de 105px, então o conteúdo se empilha na vertical — ícone em
+              cima, texto embaixo — em vez de dividir essa largura entre
+              ícone e frase, o que sobraria pouco para os dois. */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
             {finalidades.map((f) => {
               const Icone = iconeDeDoacao(f.icon);
               return (
-                <Card key={f.id} className="flex gap-3">
-                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                    <Icone className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                <Card
+                  key={f.id}
+                  className="flex flex-col items-center gap-2 px-2.5 py-4 text-center sm:px-4"
+                >
+                  <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-full bg-primary-tint text-primary">
+                    <Icone className="h-[21px] w-[21px]" strokeWidth={1.5} aria-hidden />
                   </span>
-                  <div className="min-w-0">
-                    <p className="text-[14.5px] font-medium text-foreground">{f.title}</p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-muted">{f.description}</p>
-                  </div>
+                  <p className="text-[12.5px] font-semibold leading-tight text-foreground sm:text-[14.5px]">
+                    {f.title}
+                  </p>
+                  <p className="text-[11px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
+                    {f.description}
+                  </p>
                 </Card>
               );
             })}

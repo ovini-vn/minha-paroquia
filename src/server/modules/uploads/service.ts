@@ -1,6 +1,7 @@
 import "server-only";
 import { put } from "@vercel/blob";
 import { ValidationError } from "@/server/shared/errors";
+import { TAMANHO_MAXIMO_IMAGEM, TIPOS_DE_IMAGEM_ACEITOS } from "@/lib/imagem";
 
 /**
  * Upload de imagem — o cartaz do evento, e o que mais vier depois.
@@ -11,14 +12,14 @@ import { ValidationError } from "@/server/shared/errors";
  */
 
 /** 5 MB. Foto de celular cabe; vídeo e PDF grande, não. */
-const TAMANHO_MAXIMO = 5 * 1024 * 1024;
+const TAMANHO_MAXIMO = TAMANHO_MAXIMO_IMAGEM;
 
 /**
  * Só formatos que TODO navegador desenha. Nada de SVG: ele é um documento
  * XML que pode conter script, e serví-lo do nosso domínio o faria rodar
  * como se fosse nosso.
  */
-const TIPOS_ACEITOS = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+const TIPOS_ACEITOS = TIPOS_DE_IMAGEM_ACEITOS;
 
 /**
  * Como autenticar no store de cartazes.

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { salvarParocoAction, type ParocoState } from "@/server/actions/paroco-actions";
 import { Button } from "@/components/ui/Button";
+import { CampoDeImagem } from "@/components/ui/CampoDeImagem";
 
 const initialState: ParocoState = {};
 
@@ -48,47 +49,24 @@ export function ParocoForm({
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="paroco-foto" className="text-sm font-medium text-muted">
-          Foto do pároco
-        </label>
-
-        {photoUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={photoUrl}
-            alt="Foto cadastrada do pároco"
-            className="h-28 w-28 rounded-full border border-border object-cover"
-          />
-        )}
-
-        {podeEnviarArquivo ? (
-          <input
-            id="paroco-foto"
-            name="fotoFile"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-            className={`${campo} file:mr-3 file:rounded-md file:border-0 file:bg-primary-tint file:px-3 file:py-1.5 file:text-sm file:text-primary`}
-          />
-        ) : (
-          <p className="text-[12px] text-muted">
-            O envio de arquivo não está disponível. Cole o link da foto abaixo.
-            {motivoIndisponivel ? ` (${motivoIndisponivel})` : ""}
-          </p>
-        )}
-
-        <input
-          name="photoUrl"
-          type="url"
-          defaultValue={photoUrl}
-          placeholder="https://..."
-          aria-label="Link da foto do pároco"
-          className={campo}
+      {photoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photoUrl}
+          alt="Foto cadastrada do pároco"
+          className="h-28 w-28 rounded-full border border-border object-cover"
         />
-        <p className="text-[12px] text-muted">
-          Até 5 MB. Enviar um arquivo novo substitui a foto; apagar o link acima remove a foto.
-        </p>
-      </div>
+      )}
+
+      <CampoDeImagem
+        nomeDoArquivo="fotoFile"
+        nomeDoLink="photoUrl"
+        rotulo="Foto do pároco"
+        linkAtual={photoUrl}
+        podeEnviarArquivo={podeEnviarArquivo}
+        motivoIndisponivel={motivoIndisponivel}
+        ajuda="Enviar um arquivo novo substitui a foto; apagar o link acima remove a foto."
+      />
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="paroco-bio" className="text-sm font-medium text-muted">

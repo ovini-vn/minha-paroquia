@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createEventAction, type ActionState } from "@/server/actions/agenda-actions";
 import { Button } from "@/components/ui/Button";
+import { CampoDeImagem } from "@/components/ui/CampoDeImagem";
 
 const initialState: ActionState = {};
 
@@ -66,37 +67,17 @@ export function CreateEventForm({
         />
       </div>
 
-      <div className="flex w-full flex-col gap-1.5">
-        <label htmlFor="event-imageFile" className="text-sm font-medium text-muted">
-          Cartaz do evento (opcional)
-        </label>
-        {podeEnviarArquivo ? (
-          <>
-            {/* capture não é usado: no celular, deixar escolher da galeria é
-                o caso comum — o cartaz costuma vir pronto do WhatsApp. */}
-            <input
-              id="event-imageFile"
-              name="imageFile"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-              className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary-tint file:px-3 file:py-1.5 file:text-sm file:text-primary"
-            />
-            <p className="text-[12px] text-muted">Até 5 MB. Ou cole um link abaixo.</p>
-          </>
-        ) : (
-          <p className="text-[12px] text-muted">
-            O envio de arquivo não está disponível. Cole o link da imagem abaixo.
-            {motivoIndisponivel ? ` (${motivoIndisponivel})` : ""}
-          </p>
-        )}
-        <input
-          name="imageUrl"
-          type="url"
-          placeholder="https://..."
-          aria-label="Link do cartaz"
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+      <div className="w-full">
+        <CampoDeImagem
+          nomeDoArquivo="imageFile"
+          nomeDoLink="imageUrl"
+          rotulo="Cartaz do evento (opcional)"
+          podeEnviarArquivo={podeEnviarArquivo}
+          motivoIndisponivel={motivoIndisponivel}
+          ajuda="Ou cole um link acima."
         />
       </div>
+
       <Button type="submit" disabled={pending}>
         {pending ? "Criando..." : "Novo evento"}
       </Button>

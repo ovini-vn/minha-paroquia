@@ -39,6 +39,14 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
         <span className="h-px flex-1 bg-border" />
       </div>
       <OAuthButtons inviteCode={inviteCode} />
+
+      <p className="text-center text-[12px] leading-relaxed text-muted">
+        Ao criar sua conta você concorda com a{" "}
+        <Link href="/privacidade" className="text-primary underline underline-offset-2">
+          Política de Privacidade
+        </Link>
+        .
+      </p>
     </form>
   );
 }

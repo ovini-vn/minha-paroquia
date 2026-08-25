@@ -38,6 +38,12 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
         <span className="rule-gold flex-1" />
       </div>
       <OAuthButtons inviteCode={inviteCode} />
+
+      <p className="text-center text-[12px] text-muted">
+        <Link href="/privacidade" className="underline underline-offset-2">
+          Política de Privacidade
+        </Link>
+      </p>
     </form>
   );
 }

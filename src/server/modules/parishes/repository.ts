@@ -41,3 +41,15 @@ export function updateParishHistoria(
 ) {
   return prisma.parish.update({ where: { id }, data });
 }
+
+export function updateParishParoco(
+  id: string,
+  data: {
+    parocoNome: string | null;
+    parocoTitulo: string | null;
+    parocoHistoria: string | null;
+    parocoFotoUrl: string | null;
+  },
+) {
+  return prisma.parish.update({ where: { id }, data });
+}

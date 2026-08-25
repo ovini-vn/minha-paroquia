@@ -9,28 +9,28 @@ type Post = {
   contentText: string | null;
   mediaUrl: string | null;
   publishedAt: Date;
-  priestProfile: { title: string; user: { fullName: string } };
 };
+
+/** Quem assina — nem sempre é o dono da conta que publicou. */
+export type Assinatura = { nome: string; titulo: string };
 
 const MEDIA: Record<string, { label: string; icon: typeof Headphones }> = {
   audio: { label: "Ouvir áudio", icon: Headphones },
   video: { label: "Assistir vídeo", icon: Video },
 };
 
-export function PostCard({ post }: { post: Post }) {
+export function PostCard({ post, assinatura }: { post: Post; assinatura: Assinatura }) {
   const media = MEDIA[post.mediaType];
 
   return (
     // A hairline dourada no topo marca o conteúdo editorial do padre.
     <Card className="relative overflow-hidden before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
       <div className="flex items-center gap-3">
-        <Avatar name={post.priestProfile.user.fullName} size="sm" />
+        <Avatar name={assinatura.nome} size="sm" />
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-foreground">
-            {post.priestProfile.user.fullName}
-          </p>
+          <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
           <p className="text-xs text-muted">
-            {post.priestProfile.title} · {formatDateTime(post.publishedAt)}
+            {assinatura.titulo} · {formatDateTime(post.publishedAt)}
           </p>
         </div>
       </div>

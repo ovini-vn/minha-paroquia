@@ -12,6 +12,7 @@ import {
   findParishById,
   updateParishProfile,
   updateParishHistoria as atualizarHistoria,
+  updateParishParoco as atualizarParoco,
 } from "./repository";
 import type { UpdateParishProfileInput } from "./schema";
 
@@ -418,4 +419,17 @@ export function updateParishHistoria(
   dados: { historia: string | null; historiaFotoUrl: string | null },
 ) {
   return atualizarHistoria(parishId, dados);
+}
+
+/** Apresentação do pároco na tela "Nosso Pároco". */
+export function updateParishParoco(
+  parishId: string,
+  dados: {
+    parocoNome: string | null;
+    parocoTitulo: string | null;
+    parocoHistoria: string | null;
+    parocoFotoUrl: string | null;
+  },
+) {
+  return atualizarParoco(parishId, dados);
 }

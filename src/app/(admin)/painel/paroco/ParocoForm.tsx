@@ -11,16 +11,19 @@ const campo = "rounded-xl border border-border bg-surface px-4 py-3 text-sm text
 
 export function ParocoForm({
   nome,
-  title,
-  bio,
-  photoUrl,
+  titulo,
+  historia,
+  fotoUrl,
+  nomeDaConta,
   podeEnviarArquivo,
   motivoIndisponivel,
 }: {
   nome: string;
-  title: string;
-  bio: string;
-  photoUrl: string;
+  titulo: string;
+  historia: string;
+  fotoUrl: string;
+  /** Nome de quem tem o papel de Pároco, se alguém tiver conta. */
+  nomeDaConta: string | null;
   podeEnviarArquivo: boolean;
   motivoIndisponivel: string;
 }) {
@@ -28,31 +31,52 @@ export function ParocoForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      {/* O nome não se edita aqui: ele vem do cadastro da pessoa, e quem é o
-          pároco vem do papel em Membros e papéis. */}
-      <p className="text-sm text-muted">
-        Pároco atual: <strong className="font-semibold text-foreground">{nome}</strong>
-      </p>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="paroco-nome" className="text-sm font-medium text-muted">
+          Nome do pároco
+        </label>
+        <input
+          id="paroco-nome"
+          name="parocoNome"
+          maxLength={120}
+          defaultValue={nome}
+          placeholder={nomeDaConta ?? "Pe. Nome do Pároco"}
+          className={campo}
+        />
+        <p className="text-[12px] leading-relaxed text-muted">
+          {nomeDaConta ? (
+            <>
+              Preencha se o pároco não usa o aplicativo. Em branco, a tela mostra{" "}
+              <strong className="font-semibold text-foreground">{nomeDaConta}</strong>, que é quem
+              tem o papel de Pároco — e o fiel consegue pedir atendimento pela agenda.
+            </>
+          ) : (
+            <>
+              Ninguém tem o papel de Pároco nesta paróquia ainda. Enquanto isso, o nome digitado
+              aqui é o que a comunidade vê.
+            </>
+          )}
+        </p>
+      </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="paroco-title" className="text-sm font-medium text-muted">
+        <label htmlFor="paroco-titulo" className="text-sm font-medium text-muted">
           Título
         </label>
         <input
-          id="paroco-title"
-          name="title"
-          required
+          id="paroco-titulo"
+          name="parocoTitulo"
           maxLength={80}
-          defaultValue={title}
+          defaultValue={titulo}
           placeholder="Pároco"
           className={campo}
         />
       </div>
 
-      {photoUrl && (
+      {fotoUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={photoUrl}
+          src={fotoUrl}
           alt="Foto cadastrada do pároco"
           className="h-28 w-28 rounded-full border border-border object-cover"
         />
@@ -60,23 +84,23 @@ export function ParocoForm({
 
       <CampoDeImagem
         nomeDoArquivo="fotoFile"
-        nomeDoLink="photoUrl"
+        nomeDoLink="parocoFotoUrl"
         rotulo="Foto do pároco"
-        linkAtual={photoUrl}
+        linkAtual={fotoUrl}
         podeEnviarArquivo={podeEnviarArquivo}
         motivoIndisponivel={motivoIndisponivel}
         ajuda="Enviar um arquivo novo substitui a foto; apagar o link acima remove a foto."
       />
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="paroco-bio" className="text-sm font-medium text-muted">
+        <label htmlFor="paroco-historia" className="text-sm font-medium text-muted">
           Uma breve história do pároco
         </label>
         <textarea
-          id="paroco-bio"
-          name="bio"
+          id="paroco-historia"
+          name="parocoHistoria"
           rows={14}
-          defaultValue={bio}
+          defaultValue={historia}
           placeholder="Onde nasceu, quando foi ordenado, por onde passou, o que o trouxe até aqui…"
           className={`${campo} font-mono text-[13px] leading-relaxed`}
         />

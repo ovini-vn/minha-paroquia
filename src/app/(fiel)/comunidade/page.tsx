@@ -3,6 +3,7 @@ import { BookOpen, CalendarDays, Church, Megaphone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listPriests, getParoco } from "@/server/modules/priests/service";
+import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { listRecentPosts } from "@/server/modules/posts/service";
@@ -38,7 +39,7 @@ export default async function ComunidadePage() {
 
   const parishId = session.membership.parishId;
   const canPublish = session.permissions.includes(PERMISSIONS.POSTS_CREATE);
-  const [parish, paroco, priests, celebrations, events, posts, avisos] = await Promise.all([
+  const [parish, parocoRegistrado, priests, celebrations, events, posts, avisos] = await Promise.all([
     getParish(parishId),
     getParoco(parishId),
     listPriests(parishId),
@@ -47,6 +48,8 @@ export default async function ComunidadePage() {
     listRecentPosts(parishId, 5),
     listPublishedAvisos(parishId, 5),
   ]);
+
+  const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
 
   const agendaItems: Encontro[] = [
     ...celebrations.map((c) => ({
@@ -140,8 +143,8 @@ export default async function ComunidadePage() {
 
       <CartoesDeApresentacao
         fotoIgreja={parish?.historiaFotoUrl ?? null}
-        fotoParoco={paroco?.photoUrl ?? paroco?.user.photoUrl ?? null}
-        nomeParoco={paroco?.user.fullName ?? null}
+        fotoParoco={paroco?.fotoUrl ?? null}
+        nomeParoco={paroco?.nome ?? null}
       />
 
       {acoes.length > 0 && (
@@ -190,7 +193,11 @@ export default async function ComunidadePage() {
         ) : (
           <div className="flex flex-col gap-2.5">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard
+                key={post.id}
+                post={post}
+                assinatura={assinaturaDoPost(post.priestProfile, paroco)}
+              />
             ))}
           </div>
         )}

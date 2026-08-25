@@ -3,6 +3,9 @@ import { BookOpen, CalendarDays, Church, Footprints, HeartHandshake, Megaphone, 
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
+import { getParish } from "@/server/modules/parishes/service";
+import { getParoco } from "@/server/modules/priests/service";
+import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { Card } from "@/components/ui/Card";
@@ -53,12 +56,16 @@ export default async function HomePage() {
     );
   }
 
-  const [nextCelebration, latestPost, latestAvisos] = await Promise.all([
+  const [parish, parocoRegistrado, nextCelebration, latestPost, latestAvisos] = await Promise.all([
+    getParish(session.membership.parishId),
+    getParoco(session.membership.parishId),
     getNextCelebration(session.membership.parishId),
     getLatestPost(session.membership.parishId),
     listPublishedAvisos(session.membership.parishId, 1),
   ]);
   const latestAviso = latestAvisos[0] ?? null;
+  const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
+  const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
   const season = getLiturgicalSeason(new Date());
 
   return (
@@ -148,7 +155,7 @@ export default async function HomePage() {
       <div className="lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8">
       <div className="flex flex-col">
       {/* Palavra do Padre — tratamento editorial, não "mais um card". */}
-      {latestPost && (
+      {latestPost && assinatura && (
         <section className="pt-[30px]">
           <SectionTitle
             eyebrow="Palavra do Padre"
@@ -158,11 +165,9 @@ export default async function HomePage() {
           />
           <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
             <div className="flex items-center gap-3">
-              <Avatar name={latestPost.priestProfile.user.fullName} size="sm" />
+              <Avatar name={assinatura.nome} size="sm" />
               <div>
-                <p className="text-[13px] font-medium text-foreground">
-                  {latestPost.priestProfile.user.fullName}
-                </p>
+                <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
                 <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
               </div>
             </div>

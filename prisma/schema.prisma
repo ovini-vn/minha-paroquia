@@ -250,6 +250,14 @@ model Parish {
   /// Memorial histórico da paróquia, em texto longo, e a foto atual do templo.
   historia        String? @db.Text
   historiaFotoUrl String? @map("historia_foto_url")
+
+  /// Apresentação do pároco. Fica na paróquia, e não no perfil do
+  /// sacerdote, porque o pároco nem sempre tem conta no aplicativo — e a
+  /// comunidade precisa saber quem é ele de qualquer jeito.
+  parocoNome     String? @map("paroco_nome")
+  parocoTitulo   String? @map("paroco_titulo")
+  parocoHistoria String? @map("paroco_historia") @db.Text
+  parocoFotoUrl  String? @map("paroco_foto_url")
   description  String?
   logoUrl      String?  @map("logo_url")
   createdAt    DateTime @default(now()) @map("created_at")

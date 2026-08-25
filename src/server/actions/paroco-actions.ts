@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { getParoco, updatePriestProfile } from "@/server/modules/priests/service";
+import { updateParishParoco } from "@/server/modules/parishes/service";
 import { uploadImagem } from "@/server/modules/uploads/service";
 import { AppError } from "@/server/shared/errors";
 
@@ -21,35 +21,30 @@ export async function salvarParocoAction(
 
   const parishId = session.membership.parishId;
 
-  // Quem é o pároco vem do papel, nunca do formulário: assim um id enviado
-  // de fora não consegue reescrever o perfil de outro sacerdote.
-  const paroco = await getParoco(parishId);
-  if (!paroco) {
-    return {
-      error:
-        "Nenhum pároco definido nesta paróquia. Defina o papel de Pároco em Membros e papéis primeiro.",
-    };
-  }
+  const parocoNome = String(formData.get("parocoNome") ?? "").trim();
+  if (parocoNome.length > 120) return { error: "O nome ficou longo demais." };
 
-  const title = String(formData.get("title") ?? "").trim();
-  if (!title) return { error: "Informe o título — por exemplo, Pároco." };
-  if (title.length > 80) return { error: "O título ficou longo demais." };
+  const parocoTitulo = String(formData.get("parocoTitulo") ?? "").trim();
+  if (parocoTitulo.length > 80) return { error: "O título ficou longo demais." };
 
-  const bio = String(formData.get("bio") ?? "").trim();
-  if (bio.length > LIMITE) return { error: "O texto passou do tamanho máximo." };
+  const parocoHistoria = String(formData.get("parocoHistoria") ?? "").trim();
+  if (parocoHistoria.length > LIMITE) return { error: "O texto passou do tamanho máximo." };
 
   try {
+    // Arquivo enviado ganha do link digitado: quem acabou de escolher uma
+    // foto quer aquela foto.
     const arquivo = formData.get("fotoFile");
     const enviada =
       arquivo instanceof File && arquivo.size > 0
-        ? await uploadImagem(parishId, arquivo, "sacerdotes")
+        ? await uploadImagem(parishId, arquivo, "paroco")
         : null;
-    const photoUrl = enviada ?? String(formData.get("photoUrl") ?? "").trim();
+    const parocoFotoUrl = enviada ?? String(formData.get("parocoFotoUrl") ?? "").trim();
 
-    await updatePriestProfile(parishId, paroco.id, {
-      title,
-      bio: bio || null,
-      photoUrl: photoUrl || null,
+    await updateParishParoco(parishId, {
+      parocoNome: parocoNome || null,
+      parocoTitulo: parocoTitulo || null,
+      parocoHistoria: parocoHistoria || null,
+      parocoFotoUrl: parocoFotoUrl || null,
     });
   } catch (error) {
     if (error instanceof AppError) return { error: error.message };
@@ -59,5 +54,5 @@ export async function salvarParocoAction(
   revalidatePath("/paroco");
   revalidatePath("/painel/paroco");
   revalidatePath("/comunidade");
-  return { ok: "Perfil do pároco salvo." };
+  return { ok: "Apresentação do pároco salva." };
 }

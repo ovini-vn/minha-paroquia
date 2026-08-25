@@ -49,16 +49,3 @@ export async function getParoco(parishId: string) {
     });
   });
 }
-
-/** Apresentação do sacerdote: título, história e retrato. */
-export function updatePriestProfile(
-  parishId: string,
-  priestProfileId: string,
-  dados: { title: string; bio: string | null; photoUrl: string | null },
-) {
-  return withTenantContext(parishId, (tx) =>
-    // O parishId no where fecha a porta para editar o perfil de outra
-    // paróquia mandando um id de fora no formulário.
-    tx.priestProfile.updateMany({ where: { id: priestProfileId, parishId }, data: dados }),
-  );
-}

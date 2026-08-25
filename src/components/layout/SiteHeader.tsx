@@ -6,6 +6,7 @@ import { Bell, Sparkles, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Symbol } from "@/components/brand/Symbol";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
+import { separarNomeDaParoquia } from "@/lib/nome-da-paroquia";
 
 /**
  * Cabeçalho único, responsivo — não são dois componentes com o mesmo
@@ -34,6 +35,7 @@ export function SiteHeader({
   managementHref?: string | null;
 }) {
   const pathname = usePathname();
+  const { tipo: tipoDaParoquia, nome: nomeDaParoquia } = separarNomeDaParoquia(parishName);
 
   return (
     <header className="sticky top-0 z-40 bg-wash text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gold after:to-transparent after:opacity-80">
@@ -57,10 +59,20 @@ export function SiteHeader({
           <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
         </Link>
 
+        {/* O tipo vai pequeno em cima e o nome inteiro embaixo: cortar
+            "Paróquia Nossa Senhora de Fáti…" esconde justamente a parte que
+            identifica a comunidade. */}
         <div className="min-w-0 flex-1 lg:hidden">
-          <p className="truncate font-serif text-[19px] font-semibold leading-tight">{parishName}</p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-eyebrow text-gold-soft">
-            <span className="h-[5px] w-[5px] rounded-full bg-gold" aria-hidden />
+          {tipoDaParoquia && (
+            <p className="text-[9.5px] font-semibold uppercase leading-none tracking-eyebrow text-white/65">
+              {tipoDaParoquia}
+            </p>
+          )}
+          <p className="mt-0.5 line-clamp-2 font-serif text-[18px] font-semibold leading-[1.15]">
+            {nomeDaParoquia}
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-eyebrow text-gold-soft">
+            <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-gold" aria-hidden />
             {seasonName}
           </p>
         </div>

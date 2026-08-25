@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google";
 import { getSessionContext } from "@/server/auth/session";
 import { RegistrarServiceWorker } from "@/components/layout/RegistrarServiceWorker";
 import "./globals.css";
+import { getLiturgicalSeason } from "@/lib/liturgical-season";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const cormorant = Cormorant_Garamond({
@@ -35,10 +36,41 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport: Viewport = {
-  // Pinta a barra do navegador com o topo do gradiente do cabeçalho.
-  themeColor: "#5b2890",
+/**
+ * Topo do gradiente de cada tempo litúrgico — os mesmos valores de --wash
+ * em globals.css. Precisam estar aqui em JS porque a barra de status do
+ * celular é pintada por uma meta tag, e meta tag não lê custom property.
+ */
+const COR_DO_TEMPO: Record<string, string> = {
+  tempo_comum: "#3f6b52",
+  advento: "#5b2890",
+  natal: "#a8862f",
+  quaresma: "#4e2277",
+  triduo_pascal: "#3b3540",
+  pascoa: "#b08e33",
+  pentecostes: "#8a2b2b",
 };
+
+/** Atmosfera padrão da marca, para quem não escolheu a cor litúrgica. */
+const COR_PADRAO = "#5b2890";
+
+/**
+ * Pinta a barra de status do celular com o topo do gradiente do cabeçalho.
+ *
+ * Instalado na tela inicial, essa faixa é a moldura do aplicativo: fixá-la
+ * no violeta deixava a Quaresma roxa, o Tempo Comum verde e a barra sempre
+ * violeta — três cores brigando no mesmo topo de tela.
+ *
+ * Segue a mesma regra da interface: só muda para quem escolheu "cor do
+ * Tempo Litúrgico" em /eu/aparência.
+ */
+export async function generateViewport(): Promise<Viewport> {
+  const session = await getSessionContext();
+  if (session?.themePreference !== "liturgical") return { themeColor: COR_PADRAO };
+
+  const { season } = getLiturgicalSeason(new Date());
+  return { themeColor: COR_DO_TEMPO[season] ?? COR_PADRAO };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Claro é o padrão: quem não escolheu nada — e quem nem está autenticado —

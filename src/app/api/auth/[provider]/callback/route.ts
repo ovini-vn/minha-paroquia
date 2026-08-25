@@ -4,6 +4,7 @@ import { findOrCreateUserFromOAuth } from "@/server/modules/users/service";
 import { createSession } from "@/server/auth/session";
 import { tryAcceptInvitationIfPresent } from "@/server/modules/invitations/accept-if-present";
 import { AppError } from "@/server/shared/errors";
+import { appBaseUrl } from "@/lib/url";
 
 const STATE_COOKIE = "oauth_state";
 const INVITE_COOKIE = "oauth_convite";
@@ -38,7 +39,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return clearFlowCookies(NextResponse.redirect(loginErrorUrl("oauth_state")));
   }
 
-  const redirectUri = new URL(`/api/auth/${provider}/callback`, request.url).toString();
+  // O MESMO endereço enviado no início do fluxo (ver a rota irmã): o
+  // provedor compara os dois e recusa a troca se diferirem.
+  const redirectUri = new URL(`/api/auth/${provider}/callback`, appBaseUrl()).toString();
 
   let userId: string;
   try {

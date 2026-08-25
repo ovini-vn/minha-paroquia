@@ -7,6 +7,17 @@ import type { Config } from "tailwindcss";
  */
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+
+  /**
+   * `dark:` segue o tema ESCOLHIDO no app, e não a preferência do sistema.
+   *
+   * Sem esta linha, o Tailwind usa `prefers-color-scheme` — então quem
+   * escolhia tema claro em /eu/aparência, com o celular no escuro, via a
+   * interface clara com retoques escuros no meio. As cores do app nunca
+   * tiveram esse problema (vêm de custom properties sob
+   * `[data-color-scheme]`); só os utilitários `dark:` divergiam.
+   */
+  darkMode: ["selector", '[data-color-scheme="dark"]'],
   theme: {
     extend: {
       colors: {

@@ -14,6 +14,7 @@ import {
   updateParishProfile,
   updateParishHistoria as atualizarHistoria,
   updateParishParoco as atualizarParoco,
+  updateParishDonationProfile as atualizarDoacao,
 } from "./repository";
 import type { UpdateParishProfileInput } from "./schema";
 
@@ -464,4 +465,12 @@ export function updateParishParoco(
   },
 ) {
   return atualizarParoco(parishId, dados);
+}
+
+/** CNPJ e e-mail: identificam a paróquia na tela de doação. */
+export function updateParishDonationProfile(
+  parishId: string,
+  dados: { cnpj: string | null; email: string | null },
+) {
+  return atualizarDoacao(parishId, dados);
 }

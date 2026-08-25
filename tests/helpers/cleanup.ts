@@ -44,6 +44,10 @@ export async function cleanupTenantData(params: { userIds?: string[]; parishIds?
       await tx.pastoralGroup.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.prayerRequest.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.permissionOverride.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.donationInitiative.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.donationPurpose.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.donationSettings.deleteMany({ where: { parishId: { in: parishIds } } });
+      await tx.parishOfficeHours.deleteMany({ where: { parishId: { in: parishIds } } });
       await tx.priestProfile.deleteMany({ where: { parishId: { in: parishIds } } });
     }
   });

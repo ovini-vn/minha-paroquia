@@ -246,6 +246,8 @@ model Parish {
   whatsapp     String?
   facebookUrl  String?  @map("facebook_url")
   instagramUrl String?  @map("instagram_url")
+  email        String?
+  cnpj         String?
 
   /// Memorial histórico da paróquia, em texto longo, e a foto atual do templo.
   historia        String? @db.Text
@@ -266,6 +268,9 @@ model Parish {
   diocese                 Diocese?                  @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
   memberships             ParishMembership[]
   officeHours             ParishOfficeHours[]
+  donationSettings        DonationSettings?
+  donationPurposes        DonationPurpose[]
+  donationInitiatives     DonationInitiative[]
   invitations             Invitation[]
   priestProfiles          PriestProfile[]
   celebrations            Celebration[]
@@ -1317,4 +1322,98 @@ model PermissionOverride {
   @@unique([userId, permissionCode])
   @@index([parishId])
   @@map("permission_overrides")
+}
+
+/// Categoria de uma iniciativa, para o fiel se situar no que a paróquia faz.
+enum DonationCategory {
+  obras
+  evangelizacao
+  catequese
+  acao_social
+  pastoral
+  formacao
+  outros
+}
+
+/// Como o botão "Quero ser dizimista" leva o fiel adiante.
+enum DizimoCtaTipo {
+  whatsapp
+  link
+  interno
+}
+
+/// Dados de doação da paróquia — uma linha por paróquia.
+///
+/// Separado de `parishes` porque é informação financeira: fica em tabela
+/// própria, com a sua própria política de RLS, e não viaja junto em toda
+/// consulta que só queria o nome da paróquia.
+///
+/// Não guarda nada que movimente dinheiro: sem token de gateway, sem
+/// credencial. A chave PIX e o copia-e-cola são os mesmos que a paróquia
+/// divulga no mural da igreja.
+model DonationSettings {
+  id       String @id @default(uuid())
+  parishId String @unique @map("parish_id")
+
+  /// Chave PIX e o tipo dela, para o fiel conferir antes de pagar.
+  pixKey     String? @map("pix_key")
+  pixKeyType String? @map("pix_key_type")
+  /// BR Code gerado pelo BANCO da paróquia e colado aqui. Não é montado
+  /// por nós de propósito: payload de pagamento errado manda dinheiro para
+  /// o lugar errado.
+  pixPayload String? @map("pix_payload") @db.Text
+
+  /// Convite da Pastoral do Dízimo. Dízimo não é doação: é compromisso
+  /// contínuo, acompanhado pela pastoral — por isso convida, não cobra.
+  dizimoAtivo    Boolean        @default(true) @map("dizimo_ativo")
+  dizimoTitulo   String?        @map("dizimo_titulo")
+  dizimoTexto    String?        @map("dizimo_texto") @db.Text
+  dizimoCtaLabel String?        @map("dizimo_cta_label")
+  dizimoCtaTipo  DizimoCtaTipo? @map("dizimo_cta_tipo")
+  dizimoCtaValor String?        @map("dizimo_cta_valor")
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@map("donation_settings")
+}
+
+/// Card de "Sua doação ajuda": para onde o dinheiro vai, em geral.
+model DonationPurpose {
+  id          String  @id @default(uuid())
+  parishId    String  @map("parish_id")
+  title       String
+  description String  @db.Text
+  /// Chave do catálogo de ícones (ver src/lib/icones-doacao.ts). Guardar o
+  /// nome do componente deixaria a tela renderizar o que viesse do banco.
+  icon        String  @default("igreja")
+  displayOrder Int    @default(0) @map("display_order")
+  active      Boolean @default(true)
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, active, displayOrder])
+  @@map("donation_purposes")
+}
+
+/// "O que estamos realizando": o que está acontecendo agora na paróquia.
+model DonationInitiative {
+  id          String           @id @default(uuid())
+  parishId    String           @map("parish_id")
+  title       String
+  description String           @db.Text
+  imageUrl    String?          @map("image_url")
+  icon        String           @default("obras")
+  category    DonationCategory @default(outros)
+  startsOn    DateTime?        @map("starts_on") @db.Date
+  endsOn      DateTime?        @map("ends_on") @db.Date
+  displayOrder Int             @default(0) @map("display_order")
+  active      Boolean          @default(true)
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, active, displayOrder])
+  @@map("donation_initiatives")
 }

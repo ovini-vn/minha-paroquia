@@ -165,6 +165,12 @@ export default async function AdminDashboardPage() {
             subtitle="O que se repete toda semana ou todo mês"
           />
           <RowLink
+            href="/painel/doacao"
+            icon={HandCoins}
+            title="Doação"
+            subtitle="Chave PIX, finalidades e o que a paróquia realiza"
+          />
+          <RowLink
             href="/painel/paroco"
             icon={UserRound}
             title="Nosso Pároco"

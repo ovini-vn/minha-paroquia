@@ -53,3 +53,10 @@ export function updateParishParoco(
 ) {
   return prisma.parish.update({ where: { id }, data });
 }
+
+export function updateParishDonationProfile(
+  id: string,
+  data: { cnpj: string | null; email: string | null },
+) {
+  return prisma.parish.update({ where: { id }, data });
+}

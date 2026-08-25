@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, CalendarDays, Church, Footprints, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -28,10 +28,11 @@ const POST_PREVIEW_LABEL: Record<string, string> = {
 
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
-  // Leva à aba Oração, onde ficam o Evangelho em áudio e as leituras.
-  { href: "/oracao", icon: BookOpen, label: "Liturgia" },
   { href: "/servir", icon: HeartHandshake, label: "Servir" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
+  // Leva à aba Oração, onde ficam o Evangelho em áudio e as leituras.
+  { href: "/oracao", icon: BookOpen, label: "Liturgia" },
+  { href: "/doacao", icon: HandCoins, label: "Doação" },
   { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;
 
@@ -122,7 +123,7 @@ export default async function HomePage() {
           Forçar a cor litúrgica aqui — como estava — passava por cima de
           uma preferência explícita do usuário.
         */}
-        <div className="grid grid-cols-5 gap-1.5">
+        <div className="grid grid-cols-3 gap-3">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (
@@ -134,10 +135,10 @@ export default async function HomePage() {
                 {/* Quadrado fluido com teto de 74px: cinco cabem numa linha
                     só mesmo na tela estreita, sem a quinta sobrar sozinha
                     numa segunda fileira. */}
-                <span className="mx-auto grid aspect-square w-full max-w-[74px] place-items-center rounded-[20px] bg-primary text-white shadow-sm transition-colors">
-                  <Icon className="h-[30px] w-[30px]" strokeWidth={1.5} aria-hidden />
+                <span className="mx-auto grid aspect-square w-full max-w-[96px] place-items-center rounded-[26px] bg-primary text-white shadow-sm transition-colors">
+                  <Icon className="h-[38px] w-[38px]" strokeWidth={1.5} aria-hidden />
                 </span>
-                <span className="text-[11px] font-medium leading-tight text-foreground">
+                <span className="text-[13px] font-medium leading-tight text-foreground">
                   {shortcut.label}
                 </span>
               </Link>

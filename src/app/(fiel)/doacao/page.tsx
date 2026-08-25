@@ -87,9 +87,10 @@ export default async function DoacaoPage() {
           <Eyebrow tone="accent" className="mb-3">
             Sua doação ajuda
           </Eyebrow>
-          {/* Uma coluna no celular, duas a partir do tablet: o texto de cada
-              card precisa caber sem virar duas palavras por linha. */}
-          <div className="grid gap-2.5 sm:grid-cols-2">
+          {/* Três colunas a partir do tablet. No celular fica uma só: cada
+              card carrega uma frase inteira, e em um terço de uma tela de
+              375px ela viraria duas palavras por linha. */}
+          <div className="grid gap-2.5 sm:grid-cols-3">
             {finalidades.map((f) => {
               const Icone = iconeDeDoacao(f.icon);
               return (

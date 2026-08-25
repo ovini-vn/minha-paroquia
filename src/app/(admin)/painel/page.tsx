@@ -30,23 +30,7 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import {
-  Church,
-  Megaphone,
-  PartyPopper,
-  HeartHandshake,
-  BookOpen,
-  Music,
-  HandCoins,
-  ScrollText,
-  KeyRound,
-  Users,
-  Repeat,
-  Landmark,
-  Crown,
-  Flag,
-  Settings,
-} from "lucide-react";
+import { BookOpen, Church, Clock, Crown, Flag, HandCoins, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, Users } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -152,7 +136,7 @@ export default async function AdminDashboardPage() {
       <Card>
         <p className="mb-3 font-serif text-lg font-semibold text-foreground">Perfil da paróquia</p>
         <p className="mb-3 text-sm text-muted">
-          Essas informações aparecem para o fiel em Minha Comunidade.
+          Essas informações aparecem para o fiel em Minha Comunidade e na tela de Contato.
         </p>
         <ParishProfileForm
           city={parish?.city ?? ""}
@@ -161,6 +145,9 @@ export default async function AdminDashboardPage() {
           phone={parish?.phone ?? ""}
           description={parish?.description ?? ""}
           logoUrl={parish?.logoUrl ?? ""}
+          whatsapp={parish?.whatsapp ?? ""}
+          facebookUrl={parish?.facebookUrl ?? ""}
+          instagramUrl={parish?.instagramUrl ?? ""}
         />
       </Card>
 
@@ -176,6 +163,12 @@ export default async function AdminDashboardPage() {
             icon={Repeat}
             title="Horários das missas"
             subtitle="O que se repete toda semana ou todo mês"
+          />
+          <RowLink
+            href="/painel/expediente"
+            icon={Clock}
+            title="Horário da secretaria"
+            subtitle="Aparece em Contato, com o aviso de aberta ou fechada"
           />
           <RowLink
             href="/painel/avisos"

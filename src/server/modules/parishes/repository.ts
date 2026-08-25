@@ -27,6 +27,9 @@ export function updateParishProfile(
     phone: string | null;
     description: string | null;
     logoUrl: string | null;
+    whatsapp: string | null;
+    facebookUrl: string | null;
+    instagramUrl: string | null;
   },
 ) {
   return prisma.parish.update({ where: { id }, data });

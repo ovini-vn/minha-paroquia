@@ -6,67 +6,85 @@ import { Button } from "@/components/ui/Button";
 
 const initialState: ActionState = {};
 
-type ParishProfileFormProps = {
+export type ParishProfileFormProps = {
   city: string;
   state: string;
   address: string;
   phone: string;
+  whatsapp: string;
   description: string;
   logoUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
 };
 
-export function ParishProfileForm({ city, state, address, phone, description, logoUrl }: ParishProfileFormProps) {
+const campo = "rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground";
+
+function Campo({
+  nome,
+  rotulo,
+  ajuda,
+  ...rest
+}: {
+  nome: string;
+  rotulo: string;
+  ajuda?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={`parish-${nome}`} className="text-sm font-medium text-muted">
+        {rotulo}
+      </label>
+      <input id={`parish-${nome}`} name={nome} className={campo} {...rest} />
+      {ajuda && <p className="text-xs text-muted">{ajuda}</p>}
+    </div>
+  );
+}
+
+export function ParishProfileForm({
+  city,
+  state,
+  address,
+  phone,
+  whatsapp,
+  description,
+  logoUrl,
+  facebookUrl,
+  instagramUrl,
+}: ParishProfileFormProps) {
   const [formState, formAction, pending] = useActionState(updateParishProfileAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="parish-city" className="text-sm font-medium text-muted">
-            Cidade
-          </label>
-          <input
-            id="parish-city"
-            name="city"
-            defaultValue={city}
-            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="parish-state" className="text-sm font-medium text-muted">
-            UF
-          </label>
-          <input
-            id="parish-state"
-            name="state"
-            maxLength={2}
-            defaultValue={state}
-            className="rounded-xl border border-border bg-surface px-4 py-3 text-sm uppercase text-foreground"
-          />
-        </div>
+        <Campo nome="city" rotulo="Cidade" defaultValue={city} />
+        <Campo nome="state" rotulo="UF" maxLength={2} defaultValue={state} className={`${campo} uppercase`} />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-address" className="text-sm font-medium text-muted">
-          Endereço (opcional)
-        </label>
-        <input
-          id="parish-address"
-          name="address"
-          defaultValue={address}
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
-        />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-phone" className="text-sm font-medium text-muted">
-          Telefone (opcional)
-        </label>
-        <input
-          id="parish-phone"
-          name="phone"
+
+      <Campo
+        nome="address"
+        rotulo="Endereço"
+        ajuda="Usado no botão “Como chegar”, que abre o app de navegação."
+        defaultValue={address}
+      />
+
+      <div className="grid grid-cols-2 gap-3">
+        <Campo
+          nome="phone"
+          rotulo="Telefone"
+          type="tel"
+          ajuda="Abre o discador."
           defaultValue={phone}
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+        />
+        <Campo
+          nome="whatsapp"
+          rotulo="WhatsApp"
+          type="tel"
+          ajuda="Com DDD. Ex.: (43) 99999-0000"
+          defaultValue={whatsapp}
         />
       </div>
+
       <div className="flex flex-col gap-1.5">
         <label htmlFor="parish-description" className="text-sm font-medium text-muted">
           Descrição (opcional)
@@ -76,21 +94,26 @@ export function ParishProfileForm({ city, state, address, phone, description, lo
           name="description"
           rows={3}
           defaultValue={description}
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+          className={campo}
         />
       </div>
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="parish-logoUrl" className="text-sm font-medium text-muted">
-          URL do logo (opcional)
-        </label>
-        <input
-          id="parish-logoUrl"
-          name="logoUrl"
-          type="url"
-          defaultValue={logoUrl}
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
-        />
-      </div>
+
+      <Campo nome="logoUrl" rotulo="URL do logo (opcional)" type="url" defaultValue={logoUrl} />
+      <Campo
+        nome="instagramUrl"
+        rotulo="Instagram (opcional)"
+        type="url"
+        ajuda="Endereço completo, ex.: https://instagram.com/suaparoquia"
+        defaultValue={instagramUrl}
+      />
+      <Campo
+        nome="facebookUrl"
+        rotulo="Facebook (opcional)"
+        type="url"
+        ajuda="Endereço completo, ex.: https://facebook.com/suaparoquia"
+        defaultValue={facebookUrl}
+      />
+
       <Button type="submit" disabled={pending} className="self-start">
         {pending ? "Salvando..." : "Salvar"}
       </Button>

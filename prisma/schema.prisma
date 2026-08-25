@@ -229,25 +229,31 @@ model DioceseMembership {
 }
 
 model Parish {
-  id          String   @id @default(uuid())
-  name        String
-  slug        String   @unique
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
   // Opcional: paróquias cadastradas antes da diocese existir seguem válidas
   // e sem diocese até alguém vinculá-las.
-  dioceseId   String?  @map("diocese_id")
+  dioceseId    String?  @map("diocese_id")
   // Usadas pra diferenciar paróquias com o mesmo nome (comum — ex.: várias
   // "Nossa Senhora de Fátima" em cidades diferentes) e pra montar o slug.
-  city        String?
-  state       String?
-  address     String?
-  phone       String?
-  description String?
-  logoUrl     String?  @map("logo_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  city         String?
+  state        String?
+  address      String?
+  phone        String?
+  // Número que recebe mensagem. Separado de `phone` porque a paróquia
+  // costuma ter fixo para ligar e celular para WhatsApp, e são diferentes.
+  whatsapp     String?
+  facebookUrl  String?  @map("facebook_url")
+  instagramUrl String?  @map("instagram_url")
+  description  String?
+  logoUrl      String?  @map("logo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   diocese                 Diocese?                  @relation(fields: [dioceseId], references: [id], onDelete: SetNull)
   memberships             ParishMembership[]
+  officeHours             ParishOfficeHours[]
   invitations             Invitation[]
   priestProfiles          PriestProfile[]
   celebrations            Celebration[]
@@ -348,6 +354,26 @@ model ParishMembership {
   @@index([parishId])
   @@index([userId, status])
   @@map("parish_memberships")
+}
+
+// Horário de funcionamento da secretaria.
+//
+// Uma linha por FAIXA, não por dia: paróquia costuma abrir de manhã, fechar
+// para o almoço e reabrir à tarde. Guardar "abre" e "fecha" por dia não
+// representaria isso, e o app diria "aberto" no horário do almoço.
+model ParishOfficeHours {
+  id       String @id @default(uuid())
+  parishId String @map("parish_id")
+  /// 0 = domingo.
+  weekday  Int
+  /// Minutos desde a meia-noite, horário de Brasília — hora de parede.
+  opensAt  Int    @map("opens_at")
+  closesAt Int    @map("closes_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, weekday])
+  @@map("parish_office_hours")
 }
 
 enum InvitationType {

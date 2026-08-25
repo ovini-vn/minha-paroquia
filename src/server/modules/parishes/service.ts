@@ -47,6 +47,9 @@ export function updateOwnParishProfile(parishId: string, input: UpdateParishProf
     phone: input.phone || null,
     description: input.description || null,
     logoUrl: input.logoUrl || null,
+    whatsapp: input.whatsapp || null,
+    facebookUrl: input.facebookUrl || null,
+    instagramUrl: input.instagramUrl || null,
   });
 }
 
@@ -370,4 +373,35 @@ export function rejectMember(parishId: string, userId: string) {
       data: { status: "inactive", leftAt: new Date() },
     }),
   );
+}
+
+/** Faixas de expediente da secretaria, para a tela de Contato. */
+export function listOfficeHours(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.parishOfficeHours.findMany({
+      where: { parishId },
+      orderBy: [{ weekday: "asc" }, { opensAt: "asc" }],
+      select: { weekday: true, opensAt: true, closesAt: true },
+    }),
+  );
+}
+
+/**
+ * Regrava o expediente inteiro: apaga e insere.
+ *
+ * Mais simples e mais correto que tentar casar faixa por faixa — a
+ * secretaria edita a semana toda de uma vez, e não há nada apontando para
+ * uma faixa específica que pudesse se perder.
+ */
+export function replaceOfficeHours(
+  parishId: string,
+  faixas: { weekday: number; opensAt: number; closesAt: number }[],
+) {
+  return withTenantContext(parishId, async (tx) => {
+    await tx.parishOfficeHours.deleteMany({ where: { parishId } });
+    if (faixas.length === 0) return { count: 0 };
+    return tx.parishOfficeHours.createMany({
+      data: faixas.map((f) => ({ parishId, ...f })),
+    });
+  });
 }

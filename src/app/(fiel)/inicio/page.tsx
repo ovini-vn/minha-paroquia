@@ -1,14 +1,5 @@
 import Link from "next/link";
-import {
-  Church,
-  BookOpen,
-  HeartHandshake,
-  Mic,
-  CalendarDays,
-  Megaphone,
-  Users,
-  Footprints,
-} from "lucide-react";
+import { BookOpen, CalendarDays, Church, Footprints, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -38,6 +29,7 @@ const SHORTCUTS = [
   { href: "/oracao", icon: BookOpen, label: "Liturgia" },
   { href: "/servir", icon: HeartHandshake, label: "Servir" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
+  { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;
 
 function greeting(): string {
@@ -123,19 +115,22 @@ export default async function HomePage() {
           Forçar a cor litúrgica aqui — como estava — passava por cima de
           uma preferência explícita do usuário.
         */}
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-5 gap-1.5">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (
               <Link
                 key={shortcut.href}
                 href={shortcut.href}
-                className="flex flex-col items-center gap-2 rounded-xl px-1 pb-3 pt-3 text-center transition-transform hover:-translate-y-px"
+                className="flex flex-col items-center gap-2 rounded-xl px-0.5 pb-3 pt-3 text-center transition-transform hover:-translate-y-px"
               >
-                <span className="grid h-[74px] w-[74px] place-items-center rounded-[22px] bg-primary text-white shadow-sm transition-colors">
-                  <Icon className="h-8 w-8" strokeWidth={1.5} aria-hidden />
+                {/* Quadrado fluido com teto de 74px: cinco cabem numa linha
+                    só mesmo na tela estreita, sem a quinta sobrar sozinha
+                    numa segunda fileira. */}
+                <span className="mx-auto grid aspect-square w-full max-w-[74px] place-items-center rounded-[20px] bg-primary text-white shadow-sm transition-colors">
+                  <Icon className="h-[30px] w-[30px]" strokeWidth={1.5} aria-hidden />
                 </span>
-                <span className="text-[12.5px] font-medium leading-tight text-foreground">
+                <span className="text-[11px] font-medium leading-tight text-foreground">
                   {shortcut.label}
                 </span>
               </Link>

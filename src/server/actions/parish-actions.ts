@@ -21,13 +21,20 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
   requirePermission(session, PERMISSIONS.DASHBOARD_PARISH_VIEW);
 
   try {
+    // Campo vazio vai como "" e não como undefined: é assim que apagar um
+    // dado passa a ser possível. Com undefined o Prisma ignora o campo, e o
+    // valor antigo sobreviveria a uma tentativa de limpeza.
+    const texto = (campo: string) => String(formData.get(campo) ?? "");
     const input = updateParishProfileInputSchema.parse({
-      city: formData.get("city") || undefined,
-      state: formData.get("state") || undefined,
-      address: formData.get("address") || undefined,
-      phone: formData.get("phone") || undefined,
-      description: formData.get("description") || undefined,
-      logoUrl: formData.get("logoUrl") || undefined,
+      city: texto("city"),
+      state: texto("state"),
+      address: texto("address"),
+      phone: texto("phone"),
+      whatsapp: texto("whatsapp"),
+      description: texto("description"),
+      logoUrl: texto("logoUrl"),
+      facebookUrl: texto("facebookUrl"),
+      instagramUrl: texto("instagramUrl"),
     });
 
     await updateOwnParishProfile(session.membership.parishId, input);
@@ -39,6 +46,7 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
 
   revalidatePath("/painel");
   revalidatePath("/comunidade");
+  revalidatePath("/contato");
   return {};
 }
 

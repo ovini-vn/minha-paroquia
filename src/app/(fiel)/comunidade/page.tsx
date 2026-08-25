@@ -16,22 +16,12 @@ import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { PostCard } from "@/components/domain/PostCard";
-import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { ProximosEncontros, type Encontro } from "@/components/domain/ProximosEncontros";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-
-type AgendaItem = {
-  id: string;
-  startsAt: Date;
-  label: string;
-  location: string | null;
-  /** Só eventos têm cartaz e descrição; celebração vem sempre nula. */
-  imageUrl: string | null;
-  description: string | null;
-};
 
 export default async function ComunidadePage() {
   const session = await getSessionContext();
@@ -56,7 +46,7 @@ export default async function ComunidadePage() {
     listPublishedAvisos(parishId, 5),
   ]);
 
-  const agendaItems: AgendaItem[] = [
+  const agendaItems: Encontro[] = [
     ...celebrations.map((c) => ({
       id: `celebration-${c.id}`,
       startsAt: c.startsAt,
@@ -200,60 +190,7 @@ export default async function ComunidadePage() {
 
       <section className="pt-7">
         <SectionTitle eyebrow="Agenda" title="Próximos encontros" />
-        {agendaItems.length === 0 ? (
-          <EmptyState
-            icon={CalendarDays}
-            title="Nenhum compromisso agendado"
-            description="Missas, celebrações e eventos da paróquia aparecem aqui."
-          />
-        ) : (
-          <Card className="px-3.5 py-1.5">
-            {agendaItems.map((item) => (
-              <div key={item.id} className="border-b border-border py-3.5 last:border-b-0">
-                <div className="flex items-center gap-3.5">
-                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                    <CalendarDays className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[14.5px] font-medium text-foreground">{item.label}</p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
-                      {formatDateTime(item.startsAt)}
-                      {item.location ? ` · ${item.location}` : ""}
-                    </p>
-                  </div>
-                </div>
-
-                {/*
-                  O cartaz vem DEPOIS do texto, não no lugar dele: quem lê
-                  por leitor de tela, ou com a imagem sem carregar, continua
-                  sabendo o que é e quando é. Fica com o alt vazio porque o
-                  título ao lado já diz tudo — repetir seria ler duas vezes.
-                */}
-                {item.description && (
-                  <p className="mt-2 whitespace-pre-line text-[13.5px] leading-relaxed text-muted">
-                    {item.description}
-                  </p>
-                )}
-
-                {/*
-                  <img> e não next/image: a URL é digitada pela secretaria e
-                  pode ser de qualquer host. Otimizar exigiria liberar
-                  remotePatterns para a internet inteira, o que é pior do que
-                  não otimizar.
-                */}
-                {item.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.imageUrl}
-                    alt=""
-                    loading="lazy"
-                    className="mt-2.5 w-full rounded-lg border border-border object-cover"
-                  />
-                )}
-              </div>
-            ))}
-          </Card>
-        )}
+        <ProximosEncontros encontros={agendaItems} />
       </section>
 
       <section className="pt-7">

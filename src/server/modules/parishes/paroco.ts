@@ -67,18 +67,32 @@ export function resolverParoco(
  * Vale só para os posts dessa conta: os de outros sacerdotes continuam
  * assinados por eles.
  */
+export type Assinatura = { nome: string; titulo: string; fotoUrl: string | null };
+
 export function assinaturaDoPost(
-  autor: { id: string; title: string; user: { fullName: string } } | null,
+  autor: {
+    id: string;
+    title: string;
+    photoUrl?: string | null;
+    user: { fullName: string; photoUrl?: string | null };
+  } | null,
   paroco: Paroco | null,
-): { nome: string; titulo: string } {
+): Assinatura {
   // Sem autor: publicado por quem não é clero, em nome do pároco.
   if (!autor) {
     return paroco
-      ? { nome: paroco.nome, titulo: paroco.titulo }
-      : { nome: "Paróquia", titulo: "Palavra do Padre" };
+      ? { nome: paroco.nome, titulo: paroco.titulo, fotoUrl: paroco.fotoUrl }
+      : { nome: "Paróquia", titulo: "Palavra do Padre", fotoUrl: null };
   }
   if (paroco && paroco.contaId === autor.id) {
-    return { nome: paroco.nome, titulo: paroco.titulo };
+    // A foto vem da apresentação cadastrada, não da conta: quem opera a
+    // ferramenta pode não ser o padre, e é o rosto dele que a comunidade
+    // precisa reconhecer na mensagem.
+    return { nome: paroco.nome, titulo: paroco.titulo, fotoUrl: paroco.fotoUrl };
   }
-  return { nome: autor.user.fullName, titulo: autor.title };
+  return {
+    nome: autor.user.fullName,
+    titulo: autor.title,
+    fotoUrl: autor.photoUrl ?? autor.user.photoUrl ?? null,
+  };
 }

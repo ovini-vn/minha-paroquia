@@ -37,7 +37,16 @@ export function listRecentPosts(parishId: string, limit = 10) {
       where: { parishId },
       orderBy: { publishedAt: "desc" },
       take: limit,
-      include: { priestProfile: { include: { user: { select: { fullName: true } } } } },
+      include: {
+        priestProfile: {
+          select: {
+            id: true,
+            title: true,
+            photoUrl: true,
+            user: { select: { fullName: true, photoUrl: true } },
+          },
+        },
+      },
     }),
   );
 }

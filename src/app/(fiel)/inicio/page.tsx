@@ -14,12 +14,12 @@ import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
-import { Avatar } from "@/components/ui/Avatar";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { FeastList } from "@/components/domain/FeastList";
 import { formatDateTime } from "@/lib/date";
 import { VideoDoPost } from "@/components/domain/VideoDoPost";
+import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 
 const POST_PREVIEW_LABEL: Record<string, string> = {
@@ -76,6 +76,21 @@ export default async function HomePage() {
       {/* Hero — portal e caminho dourado, a assinatura da marca. */}
       <BleedTop>
         <section className="relative overflow-hidden bg-wash px-[18px] pb-[26px] pt-[30px] text-white">
+          {/* A foto da igreja entra como textura do cabeçalho, sob o mesmo
+              gradiente da marca. É a igreja por onde a pessoa passa — e o
+              véu mantém o nome legível sobre foto clara ou escura, o que uma
+              foto crua na frente não garantiria. */}
+          {parish?.historiaFotoUrl && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={parish.historiaFotoUrl}
+                alt=""
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              />
+              <span className="pointer-events-none absolute inset-0 bg-wash opacity-[0.86]" aria-hidden />
+            </>
+          )}
           <Arch className="pointer-events-none absolute inset-0 h-full w-full opacity-50" />
           <div className="relative">
             <p className="text-[12.5px] tracking-[0.04em] text-white/70">
@@ -168,7 +183,7 @@ export default async function HomePage() {
           />
           <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
             <div className="flex items-center gap-3">
-              <Avatar name={assinatura.nome} size="sm" />
+              <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
               <div>
                 <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
                 <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>

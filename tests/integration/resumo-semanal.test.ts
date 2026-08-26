@@ -84,6 +84,15 @@ describe("resumo semanal da paróquia", () => {
             startsAt: new Date("2026-08-26T10:00:00.000Z"),
             createdBy: parocoId,
           },
+          // Semana seguinte: serve para provar que a trava é por dia, e
+          // não um "já mandei uma vez e nunca mais".
+          {
+            parishId: comMissasId,
+            type: "missa",
+            title: "Missa da outra semana",
+            startsAt: new Date("2026-08-30T22:00:00.000Z"),
+            createdBy: parocoId,
+          },
           // Fora da janela de 7 dias — não deve entrar na conta.
           {
             parishId: comMissasId,
@@ -163,5 +172,37 @@ describe("resumo semanal da paróquia", () => {
   it("a paróquia vazia entra na contagem de puladas, não de enviadas", async () => {
     const resultado = await enviarResumoSemanal(sabado);
     expect(resultado.pulou).toBeGreaterThanOrEqual(1);
+  });
+
+  it("rodar de novo no mesmo dia NÃO manda o resumo duas vezes", async () => {
+    // A Vercel repete o cron quando ele falha. Receber o mesmo aviso duas
+    // vezes é o que faz alguém desligar as notificações — e aí a pessoa
+    // deixa de receber também o que importa.
+    const antes = (await listMyNotifications(comMissasId, fielId)).filter(
+      (n) => n.title === "Esta semana na sua paróquia",
+    ).length;
+
+    const resultado = await enviarResumoSemanal(sabado);
+
+    const depois = (await listMyNotifications(comMissasId, fielId)).filter(
+      (n) => n.title === "Esta semana na sua paróquia",
+    ).length;
+
+    expect(depois).toBe(antes);
+    expect(resultado.repetidos).toBeGreaterThanOrEqual(1);
+  });
+
+  it("mas o resumo do sábado seguinte sai normalmente", async () => {
+    // A trava é do dia, não do resumo: senão a comunidade receberia um
+    // aviso na vida e nunca mais.
+    const sabadoSeguinte = new Date("2026-08-29T11:00:00.000Z");
+
+    const resultado = await enviarResumoSemanal(sabadoSeguinte);
+    expect(resultado.paroquias).toBeGreaterThanOrEqual(1);
+
+    const doFiel = await listMyNotifications(comMissasId, fielId);
+    const resumos = doFiel.filter((n) => n.title === "Esta semana na sua paróquia");
+    expect(resumos.length).toBe(2);
+    expect(resumos.some((n) => n.body.includes("Missa da outra semana"))).toBe(true);
   });
 });

@@ -1,8 +1,8 @@
 import "server-only";
 import { withTenantContext, withPlatformContext } from "@/server/db/tenant-context";
-import { notifyManyUsers } from "@/server/modules/notifications/service";
+import { notifyManyUsers, registrarEnvio } from "@/server/modules/notifications/service";
 import { sendToUsers } from "@/server/modules/push/service";
-import { brasiliaParts, formatMinutes } from "@/lib/brasilia";
+import { brasiliaParts, diaEmBrasilia, formatMinutes } from "@/lib/brasilia";
 
 /**
  * "Esta semana na sua paróquia" — o único aviso que alcança QUEM NÃO SERVE.
@@ -103,13 +103,24 @@ function textoDoResumo(resumo: ResumoDaSemana): string {
   return `${partes.join(" e ")}. ${resumo.linhas.join(" · ")}`;
 }
 
-export type ResultadoDoResumo = { paroquias: number; pessoas: number; pulou: number };
+export type ResultadoDoResumo = {
+  paroquias: number;
+  pessoas: number;
+  /** Paróquias sem nada a anunciar nesta semana. */
+  pulou: number;
+  /** Paróquias que já tinham recebido o resumo de hoje. */
+  repetidos: number;
+};
 
 /**
  * Envia o resumo semanal de todas as paróquias.
  *
  * Percorre paróquia por paróquia dentro do contexto de cada uma: o job é
  * global, mas nenhuma leitura atravessa o isolamento entre paróquias.
+ *
+ * Rodar duas vezes no mesmo dia não manda nada duas vezes: o registro de
+ * envio é gravado na mesma transação que cria os avisos, então ou os dois
+ * acontecem ou nenhum acontece.
  */
 export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResumo> {
   const parishIds = await withPlatformContext(async (tx) => {
@@ -117,9 +128,11 @@ export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResum
     return rows.map((r) => r.id);
   });
 
+  const dia = diaEmBrasilia(agora);
   let pessoas = 0;
   let paroquias = 0;
   let pulou = 0;
+  let repetidos = 0;
 
   for (const parishId of parishIds) {
     const resumo = await montarResumo(parishId, agora);
@@ -131,7 +144,13 @@ export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResum
     const corpo = textoDoResumo(resumo);
     const titulo = "Esta semana na sua paróquia";
 
+    // Uma paróquia, um resumo por dia. A Vercel repete o cron quando ele
+    // falha, e sem esta trava a comunidade inteira receberia tudo de novo —
+    // que é como se ensina alguém a desligar as notificações.
     const destinatarios = await withTenantContext(parishId, async (tx) => {
+      const inedito = await registrarEnvio(tx, parishId, `resumo:${parishId}:${dia}`);
+      if (!inedito) return null;
+
       const membros = await tx.parishMembership.findMany({
         where: { parishId, status: "active" },
         select: { userId: true },
@@ -140,6 +159,11 @@ export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResum
       await notifyManyUsers(tx, parishId, ids, "pastoral", titulo, corpo);
       return ids;
     });
+
+    if (destinatarios === null) {
+      repetidos += 1;
+      continue;
+    }
 
     // Push fora do contexto de tenant e tolerante a falha: o aviso já está
     // no app de todo mundo, e uma paróquia com problema de push não pode
@@ -154,7 +178,7 @@ export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResum
     pessoas += destinatarios.length;
   }
 
-  return { paroquias, pessoas, pulou };
+  return { paroquias, pessoas, pulou, repetidos };
 }
 
 /** É dia de mandar o resumo? Decidido em Brasília, não em UTC. */

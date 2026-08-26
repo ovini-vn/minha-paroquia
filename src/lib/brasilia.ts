@@ -70,3 +70,15 @@ export function parseMinutes(texto: string): number | null {
   if (h < 0 || h > 23 || m < 0 || m > 59) return null;
   return h * 60 + m;
 }
+
+/**
+ * O dia civil em Brasília, como "2026-08-26".
+ *
+ * Serve de carimbo para saber se algo já foi enviado hoje. Precisa ser o dia
+ * de Brasília e não o de UTC: entre 21h e a meia-noite os dois discordam, e
+ * é justamente a faixa em que o robô da noite roda.
+ */
+export function diaEmBrasilia(instante: Date): string {
+  const { year, month, day } = brasiliaParts(instante);
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}

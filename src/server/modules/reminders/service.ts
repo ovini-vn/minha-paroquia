@@ -1,9 +1,10 @@
 import "server-only";
 import { prisma } from "@/server/db/prisma";
 import { withTenantContext } from "@/server/db/tenant-context";
-import { notifyUser } from "@/server/modules/notifications/service";
+import { notifyUser, registrarEnvio } from "@/server/modules/notifications/service";
 import { sendToUser } from "@/server/modules/push/service";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
+import { diaEmBrasilia } from "@/lib/brasilia";
 
 /**
  * Lembretes dos compromissos assumidos — o que a pessoa se comprometeu a
@@ -143,6 +144,8 @@ export type ReminderResult = {
   compromissos: number;
   avisosNoApp: number;
   pushEnviados: number;
+  /** Compromissos cujo lembrete de hoje já tinha saído. */
+  repetidos: number;
 };
 
 /**
@@ -150,23 +153,41 @@ export type ReminderResult = {
  * push pode não chegar (permissão negada, aparelho sem rede, iPhone sem o
  * site na Tela de Início) e nesse caso o aviso ainda espera a pessoa
  * dentro do app.
+ *
+ * Cada compromisso rende no máximo um lembrete "hoje" e um "amanhã", mesmo
+ * que o robô rode de novo: a chave carimba usuário, compromisso, qual dos
+ * dois avisos e o dia. Sem isso, uma repetição do cron acorda a pessoa duas
+ * vezes com a mesma missa.
  */
 export async function sendCommitmentReminders(reference: Date): Promise<ReminderResult> {
   const compromissos = await collectCommitments(reference);
+  const dia = diaEmBrasilia(reference);
   let avisosNoApp = 0;
   let pushEnviados = 0;
+  let repetidos = 0;
 
   for (const c of compromissos) {
-    await withTenantContext(c.parishId, async (tx) => {
+    const chave = `lembrete:${c.userId}:${c.tag}:${c.when}:${dia}`;
+
+    const enviar = await withTenantContext(c.parishId, async (tx) => {
+      if (!(await registrarEnvio(tx, c.parishId, chave))) return false;
       await notifyUser(tx, {
         parishId: c.parishId,
         userId: c.userId,
         category: "pessoal",
-        linkPath: "/eu/atendimentos",
+        // O destino é o do próprio compromisso: escala vai para a liturgia,
+        // mutirão para Servir, atendimento para os atendimentos.
+        linkPath: c.url,
         title: c.title,
         body: c.body,
       });
+      return true;
     });
+
+    if (!enviar) {
+      repetidos += 1;
+      continue;
+    }
     avisosNoApp += 1;
 
     pushEnviados += await sendToUser(c.userId, {
@@ -177,5 +198,5 @@ export async function sendCommitmentReminders(reference: Date): Promise<Reminder
     });
   }
 
-  return { compromissos: compromissos.length, avisosNoApp, pushEnviados };
+  return { compromissos: compromissos.length, avisosNoApp, pushEnviados, repetidos };
 }

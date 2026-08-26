@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sendCommitmentReminders } from "@/server/modules/reminders/service";
 import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/service";
 import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/service";
+import { limparEnviosAntigos } from "@/server/modules/notifications/service";
 
 /**
  * Job diário — disparado pelo cron da Vercel (ver vercel.json).
@@ -18,6 +19,11 @@ import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/serv
  *
  * Nessa ordem, e a ordem importa: uma missa recém-gerada pode já ter
  * escala para amanhã, e o aviso precisa enxergá-la.
+ *
+ * REPETIÇÃO: a Vercel repete o job quando ele falha, e uma falha no meio
+ * deixa parte do trabalho feito. Cada envio é carimbado num registro antes
+ * de sair, na mesma transação — então repetir o job continua de onde parou
+ * em vez de avisar tudo de novo.
  *
  * PROTEÇÃO: a Vercel envia `Authorization: Bearer $CRON_SECRET` quando a
  * variável existe. Sem o segredo configurado a rota recusa TUDO, em vez de
@@ -64,6 +70,14 @@ export async function GET(request: NextRequest) {
       console.error("Falha no resumo semanal:", error);
       resumo = { erro: error instanceof Error ? error.message : "desconhecido" };
     }
+  }
+
+  // Poda do registro de envios. Por último e engolindo o erro: é faxina,
+  // não pode derrubar um job que já entregou o que importava.
+  try {
+    await limparEnviosAntigos(agora);
+  } catch (error) {
+    console.error("Falha ao limpar registros de envio antigos:", error);
   }
 
   console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo }));

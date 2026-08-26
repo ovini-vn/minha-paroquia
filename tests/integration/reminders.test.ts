@@ -4,7 +4,8 @@ import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { createInvitation, acceptInvitation } from "@/server/modules/invitations/service";
-import { collectCommitments } from "@/server/modules/reminders/service";
+import { collectCommitments, sendCommitmentReminders } from "@/server/modules/reminders/service";
+import { listMyNotifications } from "@/server/modules/notifications/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 /**
@@ -184,5 +185,32 @@ describe("lembretes de compromissos assumidos", () => {
     // outra paróquia (que não tem compromisso nenhum) aparece.
     expect(compromissos.filter((c) => c.parishId === outraParishId)).toHaveLength(0);
     expect(compromissos.every((c) => typeof c.parishId === "string")).toBe(true);
+  });
+
+  it("o aviso leva para o lugar do próprio compromisso", async () => {
+    // Escala vai para a liturgia, mutirão para Servir, atendimento para os
+    // atendimentos. Mandar tudo para o mesmo lugar deixa a pessoa
+    // procurando na tela errada o que ela acabou de ser avisada.
+    await sendCommitmentReminders(agora);
+
+    const avisos = await listMyNotifications(parishId, fielId);
+    const escala = avisos.find((n) => n.title.includes("liturgia"));
+    const atendimento = avisos.find((n) => n.title.includes("atendimento"));
+
+    expect(escala?.linkPath).toBe("/servir/liturgia");
+    expect(atendimento?.linkPath).toBe("/eu/atendimentos");
+  });
+
+  it("rodar de novo no mesmo dia NÃO avisa a pessoa duas vezes", async () => {
+    // A Vercel repete o job quando ele falha. Sem trava, quem tem uma missa
+    // amanhã seria acordado duas vezes pela mesma missa.
+    const antes = (await listMyNotifications(parishId, fielId)).length;
+
+    const resultado = await sendCommitmentReminders(agora);
+
+    const depois = (await listMyNotifications(parishId, fielId)).length;
+    expect(depois).toBe(antes);
+    expect(resultado.avisosNoApp).toBe(0);
+    expect(resultado.repetidos).toBe(resultado.compromissos);
   });
 });

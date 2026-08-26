@@ -110,3 +110,40 @@ export function markNotificationsReadByPath(parishId: string, userId: string, li
     }),
   );
 }
+
+/**
+ * Marca um envio como feito, e diz se ele é INÉDITO.
+ *
+ * Devolve `true` só na primeira vez para aquela chave; nas seguintes,
+ * `false`. Quem chama usa isso para não mandar de novo.
+ *
+ * Usa `createMany` com `skipDuplicates` em vez de tentar criar e capturar o
+ * erro: violação de unicidade dentro de uma transação a aborta inteira, e
+ * aqui estamos no meio de um laço que precisa continuar.
+ */
+export async function registrarEnvio(
+  tx: Prisma.TransactionClient,
+  parishId: string,
+  chave: string,
+): Promise<boolean> {
+  const { count } = await tx.notificationDispatch.createMany({
+    data: [{ parishId, chave }],
+    skipDuplicates: true,
+  });
+  return count === 1;
+}
+
+/**
+ * Apaga registros de envio velhos.
+ *
+ * A tabela só existe para responder "isto já saiu?", e essa pergunta nunca
+ * é feita sobre semana passada. Sem a poda, ela cresceria para sempre
+ * guardando respostas que ninguém vai pedir.
+ */
+export async function limparEnviosAntigos(agora: Date, dias = 30): Promise<number> {
+  const limite = new Date(agora.getTime() - dias * 24 * 3_600_000);
+  const { count } = await prisma.notificationDispatch.deleteMany({
+    where: { createdAt: { lt: limite } },
+  });
+  return count;
+}

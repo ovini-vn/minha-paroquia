@@ -281,6 +281,7 @@ model Parish {
   donationSettings        DonationSettings?
   donationPurposes        DonationPurpose[]
   donationInitiatives     DonationInitiative[]
+  notificationDispatches  NotificationDispatch[]
   invitations             Invitation[]
   priestProfiles          PriestProfile[]
   celebrations            Celebration[]
@@ -1443,4 +1444,24 @@ model DonationInitiative {
 
   @@index([parishId, active, displayOrder])
   @@map("donation_initiatives")
+}
+
+/// Registro do que o robô diário já enviou.
+///
+/// Sem ele, repetir o job manda tudo de novo — e a Vercel repete quando
+/// falha. Receber o mesmo aviso duas vezes é o que faz alguém desligar as
+/// notificações, e aí a pessoa deixa de receber também o que importa.
+///
+/// A `chave` descreve o envio de forma única: "resumo:<paróquia>:<sábado>",
+/// "<usuário>:atendimento-<id>:hoje:<data>". Gravar é a própria trava.
+model NotificationDispatch {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  chave     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, createdAt])
+  @@map("notification_dispatches")
 }

@@ -62,6 +62,30 @@ export function countUnreadNotifications(parishId: string, userId: string) {
   return withTenantContext(parishId, (tx) => tx.notification.count({ where: { parishId, userId, readAt: null } }));
 }
 
+/**
+ * Dá a notificação por lida e devolve PARA ONDE ela leva.
+ *
+ * O destino sai do banco, nunca do formulário. Se viesse do formulário,
+ * qualquer um poderia forjar um envio e usar o app como trampolim para
+ * fora — o clássico open redirect. Aqui o id é a única coisa que a pessoa
+ * escolhe, e ele é conferido contra a própria paróquia e o próprio usuário.
+ */
+export async function openNotification(parishId: string, id: string, userId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const notificacao = await tx.notification.findFirst({
+      where: { id, parishId, userId },
+      select: { linkPath: true },
+    });
+    if (!notificacao) return null;
+
+    await tx.notification.updateMany({
+      where: { id, parishId, userId, readAt: null },
+      data: { readAt: new Date() },
+    });
+    return notificacao.linkPath;
+  });
+}
+
 /** Escopado ao próprio usuário — evita marcar como lida a notificação de outra pessoa por id adivinhado. */
 export function markNotificationRead(parishId: string, id: string, userId: string) {
   return withTenantContext(parishId, (tx) =>

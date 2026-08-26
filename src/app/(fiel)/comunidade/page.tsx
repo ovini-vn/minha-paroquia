@@ -163,7 +163,12 @@ export default async function ComunidadePage() {
 
       {avisos.length > 0 && (
         <section className="pt-6">
-          <SectionTitle eyebrow="Avisos" title="Da secretaria" />
+          <SectionTitle
+            eyebrow="Avisos"
+            title="Da secretaria"
+            actionLabel="Ver todos"
+            actionHref="/avisos"
+          />
           <Card className="px-3.5 py-1.5">
             {avisos.map((aviso) => (
               <div key={aviso.id} className="flex gap-3.5 border-b border-border py-3.5 last:border-b-0">
@@ -172,7 +177,9 @@ export default async function ComunidadePage() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[14.5px] font-medium text-foreground">{aviso.title}</p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">{aviso.body}</p>
+                  {/* Duas linhas e para: aqui é vitrine. O texto inteiro
+                      está em /avisos, no "Ver todos" acima. */}
+                  <p className="mt-0.5 line-clamp-2 text-[12.5px] text-muted">{aviso.body}</p>
                 </div>
               </div>
             ))}

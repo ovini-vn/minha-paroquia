@@ -223,7 +223,7 @@ export default async function HomePage() {
         <Card className="px-3.5 py-1.5">
           {latestAviso && (
             <RowLink
-              href="/inicio"
+              href="/avisos"
               icon={Megaphone}
               title={latestAviso.title}
               subtitle={latestAviso.body}

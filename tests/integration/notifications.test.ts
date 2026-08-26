@@ -7,6 +7,8 @@ import { prisma } from "@/server/db/prisma";
 import {
   listMyNotifications,
   markNotificationRead,
+  notifyUser,
+  openNotification,
   markAllNotificationsRead,
   setPreference,
 } from "@/server/modules/notifications/service";
@@ -133,5 +135,55 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
 
     const remaining = await listMyNotifications(parishId, fielId);
     expect(remaining.every((n) => n.readAt !== null)).toBe(true);
+  });
+
+  it("abrir a notificação devolve para onde ela leva, e a dá por lida", async () => {
+    // Antes a notificação dizia o que tinha acontecido e parava aí: quem
+    // lia "Você serve amanhã na liturgia" precisava descobrir sozinho em
+    // qual tela ver o horário.
+    await withTenantContext(parishId, (tx) =>
+      notifyUser(tx, {
+        parishId,
+        userId: fielId,
+        category: "pessoal",
+        linkPath: "/servir/liturgia",
+        title: "Você serve amanhã na liturgia",
+        body: "Leitura · 19:00",
+      }),
+    );
+
+    const criada = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.title === "Você serve amanhã na liturgia",
+    )!;
+
+    const destino = await openNotification(parishId, criada.id, fielId);
+    expect(destino).toBe("/servir/liturgia");
+
+    const depois = await listMyNotifications(parishId, fielId);
+    expect(depois.find((n) => n.id === criada.id)?.readAt).not.toBeNull();
+  });
+
+  it("não abre — nem marca como lida — a notificação de outra pessoa", async () => {
+    // O destino sai do banco a partir do id. Se o id de outro usuário
+    // passasse, daria para marcar como lido o que não é seu.
+    await withTenantContext(parishId, (tx) =>
+      notifyUser(tx, {
+        parishId,
+        userId: priestUserId,
+        category: "pessoal",
+        linkPath: "/painel",
+        title: "Só do padre",
+        body: "Conteúdo alheio",
+      }),
+    );
+
+    const doOutro = (await listMyNotifications(parishId, priestUserId)).find(
+      (n) => n.title === "Só do padre",
+    )!;
+
+    expect(await openNotification(parishId, doOutro.id, fielId)).toBeNull();
+
+    const doPadre = await listMyNotifications(parishId, priestUserId);
+    expect(doPadre.find((n) => n.id === doOutro.id)?.readAt).toBeNull();
   });
 });

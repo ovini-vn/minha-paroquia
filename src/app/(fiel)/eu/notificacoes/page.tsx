@@ -1,7 +1,8 @@
-import { Bell, BellRing, Check, CheckCheck } from "lucide-react";
+import { Bell, BellRing, Check, CheckCheck, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyNotifications, listMyPreferences } from "@/server/modules/notifications/service";
 import {
+  abrirNotificacaoAction,
   markNotificationReadAction,
   markAllNotificationsReadAction,
   setPreferenceAction,
@@ -115,19 +116,17 @@ export default async function NotificationsPage() {
         <Card className="px-3.5 py-1.5">
           {notifications.map((notification) => {
             const lida = Boolean(notification.readAt);
-            return (
-              <div
-                key={notification.id}
-                className={cn(
-                  "flex gap-3.5 border-b border-border py-3.5 last:border-b-0",
-                  lida && "opacity-60",
-                )}
-              >
+            // Nem toda notificação tem para onde ir: as antigas foram
+            // gravadas antes de existir destino, e algumas só comunicam.
+            const leva = Boolean(notification.linkPath);
+
+            const conteudo = (
+              <>
                 <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
                   <Bell className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-2 text-[14.5px] font-medium text-foreground">
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 text-[14.5px] font-medium text-foreground">
                     {notification.title}
                     {/* Ponto dourado no lugar de texto: o não lido se vê de relance. */}
                     {!lida && (
@@ -136,15 +135,51 @@ export default async function NotificationsPage() {
                         aria-label="Não lida"
                       />
                     )}
-                  </p>
-                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                  </span>
+                  <span className="mt-0.5 block text-[12.5px] leading-relaxed text-muted">
                     {notification.body}
-                  </p>
-                  <p className="mt-1.5 text-[11px] uppercase tracking-[0.04em] text-muted">
+                  </span>
+                  <span className="mt-1.5 block text-[11px] uppercase tracking-[0.04em] text-muted">
                     {NOTIFICATION_CATEGORY_LABELS[notification.category]} ·{" "}
                     {formatDateTime(notification.createdAt)}
-                  </p>
-                </div>
+                  </span>
+                </span>
+              </>
+            );
+
+            return (
+              <div
+                key={notification.id}
+                className={cn(
+                  "flex items-center gap-1 border-b border-border last:border-b-0",
+                  lida && "opacity-60",
+                )}
+              >
+                {leva ? (
+                  // Um formulário, e não um link: abrir precisa marcar como
+                  // lida no servidor antes de navegar. O formulário de
+                  // "marcar lida" fica FORA deste — form dentro de form é
+                  // inválido em HTML e o navegador desmonta o de dentro.
+                  <form action={abrirNotificacaoAction} className="min-w-0 flex-1">
+                    <input type="hidden" name="id" value={notification.id} />
+                    <button
+                      type="submit"
+                      className="flex w-full items-center gap-3.5 py-3.5 text-left transition-colors hover:bg-primary-tint"
+                    >
+                      {conteudo}
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 text-border-strong"
+                        strokeWidth={1.5}
+                        aria-hidden
+                      />
+                    </button>
+                  </form>
+                ) : (
+                  <div className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5">{conteudo}</div>
+                )}
+
+                {/* Continua sendo possível dispensar sem abrir — nem tudo
+                    que se lê na lista precisa de uma visita. */}
                 {!lida && (
                   <form action={markNotificationReadAction} className="shrink-0 self-center">
                     <input type="hidden" name="id" value={notification.id} />
@@ -153,7 +188,7 @@ export default async function NotificationsPage() {
                       variant="ghost"
                       size="sm"
                       className="px-2.5"
-                      aria-label="Marcar como lida"
+                      aria-label="Marcar como lida sem abrir"
                     >
                       <Check className="h-4 w-4" strokeWidth={1.5} aria-hidden />
                     </Button>

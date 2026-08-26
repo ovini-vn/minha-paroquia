@@ -76,29 +76,30 @@ export default async function HomePage() {
       {/* Hero — portal e caminho dourado, a assinatura da marca. */}
       <BleedTop>
         <section className="relative overflow-hidden bg-wash px-[18px] pb-[26px] pt-[30px] text-white">
-          {/* A foto da igreja entra como textura do cabeçalho, sob o mesmo
-              gradiente da marca. É a igreja por onde a pessoa passa — e o
-              véu mantém o nome legível sobre foto clara ou escura, o que uma
-              foto crua na frente não garantiria. */}
-          {parish?.historiaFotoUrl && (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={parish.historiaFotoUrl}
-                alt=""
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-              />
-              <span className="pointer-events-none absolute inset-0 bg-wash opacity-[0.86]" aria-hidden />
-            </>
-          )}
           <Arch className="pointer-events-none absolute inset-0 h-full w-full opacity-50" />
-          <div className="relative">
-            <p className="text-[12.5px] tracking-[0.04em] text-white/70">
-              {greeting()}, {firstName}
-            </p>
-            <h1 className="mt-1.5 font-serif text-[32px] font-medium leading-[1.1]">
-              {session.membership.parishName}
-            </h1>
+          {/* O mesmo círculo da Comunidade: a foto da paróquia identifica o
+              lugar sem disputar espaço com o nome. */}
+          <div className="relative flex items-center gap-3.5">
+            {parish?.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={parish.logoUrl}
+                alt=""
+                className="h-14 w-14 shrink-0 rounded-full border border-gold/45 object-cover"
+              />
+            ) : (
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-gold/45 bg-white/10">
+                <Church className="h-6 w-6" strokeWidth={1.5} aria-hidden />
+              </span>
+            )}
+            <div className="min-w-0">
+              <p className="text-[12.5px] tracking-[0.04em] text-white/70">
+                {greeting()}, {firstName}
+              </p>
+              <h1 className="mt-1 font-serif text-[27px] font-medium leading-[1.12]">
+                {session.membership.parishName}
+              </h1>
+            </div>
           </div>
         </section>
       </BleedTop>

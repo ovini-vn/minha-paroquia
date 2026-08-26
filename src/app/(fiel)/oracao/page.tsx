@@ -85,10 +85,15 @@ export default async function OracaoPage() {
           agravante de exigir trabalho diário para não parecer abandonado.
 
           O contraste é o dos atalhos do Início: fundo cheio, ícone branco.
-          Fica só nesta tela — se tudo se destaca, nada se destaca. */}
+          Fica só nesta tela — se tudo se destaca, nada se destaca.
+
+          NÃO sobrepor à faixa litúrgica. O card que ficava aqui antes era
+          branco, e branco sobre o verde da faixa contrasta; este é verde,
+          e sobreposto ele desaparece dentro dela. Precisa do fundo claro
+          da página embaixo para ter o mesmo efeito do Início. */}
       <Link
         href="/biblia"
-        className="relative z-[2] -mt-[22px] flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform hover:-translate-y-px"
+        className="mt-5 flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform hover:-translate-y-px"
       >
         <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
           <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />

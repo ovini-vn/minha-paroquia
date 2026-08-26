@@ -84,7 +84,11 @@ describe("quem assina a Palavra do Padre", () => {
       { parocoNome: "Pe. Sandro", parocoTitulo: null, parocoHistoria: null, parocoFotoUrl: null },
       { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
     );
-    expect(assinaturaDoPost(autor, paroco)).toEqual({ nome: "Pe. Sandro", titulo: "Pároco" });
+    expect(assinaturaDoPost(autor, paroco)).toEqual({
+      nome: "Pe. Sandro",
+      titulo: "Pároco",
+      fotoUrl: null,
+    });
   });
 
   it("não mexe no post de outro sacerdote", () => {
@@ -95,6 +99,7 @@ describe("quem assina a Palavra do Padre", () => {
     expect(assinaturaDoPost(outroSacerdote, paroco)).toEqual({
       nome: "Pe. Marcos",
       titulo: "Vigário",
+      fotoUrl: null,
     });
   });
 
@@ -102,6 +107,7 @@ describe("quem assina a Palavra do Padre", () => {
     expect(assinaturaDoPost(autor, null)).toEqual({
       nome: "Vinicius Almeida",
       titulo: "Pároco",
+      fotoUrl: null,
     });
   });
 
@@ -122,13 +128,67 @@ describe("post publicado por quem não é clero", () => {
 
   it("assina com o pároco da paróquia", () => {
     // A secretaria publica; a palavra é do pároco.
-    expect(assinaturaDoPost(null, comParoco)).toEqual({ nome: "Pe. Sandro", titulo: "Pároco" });
+    expect(assinaturaDoPost(null, comParoco)).toEqual({
+      nome: "Pe. Sandro",
+      titulo: "Pároco",
+      fotoUrl: null,
+    });
   });
 
   it("sem pároco cadastrado, assina como a paróquia — nunca com nome inventado", () => {
     expect(assinaturaDoPost(null, null)).toEqual({
       nome: "Paróquia",
       titulo: "Palavra do Padre",
+      fotoUrl: null,
     });
+  });
+});
+
+describe("o rosto que assina", () => {
+  const contaDoAdmin = {
+    id: "perfil-1",
+    title: "Pároco",
+    photoUrl: "https://exemplo.org/quem-operou.jpg",
+    user: { fullName: "Vinicius Almeida", photoUrl: null },
+  };
+
+  it("usa a foto cadastrada em Nosso Pároco, não a da conta que publicou", () => {
+    // Quem opera a ferramenta pode não ser o padre — e é o rosto dele que a
+    // comunidade precisa reconhecer na mensagem.
+    const paroco = resolverParoco(
+      {
+        parocoNome: "Pe. Sandro",
+        parocoTitulo: null,
+        parocoHistoria: null,
+        parocoFotoUrl: "https://exemplo.org/o-padre.jpg",
+      },
+      { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
+    );
+
+    expect(assinaturaDoPost(contaDoAdmin, paroco).fotoUrl).toBe("https://exemplo.org/o-padre.jpg");
+  });
+
+  it("outro sacerdote assina com a foto da própria conta", () => {
+    const outro = {
+      id: "perfil-2",
+      title: "Vigário",
+      photoUrl: "https://exemplo.org/vigario.jpg",
+      user: { fullName: "Pe. Marcos", photoUrl: null },
+    };
+    expect(assinaturaDoPost(outro, null).fotoUrl).toBe("https://exemplo.org/vigario.jpg");
+  });
+
+  it("sem perfil de sacerdote, cai na foto do usuário", () => {
+    const semPerfil = {
+      id: "perfil-3",
+      title: "Sacerdote",
+      photoUrl: null,
+      user: { fullName: "Pe. Ana", photoUrl: "https://exemplo.org/conta.jpg" },
+    };
+    expect(assinaturaDoPost(semPerfil, null).fotoUrl).toBe("https://exemplo.org/conta.jpg");
+  });
+
+  it("sem foto em lugar nenhum, devolve null e a tela mostra as iniciais", () => {
+    expect(assinaturaDoPost(null, null).fotoUrl).toBeNull();
   });
 });

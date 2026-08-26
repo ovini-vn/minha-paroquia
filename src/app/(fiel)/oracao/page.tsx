@@ -1,4 +1,4 @@
-import { HandHeart, Footprints, ScrollText, Sparkles, BookOpen } from "lucide-react";
+import { HandHeart, Footprints, ScrollText, Sparkles, BookOpen, MessagesSquare } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listCommunityPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getTodayContext } from "@/server/modules/liturgia/daily-service";
@@ -111,6 +111,12 @@ export default async function OracaoPage() {
         </Eyebrow>
         <Card className="px-3.5 py-1.5">
           <RowLink
+            href="/biblia"
+            icon={BookOpen}
+            title="Bíblia"
+            subtitle="Os 73 livros, para ler e procurar"
+          />
+          <RowLink
             href="/oracao/pedidos"
             icon={HandHeart}
             title="Pedidos de oração"
@@ -124,7 +130,7 @@ export default async function OracaoPage() {
           />
           <RowLink
             href="/comunidade/sacerdotes"
-            icon={BookOpen}
+            icon={MessagesSquare}
             title="Falar com um sacerdote"
             subtitle="Agende uma conversa ou confissão"
           />

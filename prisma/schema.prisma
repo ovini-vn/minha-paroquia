@@ -1467,3 +1467,28 @@ model NotificationDispatch {
   @@index([parishId, createdAt])
   @@map("notification_dispatches")
 }
+
+/// Um versículo da Bíblia, na tradução do Pe. Matos Soares.
+///
+/// Tabela GLOBAL, sem parish_id e sem RLS: a Escritura é a mesma em toda
+/// paróquia, não é dado de ninguém e não há o que isolar. É catálogo, como
+/// papéis e permissões — não conteúdo de comunidade.
+///
+/// A chave é o próprio endereço do versículo (livro, capítulo, número).
+/// Não há id artificial porque não faz falta: "joao 3:16" já identifica de
+/// forma única e é como o texto é citado no mundo real. De quebra, a chave
+/// composta impede duplicar um versículo se a importação rodar duas vezes.
+///
+/// `book` guarda o SLUG do catálogo em src/lib/bible-books.ts, não o nome
+/// que veio da fonte — a fonte usa português europeu ("Deuteronómio",
+/// "Livro Primeiro de Samuel") e o app fala português brasileiro.
+model BibleVerse {
+  book    String
+  chapter Int
+  number  Int
+  text    String
+
+  @@id([book, chapter, number])
+  @@index([book, chapter])
+  @@map("bible_verses")
+}

@@ -1,20 +1,21 @@
 /**
  * Cânon católico (73 livros) com a contagem de capítulos de cada um.
  *
- * ATENÇÃO: este módulo está intencionalmente SEM USO no momento. A tela de
- * Bíblia foi retirada do app enquanto a paróquia não tiver licença de uma
- * das traduções — não faz sentido expor um leitor que não pode mostrar
- * texto. O mapeamento do cânon fica aqui pronto para quando a licença
- * existir; não apagar por parecer código morto.
- *
  * Nomes de livros e número de capítulos são FATOS de estrutura, não texto
- * protegido — por isso podem viver aqui. O TEXTO de cada versículo é que
- * vem de traduções licenciadas (Ave Maria, CNBB, Edição Pastoral, Bíblia de
- * Jerusalém) e não pode ser reproduzido sem licença.
+ * protegido. O texto dos versículos mora no banco (tabela bible_verses) e
+ * é a tradução do Pe. Matos Soares, em domínio público — Ave Maria, CNBB,
+ * Edição Pastoral e Jerusalém continuam protegidas e não entram aqui.
  *
- * A ordem e a divisão seguem o cânon católico, incluindo os sete
- * deuterocanônicos (Tobias, Judite, Sabedoria, Eclesiástico, Baruc, 1 e 2
- * Macabeus) — ausentes das edições protestantes.
+ * A ordem inclui os sete deuterocanônicos (Tobias, Judite, Sabedoria,
+ * Eclesiástico, Baruc, 1 e 2 Macabeus), ausentes das edições protestantes.
+ *
+ * ATENÇÃO à contagem de capítulos: ela descreve ESTA tradução, e não uma
+ * verdade universal. Matos Soares segue a Vulgata, que difere da numeração
+ * hebraica em três livros — Ester tem 16 capítulos (os seis últimos são as
+ * adições gregas, que as edições protestantes não trazem), Joel tem 3 onde
+ * a hebraica tem 4, e Malaquias tem 4 onde a hebraica tem 3. Os números
+ * abaixo foram conferidos versículo a versículo contra o texto importado;
+ * mudá-los para "o que a minha Bíblia de papel diz" quebra o leitor.
  */
 
 export type Testament = "antigo" | "novo";
@@ -50,7 +51,7 @@ export const BIBLE_BOOKS: BibleBook[] = [
   { slug: "neemias", name: "Neemias", abbrev: "Ne", chapters: 13, testament: "antigo", group: "Históricos" },
   { slug: "tobias", name: "Tobias", abbrev: "Tb", chapters: 14, testament: "antigo", group: "Históricos" },
   { slug: "judite", name: "Judite", abbrev: "Jt", chapters: 16, testament: "antigo", group: "Históricos" },
-  { slug: "ester", name: "Ester", abbrev: "Est", chapters: 10, testament: "antigo", group: "Históricos" },
+  { slug: "ester", name: "Ester", abbrev: "Est", chapters: 16, testament: "antigo", group: "Históricos" },
   { slug: "1-macabeus", name: "1 Macabeus", abbrev: "1Mc", chapters: 16, testament: "antigo", group: "Históricos" },
   { slug: "2-macabeus", name: "2 Macabeus", abbrev: "2Mc", chapters: 15, testament: "antigo", group: "Históricos" },
 
@@ -71,7 +72,7 @@ export const BIBLE_BOOKS: BibleBook[] = [
   { slug: "ezequiel", name: "Ezequiel", abbrev: "Ez", chapters: 48, testament: "antigo", group: "Profetas" },
   { slug: "daniel", name: "Daniel", abbrev: "Dn", chapters: 14, testament: "antigo", group: "Profetas" },
   { slug: "oseias", name: "Oseias", abbrev: "Os", chapters: 14, testament: "antigo", group: "Profetas" },
-  { slug: "joel", name: "Joel", abbrev: "Jl", chapters: 4, testament: "antigo", group: "Profetas" },
+  { slug: "joel", name: "Joel", abbrev: "Jl", chapters: 3, testament: "antigo", group: "Profetas" },
   { slug: "amos", name: "Amós", abbrev: "Am", chapters: 9, testament: "antigo", group: "Profetas" },
   { slug: "abdias", name: "Abdias", abbrev: "Ab", chapters: 1, testament: "antigo", group: "Profetas" },
   { slug: "jonas", name: "Jonas", abbrev: "Jn", chapters: 4, testament: "antigo", group: "Profetas" },
@@ -81,7 +82,7 @@ export const BIBLE_BOOKS: BibleBook[] = [
   { slug: "sofonias", name: "Sofonias", abbrev: "Sf", chapters: 3, testament: "antigo", group: "Profetas" },
   { slug: "ageu", name: "Ageu", abbrev: "Ag", chapters: 2, testament: "antigo", group: "Profetas" },
   { slug: "zacarias", name: "Zacarias", abbrev: "Zc", chapters: 14, testament: "antigo", group: "Profetas" },
-  { slug: "malaquias", name: "Malaquias", abbrev: "Ml", chapters: 3, testament: "antigo", group: "Profetas" },
+  { slug: "malaquias", name: "Malaquias", abbrev: "Ml", chapters: 4, testament: "antigo", group: "Profetas" },
 
   // Evangelhos e Atos
   { slug: "mateus", name: "Mateus", abbrev: "Mt", chapters: 28, testament: "novo", group: "Evangelhos" },
@@ -119,12 +120,3 @@ export function findBook(slug: string): BibleBook | undefined {
   return BIBLE_BOOKS.find((b) => b.slug === slug);
 }
 
-/** Traduções que a paróquia pode querer usar — nenhuma embutida no app. */
-export const BIBLE_TRANSLATIONS = [
-  { code: "ave-maria", name: "Ave Maria" },
-  { code: "cnbb", name: "Bíblia Sagrada — CNBB" },
-  { code: "pastoral", name: "Edição Pastoral — Paulus" },
-  { code: "jerusalem", name: "Bíblia de Jerusalém" },
-] as const;
-
-export type BibleTranslationCode = (typeof BIBLE_TRANSLATIONS)[number]["code"];

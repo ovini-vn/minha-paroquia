@@ -19,7 +19,7 @@ import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { FeastList } from "@/components/domain/FeastList";
 import { formatDateTime } from "@/lib/date";
-import { idDoVideoDoYoutube, capaDoVideo } from "@/lib/youtube";
+import { VideoDoPost } from "@/components/domain/VideoDoPost";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 
 const POST_PREVIEW_LABEL: Record<string, string> = {
@@ -69,13 +69,6 @@ export default async function HomePage() {
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
   const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
 
-  // Só a capa: o player fica na Comunidade, onde a pessoa foi olhar a
-  // mensagem de propósito.
-  const idDoVideo =
-    latestPost?.mediaType === "video" && latestPost.mediaUrl
-      ? idDoVideoDoYoutube(latestPost.mediaUrl)
-      : null;
-  const capaDoVideoDoPost = idDoVideo ? capaDoVideo(idDoVideo) : null;
   const season = getLiturgicalSeason(new Date());
 
   return (
@@ -187,23 +180,21 @@ export default async function HomePage() {
                 : POST_PREVIEW_LABEL[latestPost.mediaType]}
             </p>
 
-            {/* A capa do vídeo aqui é só imagem, sem player: o Início é a
-                primeira tela do dia e não deve carregar nada do YouTube.
-                Quem quiser assistir toca e vai para a Comunidade. */}
-            {capaDoVideoDoPost && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={capaDoVideoDoPost}
-                alt=""
-                loading="lazy"
-                className="mt-3 aspect-video w-full rounded-lg border border-border object-cover"
-              />
+            {/* A capa É o botão: tocar nela abre o vídeo aqui mesmo. Continua
+                sem falar com o YouTube antes do toque — o que carrega é a
+                capa, e o player só depois que alguém pede. */}
+            {latestPost.mediaType === "video" && latestPost.mediaUrl && (
+              <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
             )}
 
-            <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
-              <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-              {latestPost.mediaType === "video" ? "Assistir" : "Ler mensagem"}
-            </LinkButton>
+            {/* Post de vídeo não precisa do botão: assistir é a ação, e ela
+                está na própria capa. "Ver todas" no título leva às anteriores. */}
+            {latestPost.mediaType !== "video" && (
+              <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
+                <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                Ler mensagem
+              </LinkButton>
+            )}
           </article>
         </section>
       )}

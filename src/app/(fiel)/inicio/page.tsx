@@ -32,8 +32,8 @@ const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
   { href: "/servir", icon: HeartHandshake, label: "Servir" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
-  // Leva à aba Oração, onde ficam o Evangelho em áudio e as leituras.
-  { href: "/oracao", icon: BookOpen, label: "Liturgia" },
+  // Leva à aba Palavra: Bíblia, Evangelho do dia e as leituras.
+  { href: "/oracao", icon: BookOpen, label: "Palavra" },
   { href: "/doacao", icon: HandCoins, label: "Doação" },
   { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;

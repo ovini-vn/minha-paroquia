@@ -55,7 +55,7 @@ export default async function PainelLiturgiaDoDiaPage() {
           <EmptyState
             icon={BookOpen}
             title="Nada publicado de hoje em diante"
-            description="Publique acima as leituras do dia — elas aparecem na aba Oração para toda a comunidade."
+            description="Publique acima as leituras do dia — elas aparecem na aba Palavra para toda a comunidade."
           />
         ) : (
           <Card className="px-3.5 py-1.5">

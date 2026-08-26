@@ -1,4 +1,13 @@
-import { HandHeart, Footprints, ScrollText, Sparkles, BookOpen, MessagesSquare } from "lucide-react";
+import Link from "next/link";
+import {
+  HandHeart,
+  Footprints,
+  ScrollText,
+  Sparkles,
+  BookOpen,
+  MessagesSquare,
+  ChevronRight,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listCommunityPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getTodayContext } from "@/server/modules/liturgia/daily-service";
@@ -109,13 +118,32 @@ export default async function OracaoPage() {
         <Eyebrow tone="accent" className="mb-3">
           Rezar hoje
         </Eyebrow>
+
+        {/* A Bíblia vem primeiro e com o mesmo contraste dos atalhos do
+            Início — fundo cheio, ícone branco. É o único item aqui que não
+            é uma tarefa da paróquia: é o texto em si, e some se ficar como
+            mais uma linha cinza numa lista.
+
+            O tratamento é local a esta seção de propósito. Repetir esse
+            peso nas outras telas gastaria o efeito: se tudo se destaca,
+            nada se destaca. */}
+        <Link
+          href="/biblia"
+          className="mb-2.5 flex items-center gap-3.5 rounded-xl bg-primary px-4 py-4 text-white shadow-sm transition-transform hover:-translate-y-px"
+        >
+          <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
+            <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-serif text-[19px] font-semibold leading-tight">Bíblia</span>
+            <span className="mt-0.5 block text-[12.5px] leading-snug text-white/80">
+              Os 73 livros, para ler e procurar
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
+        </Link>
+
         <Card className="px-3.5 py-1.5">
-          <RowLink
-            href="/biblia"
-            icon={BookOpen}
-            title="Bíblia"
-            subtitle="Os 73 livros, para ler e procurar"
-          />
           <RowLink
             href="/oracao/pedidos"
             icon={HandHeart}

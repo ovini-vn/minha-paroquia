@@ -9,9 +9,10 @@ import { EscolherForm } from "./EscolherForm";
  * A porta de entrada de quem não tem convite.
  *
  * Exigir convite para simplesmente ver o horário da missa afastava
- * justamente quem o app deveria alcançar. A trava mudou de lugar: entra na
- * hora, e o que espera confirmação da secretaria é o acesso às PESSOAS —
- * ver o mural de oração, encontrar alguém pelo nome.
+ * justamente quem o app deveria alcançar. Escolher a paróquia aqui já faz
+ * da pessoa um membro: não há aprovação depois. Quem for FIEL não tem
+ * permissão nenhuma além de acompanhar a própria paróquia, e é o papel que
+ * guarda o resto — não uma fila de espera.
  */
 export default async function EscolherParoquiaPage({
   searchParams,
@@ -32,8 +33,7 @@ export default async function EscolherParoquiaPage({
         Qual é a sua paróquia?
       </h1>
       <p className="mt-2.5 text-[15px] leading-relaxed text-muted">
-        Escolha e você já entra. A secretaria confirma depois — enquanto isso você acompanha as
-        missas, os avisos e a agenda normalmente.
+        Escolha e pronto, você já faz parte. Nada a aprovar, ninguém a esperar.
       </p>
 
       <div className="mt-6">

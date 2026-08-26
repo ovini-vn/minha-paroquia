@@ -72,24 +72,23 @@ const PRIEST_ROLE_CODES = ["SACERDOTE", "PAROCO"] as const;
  * inflava a conta, e quem entrou escolhendo a paróquia sozinho não aparecia
  * em lugar nenhum. Agora conta gente.
  *
- * `aguardando` é o mais importante da lista: são pessoas que já escolheram
- * esta paróquia e estão esperando alguém confirmar. Sem esse número no
- * painel, elas ficavam invisíveis numa seção de outra tela.
+ * `fielCount` conta quem escolheu esta paróquia no aplicativo — não quem
+ * recebeu convite. É a medida que o pároco pediu: gente que chegou, não
+ * código distribuído.
  */
 export async function getParishDashboardCounts(parishId: string) {
   return withTenantContext(parishId, async (tx) => {
-    const [fielCount, sacerdoteCount, aguardando, sairam] = await Promise.all([
+    const [fielCount, sacerdoteCount, sairam] = await Promise.all([
       tx.parishMembership.count({ where: { parishId, status: "active" } }),
       tx.parishMembership.count({
         where: { parishId, status: "active", role: { code: { in: [...PRIEST_ROLE_CODES] } } },
       }),
-      tx.parishMembership.count({ where: { parishId, status: "pendente" } }),
       // Vínculo inativo nesta paróquia é quem escolheu outra depois: quando
       // alguém troca, o vínculo antigo é desativado, não apagado.
       tx.parishMembership.count({ where: { parishId, status: "inactive" } }),
     ]);
 
-    return { fielCount, sacerdoteCount, aguardando, sairam };
+    return { fielCount, sacerdoteCount, sairam };
   });
 }
 
@@ -349,17 +348,19 @@ export function listParishesForJoin(busca?: string, limit = 30) {
 }
 
 /**
- * A pessoa escolhe a paróquia e entra na hora, como PENDENTE.
+ * A pessoa escolhe a paróquia e entra. Ponto — sem aprovação de ninguém.
  *
- * Pendente enxerga a vida pública da paróquia — missas, agenda, avisos,
- * eventos, sacerdotes, pastorais. NÃO enxerga as outras pessoas. A
- * secretaria confirma depois, e aí vira membro pleno.
+ * Já houve um estado intermediário aqui, "pendente", herdado do tempo em
+ * que se entrava por código de convite. Ele não protegia nada que o papel
+ * já não protegesse: FIEL não tem permissão nenhuma, e o mural de oração
+ * agora passa por moderação antes de publicar qualquer nome. O que o
+ * pendente fazia de fato era prender a pessoa num limbo — sem avisos, sem
+ * resumo semanal, sem aparecer na contagem — enquanto esperava alguém que
+ * não tinha sido avisado de que havia alguém esperando.
  *
- * A trava está no acesso às pessoas, não na porta de entrada: exigir
- * convite para simplesmente ver o horário da missa afastava justamente quem
- * o app deveria alcançar.
+ * Quem quer ver o horário da missa não deve esperar por ninguém.
  */
-export async function joinParishAsPending(parishId: string, userId: string) {
+export async function joinParish(parishId: string, userId: string) {
   const paroquia = await withPlatformContext((tx) =>
     tx.parish.findUnique({ where: { id: parishId }, select: { id: true } }),
   );
@@ -374,7 +375,7 @@ export async function joinParishAsPending(parishId: string, userId: string) {
   // acontece pelo caminho de "minhas próprias linhas", que é justamente o
   // que a política permite ler por user_id.
   const anterior = await withOwnMembershipLookup(userId, (tx) =>
-    tx.parishMembership.findFirst({ where: { userId, status: { in: ["active", "pendente"] } } }),
+    tx.parishMembership.findFirst({ where: { userId, status: "active" } }),
   );
 
   if (anterior?.parishId === parishId) return anterior;
@@ -393,38 +394,7 @@ export async function joinParishAsPending(parishId: string, userId: string) {
 
   return withTenantContext(parishId, (tx) =>
     tx.parishMembership.create({
-      data: { userId, parishId, roleId: role.id, status: "pendente" },
-    }),
-  );
-}
-
-/** Quem escolheu a paróquia e aguarda confirmação — tela da secretaria. */
-export function listPendingMembers(parishId: string) {
-  return withTenantContext(parishId, (tx) =>
-    tx.parishMembership.findMany({
-      where: { parishId, status: "pendente" },
-      orderBy: { joinedAt: "asc" },
-      include: { user: { select: { id: true, fullName: true, email: true } } },
-    }),
-  );
-}
-
-/** Confirma o vínculo: a pessoa passa a enxergar a comunidade por inteiro. */
-export function confirmMember(parishId: string, userId: string) {
-  return withTenantContext(parishId, (tx) =>
-    tx.parishMembership.updateMany({
-      where: { parishId, userId, status: "pendente" },
-      data: { status: "active" },
-    }),
-  );
-}
-
-/** Recusa: o vínculo é encerrado e a pessoa deixa de ver a paróquia. */
-export function rejectMember(parishId: string, userId: string) {
-  return withTenantContext(parishId, (tx) =>
-    tx.parishMembership.updateMany({
-      where: { parishId, userId, status: "pendente" },
-      data: { status: "inactive", leftAt: new Date() },
+      data: { userId, parishId, roleId: role.id, status: "active" },
     }),
   );
 }

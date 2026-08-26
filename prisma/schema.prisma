@@ -355,8 +355,10 @@ model RolePermission {
 
 enum MembershipStatus {
   active
-  // Escolheu a paróquia sozinho e ainda não foi confirmado pela secretaria.
-  // Enxerga a vida pública da paróquia; não enxerga as outras pessoas.
+  // LEGADO. Ninguém entra mais neste estado: quem escolhe a paróquia no
+  // onboarding já entra como `active`. O valor continua no enum porque
+  // remover valor de enum no Postgres exige recriar o tipo, e não há ganho
+  // — nenhuma linha usa e nenhum código escreve.
   pendente
   inactive
 }

@@ -4,19 +4,21 @@ import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import {
   registerParish,
   listParishesForJoin,
-  joinParishAsPending,
-  listPendingMembers,
-  confirmMember,
-  rejectMember,
+  joinParish,
   listActiveMembers,
+  getParishDashboardCounts,
 } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 /**
- * O fiel escolhe a paróquia e entra na hora, como PENDENTE. Exigir convite
- * para ver o horário da missa afastava justamente quem o app deveria
- * alcançar — a trava passou para o acesso às PESSOAS.
+ * O fiel escolhe a paróquia e entra — membro pleno, na hora, sem aprovação
+ * de ninguém.
+ *
+ * Já houve um estado "pendente" aqui, herdado do tempo do código de
+ * convite. Ele não protegia nada que o papel já não protegesse, e prendia a
+ * pessoa num limbo: sem avisos, sem resumo semanal, sem aparecer na
+ * contagem, esperando alguém que não sabia que havia alguém esperando.
  */
 describe("escolher a paróquia sem convite", () => {
   let paroquiaAId: string;
@@ -59,64 +61,51 @@ describe("escolher a paróquia sem convite", () => {
     expect(porCidade.map((p) => p.id)).toContain(paroquiaBId);
   });
 
-  it("entra na hora, como pendente — sem esperar ninguém", async () => {
-    const v = await joinParishAsPending(paroquiaAId, visitanteId);
-    expect(v.status).toBe("pendente");
+  it("entra na hora como membro pleno — sem esperar ninguém", async () => {
+    const v = await joinParish(paroquiaAId, visitanteId);
+    expect(v.status).toBe("active");
     expect(v.parishId).toBe(paroquiaAId);
   });
 
-  it("pendente NÃO conta como membro da comunidade", async () => {
-    // listActiveMembers alimenta as telas que mostram pessoas. Enquanto não
-    // for confirmado, o visitante não aparece nelas.
+  it("aparece na comunidade e na contagem imediatamente", async () => {
+    // É o que o pendente não fazia: ninguém sabia que a pessoa tinha
+    // chegado, e ela não recebia nada.
     const ativos = await listActiveMembers(paroquiaAId);
-    expect(ativos.some((m) => m.user.id === visitanteId)).toBe(false);
+    expect(ativos.some((m) => m.user.id === visitanteId)).toBe(true);
 
-    const pendentes = await listPendingMembers(paroquiaAId);
-    expect(pendentes.map((p) => p.user.id)).toContain(visitanteId);
+    const counts = await getParishDashboardCounts(paroquiaAId);
+    expect(counts.fielCount).toBeGreaterThanOrEqual(1);
   });
 
   it("escolher de novo a mesma paróquia não duplica vínculo", async () => {
-    await joinParishAsPending(paroquiaAId, visitanteId);
-    expect(await listPendingMembers(paroquiaAId)).toHaveLength(1);
+    await joinParish(paroquiaAId, visitanteId);
+    const ativos = await listActiveMembers(paroquiaAId);
+    expect(ativos.filter((m) => m.user.id === visitanteId)).toHaveLength(1);
   });
 
   it("trocar de paróquia encerra a anterior — uma por vez", async () => {
-    await joinParishAsPending(paroquiaBId, visitanteId);
+    await joinParish(paroquiaBId, visitanteId);
 
-    expect(await listPendingMembers(paroquiaAId)).toHaveLength(0);
-    expect((await listPendingMembers(paroquiaBId)).map((p) => p.user.id)).toContain(visitanteId);
-  });
-
-  it("confirmar transforma em membro pleno", async () => {
-    await confirmMember(paroquiaBId, visitanteId);
-
-    expect(await listPendingMembers(paroquiaBId)).toHaveLength(0);
-    const ativos = await listActiveMembers(paroquiaBId);
-    expect(ativos.some((m) => m.user.id === visitanteId)).toBe(true);
-  });
-
-  it("recusar encerra o vínculo, e a pessoa deixa de ver a paróquia", async () => {
-    const outro = await registerUser({
-      fullName: "Visitante Recusado",
-      email: `recusado-${stamp}@test.comunidade.app`,
-      password: "SenhaForte123",
-    });
-    userIds.push(outro.id);
-
-    await joinParishAsPending(paroquiaAId, outro.id);
-    await rejectMember(paroquiaAId, outro.id);
-
-    expect(await listPendingMembers(paroquiaAId)).toHaveLength(0);
-    const restou = await withTenantContext(paroquiaAId, (tx) =>
-      tx.parishMembership.findFirst({ where: { userId: outro.id, parishId: paroquiaAId } }),
+    expect((await listActiveMembers(paroquiaAId)).some((m) => m.user.id === visitanteId)).toBe(
+      false,
     );
-    expect(restou?.status).toBe("inactive");
-    expect(restou?.leftAt).not.toBeNull();
+    expect((await listActiveMembers(paroquiaBId)).some((m) => m.user.id === visitanteId)).toBe(
+      true,
+    );
+  });
+
+  it("a paróquia antiga guarda a saída, não apaga o vínculo", async () => {
+    // É o que alimenta o contador de "foram para outra" no painel.
+    const antigo = await withTenantContext(paroquiaAId, (tx) =>
+      tx.parishMembership.findFirst({ where: { userId: visitanteId, parishId: paroquiaAId } }),
+    );
+    expect(antigo?.status).toBe("inactive");
+    expect(antigo?.leftAt).not.toBeNull();
   });
 
   it("recusa paróquia inexistente", async () => {
     await expect(
-      joinParishAsPending("00000000-0000-0000-0000-000000000000", visitanteId),
+      joinParish("00000000-0000-0000-0000-000000000000", visitanteId),
     ).rejects.toThrow();
   });
 });

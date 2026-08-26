@@ -30,12 +30,10 @@ export default async function OracaoPage() {
   const context = getTodayContext(today);
   const [liturgy, communityRequests, palavraDoDia] = await Promise.all([
     getLiturgyForDate(session.membership.parishId, today),
-    // Mural só para quem a paróquia confirmou: o pedido traz o NOME de
-    // quem pediu, e é informação de outra pessoa. Quem acabou de
-    // escolher a paróquia sozinho ainda não alcança isso.
-    session.membership.confirmado
-      ? listCommunityPrayerRequests(session.membership.parishId, 3)
-      : Promise.resolve([]),
+    // O mural é aberto a todo membro. O que protege o nome de quem pede
+    // não é uma trava de entrada, é a moderação: nada aparece aqui sem um
+    // moderador ter aprovado, e o pedido anônimo esconde o nome dele.
+    listCommunityPrayerRequests(session.membership.parishId, 3),
     getPalavraDoDia(),
   ]);
 

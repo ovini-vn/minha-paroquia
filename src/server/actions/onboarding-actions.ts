@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/server/auth/guards";
 import { prisma } from "@/server/db/prisma";
 import { expressGroupInterest } from "@/server/modules/pastorais/service";
-import { joinParishAsPending } from "@/server/modules/parishes/service";
+import { joinParish } from "@/server/modules/parishes/service";
 import { AppError } from "@/server/shared/errors";
 
 /**
@@ -52,11 +52,10 @@ export async function entrarNaPastoralAction(groupId: string): Promise<void> {
 export type JoinState = { error?: string };
 
 /**
- * A pessoa escolhe a paróquia e entra na hora, como pendente.
+ * A pessoa escolhe a paróquia e entra na hora, como membro pleno.
  *
- * Não há aprovação prévia de propósito: quem quer só ver o horário da missa
- * não deve esperar ninguém. A secretaria confirma depois, e é a confirmação
- * que libera enxergar as outras pessoas.
+ * Não há aprovação de ninguém, de propósito: quem quer só ver o horário da
+ * missa não deve esperar. Ver detalhes em `joinParish`.
  */
 export async function entrarNaParoquiaAction(
   _prev: JoinState,
@@ -67,7 +66,7 @@ export async function entrarNaParoquiaAction(
   if (!parishId) return { error: "Escolha uma paróquia." };
 
   try {
-    await joinParishAsPending(parishId, session.userId);
+    await joinParish(parishId, session.userId);
   } catch (error) {
     if (error instanceof AppError) return { error: error.message };
     throw error;

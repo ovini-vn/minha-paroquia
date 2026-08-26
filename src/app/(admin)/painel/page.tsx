@@ -31,8 +31,7 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import Link from "next/link";
-import { BookOpen, Cake, ChevronRight, Church, Clock, Crown, Flag, HandCoins, HandHeart, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserPlus, UserRound, Users } from "lucide-react";
+import { BookOpen, Cake, Church, Clock, Crown, Flag, HandCoins, HandHeart, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserRound, Users } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -130,35 +129,8 @@ export default async function AdminDashboardPage() {
         <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{session.membership.parishName}</h1>
       </div>
 
-      {/* Quem está esperando confirmação vem ANTES dos números: é a única
-          coisa aqui que pede uma decisão hoje, e ela ficava escondida numa
-          seção de outra tela. */}
-      {counts.aguardando > 0 && (
-        <Link
-          href="/painel/membros"
-          className="flex items-center gap-3 rounded-lg border border-gold/45 bg-gold/10 px-4 py-3.5 transition-colors hover:border-gold"
-        >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold/20 text-[#7c5f16] dark:text-gold">
-            <UserPlus className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[14.5px] font-semibold text-foreground">
-              {counts.aguardando === 1
-                ? "1 pessoa aguardando confirmação"
-                : `${counts.aguardando} pessoas aguardando confirmação`}
-            </span>
-            <span className="mt-0.5 block text-[12.5px] text-muted">
-              Escolheram esta paróquia no aplicativo. Até confirmar, não veem a comunidade nem
-              podem receber função.
-            </span>
-          </span>
-          <ChevronRight className="h-5 w-5 shrink-0 text-muted" strokeWidth={1.5} aria-hidden />
-        </Link>
-      )}
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-3 gap-3">
         <Stat label="Fiéis" value={counts.fielCount} />
-        <Stat label="Aguardando" value={counts.aguardando} />
         <Stat label="Sacerdotes" value={counts.sacerdoteCount} />
         <Stat label="Foram para outra" value={counts.sairam} />
       </div>

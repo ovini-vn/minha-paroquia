@@ -1,0 +1,11 @@
+-- Fim do limbo: quem escolheu a paróquia no aplicativo já é membro.
+--
+-- O estado "pendente" vinha do tempo em que se entrava por código de
+-- convite. Ele não protegia nada que o papel FIEL já não protegesse — FIEL
+-- não tem permissão nenhuma —, e o mural de oração hoje passa por moderação
+-- antes de publicar qualquer nome. O que ele fazia de fato era prender a
+-- pessoa fora de tudo: sem avisos, sem resumo semanal, sem aparecer na
+-- contagem da paróquia, esperando uma confirmação que ninguém sabia dever.
+--
+-- Estas pessoas já existem e já esperaram. Entram agora.
+UPDATE parish_memberships SET status = 'active' WHERE status = 'pendente';

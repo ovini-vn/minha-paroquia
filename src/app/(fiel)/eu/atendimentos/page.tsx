@@ -8,7 +8,7 @@ import {
 } from "@/server/actions/appointment-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { Avatar } from "@/components/ui/Avatar";
@@ -48,11 +48,19 @@ export default async function AppointmentsPage() {
           Meus pedidos
         </Eyebrow>
         {myAppointments.length === 0 ? (
-          <EmptyState
-            icon={CalendarDays}
-            title="Nenhum pedido ainda"
-            description="Peça um atendimento a partir do perfil de um sacerdote, em Comunidade."
-          />
+          <>
+            <EmptyState
+              icon={CalendarDays}
+              title="Nenhum pedido ainda"
+              description="Confissão, direção espiritual ou uma conversa — escolha com quem falar."
+            />
+            {/* Antes esta tela DESCREVIA o caminho ("a partir do perfil de
+                um sacerdote, em Comunidade") em vez de levar até ele. */}
+            <LinkButton href="/comunidade/sacerdotes" className="mt-3 w-full">
+              <UserRound className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+              Falar com um sacerdote
+            </LinkButton>
+          </>
         ) : (
           <Card className="px-3.5 py-1.5">
             {myAppointments.map((appointment) => (

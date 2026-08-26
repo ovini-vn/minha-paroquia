@@ -5,6 +5,7 @@ import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { createAvailability } from "@/server/modules/availability/service";
 import { createAppointment, getAvailableSlots } from "@/server/modules/appointments/service";
+import { listPriestsWithOpenings } from "@/server/modules/priests/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 describe("atendimento pastoral: geração de horários e agendamento", () => {
@@ -104,5 +105,33 @@ describe("atendimento pastoral: geração de horários e agendamento", () => {
         scheduledAt: slot!.startsAt,
       }),
     ).rejects.toThrow();
+  });
+
+  it("a lista de sacerdotes diz quem tem horário ANTES do toque", async () => {
+    // Sem isso, quem procura confissão escolhe um nome, chega na tela de
+    // agendar e só ali descobre que aquele padre não abriu horário nenhum.
+    const comVagas = await listPriestsWithOpenings(parishId);
+    const nosso = comVagas.find((p) => p.id === priestProfileId);
+
+    expect(nosso?.vagas).toBeGreaterThan(0);
+  });
+
+  it("sacerdote sem disponibilidade aparece na lista, com zero horários", async () => {
+    // Aparecer importa: ele continua sendo alguém da paróquia. O que não
+    // pode é a lista prometer horário que não existe.
+    const semAgenda = await registerUser({
+      fullName: "Padre Sem Agenda",
+      email: `padre-sem-agenda-${Date.now()}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    userIds.push(semAgenda.id);
+
+    const perfil = await withTenantContext(parishId, (tx) =>
+      tx.priestProfile.create({ data: { userId: semAgenda.id, parishId, title: "Vigário" } }),
+    );
+
+    const comVagas = await listPriestsWithOpenings(parishId);
+    expect(comVagas.map((p) => p.id)).toContain(perfil.id);
+    expect(comVagas.find((p) => p.id === perfil.id)?.vagas).toBe(0);
   });
 });

@@ -123,7 +123,7 @@ export default async function OracaoPage() {
             subtitle="Sacramentos, missas e confissões"
           />
           <RowLink
-            href="/comunidade"
+            href="/comunidade/sacerdotes"
             icon={BookOpen}
             title="Falar com um sacerdote"
             subtitle="Agende uma conversa ou confissão"

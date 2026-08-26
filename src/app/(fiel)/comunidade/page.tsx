@@ -218,7 +218,12 @@ export default async function ComunidadePage() {
       </section>
 
       <section className="pt-7">
-        <SectionTitle eyebrow="Sacerdotes" title="Quem caminha com você" />
+        <SectionTitle
+          eyebrow="Sacerdotes"
+          title="Quem caminha com você"
+          actionLabel="Agendar"
+          actionHref="/comunidade/sacerdotes"
+        />
         {priests.length === 0 ? (
           <EmptyState
             title="Nenhum sacerdote cadastrado"

@@ -218,12 +218,12 @@ export default async function AdminDashboardPage() {
             title="Eventos"
             subtitle={`${events.length} ${events.length === 1 ? "futuro" : "futuros"}`}
           />
-          <RowLink
-            href="/painel/liturgia-do-dia"
-            icon={BookOpen}
-            title="Leituras do dia"
-            subtitle="Publique o Evangelho e uma reflexão"
-          />
+          {/* "Leituras do dia" saiu daqui: a tela do fiel que mostrava
+              essas leituras foi removida, porque repetia a Palavra do Padre
+              e exigia digitação DIÁRIA para não parecer abandonada. A rota
+              /painel/liturgia-do-dia e o que já foi publicado continuam
+              existindo — só não há mais como chegar nela por engano e
+              trabalhar para ninguém ver. */}
           <RowLink
             href="/painel/servir"
             icon={HeartHandshake}

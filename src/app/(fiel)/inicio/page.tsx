@@ -22,11 +22,7 @@ import { VideoDoPost } from "@/components/domain/VideoDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
-
-const POST_PREVIEW_LABEL: Record<string, string> = {
-  audio: "Novo áudio disponível — toque para ouvir.",
-  video: "Novo vídeo disponível — toque para assistir.",
-};
+import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },

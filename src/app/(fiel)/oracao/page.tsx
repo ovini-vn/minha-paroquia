@@ -4,6 +4,7 @@ import {
   Footprints,
   ScrollText,
   Sparkles,
+  Mic,
   BookOpen,
   MessagesSquare,
   ChevronRight,
@@ -11,10 +12,16 @@ import {
 import { getSessionContext } from "@/server/auth/session";
 import { listCommunityPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getTodayContext } from "@/server/modules/liturgia/daily-service";
-import { getLiturgyForDate } from "@/server/modules/liturgia/liturgy-of-the-day-service";
+import { getParish } from "@/server/modules/parishes/service";
+import { getParoco } from "@/server/modules/priests/service";
+import { getLatestPost } from "@/server/modules/posts/service";
+import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { LinkButton } from "@/components/ui/Button";
+import { Retrato } from "@/components/ui/Retrato";
+import { VideoDoPost } from "@/components/domain/VideoDoPost";
+import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
@@ -37,22 +44,20 @@ export default async function OracaoPage() {
 
   const today = new Date();
   const context = getTodayContext(today);
-  const [liturgy, communityRequests, palavraDoDia] = await Promise.all([
-    getLiturgyForDate(session.membership.parishId, today),
-    // O mural é aberto a todo membro. O que protege o nome de quem pede
-    // não é uma trava de entrada, é a moderação: nada aparece aqui sem um
-    // moderador ter aprovado, e o pedido anônimo esconde o nome dele.
-    listCommunityPrayerRequests(session.membership.parishId, 3),
-    getPalavraDoDia(),
-  ]);
+  const [parish, parocoRegistrado, latestPost, communityRequests, palavraDoDia] =
+    await Promise.all([
+      getParish(session.membership.parishId),
+      getParoco(session.membership.parishId),
+      getLatestPost(session.membership.parishId),
+      // O mural é aberto a todo membro. O que protege o nome de quem pede
+      // não é uma trava de entrada, é a moderação: nada aparece aqui sem um
+      // moderador ter aprovado, e o pedido anônimo esconde o nome dele.
+      listCommunityPrayerRequests(session.membership.parishId, 3),
+      getPalavraDoDia(),
+    ]);
 
-  const leituras = liturgy
-    ? [
-        { label: "1ª leitura", value: liturgy.firstReading },
-        { label: "Salmo", value: liturgy.psalm },
-        { label: "2ª leitura", value: liturgy.secondReading },
-      ].filter((r): r is { label: string; value: string } => Boolean(r.value))
-    : [];
+  const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
+  const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
 
   return (
     <div className="flex flex-col">
@@ -73,38 +78,65 @@ export default async function OracaoPage() {
         </section>
       </BleedTop>
 
-      {/* Leituras do dia — publicadas pela paróquia. */}
-      <div className="relative z-[2] -mt-[22px] rounded-lg border border-border bg-surface px-[18px] py-4 shadow">
-        <Eyebrow tone="accent">Evangelho de hoje</Eyebrow>
-        {liturgy ? (
-          <>
-            <p className="mt-1.5 font-serif text-[26px] font-semibold leading-tight text-primary">
-              {liturgy.gospelReference}
-            </p>
-            {liturgy.gospelTitle && (
-              <p className="mt-1 text-[13.5px] text-muted">{liturgy.gospelTitle}</p>
-            )}
-            {leituras.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
-                {leituras.map((r) => (
-                  <Badge key={r.label} tone="muted">
-                    {r.label}: {r.value}
-                  </Badge>
-                ))}
+      {/* A BÍBLIA vem primeiro, logo abaixo do dia litúrgico.
+          Antes havia aqui um "Evangelho de hoje" que a paróquia tinha de
+          digitar todo dia — e que ficava dizendo "sua paróquia ainda não
+          publicou". Era a mesma coisa que a Palavra do Padre, com o
+          agravante de exigir trabalho diário para não parecer abandonado.
+
+          O contraste é o dos atalhos do Início: fundo cheio, ícone branco.
+          Fica só nesta tela — se tudo se destaca, nada se destaca. */}
+      <Link
+        href="/biblia"
+        className="relative z-[2] -mt-[22px] flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform hover:-translate-y-px"
+      >
+        <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
+          <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-[19px] font-semibold leading-tight">Bíblia</span>
+          <span className="mt-0.5 block text-[12.5px] leading-snug text-white/80">
+            Os 73 livros, para ler e procurar
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
+      </Link>
+
+      {/* Palavra do Padre — o que ESTA paróquia tem a dizer vem antes do
+          que chega de fora. */}
+      {latestPost && assinatura && (
+        <section className="pt-[26px]">
+          <SectionTitle
+            eyebrow="Palavra do Padre"
+            title="Uma mensagem para esta semana"
+            actionLabel="Ver todas"
+            actionHref="/comunidade"
+          />
+          <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
+            <div className="flex items-center gap-3">
+              <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
+              <div>
+                <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
+                <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
               </div>
+            </div>
+            <p className="mt-3 font-serif text-[18px] leading-[1.62] text-foreground">
+              {latestPost.mediaType === "texto"
+                ? latestPost.contentText
+                : POST_PREVIEW_LABEL[latestPost.mediaType]}
+            </p>
+            {latestPost.mediaType === "video" && latestPost.mediaUrl && (
+              <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
             )}
-            {liturgy.reflection && (
-              <p className="mt-3 border-l-[1.5px] border-gold pl-3.5 font-serif text-[17px] leading-relaxed text-foreground">
-                {liturgy.reflection}
-              </p>
+            {latestPost.mediaType !== "video" && (
+              <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
+                <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                Ler mensagem
+              </LinkButton>
             )}
-          </>
-        ) : (
-          <p className="mt-1.5 text-[13.5px] text-muted">
-            Sua paróquia ainda não publicou as leituras de hoje.
-          </p>
-        )}
-      </div>
+          </article>
+        </section>
+      )}
 
       {/* Vem DEPOIS das leituras da própria paróquia: o que o pároco
           publicou para esta comunidade tem precedência sobre o que vem de
@@ -118,30 +150,6 @@ export default async function OracaoPage() {
         <Eyebrow tone="accent" className="mb-3">
           Rezar hoje
         </Eyebrow>
-
-        {/* A Bíblia vem primeiro e com o mesmo contraste dos atalhos do
-            Início — fundo cheio, ícone branco. É o único item aqui que não
-            é uma tarefa da paróquia: é o texto em si, e some se ficar como
-            mais uma linha cinza numa lista.
-
-            O tratamento é local a esta seção de propósito. Repetir esse
-            peso nas outras telas gastaria o efeito: se tudo se destaca,
-            nada se destaca. */}
-        <Link
-          href="/biblia"
-          className="mb-2.5 flex items-center gap-3.5 rounded-xl bg-primary px-4 py-4 text-white shadow-sm transition-transform hover:-translate-y-px"
-        >
-          <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
-            <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-serif text-[19px] font-semibold leading-tight">Bíblia</span>
-            <span className="mt-0.5 block text-[12.5px] leading-snug text-white/80">
-              Os 73 livros, para ler e procurar
-            </span>
-          </span>
-          <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
-        </Link>
 
         <Card className="px-3.5 py-1.5">
           <RowLink

@@ -1,4 +1,5 @@
 import "server-only";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { findBook, type BibleBook } from "@/lib/bible-books";
 
@@ -10,6 +11,28 @@ import { findBook, type BibleBook } from "@/lib/bible-books";
  * não tem RLS, porque a Bíblia é a mesma em toda comunidade e não é dado de
  * ninguém. Isolar o que é igual para todos só criaria cerimônia.
  */
+
+/**
+ * A Bíblia é carregada por script, DEPOIS da migration — e um ambiente pode
+ * estar no meio do caminho. Sem isto, a tabela ainda inexistente derruba a
+ * tela com "Application error" em vez de dizer que o texto não foi
+ * carregado, que é o que a página já sabe fazer.
+ *
+ * Só o P2021 (tabela não existe) é engolido. Qualquer outro erro de banco
+ * continua subindo: esconder falha de conexão faria a Bíblia "sumir" sem
+ * ninguém entender por quê.
+ */
+async function tolerandoTabelaAusente<T>(consulta: () => Promise<T>, vazio: T): Promise<T> {
+  try {
+    return await consulta();
+  } catch (erro) {
+    if (erro instanceof Prisma.PrismaClientKnownRequestError && erro.code === "P2021") {
+      console.error("bible_verses não existe neste banco — rode a migration e scripts/importar-biblia.ts.");
+      return vazio;
+    }
+    throw erro;
+  }
+}
 
 export const TRADUCAO = {
   nome: "Tradução do Pe. Matos Soares",
@@ -23,11 +46,15 @@ export async function lerCapitulo(slug: string, capitulo: number): Promise<Versi
   const livro = findBook(slug);
   if (!livro || capitulo < 1 || capitulo > livro.chapters) return [];
 
-  return prisma.bibleVerse.findMany({
-    where: { book: slug, chapter: capitulo },
-    orderBy: { number: "asc" },
-    select: { number: true, text: true },
-  });
+  return tolerandoTabelaAusente(
+    () =>
+      prisma.bibleVerse.findMany({
+        where: { book: slug, chapter: capitulo },
+        orderBy: { number: "asc" },
+        select: { number: true, text: true },
+      }),
+    [],
+  );
 }
 
 export type Achado = {
@@ -56,11 +83,15 @@ export async function buscar(termo: string): Promise<{ achados: Achado[]; trunca
   // Menos de três letras acha tudo e não ajuda ninguém.
   if (limpo.length < 3) return { achados: [], truncado: false };
 
-  const linhas = await prisma.bibleVerse.findMany({
-    where: { text: { contains: limpo, mode: "insensitive" } },
-    take: LIMITE_DA_BUSCA + 1,
-    select: { book: true, chapter: true, number: true, text: true },
-  });
+  const linhas = await tolerandoTabelaAusente(
+    () =>
+      prisma.bibleVerse.findMany({
+        where: { text: { contains: limpo, mode: "insensitive" } },
+        take: LIMITE_DA_BUSCA + 1,
+        select: { book: true, chapter: true, number: true, text: true },
+      }),
+    [] as { book: string; chapter: number; number: number; text: string }[],
+  );
 
   const truncado = linhas.length > LIMITE_DA_BUSCA;
 
@@ -76,5 +107,5 @@ export async function buscar(termo: string): Promise<{ achados: Achado[]; trunca
 
 /** Quantos versículos existem — usado para saber se a carga já foi feita. */
 export function contarVersiculos(): Promise<number> {
-  return prisma.bibleVerse.count();
+  return tolerandoTabelaAusente(() => prisma.bibleVerse.count(), 0);
 }

@@ -63,10 +63,8 @@ export default async function MissasAdminPage() {
         ) : (
           <Card className="px-3.5 py-1.5">
             {ativas.map((schedule) => (
-              <div
-                key={schedule.id}
-                className="flex items-start gap-3 border-b border-border py-3.5 last:border-b-0"
-              >
+              <div key={schedule.id} className="border-b border-border py-3.5 last:border-b-0">
+                <div className="flex items-start gap-3">
                 <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
                   <Repeat className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
                 </span>
@@ -88,6 +86,18 @@ export default async function MissasAdminPage() {
                 <div className="shrink-0">
                   <DeactivateScheduleButton scheduleId={schedule.id} />
                 </div>
+                </div>
+
+                {/* Corrigir sem encerrar: erro de digitação não deveria
+                    custar apagar a repetição e recriá-la. */}
+                <details className="border-b border-border pb-3.5 last:border-b-0">
+                  <summary className="cursor-pointer py-1 text-[13px] text-primary">
+                    Editar esta repetição
+                  </summary>
+                  <div className="pt-3">
+                    <CreateScheduleForm priests={priests} schedule={schedule} />
+                  </div>
+                </details>
               </div>
             ))}
           </Card>

@@ -1,18 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BellRing, HeartHandshake, Check, ArrowRight } from "lucide-react";
+import { ArrowRight, BellRing, Check, Eye, HeartHandshake } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Symbol } from "@/components/brand/Symbol";
 import { PushToggle } from "@/components/domain/PushToggle";
+import { EscolhaDeAparencia } from "@/components/domain/EscolhaDeAparencia";
+import type { FontScale, ThemePreference } from "@prisma/client";
 import { concluirBoasVindasAction, entrarNaPastoralAction } from "@/server/actions/onboarding-actions";
 
 type Pastoral = { id: string; name: string; description: string | null };
 
-const TOTAL = 3;
+const TOTAL = 4;
 
 /**
- * Boas-vindas em três passos.
+ * Boas-vindas em quatro passos.
  *
  * Existe porque o convite entregava alguém numa tela e o app não pedia
  * nada: nem explicava o que era, nem oferecia o aviso no celular, nem
@@ -28,11 +30,17 @@ export function Passos({
   parishName,
   vapidPublicKey,
   pastorais,
+  fontScale,
+  themePreference,
+  nomeDoTempo,
 }: {
   primeiroNome: string;
   parishName: string;
   vapidPublicKey: string | null;
   pastorais: Pastoral[];
+  fontScale: FontScale;
+  themePreference: ThemePreference;
+  nomeDoTempo: string;
 }) {
   const [passo, setPasso] = useState(1);
   const [escolhida, setEscolhida] = useState<string | null>(null);
@@ -80,7 +88,7 @@ export function Passos({
             </p>
             <div className="rule-gold my-7" />
             <p className="text-[13.5px] leading-relaxed text-muted">
-              São duas perguntas rápidas e você já entra.
+              São três perguntas rápidas e você já entra.
             </p>
 
             <div className="mt-auto pt-8">
@@ -93,6 +101,37 @@ export function Passos({
         )}
 
         {passo === 2 && (
+          <div className="flex flex-1 flex-col">
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary-tint text-primary">
+              <Eye className="h-6 w-6" strokeWidth={1.5} aria-hidden />
+            </span>
+            <h1 className="mt-5 font-serif text-[27px] font-semibold leading-tight text-foreground">
+              Você consegue ler bem?
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              Se a letra estiver pequena, aumente agora — as telas seguintes já vêm no tamanho que
+              você escolher. Dá para mudar quando quiser, em Eu › Aparência.
+            </p>
+
+            <div className="mt-6">
+              <EscolhaDeAparencia
+                fontScale={fontScale}
+                themePreference={themePreference}
+                nomeDoTempo={nomeDoTempo}
+              />
+            </div>
+
+            <div className="mt-auto pt-8">
+              <Button type="button" onClick={() => setPasso(3)} className="w-full">
+                Continuar
+                <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+              </Button>
+            </div>
+          </div>
+        )}
+
+
+        {passo === 3 && (
           <div className="flex flex-1 flex-col">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold/15 text-[#8a6b24] dark:text-gold">
               <BellRing className="h-6 w-6" strokeWidth={1.5} aria-hidden />
@@ -114,7 +153,7 @@ export function Passos({
             </p>
 
             <div className="mt-auto flex flex-col gap-2 pt-8">
-              <Button type="button" onClick={() => setPasso(3)} className="w-full">
+              <Button type="button" onClick={() => setPasso(4)} className="w-full">
                 Continuar
                 <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
               </Button>
@@ -122,7 +161,7 @@ export function Passos({
           </div>
         )}
 
-        {passo === 3 && (
+        {passo === 4 && (
           <div className="flex flex-1 flex-col">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary-tint text-primary">
               <HeartHandshake className="h-6 w-6" strokeWidth={1.5} aria-hidden />

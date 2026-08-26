@@ -70,6 +70,7 @@ export async function createSchedule(
       parishId,
       userId: input.userId,
       category: "pastoral",
+        linkPath: "/servir/liturgia",
       title: "Você foi escalado na liturgia",
       body: `Você foi escalado como ${LITURGICAL_ROLE_LABELS[input.roleType]} para ${formatDateTime(celebration.startsAt)}.`,
     });

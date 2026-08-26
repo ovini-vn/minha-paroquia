@@ -34,6 +34,15 @@ enum ColorScheme {
   dark
 }
 
+/// Tamanho da letra. Terceiro eixo da aparência, separado do tema e do
+/// claro/escuro: numa paróquia há muita gente que enxerga mal, e diminuir a
+/// dificuldade de leitura não deveria custar mudar mais nada.
+enum FontScale {
+  p
+  m
+  g
+}
+
 // Inscrição de um NAVEGADOR/dispositivo para receber notificação fora do
 // app (Web Push). Uma pessoa pode ter várias: celular, computador do
 // trabalho, etc. — por isso a chave é o endpoint, não o usuário.
@@ -73,6 +82,7 @@ model User {
   // src/lib/liturgical-season.ts (fonte única do cálculo) e /eu/aparencia.
   themePreference ThemePreference @default(default) @map("theme_preference")
   colorScheme     ColorScheme     @default(light) @map("color_scheme")
+  fontScale       FontScale       @default(p) @map("font_scale")
   // Quando a pessoa passou (ou pulou) as boas-vindas. Nulo = ainda não viu.
   // Guardar a data em vez de um booleano permite saber QUANDO alguém entrou
   // de fato na comunidade, que é diferente de quando criou a conta.
@@ -1247,6 +1257,10 @@ model Notification {
   title     String
   body      String
   readAt    DateTime?            @map("read_at")
+  /// Para onde a notificação leva dentro do app. Guardado aqui porque é o
+  /// que permite dar a notificação por lida quando a pessoa abre o conteúdo
+  /// no lugar certo, em vez de exigir um segundo toque em "já vi".
+  linkPath  String?              @map("link_path")
   createdAt DateTime             @default(now()) @map("created_at")
 
   parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
@@ -1254,6 +1268,7 @@ model Notification {
 
   @@index([parishId])
   @@index([userId, readAt])
+  @@index([userId, linkPath])
   @@map("notifications")
 }
 
@@ -1278,6 +1293,15 @@ enum PrayerRequestVisibility {
   comunidade
 }
 
+/// Moderação do que vai ao mural. Pedido endereçado ao padre nasce
+/// aprovado: ele já é privado, e moderar uma mensagem dirigida ao padre,
+/// pelo próprio padre, seria circular.
+enum PrayerRequestStatus {
+  pendente
+  aprovado
+  recusado
+}
+
 // docs/ARQUITETURA.md, seção "Participação e pedidos de oração". Visibilidade
 // "padre" é privada: só pároco/sacerdote enxergam (mesma sensibilidade de
 // confissão). "comunidade" é um mural visível a qualquer fiel da paróquia.
@@ -1290,6 +1314,9 @@ model PrayerRequest {
   contentText     String                  @map("content_text")
   visibility      PrayerRequestVisibility @default(padre)
   isAnonymous     Boolean                 @default(false) @map("is_anonymous")
+  status          PrayerRequestStatus     @default(pendente)
+  moderatedBy     String?                 @map("moderated_by")
+  moderatedAt     DateTime?               @map("moderated_at")
   createdAt       DateTime                @default(now()) @map("created_at")
 
   parish    Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)

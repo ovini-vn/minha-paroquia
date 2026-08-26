@@ -25,6 +25,7 @@ export function createPost(input: CreatePostInput & { parishId: string; priestPr
       "espiritual",
       "Nova Palavra do Padre",
       "O pároco publicou uma nova mensagem — confira na Comunidade.",
+      "/comunidade",
     );
 
     return post;

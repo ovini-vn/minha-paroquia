@@ -79,11 +79,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // com o tema certo e não pisca.
   const session = await getSessionContext();
   const colorScheme = session?.colorScheme ?? "light";
+  // Renderizado no servidor, como o tema: a página já chega no tamanho
+  // certo, sem a letra crescer depois que a pessoa começou a ler.
+  const fontScale = session?.fontScale ?? "p";
 
   return (
     <html
       lang="pt-BR"
       data-color-scheme={colorScheme}
+      data-font-scale={fontScale}
       // Faz os controles nativos (scrollbar, campos de data) acompanharem.
       style={{ colorScheme }}
       className={`${inter.variable} ${cormorant.variable}`}

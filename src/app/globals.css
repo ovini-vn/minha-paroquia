@@ -216,3 +216,49 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/*
+ * Tamanho de letra escolhido pelo fiel.
+ *
+ * `zoom` em vez de mexer no tamanho da fonte: o app usa medidas absolutas em
+ * pixel por toda parte, e trocar a fonte da raiz não alcançaria nenhuma
+ * delas. O zoom escala tudo junto — texto, ícones, espaçamento e área de
+ * toque —, que é o que alguém que enxerga mal precisa, e não só letra
+ * grande dentro de botão pequeno.
+ *
+ * É o mesmo mecanismo do zoom do navegador: o layout reflui sozinho, sem
+ * rolagem lateral.
+ */
+:root[data-font-scale="m"] {
+  zoom: 1.15;
+}
+:root[data-font-scale="g"] {
+  zoom: 1.3;
+}
+
+/*
+ * Letra maior pede menos colunas.
+ *
+ * Três cards de finalidade cabem lado a lado no tamanho P. No G, cada um
+ * ficaria com cerca de cem pixels e a frase viraria oito linhas de duas
+ * palavras — o oposto de ajudar quem já tem dificuldade de ler. Então a
+ * grade afrouxa: duas colunas no M, uma no G.
+ *
+ * E no G o card volta a ser ícone-ao-lado-do-texto: ocupando a linha
+ * inteira, empilhar deixaria um vazio enorme dos dois lados.
+ */
+:root[data-font-scale="m"] .grade-finalidades {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+:root[data-font-scale="g"] .grade-finalidades {
+  grid-template-columns: minmax(0, 1fr);
+}
+:root[data-font-scale="g"] .card-finalidade {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.875rem;
+  text-align: left;
+}
+:root[data-font-scale="g"] .card-finalidade .texto-finalidade {
+  flex: 1 1 0%;
+}

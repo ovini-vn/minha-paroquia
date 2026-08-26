@@ -162,6 +162,7 @@ export async function sendCommitmentReminders(reference: Date): Promise<Reminder
         parishId: c.parishId,
         userId: c.userId,
         category: "pessoal",
+        linkPath: "/eu/atendimentos",
         title: c.title,
         body: c.body,
       });

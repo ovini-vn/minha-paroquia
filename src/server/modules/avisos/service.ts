@@ -45,6 +45,9 @@ export async function createAviso(input: CreateAvisoInput & { parishId: string; 
       "urgente",
       aviso.title,
       resumir(aviso.body),
+      // O aviso aparece no Início e na Comunidade; o Início é onde a
+      // pessoa cai ao abrir o app, então é lá que ela vai ler.
+      "/inicio",
     );
 
     return { aviso, destinatarios };
@@ -58,7 +61,10 @@ export async function createAviso(input: CreateAvisoInput & { parishId: string; 
     await sendToUsers(destinatarios, {
       title: aviso.title,
       body: resumir(aviso.body),
-      url: "/comunidade",
+      // O MESMO destino da notificação no app (ver notifyManyUsers acima):
+      // se divergirem, tocar no push leva a uma tela e a notificação
+      // continua pendente na outra.
+      url: "/inicio",
       tag: `aviso-${aviso.id}`,
     });
   } catch (error) {

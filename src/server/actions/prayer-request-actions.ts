@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
-import { requireSession } from "@/server/auth/guards";
-import { createPrayerRequest } from "@/server/modules/prayer-requests/service";
+import { requireSession, requirePermission } from "@/server/auth/guards";
+import { PERMISSIONS } from "@/server/auth/rbac";
+import { createPrayerRequest, moderatePrayerRequest } from "@/server/modules/prayer-requests/service";
 import { createPrayerRequestInputSchema } from "@/server/modules/prayer-requests/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -29,4 +30,32 @@ export async function createPrayerRequestAction(_prev: ActionState, formData: Fo
 
   revalidatePath("/comunidade/oracao");
   return {};
+}
+
+/**
+ * Aprovar ou recusar um pedido do mural.
+ *
+ * Guardado por permissão própria, e não pelo papel: assim o pároco pode
+ * delegar isso a quem ele quiser em Delegar permissões, sem entregar junto
+ * o resto do painel.
+ */
+export async function moderarPedidoDeOracaoAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.PRAYER_REQUESTS_MODERATE);
+
+  const id = String(formData.get("id") ?? "");
+  const decisao = formData.get("decisao");
+  if (!id || (decisao !== "aprovar" && decisao !== "recusar")) return;
+
+  await moderatePrayerRequest(
+    session.membership.parishId,
+    id,
+    decisao === "aprovar" ? "aprovado" : "recusado",
+    session.userId,
+  );
+
+  revalidatePath("/comunidade/oracao");
+  revalidatePath("/painel/oracao");
+  revalidatePath("/painel");
 }

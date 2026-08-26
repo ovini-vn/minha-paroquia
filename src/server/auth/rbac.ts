@@ -52,6 +52,7 @@ export const PERMISSIONS = {
   SACRAMENTS_VALIDATE: "sacraments.validate",
   AVISOS_MANAGE: "avisos.manage",
   PRAYER_REQUESTS_VIEW_PRIVATE: "prayer_requests.view_private",
+  PRAYER_REQUESTS_MODERATE: "prayer_requests.moderate",
   PERMISSION_OVERRIDES_MANAGE: "permission_overrides.manage",
 } as const;
 
@@ -73,6 +74,7 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
   [PERMISSIONS.SACRAMENTS_VALIDATE]: "Validar sacramentos",
   [PERMISSIONS.AVISOS_MANAGE]: "Gerenciar avisos",
   [PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE]: "Ver pedidos de oração privados",
+  [PERMISSIONS.PRAYER_REQUESTS_MODERATE]: "Aprovar pedidos de oração do mural",
   [PERMISSIONS.PERMISSION_OVERRIDES_MANAGE]: "Delegar permissões",
 };
 
@@ -97,6 +99,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE,
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
+    PERMISSIONS.PRAYER_REQUESTS_MODERATE,
   ],
   /**
    * Administra a paróquia sem ser clero.
@@ -123,6 +126,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.SACRAMENTS_VALIDATE,
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
+    PERMISSIONS.PRAYER_REQUESTS_MODERATE,
   ],
   SECRETARIA: [
     PERMISSIONS.INVITATIONS_CREATE,
@@ -139,6 +143,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.DIZIMO_MANAGE,
     PERMISSIONS.SACRAMENTS_VALIDATE,
     PERMISSIONS.AVISOS_MANAGE,
+    PERMISSIONS.PRAYER_REQUESTS_MODERATE,
   ],
   SACERDOTE: [
     PERMISSIONS.MEMBERS_VIEW,

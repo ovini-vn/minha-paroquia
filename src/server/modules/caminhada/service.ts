@@ -127,6 +127,7 @@ export async function setSacramentValidation(
         parishId,
         userId: sacrament.userId,
         category: "espiritual",
+        linkPath: "/caminhada",
         title: "Sacramento validado",
         body: `Seu registro de ${SACRAMENT_TYPE_LABELS[sacrament.type]} (${formatDateOnly(sacrament.date)}) foi confirmado pela paróquia.`,
       });

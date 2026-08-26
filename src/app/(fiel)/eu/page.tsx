@@ -33,6 +33,11 @@ export default async function ProfilePage() {
         <p className="mt-1 font-serif text-2xl font-semibold text-foreground">{session.fullName}</p>
         <p className="text-[13px] text-muted">{session.email}</p>
         {detalhes && <p className="text-[13px] text-muted">{detalhes}</p>}
+        {/* Administrar a plataforma inteira é outro eixo, não um papel de
+            paróquia — e quem tem esse alcance precisa vê-lo dito, para não
+            confundir com a função que exerce na comunidade. */}
+        {session.isPlatformAdmin && <Badge tone="gold">Administrador da Plataforma</Badge>}
+
         {session.membership && (
           <div className="mt-1 flex flex-col items-center gap-1.5">
             <Badge>{session.membership.roleName}</Badge>

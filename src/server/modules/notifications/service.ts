@@ -10,6 +10,8 @@ type NotifyInput = {
   category: NotificationCategory;
   title: string;
   body: string;
+  /** Tela do app onde o assunto vive — ver markNotificationsReadByPath. */
+  linkPath?: string | null;
 };
 
 /**
@@ -31,6 +33,7 @@ export async function notifyUser(tx: Prisma.TransactionClient, input: NotifyInpu
       category: input.category,
       title: input.title,
       body: input.body,
+      linkPath: input.linkPath ?? null,
     },
   });
 }
@@ -42,9 +45,10 @@ export async function notifyManyUsers(
   category: NotificationCategory,
   title: string,
   body: string,
+  linkPath?: string | null,
 ): Promise<void> {
   for (const userId of userIds) {
-    await notifyUser(tx, { parishId, userId, category, title, body });
+    await notifyUser(tx, { parishId, userId, category, title, body, linkPath });
   }
 }
 
@@ -87,4 +91,22 @@ export function setPreference(userId: string, category: NotificationCategory, en
     update: { enabled },
     create: { userId, category, enabled },
   });
+}
+
+/**
+ * Dá por lidas as notificações cujo assunto vive na tela que a pessoa
+ * acabou de abrir.
+ *
+ * Antes, o aviso só saía da lista quando o fiel voltava às notificações e
+ * tocava em "já vi" — mesmo tendo aberto o vídeo do padre e assistido
+ * inteiro. Ler onde a coisa mora é a prova de leitura que importa; pedir um
+ * segundo toque em outra tela é burocracia.
+ */
+export function markNotificationsReadByPath(parishId: string, userId: string, linkPath: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.notification.updateMany({
+      where: { parishId, userId, linkPath, readAt: null },
+      data: { readAt: new Date() },
+    }),
+  );
 }

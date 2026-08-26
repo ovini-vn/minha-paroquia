@@ -7,6 +7,8 @@ import {
   listMyPrayerRequests,
   listCommunityPrayerRequests,
   listPrivatePrayerRequests,
+  listPendingPrayerRequests,
+  moderatePrayerRequest,
 } from "@/server/modules/prayer-requests/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
@@ -51,20 +53,74 @@ describe("pedidos de oração: visibilidade padre vs comunidade, e anonimato", (
     expect(privateList.some((r) => r.contentText === "Peço orações pela minha família")).toBe(true);
   });
 
-  it("um pedido 'comunidade' aparece no mural, mas não na lista privada", async () => {
+  it("um pedido 'comunidade' NÃO vai ao mural antes de ser aprovado", async () => {
+    // O mural é lido pela comunidade inteira e o campo é texto livre:
+    // alguém da paróquia olha antes.
+    const texto = "Peço orações pela cura de um amigo";
     await createPrayerRequest({
       parishId,
       userId: fielId,
-      contentText: "Peço orações pela cura de um amigo",
+      contentText: texto,
       visibility: "comunidade",
       isAnonymous: false,
     });
 
-    const community = await listCommunityPrayerRequests(parishId);
-    expect(community.some((r) => r.contentText === "Peço orações pela cura de um amigo")).toBe(true);
+    const antes = await listCommunityPrayerRequests(parishId);
+    expect(antes.some((r) => r.contentText === texto)).toBe(false);
 
+    const fila = await listPendingPrayerRequests(parishId);
+    const pedido = fila.find((r) => r.contentText === texto);
+    expect(pedido).toBeDefined();
+
+    await moderatePrayerRequest(parishId, pedido!.id, "aprovado", fielId);
+
+    const depois = await listCommunityPrayerRequests(parishId);
+    expect(depois.some((r) => r.contentText === texto)).toBe(true);
+
+    // Continua fora da lista privada: aprovar não muda para quem é.
     const privateList = await listPrivatePrayerRequests(parishId);
-    expect(privateList.some((r) => r.contentText === "Peço orações pela cura de um amigo")).toBe(false);
+    expect(privateList.some((r) => r.contentText === texto)).toBe(false);
+  });
+
+  it("recusado não aparece no mural nem volta para a fila", async () => {
+    const texto = "Pedido que a paróquia decidiu não publicar";
+    await createPrayerRequest({
+      parishId,
+      userId: fielId,
+      contentText: texto,
+      visibility: "comunidade",
+      isAnonymous: false,
+    });
+    const fila = await listPendingPrayerRequests(parishId);
+    const pedido = fila.find((r) => r.contentText === texto)!;
+
+    await moderatePrayerRequest(parishId, pedido.id, "recusado", fielId);
+
+    expect((await listCommunityPrayerRequests(parishId)).some((r) => r.contentText === texto)).toBe(
+      false,
+    );
+    expect((await listPendingPrayerRequests(parishId)).some((r) => r.contentText === texto)).toBe(
+      false,
+    );
+  });
+
+  it("pedido ao padre já nasce aprovado — moderar o que é dirigido a ele seria circular", async () => {
+    const texto = "Pedido direto ao sacerdote";
+    await createPrayerRequest({
+      parishId,
+      userId: fielId,
+      contentText: texto,
+      visibility: "padre",
+      isAnonymous: false,
+    });
+
+    expect((await listPrivatePrayerRequests(parishId)).some((r) => r.contentText === texto)).toBe(
+      true,
+    );
+    // E não entope a fila de moderação, que é só do mural.
+    expect((await listPendingPrayerRequests(parishId)).some((r) => r.contentText === texto)).toBe(
+      false,
+    );
   });
 
   it("pedido anônimo nunca expõe o nome de quem pediu, nem no mural nem na lista privada", async () => {
@@ -82,6 +138,13 @@ describe("pedidos de oração: visibilidade padre vs comunidade, e anonimato", (
       visibility: "padre",
       isAnonymous: true,
     });
+
+    const naFila = await listPendingPrayerRequests(parishId);
+    const aprovar = naFila.find((r) => r.contentText === "Pedido anônimo comunidade")!;
+    // Quem modera VÊ o nome: precisa saber de quem veio para decidir. O
+    // anonimato vale na exibição ao mural.
+    expect(aprovar.requester.fullName).toBe("Fiel Oração");
+    await moderatePrayerRequest(parishId, aprovar.id, "aprovado", fielId);
 
     const community = await listCommunityPrayerRequests(parishId);
     const communityItem = community.find((r) => r.contentText === "Pedido anônimo comunidade");

@@ -29,6 +29,7 @@ function session(partial: Partial<SessionContext> = {}): SessionContext {
     isPlatformAdmin: false,
     themePreference: "default",
     colorScheme: "light",
+    fontScale: "p",
     onboardedAt: null,
     membership: null,
     dioceses: [],

@@ -91,23 +91,28 @@ export default async function DoacaoPage() {
               de 105px, então o conteúdo se empilha na vertical — ícone em
               cima, texto embaixo — em vez de dividir essa largura entre
               ícone e frase, o que sobraria pouco para os dois. */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+          <div className="grade-finalidades grid grid-cols-3 gap-2 sm:gap-2.5">
             {finalidades.map((f) => {
               const Icone = iconeDeDoacao(f.icon);
               return (
                 <Card
                   key={f.id}
-                  className="flex flex-col items-center gap-2 px-2.5 py-4 text-center sm:px-4"
+                  className="card-finalidade flex flex-col items-center gap-2 px-2.5 py-4 text-center sm:px-4"
                 >
                   <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-full bg-primary-tint text-primary">
                     <Icone className="h-[21px] w-[21px]" strokeWidth={1.5} aria-hidden />
                   </span>
-                  <p className="text-[12.5px] font-semibold leading-tight text-foreground sm:text-[14.5px]">
-                    {f.title}
-                  </p>
-                  <p className="text-[11px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
-                    {f.description}
-                  </p>
+                  {/* Título e texto num bloco só: no tamanho G o card vira
+                      linha, e sem agrupar eles ficariam lado a lado com o
+                      ícone, cada um espremido num terço da largura. */}
+                  <div className="texto-finalidade flex min-w-0 flex-col gap-2">
+                    <p className="text-[12.5px] font-semibold leading-tight text-foreground sm:text-[14.5px]">
+                      {f.title}
+                    </p>
+                    <p className="text-[11px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
+                      {f.description}
+                    </p>
+                  </div>
                 </Card>
               );
             })}

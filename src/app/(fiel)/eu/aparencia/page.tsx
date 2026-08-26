@@ -4,6 +4,7 @@ import { Sun, Moon } from "lucide-react";
 import {
   setThemePreferenceAction,
   setColorSchemeAction,
+  setFontScaleAction,
 } from "@/server/actions/appearance-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -19,7 +20,7 @@ export default async function AppearancePage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         title="Aparência"
-        description="Escolha se o app usa sempre a cor da marca, ou se acompanha o Tempo Litúrgico do dia."
+        description="Tamanho da letra, cor da marca ou do Tempo Litúrgico, e tema claro ou escuro."
       />
 
       <Card>
@@ -49,6 +50,47 @@ export default async function AppearancePage() {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card>
+        <p className="mb-1 font-serif text-xl font-semibold text-foreground">Tamanho da letra</p>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          Aumenta o app inteiro, não só o texto: os botões e os espaços crescem junto, para
+          continuar fácil de acertar com o dedo.
+        </p>
+        <form action={setFontScaleAction} className="flex flex-wrap gap-2">
+          {(
+            [
+              { value: "p", label: "P", desc: "Padrão", tamanho: "text-[13px]" },
+              { value: "m", label: "M", desc: "Maior", tamanho: "text-[16px]" },
+              { value: "g", label: "G", desc: "Grande", tamanho: "text-[19px]" },
+            ] as const
+          ).map((option) => {
+            const atual = session.fontScale === option.value;
+            return (
+              <button
+                key={option.value}
+                type="submit"
+                name="fontScale"
+                value={option.value}
+                aria-pressed={atual}
+                aria-label={`Tamanho da letra: ${option.desc}`}
+                className={
+                  atual
+                    ? "inline-flex min-w-[86px] flex-col items-center gap-0.5 rounded-xl border border-primary bg-primary px-4 py-3 text-white"
+                    : "inline-flex min-w-[86px] flex-col items-center gap-0.5 rounded-xl border border-border-strong bg-surface px-4 py-3 text-foreground transition-colors hover:border-primary hover:text-primary"
+                }
+              >
+                {/* A amostra mostra o tamanho em vez de descrever: quem tem
+                    dificuldade de ler escolhe pelo que consegue enxergar. */}
+                <span className={`${option.tamanho} font-serif font-semibold leading-none`}>
+                  {option.label}
+                </span>
+                <span className="text-[11px] opacity-80">{option.desc}</span>
+              </button>
+            );
+          })}
+        </form>
       </Card>
 
       <Card>

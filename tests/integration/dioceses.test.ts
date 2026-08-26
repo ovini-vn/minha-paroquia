@@ -32,6 +32,7 @@ function sessionWith(
     isPlatformAdmin,
     themePreference: "default",
     colorScheme: "light",
+    fontScale: "p",
     onboardedAt: null,
     membership: null,
     dioceses,

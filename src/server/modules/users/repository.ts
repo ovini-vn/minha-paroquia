@@ -1,5 +1,5 @@
 import { prisma } from "@/server/db/prisma";
-import type { OAuthProvider, ThemePreference, ColorScheme } from "@prisma/client";
+import type { ColorScheme, FontScale, OAuthProvider, ThemePreference } from "@prisma/client";
 
 /**
  * users é uma tabela global (não tenant-scoped) — um usuário existe
@@ -63,4 +63,8 @@ export function linkOAuthAccount(
   data: { provider: OAuthProvider; providerAccountId: string; email: string },
 ) {
   return prisma.oAuthAccount.create({ data: { userId, ...data } });
+}
+
+export function updateUserFontScale(userId: string, fontScale: FontScale) {
+  return prisma.user.update({ where: { id: userId }, data: { fontScale } });
 }

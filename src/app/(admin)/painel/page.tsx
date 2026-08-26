@@ -3,6 +3,7 @@ import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
 import { listAllAvisos } from "@/server/modules/avisos/service";
+import { countPendingPrayerRequests } from "@/server/modules/prayer-requests/service";
 import { getParishInvitations } from "@/server/modules/invitations/service";
 import { listPriests } from "@/server/modules/priests/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
@@ -30,7 +31,8 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import { BookOpen, Church, Clock, Crown, Flag, HandCoins, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserRound, Users } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, Cake, ChevronRight, Church, Clock, Crown, Flag, HandCoins, HandHeart, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserPlus, UserRound, Users } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -79,6 +81,7 @@ export default async function AdminDashboardPage() {
     sacraments,
     avisos,
     pastoralGroups,
+    pedidosPendentes,
   ] = await Promise.all([
     getParish(session.membership.parishId),
     getParishDashboardCounts(session.membership.parishId),
@@ -95,6 +98,7 @@ export default async function AdminDashboardPage() {
     listSacramentsForValidation(session.membership.parishId),
     listAllAvisos(session.membership.parishId),
     listAllGroups(session.membership.parishId),
+    countPendingPrayerRequests(session.membership.parishId),
   ]);
   const pastoralGroupCount = pastoralGroups.length;
   const catechismGroupCount = catechismGroups.length;
@@ -126,11 +130,37 @@ export default async function AdminDashboardPage() {
         <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{session.membership.parishName}</h1>
       </div>
 
+      {/* Quem está esperando confirmação vem ANTES dos números: é a única
+          coisa aqui que pede uma decisão hoje, e ela ficava escondida numa
+          seção de outra tela. */}
+      {counts.aguardando > 0 && (
+        <Link
+          href="/painel/membros"
+          className="flex items-center gap-3 rounded-lg border border-gold/45 bg-gold/10 px-4 py-3.5 transition-colors hover:border-gold"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold/20 text-[#7c5f16] dark:text-gold">
+            <UserPlus className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14.5px] font-semibold text-foreground">
+              {counts.aguardando === 1
+                ? "1 pessoa aguardando confirmação"
+                : `${counts.aguardando} pessoas aguardando confirmação`}
+            </span>
+            <span className="mt-0.5 block text-[12.5px] text-muted">
+              Escolheram esta paróquia no aplicativo. Até confirmar, não veem a comunidade nem
+              podem receber função.
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted" strokeWidth={1.5} aria-hidden />
+        </Link>
+      )}
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Fiéis" value={counts.fielCount} />
+        <Stat label="Aguardando" value={counts.aguardando} />
         <Stat label="Sacerdotes" value={counts.sacerdoteCount} />
-        <Stat label="Convites emitidos" value={counts.invitesIssued} />
-        <Stat label="Convites utilizados" value={counts.invitesUsed} />
+        <Stat label="Foram para outra" value={counts.sairam} />
       </div>
 
       <Card>
@@ -187,6 +217,22 @@ export default async function AdminDashboardPage() {
             icon={Clock}
             title="Horário da secretaria"
             subtitle="Aparece em Contato, com o aviso de aberta ou fechada"
+          />
+          <RowLink
+            href="/painel/oracao"
+            icon={HandHeart}
+            title="Pedidos de oração"
+            subtitle={
+              pedidosPendentes > 0
+                ? `${pedidosPendentes} aguardando aprovação para o mural`
+                : "Aprovar o que vai ao mural da comunidade"
+            }
+          />
+          <RowLink
+            href="/painel/aniversarios"
+            icon={Cake}
+            title="Aniversários"
+            subtitle="Nascimento e sacramentos dos próximos 30 dias"
           />
           <RowLink
             href="/painel/avisos"

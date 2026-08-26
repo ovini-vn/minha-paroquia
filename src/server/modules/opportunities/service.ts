@@ -114,6 +114,7 @@ export async function expressInterest(parishId: string, opportunityId: string, u
         "pastoral",
         "Alguém se ofereceu para servir",
         `${quem?.fullName ?? "Um fiel"} se ofereceu para "${opportunity.title}"${contato}. Entre em contato para acolher.`,
+        "/painel/servir",
       );
     }
 

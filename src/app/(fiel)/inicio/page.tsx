@@ -21,6 +21,7 @@ import { formatDateTime } from "@/lib/date";
 import { VideoDoPost } from "@/components/domain/VideoDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 
 const POST_PREVIEW_LABEL: Record<string, string> = {
   audio: "Novo áudio disponível — toque para ouvir.",
@@ -73,6 +74,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
+      <LidoAoAbrir caminho="/inicio" />
       {/* Hero — portal e caminho dourado, a assinatura da marca. */}
       <BleedTop>
         <section className="relative overflow-hidden bg-wash px-[18px] pb-[26px] pt-[30px] text-white">

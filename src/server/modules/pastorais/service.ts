@@ -162,6 +162,7 @@ export async function expressGroupInterest(parishId: string, groupId: string, us
         "pastoral",
         "Alguém quer entrar numa pastoral",
         `${quem?.fullName ?? "Um fiel"} demonstrou interesse em ${group.name}${contato}. Entre em contato para acolher.`,
+        "/painel/pastorais",
       );
     }
 

@@ -192,6 +192,117 @@ export function listCelebrationSchedules(parishId: string) {
  * Cascade) e o registro de quem participou perderia o vínculo — trabalho de
  * gente desfeito por uma mudança de configuração.
  */
+/**
+ * Corrige uma repetição já cadastrada.
+ *
+ * Existia só "encerrar", o que obrigava a apagar e recriar por causa de um
+ * erro de digitação — e apagar leva junto escala e participação já
+ * registradas.
+ *
+ * O título e o local ficam COPIADOS em cada missa gerada, então corrigir a
+ * regra tem que corrigir as ocorrências futuras: senão o erro continua na
+ * agenda de quem lê.
+ *
+ * Se o dia ou o horário mudarem, as ocorrências futuras não correspondem
+ * mais e são refeitas. As que já têm escala ou participação são preservadas
+ * no horário antigo — apagá-las perderia trabalho de gente — e a função
+ * devolve quantas ficaram, para a secretaria decidir o que fazer com elas.
+ */
+export async function updateCelebrationSchedule(
+  parishId: string,
+  scheduleId: string,
+  input: CreateCelebrationScheduleInput,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const atual = await tx.celebrationSchedule.findFirst({ where: { id: scheduleId, parishId } });
+    if (!atual) throw new ValidationError("Repetição não encontrada.");
+
+    const weekOfMonth = input.frequency === "mensal" ? (input.weekOfMonth ?? 1) : null;
+
+    const mudouOHorario =
+      atual.frequency !== input.frequency ||
+      atual.weekday !== input.weekday ||
+      atual.weekOfMonth !== weekOfMonth ||
+      atual.timeMinutes !== input.timeMinutes ||
+      atual.startsOn.getTime() !== input.startsOn.getTime() ||
+      (atual.endsOn?.getTime() ?? null) !== (input.endsOn?.getTime() ?? null);
+
+    // A barreira de duplicata só vale quando o dia ou o horário mudam.
+    // Numa correção de texto a duplicata, se existir, já existia antes — e
+    // bloquear a correção deixaria a paróquia presa ao erro de digitação,
+    // sem nenhum ganho.
+    if (mudouOHorario) {
+      const igual = await tx.celebrationSchedule.findFirst({
+        where: {
+          parishId,
+          active: true,
+          id: { not: scheduleId },
+          type: input.type,
+          frequency: input.frequency,
+          weekday: input.weekday,
+          weekOfMonth,
+          timeMinutes: input.timeMinutes,
+        },
+      });
+      if (igual) {
+        throw new ValidationError(
+          "Já existe outra repetição nesse dia e horário. Encerre uma delas antes.",
+        );
+      }
+    }
+
+    const schedule = await tx.celebrationSchedule.update({
+      where: { id: scheduleId },
+      data: {
+        type: input.type,
+        title: input.title || null,
+        location: input.location || null,
+        priestProfileId: input.priestProfileId || null,
+        frequency: input.frequency,
+        weekday: input.weekday,
+        weekOfMonth,
+        timeMinutes: input.timeMinutes,
+        startsOn: input.startsOn,
+        endsOn: input.endsOn ?? null,
+      },
+    });
+
+    const agora = new Date();
+
+    if (!mudouOHorario) {
+      // Só mudou a descrição: as ocorrências ficam onde estão e recebem o
+      // texto corrigido.
+      const { count } = await tx.celebration.updateMany({
+        where: { parishId, scheduleId, startsAt: { gte: agora } },
+        data: {
+          type: input.type,
+          title: input.title || null,
+          location: input.location || null,
+          priestProfileId: input.priestProfileId || null,
+        },
+      });
+      return { schedule, atualizadas: count, criadas: 0, mantidasNoHorarioAntigo: 0 };
+    }
+
+    await tx.celebration.deleteMany({
+      where: {
+        parishId,
+        scheduleId,
+        startsAt: { gte: agora },
+        liturgicalSchedules: { none: {} },
+        massParticipations: { none: {} },
+      },
+    });
+
+    const mantidasNoHorarioAntigo = await tx.celebration.count({
+      where: { parishId, scheduleId, startsAt: { gte: agora } },
+    });
+
+    const criadas = await generateForSchedule(tx, schedule, agora);
+    return { schedule, atualizadas: 0, criadas, mantidasNoHorarioAntigo };
+  });
+}
+
 export async function deactivateCelebrationSchedule(parishId: string, scheduleId: string) {
   return withTenantContext(parishId, async (tx) => {
     const schedule = await tx.celebrationSchedule.findFirst({ where: { id: scheduleId, parishId } });

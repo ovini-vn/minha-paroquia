@@ -15,6 +15,7 @@ import { Path, PathItem } from "@/components/ui/Path";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
 import { formatDateOnly } from "@/lib/date";
+import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 
 export default async function CaminhadaPage() {
   const session = await getSessionContext();
@@ -39,6 +40,7 @@ export default async function CaminhadaPage() {
 
   return (
     <div className="flex flex-col">
+      <LidoAoAbrir caminho="/caminhada" />
       <PageHeader
         title="Minha Caminhada"
         description="Uma memória pessoal da sua fé — só você vê o que escreve aqui."

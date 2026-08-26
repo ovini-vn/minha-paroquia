@@ -148,6 +148,7 @@ export function updateAppointmentStatus(
         parishId,
         userId: appointment.fielUserId,
         category: "pessoal",
+        linkPath: "/eu/atendimentos",
         title,
         body: `Seu atendimento de ${formatDateTime(appointment.scheduledAt)} foi ${status === "confirmado" ? "confirmado" : "recusado"}.`,
       });

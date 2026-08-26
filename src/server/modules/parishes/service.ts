@@ -64,18 +64,32 @@ export function updateOwnParishProfile(parishId: string, input: UpdateParishProf
 
 const PRIEST_ROLE_CODES = ["SACERDOTE", "PAROCO"] as const;
 
+/**
+ * Os números do painel.
+ *
+ * Contava convite emitido e convite usado, o que media o esforço da
+ * secretaria e não o tamanho da comunidade: convite gerado e nunca aberto
+ * inflava a conta, e quem entrou escolhendo a paróquia sozinho não aparecia
+ * em lugar nenhum. Agora conta gente.
+ *
+ * `aguardando` é o mais importante da lista: são pessoas que já escolheram
+ * esta paróquia e estão esperando alguém confirmar. Sem esse número no
+ * painel, elas ficavam invisíveis numa seção de outra tela.
+ */
 export async function getParishDashboardCounts(parishId: string) {
   return withTenantContext(parishId, async (tx) => {
-    const [fielCount, sacerdoteCount, invitesIssued, invitesUsed] = await Promise.all([
+    const [fielCount, sacerdoteCount, aguardando, sairam] = await Promise.all([
       tx.parishMembership.count({ where: { parishId, status: "active" } }),
       tx.parishMembership.count({
         where: { parishId, status: "active", role: { code: { in: [...PRIEST_ROLE_CODES] } } },
       }),
-      tx.invitation.count({ where: { parishId } }),
-      tx.invitation.count({ where: { parishId, status: "used" } }),
+      tx.parishMembership.count({ where: { parishId, status: "pendente" } }),
+      // Vínculo inativo nesta paróquia é quem escolheu outra depois: quando
+      // alguém troca, o vínculo antigo é desativado, não apagado.
+      tx.parishMembership.count({ where: { parishId, status: "inactive" } }),
     ]);
 
-    return { fielCount, sacerdoteCount, invitesIssued, invitesUsed };
+    return { fielCount, sacerdoteCount, aguardando, sairam };
   });
 }
 

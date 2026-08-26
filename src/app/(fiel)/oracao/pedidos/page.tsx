@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { PrayerRequestForm } from "./PrayerRequestForm";
+import { Badge } from "@/components/ui/Badge";
 
 export default async function PrayerRequestsPage() {
   const session = await getSessionContext();
@@ -112,7 +113,18 @@ export default async function PrayerRequestsPage() {
                 <p className="font-serif text-[17px] leading-relaxed text-foreground">
                   {request.contentText}
                 </p>
-                <p className="mt-2 text-xs text-muted">{formatDateTime(request.createdAt)}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="text-xs text-muted">{formatDateTime(request.createdAt)}</p>
+                  {/* Sem isto, quem pediu olharia o mural, não se encontraria
+                      lá e concluiria que o pedido se perdeu. */}
+                  {request.visibility === "comunidade" && request.status === "pendente" && (
+                    <Badge tone="warning">Aguardando a paróquia publicar</Badge>
+                  )}
+                  {request.visibility === "comunidade" && request.status === "recusado" && (
+                    <Badge tone="muted">Não publicado no mural</Badge>
+                  )}
+                  {request.visibility === "padre" && <Badge tone="muted">Só o sacerdote vê</Badge>}
+                </div>
               </Card>
             ))}
           </div>

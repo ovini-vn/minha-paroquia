@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { listActiveGroups } from "@/server/modules/pastorais/service";
 import { getPublicVapidKey } from "@/server/modules/push/service";
+import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { Passos } from "./Passos";
 
 export default async function BemVindoPage() {
@@ -21,6 +22,9 @@ export default async function BemVindoPage() {
       primeiroNome={session.fullName.split(" ")[0] ?? ""}
       parishName={session.membership.parishName}
       vapidPublicKey={getPublicVapidKey()}
+      fontScale={session.fontScale}
+      themePreference={session.themePreference}
+      nomeDoTempo={getLiturgicalSeason(new Date()).name}
       pastorais={pastorais.slice(0, 6).map((p) => ({
         id: p.id,
         name: p.name,

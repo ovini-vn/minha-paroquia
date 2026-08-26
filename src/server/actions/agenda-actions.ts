@@ -10,6 +10,7 @@ import {
   createCelebrationSchedule,
   deactivateCelebrationSchedule,
   setCelebrationCanceled,
+  updateCelebrationSchedule,
 } from "@/server/modules/celebrations/service";
 import {
   createCelebrationInputSchema,
@@ -193,6 +194,71 @@ export async function createCelebrationScheduleAction(
       criadas === 0
         ? "Repetição criada. Nenhuma data caiu no período à frente ainda."
         : `Repetição criada — ${criadas} ${criadas === 1 ? "data lançada" : "datas lançadas"} na agenda.`,
+  };
+}
+
+export async function updateCelebrationScheduleAction(
+  _prev: ScheduleActionState,
+  formData: FormData,
+): Promise<ScheduleActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.AGENDA_MANAGE);
+
+  const scheduleId = String(formData.get("scheduleId") ?? "");
+  if (!scheduleId) return { error: "Repetição não informada." };
+
+  let resultado: Awaited<ReturnType<typeof updateCelebrationSchedule>>;
+  try {
+    const priestProfileId = formData.get("priestProfileId");
+    const weekOfMonth = formData.get("weekOfMonth");
+    const endsOn = formData.get("endsOn");
+
+    const input = createCelebrationScheduleInputSchema.parse({
+      type: formData.get("type") || "missa",
+      title: formData.get("title") || undefined,
+      location: formData.get("location") || undefined,
+      priestProfileId: priestProfileId ? priestProfileId : undefined,
+      frequency: formData.get("frequency"),
+      weekday: formData.get("weekday"),
+      weekOfMonth: weekOfMonth ? weekOfMonth : undefined,
+      timeMinutes: formData.get("timeMinutes"),
+      startsOn: formData.get("startsOn"),
+      endsOn: endsOn ? endsOn : undefined,
+    });
+
+    resultado = await updateCelebrationSchedule(session.membership.parishId, scheduleId, input);
+  } catch (error) {
+    if (error instanceof ZodError) return { error: error.issues[0]?.message ?? "Dados inválidos." };
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  revalidatePath("/painel/missas");
+  revalidatePath("/painel/liturgia");
+  revalidatePath("/painel");
+  revalidatePath("/agenda");
+  revalidatePath("/comunidade");
+  revalidatePath("/inicio");
+
+  // A mensagem diz o que aconteceu com as datas já na agenda: a secretaria
+  // precisa saber se alguma ficou para trás no horário antigo.
+  if (resultado.mantidasNoHorarioAntigo > 0) {
+    const n = resultado.mantidasNoHorarioAntigo;
+    return {
+      ok: `Horário corrigido — ${resultado.criadas} ${resultado.criadas === 1 ? "data lançada" : "datas lançadas"}. ${n} ${n === 1 ? "data ficou" : "datas ficaram"} no horário antigo por ter escala ou participação registrada; ajuste ou cancele em Missas e celebrações.`,
+    };
+  }
+  if (resultado.criadas > 0) {
+    return {
+      ok: `Horário corrigido — ${resultado.criadas} ${resultado.criadas === 1 ? "data refeita" : "datas refeitas"} na agenda.`,
+    };
+  }
+  return {
+    ok:
+      resultado.atualizadas > 0
+        ? `Corrigido — ${resultado.atualizadas} ${resultado.atualizadas === 1 ? "data atualizada" : "datas atualizadas"} na agenda.`
+        : "Corrigido.",
   };
 }
 

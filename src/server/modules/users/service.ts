@@ -1,15 +1,16 @@
-import type { OAuthProvider, ThemePreference, ColorScheme } from "@prisma/client";
+import type { ColorScheme, FontScale, OAuthProvider, ThemePreference } from "@prisma/client";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
 import {
   createUser,
+  createUserFromOAuth,
+  findOAuthAccount,
   findUserByEmail,
+  linkOAuthAccount,
+  updateUserColorScheme,
+  updateUserFontScale,
   updateUserProfile,
   updateUserThemePreference,
-  updateUserColorScheme,
-  findOAuthAccount,
-  createUserFromOAuth,
-  linkOAuthAccount,
 } from "./repository";
 import type { LoginInput, RegisterInput, UpdateProfileInput } from "./schema";
 
@@ -99,4 +100,8 @@ export function updateOwnThemePreference(userId: string, themePreference: ThemeP
 
 export function updateOwnColorScheme(userId: string, colorScheme: ColorScheme) {
   return updateUserColorScheme(userId, colorScheme);
+}
+
+export function updateOwnFontScale(userId: string, fontScale: FontScale) {
+  return updateUserFontScale(userId, fontScale);
 }

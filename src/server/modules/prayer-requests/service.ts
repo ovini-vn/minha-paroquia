@@ -26,6 +26,15 @@ function toListItem(row: {
   };
 }
 
+/**
+ * O pedido nasce pendente quando vai ao mural, e aprovado quando é para o
+ * padre.
+ *
+ * O mural é lido pela comunidade inteira, e o campo é texto livre: alguém
+ * precisa olhar antes. Já o pedido endereçado ao padre é privado por
+ * definição — moderar uma mensagem dirigida a ele, por ele mesmo, seria
+ * circular e só atrasaria quem está precisando.
+ */
 export function createPrayerRequest(input: CreatePrayerRequestInput & { parishId: string; userId: string }) {
   return withTenantContext(input.parishId, (tx) =>
     tx.prayerRequest.create({
@@ -35,6 +44,7 @@ export function createPrayerRequest(input: CreatePrayerRequestInput & { parishId
         contentText: input.contentText,
         visibility: input.visibility,
         isAnonymous: input.isAnonymous,
+        status: input.visibility === "comunidade" ? "pendente" : "aprovado",
       },
     }),
   );
@@ -54,7 +64,8 @@ export function listMyPrayerRequests(parishId: string, userId: string) {
 export async function listCommunityPrayerRequests(parishId: string, limit = 20): Promise<PrayerRequestListItem[]> {
   const rows = await withTenantContext(parishId, (tx) =>
     tx.prayerRequest.findMany({
-      where: { parishId, visibility: "comunidade" },
+      // Só o aprovado aparece: pendente e recusado ficam fora do mural.
+      where: { parishId, visibility: "comunidade", status: "aprovado" },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { requester: { select: { fullName: true } } },
@@ -67,11 +78,49 @@ export async function listCommunityPrayerRequests(parishId: string, limit = 20):
 export async function listPrivatePrayerRequests(parishId: string, limit = 30): Promise<PrayerRequestListItem[]> {
   const rows = await withTenantContext(parishId, (tx) =>
     tx.prayerRequest.findMany({
-      where: { parishId, visibility: "padre" },
+      where: { parishId, visibility: "padre", status: { not: "recusado" } },
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { requester: { select: { fullName: true } } },
     }),
   );
   return rows.map(toListItem);
+}
+
+/**
+ * A fila de quem espera aprovação — só os do mural.
+ *
+ * Traz o nome de quem pediu MESMO quando o pedido é anônimo: quem modera
+ * precisa saber de quem veio para decidir, e para conversar se for o caso.
+ * O anonimato vale na exibição ao mural, não na moderação.
+ */
+export function listPendingPrayerRequests(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.prayerRequest.findMany({
+      where: { parishId, visibility: "comunidade", status: "pendente" },
+      orderBy: { createdAt: "asc" },
+      include: { requester: { select: { fullName: true } } },
+    }),
+  );
+}
+
+export function moderatePrayerRequest(
+  parishId: string,
+  id: string,
+  status: "aprovado" | "recusado",
+  moderatorUserId: string,
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.prayerRequest.updateMany({
+      where: { id, parishId, visibility: "comunidade" },
+      data: { status, moderatedBy: moderatorUserId, moderatedAt: new Date() },
+    }),
+  );
+}
+
+/** Quantos esperam decisão — para o painel avisar sem abrir a tela. */
+export function countPendingPrayerRequests(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.prayerRequest.count({ where: { parishId, visibility: "comunidade", status: "pendente" } }),
+  );
 }

@@ -124,6 +124,45 @@ export default function PrivacidadePage() {
         </p>
       </Secao>
 
+      <Secao titulo="Minha Caminhada: o que a paróquia vê e o que não vê">
+        <p>
+          A Caminhada é uma tela da paróquia, dentro do aplicativo da paróquia. É razoável supor
+          que a paróquia esteja olhando tudo o que se registra ali — e não está. A separação é
+          esta:
+        </p>
+        <Lista
+          itens={[
+            <>
+              <strong className="font-semibold text-foreground">
+                Missas registradas e confissões: ninguém além de você.
+              </strong>{" "}
+              Nem o pároco, nem a secretaria, nem quem administra a plataforma. Essas listas só são
+              lidas pela conta que as escreveu, e servem ao acompanhamento que a pessoa faz de si
+              mesma.
+            </>,
+            <>
+              <strong className="font-semibold text-foreground">
+                As reflexões que você escreve não saem da sua conta.
+              </strong>{" "}
+              A paróquia enxerga um único número agregado — quantas participações em missa foram
+              registradas na comunidade inteira no mês, e que proporção veio acompanhada de algum
+              texto. Sem nome, sem data individual, sem uma palavra do que foi escrito, e apenas
+              acima de um mínimo de registros, para que ninguém seja deduzido numa comunidade
+              pequena.
+            </>,
+            <>
+              <strong className="font-semibold text-foreground">
+                Sacramentos e data de nascimento: visíveis para a paróquia.
+              </strong>{" "}
+              Batismo, Primeira Eucaristia, Crisma e Casamento ficam à vista do pároco e da
+              secretaria, com a data de nascimento de quem a preencheu. É o que permite confirmar
+              um registro e lembrar de um aniversário — a única finalidade para a qual essas datas
+              são usadas.
+            </>,
+          ]}
+        />
+      </Secao>
+
       <Secao titulo="O que o aplicativo NÃO guarda">
         <p>Algumas ausências são decisões de projeto, e valem ser ditas com clareza:</p>
         <Lista

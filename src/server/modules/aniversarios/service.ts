@@ -20,8 +20,8 @@ export async function listarAniversarios(
 ): Promise<Aniversario[]> {
   return withTenantContext(parishId, async (tx) => {
     const [membros, sacramentos] = await Promise.all([
-      // Só quem pertence de fato: pendente ainda não foi confirmado pela
-      // secretaria, e quem saiu não é mais da casa.
+      // Quem saiu não é mais da casa: o vínculo fica inativo, e a data
+      // dele deixa de aparecer aqui.
       tx.parishMembership.findMany({
         where: { parishId, status: "active" },
         select: { user: { select: { id: true, fullName: true, birthDate: true } } },

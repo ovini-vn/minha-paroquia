@@ -43,7 +43,7 @@ export default async function CaminhadaPage() {
       <LidoAoAbrir caminho="/caminhada" />
       <PageHeader
         title="Minha Caminhada"
-        description="Uma memória pessoal da sua fé — só você vê o que escreve aqui."
+        description="Uma memória pessoal da sua fé. Parte fica só com você — veja abaixo o que é de cada um."
       />
 
       <section>
@@ -154,6 +154,53 @@ export default async function CaminhadaPage() {
               </div>
             </div>
           )}
+        </Card>
+      </section>
+
+      {/* Quem vê o quê, dito por extenso.
+          A pessoa registra confissão e missa numa tela da paróquia, dentro
+          do app da paróquia. É razoável supor que a paróquia esteja
+          olhando — e a suposição errada, aqui, é a que faz alguém não
+          registrar nada. Dizer só "é privado" não basta: privado de quem,
+          e o que então NÃO é. */}
+      <section className="pt-7">
+        <Eyebrow tone="accent" className="mb-3">
+          Quem vê o quê
+        </Eyebrow>
+        <Card className="border-gold/45 bg-gold/[0.07]">
+          <div className="flex flex-col gap-3.5">
+            <div>
+              <p className="text-[14px] font-semibold text-foreground">
+                Missas e confissões: só você
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                Nem o pároco, nem a secretaria, nem ninguém da paróquia vê quais missas você
+                marcou ou quando você se confessou. Isto é seu, para o seu controle.
+              </p>
+            </div>
+
+            <div className="border-t border-gold/25 pt-3.5">
+              <p className="text-[14px] font-semibold text-foreground">
+                O que você escreve nas reflexões não sai daqui
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                O texto é só seu. A paróquia enxerga apenas um número da comunidade inteira —
+                quantas participações foram registradas no mês —, sem nome e sem uma palavra do
+                que foi escrito.
+              </p>
+            </div>
+
+            <div className="border-t border-gold/25 pt-3.5">
+              <p className="text-[14px] font-semibold text-foreground">
+                Sacramentos: a paróquia vê, e é para isso que servem
+              </p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted">
+                Batismo, Primeira Eucaristia, Crisma e Casamento ficam visíveis para o pároco e a
+                secretaria — junto com a sua data de nascimento, se você a preencheu. É assim que
+                eles confirmam o registro e lembram do seu aniversário e das suas datas.
+              </p>
+            </div>
+          </div>
         </Card>
       </section>
 

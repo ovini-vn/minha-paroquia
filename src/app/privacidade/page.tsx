@@ -152,8 +152,9 @@ export default function PrivacidadePage() {
               <strong className="font-semibold text-foreground">
                 Nada para publicidade.
               </strong>{" "}
-              Não há anúncios, não há rastreadores de terceiros e nenhum dado é vendido ou cedido
-              para fins comerciais.
+              Não há anúncios, não há rastreador nosso nem de análise de comportamento, e nenhum
+              dado é vendido ou cedido para fins comerciais. A única exceção é o vídeo do YouTube,
+              explicada abaixo, e ela só acontece se você tocar para assistir.
             </>,
           ]}
         />
@@ -262,6 +263,21 @@ export default function PrivacidadePage() {
           a paróquia será comunicada e você também, junto com a Autoridade Nacional de Proteção de
           Dados, quando a lei exigir.
         </p>
+      </Secao>
+
+      <Secao titulo="Vídeos do YouTube">
+        <p>
+          Quando a paróquia publica um vídeo na Palavra do Padre, o aplicativo mostra a capa dele
+          e só carrega o reprodutor quando <strong className="font-semibold text-foreground">você
+          toca para assistir</strong>. Até esse momento, o YouTube não é acionado.
+        </p>
+        <p>
+          Ao assistir, o vídeo passa a vir do Google, que pode registrar essa visualização segundo
+          as próprias regras dele. Usamos o domínio de incorporação sem cookie que o próprio
+          YouTube publica para reduzir isso, mas quem assiste dentro do aplicativo assiste no
+          YouTube — e vale saber disso antes de tocar.
+        </p>
+        <p>A capa do vídeo é uma imagem servida pelo YouTube, carregada junto com a tela.</p>
       </Secao>
 
       <Secao titulo="Cookies">

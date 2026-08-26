@@ -2,6 +2,7 @@ import { Headphones, Video } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/date";
+import { VideoDoPost } from "@/components/domain/VideoDoPost";
 
 type Post = {
   id: string;
@@ -35,11 +36,18 @@ export function PostCard({ post, assinatura }: { post: Post; assinatura: Assinat
         </div>
       </div>
 
-      {post.mediaType === "texto" ? (
+      {post.mediaType === "texto" && (
         <p className="mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.62] text-foreground">
           {post.contentText}
         </p>
-      ) : (
+      )}
+
+      {/* Vídeo se assiste aqui dentro; áudio e o resto continuam abrindo fora. */}
+      {post.mediaType === "video" && post.mediaUrl && (
+        <VideoDoPost url={post.mediaUrl} titulo={assinatura.nome} />
+      )}
+
+      {post.mediaType !== "texto" && post.mediaType !== "video" && (
         <a
           href={post.mediaUrl ?? "#"}
           target="_blank"

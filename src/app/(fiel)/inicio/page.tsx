@@ -139,7 +139,7 @@ export default async function HomePage() {
           Forçar a cor litúrgica aqui — como estava — passava por cima de
           uma preferência explícita do usuário.
         */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grade-de-atalhos grid grid-cols-3 gap-3">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (

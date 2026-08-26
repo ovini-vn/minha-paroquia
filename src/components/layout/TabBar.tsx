@@ -32,7 +32,7 @@ export function TabBar() {
               <span className="absolute top-0 h-0.5 w-[18px] rounded-sm bg-gold" aria-hidden />
             )}
             <Icon className="h-[21px] w-[21px]" strokeWidth={active ? 2 : 1.5} aria-hidden />
-            {item.label}
+            <span className="rotulo-de-aba">{item.label}</span>
           </Link>
         );
       })}

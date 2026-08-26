@@ -233,7 +233,10 @@ body {
   zoom: 1.15;
 }
 :root[data-font-scale="g"] {
-  zoom: 1.3;
+  /* 1,5 e não 1,3: a 1,3 o corpo do texto ficava em ~19px, que ainda é
+     pequeno para quem tem catarata ou presbiopia avançada. A 1,5 vai a
+     ~22px, que é a faixa em que as diretrizes de baixa visão começam. */
+  zoom: 1.5;
 }
 
 /*
@@ -261,4 +264,34 @@ body {
 }
 :root[data-font-scale="g"] .card-finalidade .texto-finalidade {
   flex: 1 1 0%;
+}
+
+/*
+ * O que precisa ceder quando a letra fica grande.
+ *
+ * `zoom` encolhe a largura de layout na mesma proporção em que amplia: num
+ * celular de 375px, o G deixa 250px para o conteúdo. Isso é pouco para
+ * grades pensadas na largura cheia, e o resultado seria palavra quebrada
+ * letra a letra — o oposto de ajudar quem já tem dificuldade de ler.
+ *
+ * Por isso as regras abaixo não são enfeite: sem elas, aumentar o G
+ * estragaria justamente as telas de quem mais precisa dele.
+ */
+
+/* Seis atalhos em três colunas viram 78px de coluna no G. Em duas, 120px. */
+:root[data-font-scale="g"] .grade-de-atalhos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/*
+ * A barra de abas tem cinco destinos e não pode virar quatro. "Comunidade"
+ * é a palavra mais longa e é ela que decide: no G o rótulo encolhe um
+ * pouco em relação ao resto, e mesmo assim sai MAIOR do que é hoje no P
+ * (10px x 1,5 = 15px viraria 13,5px com este ajuste — ainda acima dos 10px
+ * de agora). Sem quebra de linha, para a barra não mudar de altura.
+ */
+:root[data-font-scale="g"] .rotulo-de-aba {
+  font-size: 9px;
+  white-space: nowrap;
+  letter-spacing: 0;
 }

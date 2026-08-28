@@ -28,6 +28,32 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3000";
  * Windows e no resto: `$(cat arquivo)` é sintaxe de shell POSIX e quebra no
  * prompt do Windows.
  */
+/**
+ * Confere que o servidor está de pé ANTES de qualquer outra coisa.
+ *
+ * Sem isto, o script criava uma sessão no banco e só então falhava 26 vezes
+ * com ERR_CONNECTION_REFUSED — ruidoso, e sem dizer a causa real, que é
+ * simplesmente o servidor não estar rodando.
+ */
+async function conferirServidor() {
+  try {
+    // `redirect: "manual"` é essencial: a raiz responde 307 para /login, e o
+    // fetch do Node segue o redirecionamento por padrão — passando a esperar
+    // o /login COMPILAR. Na primeira execução isso estoura qualquer limite
+    // razoável e o guarda rejeitava um servidor que estava de pé.
+    // Qualquer resposta, inclusive 307, já prova que há alguém escutando.
+    await fetch(BASE, { method: "HEAD", redirect: "manual", signal: AbortSignal.timeout(8000) });
+  } catch {
+    console.error(`Nada respondendo em ${BASE}.`);
+    console.error("");
+    console.error("Suba o servidor numa OUTRA janela primeiro:");
+    console.error("    npm run dev");
+    console.error("");
+    console.error("Depois rode este comando de novo.");
+    process.exit(1);
+  }
+}
+
 function obterToken() {
   const daLinhaDeComando = process.argv[2];
   if (daLinhaDeComando) return daLinhaDeComando;
@@ -35,13 +61,25 @@ function obterToken() {
   // Caminho RELATIVO: o absoluto passa por "App Paroquial", e o espaço no
   // meio faz o shell do Windows cortar o argumento em dois.
   const script = path.relative(process.cwd(), path.join(AQUI, "criar-sessao.ts")).split(path.sep).join("/");
-  return execFileSync("npx", ["tsx", script], {
+  /*
+   * Chama o NODE direto no CLI do tsx, em vez de `npx tsx`.
+   *
+   * As duas alternativas óbvias falham no Windows: com `shell: true` o Node
+   * avisa (DEP0190) que os argumentos são concatenados em vez de escapados;
+   * sem ele, `npx.cmd` estoura com EINVAL, porque o Node passou a recusar
+   * spawn de arquivo .cmd fora de shell — endurecimento de segurança.
+   *
+   * Chamar `process.execPath` com o cli.mjs não passa por shell nem por
+   * arquivo de lote, e funciona igual nos três sistemas.
+   */
+  const tsx = path.join(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
+  return execFileSync(process.execPath, [tsx, script], {
     encoding: "utf8",
-    shell: process.platform === "win32",
     stdio: ["ignore", "pipe", "inherit"],
   }).trim();
 }
 
+await conferirServidor();
 const token = obterToken();
 
 /** Cada tela vira um arquivo. `espera` é o que precisa existir antes do clique do obturador. */

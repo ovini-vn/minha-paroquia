@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minha Paróquia</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css" id="theme" />
+
+    <style>
+      /* Paleta do próprio aplicativo (src/app/globals.css). */
+      :root {
+        --marfim: #f6f3ec;
+        --superficie: #fffdf8;
+        --grafite: #242124;
+        --suave: #6f6a67;
+        --dourado: #c9a44c;
+        --dourado-claro: #e3ce95;
+        --roxo: #5b2890;
+        --roxo-claro: #efeaf6;
+        --borda: #e4ddd1;
+      }
+
+      .reveal {
+        font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 34px;
+        color: var(--grafite);
+      }
+      .reveal-viewport { background: var(--marfim); }
+
+      .reveal h1, .reveal h2, .reveal h3 {
+        font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+        font-weight: 600;
+        color: var(--grafite);
+        text-transform: none;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+      .reveal h1 { font-size: 2.6em; line-height: 0.98; }
+      .reveal h2 { font-size: 1.72em; line-height: 1.06; }
+      .reveal h3 { font-size: 0.82em; line-height: 1.25; }
+      .reveal p { line-height: 1.5; }
+      .reveal .slides section { text-align: left; }
+
+      .rotulo-secao {
+        font-size: 0.42em;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--roxo);
+        margin: 0 0 0.5em;
+      }
+      .fio { width: 56px; height: 2px; background: var(--dourado); border: 0; margin: 0.45em 0 0.7em; }
+      .centro { display: flex; flex-direction: column; justify-content: center; }
+      .nota { font-size: 0.46em; color: var(--suave); line-height: 1.55; }
+
+      /* =============================================== slides escuros */
+      /*
+       * O ritmo claro/escuro é o que tira a apresentação do branco chapado.
+       * Slides de sentimento (problema, promessa, convite) são escuros; os
+       * de comparação e de lista ficam claros, onde texto pequeno se lê
+       * melhor.
+       */
+      .escuro h1, .escuro h2, .escuro h3 { color: #fffdf8; }
+      .escuro p { color: rgba(255, 253, 248, 0.88); }
+      .escuro .rotulo-secao { color: var(--dourado); }
+      .escuro .nota { color: rgba(255, 253, 248, 0.62); }
+      .escuro li { color: rgba(255, 253, 248, 0.84); }
+      .escuro li::before { border-color: var(--dourado); }
+      .escuro .card {
+        background: rgba(255, 253, 248, 0.07);
+        border-color: rgba(255, 253, 248, 0.18);
+        backdrop-filter: blur(2px);
+      }
+      .escuro .card h3 { color: #fffdf8; }
+      .escuro .card p { color: rgba(255, 253, 248, 0.78); }
+      .escuro .frase p { color: #fffdf8; }
+      .escuro .icone { border-color: var(--dourado); }
+      .escuro .icone svg { stroke: var(--dourado-claro); }
+      .escuro .passo .n { border-color: var(--dourado); color: var(--dourado-claro); }
+      .escuro .legenda-celular { color: rgba(255, 253, 248, 0.7); }
+
+      /* ------------------------------------------- moldura de celular */
+      /*
+       * 13px de moldura com raio 44 (interno 31) é a relação de um aparelho
+       * real. Com 8px e raio 32 o preto virava um fio e o conteúdo avançava
+       * até dentro da curva — lia como imagem com contorno, não como
+       * telefone. As escalas menores mantêm a mesma proporção.
+       */
+      .celular {
+        background: #141214;
+        border-radius: 44px;
+        padding: 13px;
+        overflow: hidden;
+        position: relative;
+        flex: 0 0 auto;
+        box-shadow: 0 28px 60px -26px rgba(20, 10, 34, 0.7), 0 0 0 1px rgba(36, 33, 36, 0.1);
+      }
+      .celular img { display: block; width: 100%; border-radius: 31px; background: var(--superficie); margin: 0; }
+      .celular::before {
+        content: "";
+        position: absolute;
+        top: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #080708;
+        box-shadow: inset 0 0 0 1px rgba(255, 253, 248, 0.16);
+        z-index: 2;
+      }
+      .celular.xs { width: 150px; border-radius: 26px; padding: 8px; }
+      .celular.xs img { border-radius: 18px; }
+      .celular.xs::before { top: 14px; width: 6px; height: 6px; }
+      .celular.p { width: 232px; border-radius: 35px; padding: 10px; }
+      .celular.p img { border-radius: 25px; }
+      .celular.p::before { top: 17px; width: 7px; height: 7px; }
+      .celular.m { width: 288px; border-radius: 42px; padding: 12px; }
+      .celular.m img { border-radius: 30px; }
+      .celular.g { width: 330px; }
+
+      /* Halo dourado atrás do aparelho, só no escuro: dá profundidade. */
+      .escuro .celular { box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 164, 76, 0.28); }
+
+      .fileira { display: flex; gap: 26px; align-items: flex-start; justify-content: center; }
+      .fileira > div { display: flex; flex-direction: column; align-items: center; }
+      .legenda-celular {
+        font-size: 0.4em;
+        color: var(--suave);
+        text-align: center;
+        margin-top: 0.7em;
+        line-height: 1.4;
+      }
+
+      /* ------------------------------------------------------ estrutura */
+      .duas { display: grid; grid-template-columns: 1fr auto; gap: 54px; align-items: center; }
+      .duas.espelho { grid-template-columns: auto 1fr; }
+
+      .reveal ul { margin: 0; list-style: none; }
+      .reveal li {
+        margin-bottom: 0.6em;
+        font-size: 0.58em;
+        line-height: 1.45;
+        color: var(--suave);
+        padding-left: 1.5em;
+        position: relative;
+      }
+      .reveal li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.48em;
+        width: 11px;
+        height: 11px;
+        border: 2px solid var(--dourado);
+        border-radius: 50%;
+      }
+      .reveal li strong { color: var(--grafite); font-weight: 650; }
+      .escuro li strong { color: #fffdf8; }
+
+      .grade-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 0.5em; }
+      .grade-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 0.6em; }
+      .card {
+        background: var(--superficie);
+        border: 1px solid var(--borda);
+        border-radius: 18px;
+        padding: 26px 28px 28px;
+      }
+      .card.apagado { background: #ece7dd; border-color: #ddd5c8; }
+      .card.apagado h3, .card.apagado p { color: var(--suave); }
+      .card.ouro {
+        background: linear-gradient(150deg, #5b2890 0%, #401a6d 100%);
+        border-color: rgba(201, 164, 76, 0.5);
+      }
+      .card.ouro h3 { color: var(--dourado-claro); }
+      .card.ouro p { color: rgba(255, 253, 248, 0.9); }
+      .card h3 { margin-bottom: 0.32em; }
+      .card p { font-size: 0.48em; line-height: 1.55; margin: 0.4em 0 0; color: var(--grafite); }
+
+      .icone {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        border: 1.5px solid var(--dourado);
+        display: grid;
+        place-items: center;
+        margin-bottom: 0.45em;
+      }
+      .icone svg { width: 25px; height: 25px; stroke: var(--roxo); fill: none; stroke-width: 1.5; }
+
+      /* A frase que precisa ficar — grande, em serifa. */
+      .frase { border-left: 3px solid var(--dourado); padding: 6px 0 6px 28px; margin-top: 1em; }
+      .frase p {
+        font-family: Georgia, serif;
+        font-size: 0.88em;
+        line-height: 1.32;
+        margin: 0;
+        color: var(--grafite);
+      }
+
+      .passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 0.7em; }
+      .passo { position: relative; padding-top: 58px; }
+      .passo .n {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1.5px solid var(--dourado);
+        color: var(--roxo);
+        font-family: Georgia, serif;
+        font-size: 0.6em;
+        display: grid;
+        place-items: center;
+      }
+      .passo h3 { font-size: 0.72em; margin-bottom: 0.3em; }
+      .passo p { font-size: 0.46em; color: var(--suave); line-height: 1.55; margin: 0; }
+      .escuro .passo p { color: rgba(255, 253, 248, 0.75); }
+
+      .pilares { font-size: 0.44em; color: var(--dourado); letter-spacing: 0.22em; margin-top: 1.7em; }
+
+      /* Arcos concêntricos — caminho e comunidade, sem símbolo religioso. */
+      .arcos { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+      /*
+       * `:not(.arcos)` é essencial: sem isso a regra dá `position: relative`
+       * ao SVG decorativo, ele deixa de ser absoluto, entra no fluxo e
+       * empurra todo o conteúdo do slide para baixo.
+       */
+      .reveal .slides section > *:not(.arcos) { position: relative; z-index: 1; }
+
+      .reveal .progress { color: var(--dourado); height: 4px; }
+      .reveal .controls { color: var(--roxo); }
+      .reveal .slide-number { background: rgba(36, 33, 36, 0.45); }
+
+      @media print {
+        .celular { box-shadow: 0 0 0 1px rgba(36, 33, 36, 0.18); }
+        .escuro .celular { box-shadow: 0 0 0 1px rgba(201, 164, 76, 0.3); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- 1 .......................................... CAPA (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(150deg, #5b2890 0%, #2c1046 100%)"
+        >
+          <svg class="arcos" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="#c9a44c" stroke-width="1.2" opacity="0.26">
+              <circle cx="1240" cy="450" r="230" />
+              <circle cx="1240" cy="450" r="370" />
+              <circle cx="1240" cy="450" r="520" />
+              <circle cx="1240" cy="450" r="680" />
+            </g>
+          </svg>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Para a vida da comunidade</p>
+              <h1>Minha Paróquia</h1>
+              <hr class="fio" />
+              <p style="font-size: 0.74em; max-width: 13em">
+                A vida da paróquia continua durante a semana.
+              </p>
+              <p class="pilares">CAMINHAR &nbsp;·&nbsp; PERTENCER &nbsp;·&nbsp; SERVIR</p>
+            </div>
+            <div class="celular g"><img src="screenshots/inicio.png" alt="Tela inicial no celular" /></div>
+          </div>
+          <aside class="notes">
+            Abrir com a pergunta, antes do produto: entre um domingo e o outro, o que a paróquia
+            consegue dizer a quem esteve na missa? Os três pilares — caminhar, pertencer, servir —
+            são a estrutura do aplicativo inteiro.
+          </aside>
+        </section>
+
+        <!-- 2 ...................................... O PROBLEMA (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(160deg, #2e1149 0%, #1c0b2e 100%)"
+        >
+          <div class="centro">
+            <p class="rotulo-secao">O problema</p>
+            <h2>O que se perde entre um domingo e o outro</h2>
+            <hr class="fio" />
+            <div class="grade-2" style="margin-top: 0.6em">
+              <div class="card">
+                <h3>O aviso não alcança quem faltou</h3>
+                <p>O recado dado na missa fica com quem estava lá. Os outros descobrem tarde.</p>
+              </div>
+              <div class="card">
+                <h3>A informação se espalha</h3>
+                <p>Horários e recados vivem em grupos de mensagens, misturados a tudo.</p>
+              </div>
+              <div class="card">
+                <h3>A secretaria repete o mesmo</h3>
+                <p>As mesmas dúvidas voltam todos os dias, uma pessoa de cada vez.</p>
+              </div>
+              <div class="card">
+                <h3>Escalas dependem da memória</h3>
+                <p>Quem serve, quando e em quê fica na cabeça de duas ou três pessoas.</p>
+              </div>
+            </div>
+            <div class="frase">
+              <p>Quem quer servir não sabe por onde começar — e acaba não voltando.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            Ler devagar, um card por vez. O pároco reconhece os quatro. Pedir um exemplo da própria
+            paróquia dele antes de virar o slide: o resto da apresentação se apoia neste
+            reconhecimento.
+          </aside>
+        </section>
+
+        <!-- 3 ...................................... A MUDANÇA (claro) -->
+        <section>
+          <div class="centro">
+            <p class="rotulo-secao">A mudança</p>
+            <h2>Não é falta de fé. É falta de um lugar.</h2>
+            <hr class="fio" />
+            <div class="grade-2">
+              <div class="card apagado">
+                <h3>Como é hoje</h3>
+                <p>Avisos em grupos de mensagens</p>
+                <p>Informações repetidas a cada pergunta</p>
+                <p>Lembretes feitos à mão, um a um</p>
+                <p>Dados espalhados entre cadernos e pessoas</p>
+              </div>
+              <div class="card ouro">
+                <h3>Com o Minha Paróquia</h3>
+                <p>Notificação que chega ao celular</p>
+                <p>Informação disponível, sempre no mesmo lugar</p>
+                <p>Lembretes automáticos, na véspera e no dia</p>
+                <p>Registros organizados, ao alcance de quem precisa</p>
+              </div>
+            </div>
+            <div class="frase">
+              <p>É falta de um lugar onde a informação da comunidade permaneça.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            A virada da apresentação. A coluna da esquerda não acusa ninguém: descreve o que toda
+            paróquia vive. A da direita não promete milagre — descreve o que muda de lugar. Quem
+            administra a secretaria costuma se convencer aqui.
+          </aside>
+        </section>
+
+        <!-- 4 ..................................... PARA O FIEL (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(150deg, #5b2890 0%, #33124f 100%)"
+        >
+          <svg class="arcos" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="#c9a44c" stroke-width="1.2" opacity="0.2">
+              <circle cx="800" cy="1180" r="520" />
+              <circle cx="800" cy="1180" r="700" />
+              <circle cx="800" cy="1180" r="890" />
+            </g>
+          </svg>
+          <div class="centro">
+            <p class="rotulo-secao">Para o fiel</p>
+            <h2>A paróquia inteira, no bolso</h2>
+            <hr class="fio" />
+            <div class="fileira" style="margin-top: 0.3em">
+              <div>
+                <div class="celular p"><img src="screenshots/inicio.png" alt="Tela inicial" /></div>
+                <p class="legenda-celular">A próxima missa e<br />a Palavra do Padre</p>
+              </div>
+              <div>
+                <div class="celular p"><img src="screenshots/agenda.png" alt="Agenda" /></div>
+                <p class="legenda-celular">Agenda de celebrações<br />e eventos</p>
+              </div>
+              <div>
+                <div class="celular p"><img src="screenshots/avisos.png" alt="Avisos" /></div>
+                <p class="legenda-celular">Avisos, com<br />histórico</p>
+              </div>
+              <div>
+                <div class="celular p"><img src="screenshots/contato.png" alt="Contato" /></div>
+                <p class="legenda-celular">Telefone, endereço e<br />horário da secretaria</p>
+              </div>
+              <div>
+                <div class="celular p"><img src="screenshots/biblia-capitulo.png" alt="Bíblia" /></div>
+                <p class="legenda-celular">Bíblia católica,<br />os 73 livros</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Passar pelas cinco telas sem detalhar cada uma — o que convence é o conjunto. Tudo o
+            que hoje é pergunta na saída da missa está aqui, a um toque, sem depender de alguém
+            estar disponível para responder.
+          </aside>
+        </section>
+
+        <!-- 5 .............................. tempos litúrgicos (claro) -->
+        <section>
+          <div class="centro">
+            <p class="rotulo-secao">Identidade</p>
+            <h2>O aplicativo se veste do tempo litúrgico</h2>
+            <hr class="fio" />
+            <div class="fileira" style="gap: 14px; margin-top: 0.2em">
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-advento.png" alt="Advento" /></div>
+                <p class="legenda-celular">Advento</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-natal.png" alt="Natal" /></div>
+                <p class="legenda-celular">Natal</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-tempo_comum.png" alt="Tempo Comum" /></div>
+                <p class="legenda-celular">Tempo Comum</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-quaresma.png" alt="Quaresma" /></div>
+                <p class="legenda-celular">Quaresma</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-triduo_pascal.png" alt="Tríduo Pascal" /></div>
+                <p class="legenda-celular">Tríduo Pascal</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-pascoa.png" alt="Páscoa" /></div>
+                <p class="legenda-celular">Páscoa</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/cor-pentecostes.png" alt="Pentecostes" /></div>
+                <p class="legenda-celular">Pentecostes</p>
+              </div>
+            </div>
+            <div class="frase">
+              <p>Muda sozinho, na data certa. Ninguém precisa configurar nada.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            É o slide que mostra que quem construiu conhece a Igreja. As cores acompanham o
+            calendário e viram sozinhas. Quem preferir a cor da marca o ano inteiro também pode
+            escolher — é o tema que aparece nos outros slides.
+          </aside>
+        </section>
+
+        <!-- 6 ................................... COMUNICAÇÃO (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(160deg, #2e1149 0%, #1c0b2e 100%)"
+        >
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Comunicação</p>
+              <h2>O aviso chega.<br />E continua disponível.</h2>
+              <hr class="fio" />
+              <ul>
+                <li><strong>Chega ao celular</strong> por notificação, mesmo com o aplicativo fechado.</li>
+                <li><strong>Fica guardado</strong>, com o texto inteiro, e não some da tela.</li>
+                <li><strong>Pode ser consultado depois</strong> — quem viu na terça reencontra no sábado.</li>
+                <li><strong>Evita repetição</strong>: o mesmo aviso não é enviado duas vezes.</li>
+              </ul>
+            </div>
+            <div class="fileira">
+              <div class="celular m"><img src="screenshots/notificacoes.png" alt="Central de notificações" /></div>
+            </div>
+          </div>
+          <aside class="notes">
+            O último ponto merece demora: aviso repetido é o que leva alguém a desligar as
+            notificações — e aí a pessoa deixa de receber também o que importa. A trava para isso
+            foi construída de propósito.
+          </aside>
+        </section>
+
+        <!-- 7 ................................ PALAVRA DO PADRE (claro) -->
+        <section>
+          <div class="duas espelho">
+            <div class="fileira">
+              <div class="celular m"><img src="screenshots/comunidade.png" alt="Palavra do Padre" /></div>
+            </div>
+            <div>
+              <p class="rotulo-secao">Palavra do Padre</p>
+              <h2>A presença que continua na semana</h2>
+              <hr class="fio" />
+              <div class="grade-3" style="margin-top: 0.2em">
+                <div class="card">
+                  <div class="icone" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 4h14v16H5z" /><path d="M8 9h8M8 13h6" />
+                    </svg>
+                  </div>
+                  <h3>Texto</h3>
+                </div>
+                <div class="card">
+                  <div class="icone" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="9" y="3" width="6" height="11" rx="3" />
+                      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+                    </svg>
+                  </div>
+                  <h3>Áudio</h3>
+                </div>
+                <div class="card">
+                  <div class="icone" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="6" width="12" height="12" rx="2" />
+                      <path d="M15 11l6-3v8l-6-3z" />
+                    </svg>
+                  </div>
+                  <h3>Vídeo</h3>
+                </div>
+              </div>
+              <p class="nota" style="margin-top: 0.8em">
+                Toda mensagem fica no histórico, assinada e datada. Quem chegou este mês encontra o
+                que foi dito antes.
+              </p>
+              <div class="frase">
+                <p>A homilia acontece uma vez. A presença pastoral pode continuar na semana.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Perguntar se ele já grava áudio para a comunidade. Se sim, o caminho até aqui é
+            curtíssimo: muda só o lugar onde a mensagem fica. O áudio alcança quem lê com
+            dificuldade, que é boa parte da comunidade.
+          </aside>
+        </section>
+
+        <!-- 8 .............................. SERVIR E CAMINHAR (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(150deg, #5b2890 0%, #33124f 100%)"
+        >
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Servir e caminhar</p>
+              <h2>Da vontade de servir<br />à participação</h2>
+              <hr class="fio" />
+              <ul>
+                <li><strong>Demonstrar interesse</strong> numa pastoral ou mutirão, sem conhecer alguém de dentro.</li>
+                <li><strong>Participar das escalas</strong> da liturgia e das celebrações.</li>
+                <li><strong>Receber lembretes</strong> na véspera e no dia do compromisso assumido.</li>
+                <li><strong>Registrar a caminhada</strong> de fé e os sacramentos recebidos.</li>
+              </ul>
+              <div class="frase">
+                <p>Transformar vontade de servir em participação concreta.</p>
+              </div>
+            </div>
+            <div class="fileira">
+              <div class="celular m"><img src="screenshots/servir.png" alt="Servir" /></div>
+              <div class="celular m"><img src="screenshots/caminhada.png" alt="Minha Caminhada" /></div>
+            </div>
+          </div>
+          <aside class="notes">
+            O interesse numa pastoral avisa o responsável na hora — é isso que faz alguém de carne
+            e osso procurar quem acabou de chegar. Na Caminhada, missas e confissões são registro
+            pessoal do fiel: a paróquia não tem acesso.
+          </aside>
+        </section>
+
+        <!-- 9 ................................ GESTÃO DA PARÓQUIA (claro) -->
+        <section>
+          <div class="centro">
+            <p class="rotulo-secao">Gestão da paróquia</p>
+            <h2>Menos repetição. Mais organização.</h2>
+            <hr class="fio" />
+            <div class="grade-3" style="margin-top: 0.3em">
+              <div class="card">
+                <h3>Missas e horários</h3>
+                <p>Os horários que se repetem são cadastrados uma vez e seguem sozinhos.</p>
+              </div>
+              <div class="card">
+                <h3>Avisos</h3>
+                <p>Publicados pela secretaria, chegam por notificação e ficam no histórico.</p>
+              </div>
+              <div class="card">
+                <h3>Catequese</h3>
+                <p>Turmas, inscrições e encontros registrados em um lugar só.</p>
+              </div>
+              <div class="card">
+                <h3>Dízimo</h3>
+                <p>Participação registrada por período, sem valores nem dados bancários.</p>
+              </div>
+              <div class="card">
+                <h3>Sacramentos</h3>
+                <p>Registrados pelo fiel e validados pela paróquia.</p>
+              </div>
+              <div class="card ouro">
+                <h3>Permissões</h3>
+                <p>Secretaria, catequista e coordenador — cada um enxerga o que lhe cabe.</p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            Insistir que o pároco não opera sozinho: ele delega papéis e a secretaria toca o dia a
+            dia. Há separação entre o cargo eclesial de pároco e quem administra a plataforma —
+            pode ser a mesma pessoa, mas não precisa ser.
+          </aside>
+        </section>
+
+        <!-- 10 ................................... IMPLANTAÇÃO (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(160deg, #2e1149 0%, #1c0b2e 100%)"
+        >
+          <div class="centro">
+            <p class="rotulo-secao">Implantação</p>
+            <h2>Começar leva uma tarde</h2>
+            <hr class="fio" />
+            <div class="passos">
+              <div class="passo">
+                <span class="n">1</span>
+                <h3>Cadastrar os horários</h3>
+                <p>Missas que se repetem, expediente da secretaria, telefone e endereço. Uma vez só.</p>
+              </div>
+              <div class="passo">
+                <span class="n">2</span>
+                <h3>Publicar o primeiro aviso</h3>
+                <p>Um recado real da semana. É o que faz o aplicativo nascer com vida.</p>
+              </div>
+              <div class="passo">
+                <span class="n">3</span>
+                <h3>Convidar um grupo pequeno</h3>
+                <p>Conselho, catequistas, ministros — gente que avisa se algo não estiver claro.</p>
+              </div>
+              <div class="passo">
+                <span class="n">4</span>
+                <h3>Anunciar na missa</h3>
+                <p>Depois que os primeiros já usam. Aí não é promessa: já tem gente dentro.</p>
+              </div>
+            </div>
+            <div class="frase">
+              <p>Um piloto pequeno mostra o que precisa mudar enquanto ainda é fácil mudar.</p>
+            </div>
+          </div>
+          <aside class="notes">
+            Combinar aqui, na hora, quem faz o passo 1 e em que dia. Apresentação que termina sem
+            data marcada costuma terminar sem implantação. Oferecer ajuda no cadastro inicial dos
+            horários, que é a única parte trabalhosa.
+          </aside>
+        </section>
+
+        <!-- 11 .................................. ENCERRAMENTO (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(150deg, #5b2890 0%, #24093c 100%)"
+        >
+          <svg class="arcos" viewBox="0 0 1600 900" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="#c9a44c" stroke-width="1.2" opacity="0.3">
+              <circle cx="1240" cy="450" r="230" />
+              <circle cx="1240" cy="450" r="370" />
+              <circle cx="1240" cy="450" r="520" />
+              <circle cx="1240" cy="450" r="680" />
+            </g>
+          </svg>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">O convite</p>
+              <h2 style="font-size: 2em">
+                A comunidade já existe.<br />Falta um lugar<br />onde ela caiba.
+              </h2>
+              <hr class="fio" />
+              <p style="font-size: 0.58em; max-width: 17em">
+                A tecnologia aqui não é o assunto. É o meio para a paróquia continuar presente na
+                vida das pessoas durante a semana.
+              </p>
+              <p class="pilares">CAMINHAR &nbsp;·&nbsp; PERTENCER &nbsp;·&nbsp; SERVIR</p>
+            </div>
+            <div class="celular g"><img src="screenshots/palavra.png" alt="A aba Palavra no celular" /></div>
+          </div>
+          <aside class="notes">
+            Fechar pedindo uma decisão pequena e concreta — a tarde de cadastro dos horários —, não
+            uma aprovação geral. Deixar o contato e combinar quem procura quem. Se possível, sair
+            da reunião com a data no calendário.
+          </aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+    <script>
+      Reveal.initialize({
+        width: 1600,
+        height: 900,
+        margin: 0.05,
+        hash: true,
+        progress: true,
+        slideNumber: "c/t",
+        transition: "fade",
+        transitionSpeed: "fast",
+        backgroundTransition: "fade",
+        plugins: [RevealNotes],
+      });
+    </script>
+  </body>
+</html>

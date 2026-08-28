@@ -27,3 +27,13 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Apresentação comercial: a FONTE é versionada (index.html e os scripts);
+# os prints e o PDF, não. São 15 MB de binário regerável — o histórico do
+# git não encolhe depois, e o repositório inteiro hoje tem menos de 2 MB.
+# Para reconstruir: npm run apresentacao:prints && npm run apresentacao:pdf
+docs/apresentacao/screenshots/
+docs/apresentacao/apresentacao.pdf
+
+# Backup solto na pasta de documentação, não é fonte do projeto.
+docs/*.zip

@@ -3,6 +3,7 @@ import { sendCommitmentReminders } from "@/server/modules/reminders/service";
 import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/service";
 import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/service";
 import { limparEnviosAntigos } from "@/server/modules/notifications/service";
+import { limparJanelasVencidas } from "@/server/auth/rate-limit";
 
 /**
  * Job diário — disparado pelo cron da Vercel (ver vercel.json).
@@ -76,8 +77,12 @@ export async function GET(request: NextRequest) {
   // não pode derrubar um job que já entregou o que importava.
   try {
     await limparEnviosAntigos(agora);
+    // Janela vencida não é mais consultada por ninguém: a linha só ocupa
+    // espaço. Sem poda, a tabela cresce com uma linha por e-mail e por
+    // endereço que já tentou entrar.
+    await limparJanelasVencidas(agora);
   } catch (error) {
-    console.error("Falha ao limpar registros de envio antigos:", error);
+    console.error("Falha na limpeza diária:", error);
   }
 
   console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo }));

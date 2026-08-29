@@ -1492,3 +1492,24 @@ model BibleVerse {
   @@index([book, chapter])
   @@map("bible_verses")
 }
+
+/// Contador de tentativas por chave, para limitar abuso.
+///
+/// Tabela GLOBAL, sem parish_id e sem RLS: a proteção vale antes de existir
+/// sessão, e portanto antes de existir paróquia. É infraestrutura, como o
+/// catálogo de papéis — não conteúdo de comunidade.
+///
+/// Janela FIXA, não deslizante: uma linha por chave, uma instrução para
+/// checar e incrementar. Deslizante seria mais preciso e exigiria guardar
+/// cada tentativa; para conter abuso de login, a diferença não paga o custo.
+///
+/// A chave carrega o que se está limitando: "login:email:...",
+/// "login:ip:...", "recuperar:ip:...".
+model RateLimit {
+  chave        String   @id
+  contagem     Int      @default(0)
+  janelaExpira DateTime @map("janela_expira")
+
+  @@index([janelaExpira])
+  @@map("rate_limits")
+}

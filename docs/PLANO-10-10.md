@@ -26,6 +26,7 @@ ajudaria ninguém.
 | Item | Evidência |
 |---|---|
 | **Fronteiras de erro** (`error`, `global-error`, `not-found`) | Criadas em 27/08. Verificadas em modo de produção. |
+| **Recuperação de senha pelo painel** | `/painel/acesso`, em produção em 28/08. Era o item 1.1, o único que travava um piloto. |
 | **Fronteiras de carregamento** | 4 rotas: Início, Agenda, Palavra, Servir. |
 | **`prefers-reduced-motion`** | Já respeitado globalmente em `globals.css:211`, para todos os elementos. A fonte pedia "garantir"; já estava garantido. |
 | **RLS completo** | 38 tabelas com `parish_id`, 38 com política. |
@@ -39,8 +40,8 @@ ajudaria ninguém.
 
 ## Onda 1 — P0: o que já causou dano ou impede o piloto
 
-### 1.1 Recuperação de senha pelo painel
-**Origem:** auditoria. **Status:** confirmado pendente.
+### 1.1 Recuperação de senha pelo painel — FEITO em 28/08
+**Origem:** auditoria. **Status:** resolvido. Mantido aqui pelo registro.
 
 `createPasswordResetToken(email)` existe; falta a tela para a secretaria gerar e
 copiar o link. Hoje **não há recuperação de senha em produção** — o e-mail
@@ -99,7 +100,27 @@ navegador, histórico, atalho na tela inicial e leitor de tela.
 
 O botão abre um formulário e não anuncia isso a quem usa leitor de tela.
 
-### 2.5 Testes de ponta a ponta
+### 2.5 Administrador da plataforma enxerga telas cujo link não vê
+**Origem:** descoberto em 28/08 verificando a tela de nova senha.
+**Status:** confirmado, `guards.ts:31`.
+
+`requirePermissionForPage` libera quem é `isPlatformAdmin`, mesmo sem a
+permissão. Já as entradas do painel testam `session.permissions.includes(...)`
+puro. O resultado é que o administrador da plataforma abre uma página cujo
+link não aparece para ele.
+
+Não é falha de segurança — é a exceção funcionando como projetada. Mas
+**mascara diagnóstico**: ao conferir se a permissão `MEMBER_PASSWORD_RESET`
+tinha sido semeada em produção, a página abriu normalmente e passou a
+impressão de que estava tudo certo. Não estava: abria pela exceção, e a
+secretaria — o público real da tela — continuava sem acesso.
+
+Duas saídas possíveis: fazer o painel mostrar a entrada também para o
+administrador da plataforma (alinhando as duas regras), ou tirar a exceção
+da guarda e conceder a permissão explicitamente a quem administra a
+plataforma. A primeira é menor; a segunda é mais honesta.
+
+### 2.6 Testes de ponta a ponta
 **Origem:** master, Fase 26. **Status:** zero. Playwright está instalado, mas só
 serve à geração da apresentação comercial.
 
@@ -198,6 +219,7 @@ que julgo mais relevantes que boa parte da Onda 3:
 3. Foco visível (1.3)
 4. "Criar conta" visível + microcopy (3.1, 3.2) — mesma tela, mesmo commit
 5. Título por página (2.3) + `aria-expanded` (2.4) + skip-link (3.3)
+   e alinhar guarda x painel (2.5), que é de uma linha
 6. Migration no deploy (2.1)
 7. Log de auditoria (2.2)
 8. E2E (2.5)

@@ -80,7 +80,7 @@ export default async function AppearancePage() {
                 aria-label={`Tamanho da letra: ${option.desc}`}
                 className={
                   atual
-                    ? "inline-flex min-w-[86px] flex-col items-center gap-0.5 rounded-xl border border-primary bg-primary px-4 py-3 text-white"
+                    ? "inline-flex min-w-[86px] flex-col items-center gap-0.5 rounded-xl border border-primary bg-primary px-4 py-3 text-white dark:bg-primary-light"
                     : "inline-flex min-w-[86px] flex-col items-center gap-0.5 rounded-xl border border-border-strong bg-surface px-4 py-3 text-foreground transition-colors hover:border-primary hover:text-primary"
                 }
               >
@@ -120,7 +120,7 @@ export default async function AppearancePage() {
                 aria-pressed={atual}
                 className={
                   atual
-                    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white"
+                    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white dark:bg-primary-light"
                     : "inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
                 }
               >

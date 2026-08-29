@@ -74,7 +74,7 @@ export default async function BibliaPage({
         />
         <button
           type="submit"
-          className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-lg bg-primary text-white transition-opacity hover:opacity-90"
+          className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-lg bg-primary text-white transition-opacity dark:bg-primary-light hover:opacity-90"
           aria-label="Procurar"
         >
           <Search className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden />

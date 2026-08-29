@@ -91,7 +91,7 @@ export function BotaoCopiar({
         disabled={estado === "copiando"}
         className={cn(
           "inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
-          copiado ? "bg-success-tint text-success" : "bg-primary text-white hover:bg-primary/90",
+          copiado ? "bg-success-tint text-success" : "bg-primary text-white hover:bg-primary/90 dark:bg-primary-light dark:hover:bg-primary-light dark:hover:brightness-110",
         )}
       >
         {copiado ? (

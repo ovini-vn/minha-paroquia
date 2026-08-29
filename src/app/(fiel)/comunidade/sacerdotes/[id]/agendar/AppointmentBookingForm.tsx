@@ -66,7 +66,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
                     className={cn(
                       "rounded-xl border px-3 py-2 text-sm transition-colors",
                       isSelected
-                        ? "border-primary bg-primary text-white"
+                        ? "border-primary bg-primary text-white dark:bg-primary-light"
                         : "border-border bg-surface text-foreground hover:bg-background",
                     )}
                   >

@@ -47,7 +47,7 @@ export function AcoesRapidas({ acoes }: { acoes: AcaoRapida[] }) {
               aria-expanded={estaAberta}
               className={
                 estaAberta
-                  ? "inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-[13px] font-medium text-white transition-colors"
+                  ? "inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-[13px] font-medium text-white transition-colors dark:bg-primary-light"
                   : "inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-2 text-[13px] font-medium text-foreground transition-colors hover:border-primary hover:bg-primary-tint"
               }
             >

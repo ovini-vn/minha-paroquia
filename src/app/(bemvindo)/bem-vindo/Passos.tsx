@@ -194,7 +194,7 @@ export function Passos({
                       >
                         <span
                           className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border transition-colors ${
-                            ativa ? "border-primary bg-primary text-white" : "border-border-strong"
+                            ativa ? "border-primary bg-primary text-white dark:bg-primary-light" : "border-border-strong"
                           }`}
                         >
                           {ativa && <Check className="h-3 w-3" strokeWidth={3} aria-hidden />}

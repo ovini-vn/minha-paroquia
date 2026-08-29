@@ -8,8 +8,29 @@ type Size = "md" | "sm";
 const GHOST_CLASSES =
   "border border-border-strong bg-surface text-foreground hover:border-primary hover:text-primary";
 
+/*
+ * O preenchimento primário, e por que ele troca de token no escuro.
+ *
+ * `--color-primary` faz DUAS coisas: é cor de texto sobre fundo escuro e é
+ * fundo com texto branco por cima. No modo claro isso convive, porque o
+ * roxo da marca é escuro o bastante para as duas. No escuro não convive, e
+ * a razão é aritmética: texto claro sobre o cartão escuro exige luminância
+ * acima de 0,245, e fundo com texto branco exige abaixo de 0,183. Não
+ * existe valor que atenda aos dois — medido em 29/08 por `npm run
+ * contraste`, depois de clarear o roxo do escuro para os links passarem e o
+ * botão cair de 4,60 para 3,27.
+ *
+ * A saída é o token que já existia para isso: no escuro, `-light` guarda o
+ * roxo CHEIO da marca, e ele é o preenchimento. O texto continua branco, a
+ * 9,87:1.
+ *
+ * O `dark:hover:` repetido não é engano. A ordem de variantes do Tailwind
+ * faz `hover:` vencer `dark:`, então sem ele passar o mouse no escuro
+ * devolveria o lilás claro e o problema junto.
+ */
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-primary text-white shadow hover:bg-primary-hover",
+  primary:
+    "bg-primary text-white shadow hover:bg-primary-hover dark:bg-primary-light dark:hover:bg-primary-light dark:hover:brightness-110",
   ghost: GHOST_CLASSES,
   /** Alias histórico de `ghost` — muitas telas já usam esse nome. */
   secondary: GHOST_CLASSES,

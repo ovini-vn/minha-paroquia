@@ -154,7 +154,7 @@ export default async function HomePage() {
                 {/* Quadrado fluido com teto de 74px: cinco cabem numa linha
                     só mesmo na tela estreita, sem a quinta sobrar sozinha
                     numa segunda fileira. */}
-                <span className="mx-auto grid aspect-square w-full max-w-[96px] place-items-center rounded-[26px] bg-primary text-white shadow-sm transition-colors">
+                <span className="mx-auto grid aspect-square w-full max-w-[96px] place-items-center rounded-[26px] bg-primary text-white shadow-sm transition-colors dark:bg-primary-light">
                   <Icon className="h-[38px] w-[38px]" strokeWidth={1.5} aria-hidden />
                 </span>
                 <span className="text-[13px] font-medium leading-tight text-foreground">

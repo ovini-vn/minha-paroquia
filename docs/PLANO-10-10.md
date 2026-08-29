@@ -237,9 +237,29 @@ Estes itens aparecem nas fontes como se fossem verificáveis lendo o código. N�
 são, e por isso não receberam prioridade — precisam de execução em aparelho ou
 ferramenta:
 
-- **Contraste AA em todos os estados** — hover, desabilitado, modo escuro e cada
-  um dos **sete** tempos litúrgicos. São muitas combinações; precisa de
-  ferramenta, não de olho.
+- **Contraste AA** — MEDIDO em 29/08. Virou `npm run contraste`, que lê o
+  próprio `globals.css` e confere 294 pares nas 14 paletas (7 tempos x claro e
+  escuro). Primeira leitura: 101 reprovações. Depois de três correções, 25.
+
+  As três: as cores de estado no escuro, que nunca foram sobrescritas — erro
+  ficava a 2,43:1, quase invisível; o roxo do escuro, clareado para os links
+  passarem; e o preenchimento do botão, que no escuro passou a usar
+  `--color-primary-light`.
+
+  A segunda e a terceira são a mesma decisão, e isso só apareceu ao executar:
+  `--color-primary` servia de texto sobre fundo escuro E de fundo com texto
+  branco, e os dois limites são incompatíveis (luminância acima de 0,245 e
+  abaixo de 0,183). Consertar o link derrubou o botão de 4,60 para 3,27 antes
+  de eu perceber que eram o mesmo token.
+
+  **As 25 restantes são quatro decisões de identidade visual, adiadas de
+  propósito** em 29/08: a borda dos campos (1,60:1 nas 14 paletas, mínimo 3);
+  o dourado do Natal e da Páscoa em link e botão; a linha
+  CAMINHAR·PERTENCER·SERVIR sobre o topo dourado (2,00:1), que só melhora
+  mexendo no gradiente litúrgico; e o dourado do Tempo Comum (3,94:1).
+  `hover` e `disabled` continuam sem medição — o script não os cobre.
+- **Contraste sobre imagem enviada pela paróquia** — não é medível por script:
+  depende da foto.
 - **Leitor de tela** — VoiceOver no iPhone, TalkBack no Android.
 - **Lighthouse** — desempenho, boas práticas, acessibilidade.
 - **Landscape no celular** e recorte da tela com entalhe.

@@ -158,8 +158,19 @@
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);
   --shadow-3: 0 24px 60px -30px rgb(0 0 0 / 0.8);
-  --color-primary: 142 99 176;
-  --color-primary-hover: 161 121 194;
+  /*
+   * O roxo do escuro é MAIS CLARO que o da marca de propósito: aqui ele é
+   * cor de traço, não de preenchimento — cor cheia sobre fundo escuro não
+   * se lê.
+   *
+   * Clareado em 29/08. Media 3,55:1 sobre o cartão escuro, abaixo do
+   * mínimo de 4,5 da norma para texto corrido. Advento e Quaresma dividem
+   * esta paleta E ela é o padrão do escuro, então o link mal legível era o
+   * caso comum, não a exceção. O `-light` continua guardando o roxo cheio,
+   * que é o que serve de preenchimento.
+   */
+  --color-primary: 165 126 200;
+  --color-primary-hover: 186 152 216;
   --color-primary-light: 91 40 144;
   --color-primary-tint: 40 32 52;
 }
@@ -176,8 +187,8 @@
 }
 :root[data-color-scheme="dark"] [data-season="advento"],
 :root[data-color-scheme="dark"] [data-season="quaresma"] {
-  --color-primary: 142 99 176;
-  --color-primary-hover: 161 121 194;
+  --color-primary: 165 126 200;
+  --color-primary-hover: 186 152 216;
   --color-primary-light: 91 40 144;
   --color-primary-tint: 40 32 52;
 }

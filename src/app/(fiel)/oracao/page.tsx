@@ -96,7 +96,7 @@ export default async function OracaoPage() {
           da página embaixo para ter o mesmo efeito do Início. */}
       <Link
         href="/biblia"
-        className="mt-5 flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform hover:-translate-y-px"
+        className="mt-5 flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform dark:bg-primary-light hover:-translate-y-px"
       >
         <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
           <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />

@@ -121,9 +121,16 @@ const BRANCO = [255, 255, 255];
  * reprovaria o que a norma aprova, e aceitar 3 num texto de 13px aprovaria
  * o que ela reprova.
  */
-function pares(p) {
+function pares(p, escuro) {
   const t = (nome) => rgb(p[nome]);
   const wash = extremosDoWash(p);
+  /*
+   * O preenchimento do botão primário troca de token conforme o esquema.
+   * No claro é `--color-primary`; no escuro é `--color-primary-light`, que
+   * guarda a cor CHEIA — ver o comentário em `src/components/ui/Button.tsx`.
+   * Medir sempre `--color-primary` reprovaria um botão que passa.
+   */
+  const preenchimento = escuro ? t("--color-primary-light") : t("--color-primary");
   return [
     ["texto sobre o fundo", t("--color-foreground"), t("--color-background"), 4.5],
     ["texto sobre o cartão", t("--color-foreground"), t("--color-surface"), 4.5],
@@ -134,7 +141,7 @@ function pares(p) {
     ["link sobre o fundo", t("--color-primary"), t("--color-background"), 4.5],
     ["link sobre o cartão", t("--color-primary"), t("--color-surface"), 4.5],
     ["link sobre o rebaixado", t("--color-primary"), t("--color-sunken"), 4.5],
-    ["texto do botão principal", BRANCO, t("--color-primary"), 4.5],
+    ["texto do botão principal", BRANCO, preenchimento, 4.5],
     ["texto sobre a atmosfera (topo)", BRANCO, wash.inicio, 4.5],
     ["texto sobre a atmosfera (base)", BRANCO, wash.fim, 4.5],
     ["assinatura dourada na atmosfera", t("--color-gold-soft"), wash.inicio, 4.5],
@@ -158,7 +165,7 @@ for (const escuro of [false, true]) {
   for (const tempo of TEMPOS) {
     const p = paleta(tempo, escuro);
     const linhas = [];
-    for (const [nome, frente, fundo, limite] of pares(p)) {
+    for (const [nome, frente, fundo, limite] of pares(p, escuro)) {
       const r = razao(frente, fundo);
       medidos += 1;
       const passa = r >= limite;

@@ -62,7 +62,7 @@ export function EscolherForm({
             >
               <span
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md ${
-                  ativa ? "bg-primary text-white" : "bg-primary-tint text-primary"
+                  ativa ? "bg-primary text-white dark:bg-primary-light" : "bg-primary-tint text-primary"
                 }`}
               >
                 <Church className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />

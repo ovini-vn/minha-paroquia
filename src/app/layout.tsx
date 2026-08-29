@@ -115,7 +115,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         */}
         <a
           href="#conteudo"
-          className="sr-only rounded-lg bg-primary px-4 py-2.5 text-[14px] font-semibold text-white focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
+          className="sr-only rounded-lg bg-primary px-4 py-2.5 text-[14px] font-semibold text-white dark:bg-primary-light focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
         >
           Ir para o conteúdo
         </a>

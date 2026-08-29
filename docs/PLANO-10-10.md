@@ -162,12 +162,45 @@ Toque duplo numa rede lenta dispara dois fluxos OAuth.
 Resolve dois problemas de uma vez: o vazio do desktop abaixo do card, e o acesso
 à política de privacidade sem estar logado.
 
-### 3.6 Página offline e estratégia de cache
-**Origem:** auditoria e master, Fase 24. **Status:** o service worker menciona
-offline uma única vez e não há rota para ela. Sem rede, o aplicativo não abre.
+### 3.6 Página offline e estratégia de cache — JÁ EXISTE, medido em 29/08
+**Origem:** auditoria e master, Fase 24. **Status:** o achado estava errado.
 
-### 3.7 Uma imagem sem `alt`
-**Origem:** auditoria. **Status:** `ProximosEncontros.tsx:60`.
+`public/offline.html` e a estratégia inteira entraram em 21/08, no commit
+`8d023c4`. O service worker guarda dois arquivos no `install` — a página e o
+emblema — e, em toda navegação que falhar por rede, responde com ela.
+
+E a estratégia de cache **é uma decisão, não uma falta**: nenhum dado de
+paróquia vai para o cache, de propósito. Escala, aviso e horário de missa
+mudam, e mostrar uma versão velha sem avisar é pior do que dizer que não há
+conexão — a pessoa confiaria num horário que já não vale. O que se guarda é
+só a tela que não contém dado nenhum.
+
+**Verificado com o servidor desligado:** navegando para `/inicio` sem
+servidor, a tela "Sem conexão" aparece, com o emblema — que também veio do
+cache. Antes disso, conferido no navegador que o service worker controla a
+aba e que o cache `minha-paroquia-v1` tem os dois arquivos.
+
+### 3.7 Uma imagem sem `alt` — NÃO EXISTE, medido em 29/08
+**Origem:** auditoria. **Status:** o achado estava errado.
+
+São doze `<img>` no código e as doze têm `alt`. A linha 60 de
+`ProximosEncontros.tsx` é o comentário sobre a imagem; a imagem está na 66 e
+sempre teve `alt=""`. Cinco das doze usam `alt` vazio, e conferindo uma a uma,
+as cinco estão certas: duas são o logo da paróquia ao lado do próprio nome,
+duas são fotos com o texto já escrito acima, e a do vídeo está dentro de um
+`<button aria-label="Assistir: …">`, onde preencher o `alt` faria o leitor de
+tela dizer o título duas vezes.
+
+Fica o registro do método: `grep` conta linhas, não conta JSX. Três contagens
+diferentes (13, 1, 0) saíram da mesma pergunta, e só a que abriu arquivo por
+arquivo valia.
+
+---
+
+**Onda 3 encerrada em 29/08.** Cinco itens implementados (3.1 a 3.5, commit
+`b4e97f5`) e dois desmentidos por medição (3.6 e 3.7). Vale o registro: um
+terço desta onda era achado falso da auditoria, e os dois casos vieram da
+mesma causa — `grep` conta linha, não conta significado.
 
 ---
 

@@ -130,9 +130,14 @@ recuperação de senha em produção**.
 - `public/sw.js` é o service worker, com Web Push (VAPID).
 - Ícones gerados por script (`npm run icons:gerar`).
 
-**Lacunas:** não há **página offline** — o service worker menciona offline uma
-única vez e não há rota para ela. Não há estratégia de cache declarada para as
-telas, o que significa que sem rede o aplicativo não abre.
+**Corrigido em 29/08:** esta seção dizia que não havia página offline nem
+estratégia de cache. Havia as duas, desde 21/08. O service worker guarda
+`public/offline.html` e o emblema no `install`, e responde com a página em toda
+navegação que falhar por rede — verificado com o servidor desligado.
+
+A estratégia de cache é deliberadamente mínima: nenhum dado de paróquia é
+guardado, porque horário de missa e aviso mudam, e servir versão velha sem
+avisar é pior do que assumir a falta de conexão.
 
 ---
 
@@ -163,15 +168,23 @@ Estados vazios, por outro lado, são bem cuidados: existe um componente
 ## 9. Acessibilidade
 
 - **196** ocorrências de atributos `aria-*` — o cuidado existe e é frequente.
-- **1** `<img>` sem `alt`, em `src/components/domain/ProximosEncontros.tsx:60`.
+- **12** `<img>` no código, **12** com `alt`. Nenhuma sem.
 - Há escala de fonte P/M/G aplicada por `zoom` sobre o aplicativo inteiro
   (não só o texto), com regras de layout próprias para o tamanho G.
 - Tema claro/escuro por `[data-color-scheme]`, independente do sistema
   operacional.
 
-*Nota de método:* uma primeira contagem por `grep` acusou 13 imagens sem `alt`.
-A verificação correta, considerando JSX de várias linhas, encontrou **uma**. O
-número alto era artefato da ferramenta.
+*Nota de método, corrigida em 29/08:* a contagem passou por três números antes
+de acertar. Um `grep` acusou 13 imagens sem `alt`; a segunda leitura, já
+considerando JSX de várias linhas, disse **uma**, em `ProximosEncontros.tsx:60`.
+A terceira — conferindo arquivo por arquivo — encontrou **nenhuma**: a linha 60
+é o comentário sobre a imagem, e a imagem, na linha 66, sempre teve `alt=""`.
+
+Cinco das doze usam `alt=""`, e as cinco estão certas assim: duas são o logo da
+paróquia ao lado do próprio nome, duas são fotos com o texto já escrito acima
+delas, e a do vídeo está dentro de um `<button aria-label="Assistir: …">`, onde
+um `alt` preenchido duplicaria o nome anunciado. `alt=""` não é `alt` ausente:
+é a instrução para o leitor de tela pular o que já foi dito.
 
 **Não verificado nesta fase:** contraste real das cores, navegação completa por
 teclado, e comportamento com leitor de tela. Exigem execução, não leitura.
@@ -248,9 +261,7 @@ próprio mecanismo de segurança em vetor de esgotamento de recurso.
 
 ### P2 — qualidade e alcance
 
-7. **Sem página offline** nem estratégia de cache: sem rede, o app não abre.
-8. **Uma imagem sem `alt`.**
-9. **Acessibilidade não medida** — contraste, teclado e leitor de tela.
+7. **Acessibilidade não medida** — contraste, teclado e leitor de tela.
 
 ---
 

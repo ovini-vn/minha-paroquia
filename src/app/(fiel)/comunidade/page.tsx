@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, CalendarDays, Church, Megaphone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -25,6 +26,8 @@ import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+
+export const metadata: Metadata = { title: "Minha Comunidade" };
 
 export default async function ComunidadePage() {
   const session = await getSessionContext();

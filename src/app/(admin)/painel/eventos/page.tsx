@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listAllEvents } from "@/server/modules/events/service";
@@ -10,6 +11,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { PartyPopper } from "lucide-react";
+
+export const metadata: Metadata = { title: "Eventos" };
 
 export default async function EventsAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AGENDA_MANAGE);

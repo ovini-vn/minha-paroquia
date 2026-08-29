@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParish } from "@/server/modules/parishes/service";
@@ -5,6 +6,8 @@ import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/upload
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { HistoriaForm } from "./HistoriaForm";
+
+export const metadata: Metadata = { title: "Nossa História" };
 
 export default async function HistoriaAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);

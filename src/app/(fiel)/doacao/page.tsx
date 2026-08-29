@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HandCoins, HeartHandshake, Sparkles } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getParish } from "@/server/modules/parishes/service";
@@ -28,6 +29,8 @@ import { formatDateOnly } from "@/lib/date";
  * pastoral. Por isso o dízimo aparece no fim, como convite — nunca como
  * mais uma forma de pagar.
  */
+export const metadata: Metadata = { title: "Doação" };
+
 export default async function DoacaoPage() {
   const session = await getSessionContext();
   if (!session?.membership) {

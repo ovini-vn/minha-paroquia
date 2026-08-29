@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -17,6 +18,8 @@ import { ChangeRoleForm } from "./ChangeRoleForm";
  * resolvia, porque as telas que procuram catequista, sacerdote ou
  * coordenador procuram POR PAPEL.
  */
+export const metadata: Metadata = { title: "Membros e papéis" };
+
 export default async function MembrosAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);
   if (!session.membership) return null;

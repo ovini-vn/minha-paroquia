@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS, isFullAdmin } from "@/server/auth/rbac";
 import { listOpportunitiesForAdmin } from "@/server/modules/opportunities/service";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { formatDateTime } from "@/lib/date";
 import { INTEREST_STATUS_LABELS } from "@/lib/servir-labels";
 import { CreateOpportunityForm } from "./CreateOpportunityForm";
+
+export const metadata: Metadata = { title: "Servir" };
 
 export default async function ServirAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.OPPORTUNITIES_MANAGE);

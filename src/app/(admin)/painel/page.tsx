@@ -1,4 +1,5 @@
-import { requirePermissionForPage } from "@/server/auth/guards";
+import type { Metadata } from "next";
+import { requirePermissionForPage, podeAlcancar } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
@@ -46,6 +47,8 @@ const STATUS_TONE: Record<string, "success" | "muted" | "warning" | "error"> = {
   expired: "muted",
   revoked: "error",
 };
+
+export const metadata: Metadata = { title: "Painel da paróquia" };
 
 export default async function AdminDashboardPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);
@@ -266,7 +269,7 @@ export default async function AdminDashboardPage() {
           />
           {/* Vem ANTES de "Membros e papéis": é o que a secretaria mais
               vai usar, e é a única entrada que ela enxerga neste bloco. */}
-          {session.permissions.includes(PERMISSIONS.MEMBER_PASSWORD_RESET) && (
+          {podeAlcancar(session, PERMISSIONS.MEMBER_PASSWORD_RESET) && (
             <RowLink
               href="/painel/acesso"
               icon={KeyRound}
@@ -274,7 +277,7 @@ export default async function AdminDashboardPage() {
               subtitle="Gerar link de nova senha para quem não consegue entrar"
             />
           )}
-          {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
               href="/painel/membros"
               icon={Users}
@@ -282,7 +285,7 @@ export default async function AdminDashboardPage() {
               subtitle="Quem é catequista, coordenador, secretaria"
             />
           )}
-          {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
               href="/painel/permissoes"
               icon={KeyRound}

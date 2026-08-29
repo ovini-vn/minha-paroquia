@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS, PERMISSION_NAMES, type PermissionCode } from "@/server/auth/rbac";
 import { listActiveMembers } from "@/server/modules/parishes/service";
@@ -9,6 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SetOverrideForm } from "./SetOverrideForm";
 import { KeyRound } from "lucide-react";
+
+export const metadata: Metadata = { title: "Delegar permissões" };
 
 export default async function PermissionOverridesPage() {
   const session = await requirePermissionForPage(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);

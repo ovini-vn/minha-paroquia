@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
@@ -12,6 +13,8 @@ import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { CreateScheduleForm } from "./CreateScheduleForm";
 import { Music } from "lucide-react";
+
+export const metadata: Metadata = { title: "Liturgia" };
 
 export default async function LiturgiaAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.LITURGIA_MANAGE);

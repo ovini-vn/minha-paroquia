@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MailCheck } from "lucide-react";
+
+export const metadata: Metadata = { title: "Verifique seu e-mail" };
 
 export default function ResetSentPage() {
   const isDev = process.env.NODE_ENV !== "production";

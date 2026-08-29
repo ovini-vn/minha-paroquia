@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   HandHeart,
@@ -29,6 +30,8 @@ import { PalavraDoDiaCard } from "@/components/domain/PalavraDoDiaCard";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
+
+export const metadata: Metadata = { title: "Palavra" };
 
 export default async function OracaoPage() {
   const session = await getSessionContext();

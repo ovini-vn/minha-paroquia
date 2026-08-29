@@ -13,7 +13,18 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Minha Paróquia",
+  /*
+   * `template` faz cada tela compor o próprio título com o nome do app:
+   * "Agenda · Minha Paróquia". Antes as 73 telas herdavam "Minha Paróquia"
+   * e ficavam indistinguíveis na aba do navegador, no histórico e para quem
+   * usa leitor de tela — que anuncia o título ao trocar de página.
+   *
+   * `default` vale para quem não define nada.
+   */
+  title: {
+    default: "Minha Paróquia",
+    template: "%s · Minha Paróquia",
+  },
   description: "Caminhar · Pertencer · Servir",
   // O <link rel="manifest"> sai daqui automaticamente, de src/app/manifest.ts.
   appleWebApp: {

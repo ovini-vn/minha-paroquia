@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ScrollText, Check } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -11,6 +12,8 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateOnly } from "@/lib/date";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
+
+export const metadata: Metadata = { title: "Sacramentos" };
 
 export default async function SacramentsAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.SACRAMENTS_VALIDATE);

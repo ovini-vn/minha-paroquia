@@ -25,10 +25,26 @@ export function requirePermission(session: SessionContext, code: PermissionCode)
   }
 }
 
+/**
+ * A regra ÚNICA de "esta pessoa alcança isto?".
+ *
+ * Existe para a guarda e a interface não divergirem. Elas divergiram: a
+ * guarda liberava quem é administrador da plataforma, e as entradas do
+ * painel testavam só `permissions.includes(...)`. O resultado era abrir uma
+ * página cujo link não aparecia — e, pior, mascarar diagnóstico: ao conferir
+ * se uma permissão nova tinha sido semeada em produção, a página abriu pela
+ * exceção e passou a impressão de que estava tudo certo. Não estava.
+ *
+ * Com as duas chamando esta função, a divergência deixa de ser possível.
+ */
+export function podeAlcancar(session: SessionContext, code: PermissionCode): boolean {
+  return session.isPlatformAdmin || session.permissions.includes(code);
+}
+
 /** Para Server Components de página: redireciona em vez de lançar erro. */
 export async function requirePermissionForPage(code: PermissionCode): Promise<SessionContext> {
   const session = await requireSessionForPage();
-  if (!session.isPlatformAdmin && !session.permissions.includes(code)) {
+  if (!podeAlcancar(session, code)) {
     redirect("/inicio");
   }
   return session;

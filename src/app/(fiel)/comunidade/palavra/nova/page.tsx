@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { Card } from "@/components/ui/Card";
@@ -5,6 +6,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { PostForm } from "./PostForm";
 import { Mic } from "lucide-react";
+
+export const metadata: Metadata = { title: "Publicar Palavra do Padre" };
 
 export default async function NewPostPage() {
   const session = await getSessionContext();

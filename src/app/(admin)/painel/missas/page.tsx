@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
@@ -17,6 +18,8 @@ import { describeRule } from "@/lib/recurrence";
 import { CreateScheduleForm } from "./CreateScheduleForm";
 import { DeactivateScheduleButton } from "./DeactivateScheduleButton";
 import { Repeat, CalendarDays } from "lucide-react";
+
+export const metadata: Metadata = { title: "Horários das missas" };
 
 export default async function MissasAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AGENDA_MANAGE);

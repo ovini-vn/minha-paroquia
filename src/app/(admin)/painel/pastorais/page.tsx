@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Users } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -10,6 +11,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CreatePastoralGroupForm } from "./CreatePastoralGroupForm";
+
+export const metadata: Metadata = { title: "Grupos e pastorais" };
 
 export default async function PainelPastoraisPage() {
   const session = await requirePermissionForPage(PERMISSIONS.OPPORTUNITIES_MANAGE);

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { UserRound, CalendarDays, Phone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getParish } from "@/server/modules/parishes/service";
@@ -18,6 +19,8 @@ import { TextoRico } from "@/components/ui/TextoRico";
  * os horários dele, quando ele usa o aplicativo; o contato da secretaria,
  * quando não usa.
  */
+export const metadata: Metadata = { title: "Nosso Pároco" };
+
 export default async function ParocoPage() {
   const session = await getSessionContext();
   if (!session?.membership) {

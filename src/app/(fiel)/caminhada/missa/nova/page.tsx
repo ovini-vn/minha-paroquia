@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { MassParticipationForm } from "./MassParticipationForm";
+
+export const metadata: Metadata = { title: "Registrar missa" };
 
 export default function NewMassParticipationPage() {
   return (

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionContext } from "@/server/auth/session";
 import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { Card } from "@/components/ui/Card";
@@ -5,6 +6,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { VolunteerProfileForm } from "./VolunteerProfileForm";
 import { HeartHandshake } from "lucide-react";
+
+export const metadata: Metadata = { title: "Posso ajudar" };
 
 export default async function VolunteerProfilePage() {
   const session = await getSessionContext();

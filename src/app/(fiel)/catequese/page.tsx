@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Users, GraduationCap, Sparkles, CalendarDays, TriangleAlert } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
@@ -32,6 +33,8 @@ import { ParishPeoplePanel } from "./_components/ParishPeoplePanel";
  * filho matriculado vê as três, na ordem do mais amplo para o mais pessoal.
  * É comum na paróquia a mesma pessoa acumular esses papéis.
  */
+export const metadata: Metadata = { title: "Catequese" };
+
 export default async function CatequesePage() {
   const session = await requireSessionForPage();
   if (!session.membership) {

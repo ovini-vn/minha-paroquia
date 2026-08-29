@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listAllAvisos } from "@/server/modules/avisos/service";
@@ -11,6 +12,8 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CreateAvisoForm } from "./CreateAvisoForm";
 import { Megaphone } from "lucide-react";
+
+export const metadata: Metadata = { title: "Avisos" };
 
 export default async function AvisosAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AVISOS_MANAGE);

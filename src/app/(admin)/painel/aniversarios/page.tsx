@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Cake, Droplets, Sparkles, Heart, Church, CalendarHeart } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -34,6 +35,8 @@ const ICONE: Record<TipoDeAniversario, typeof Cake> = {
  * perfil. Quem não preencheu não aparece: nada aqui é inventado a partir de
  * outro dado.
  */
+export const metadata: Metadata = { title: "Aniversários" };
+
 export default async function AniversariosPage() {
   const session = await requirePermissionForPage(PERMISSIONS.MEMBERS_VIEW);
   if (!session.membership) return null;

@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { RequestResetForm } from "./RequestResetForm";
+
+export const metadata: Metadata = { title: "Recuperar acesso" };
 
 export default function RecoverAccessPage() {
   return (

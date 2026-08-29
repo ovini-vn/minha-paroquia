@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Landmark, Church, Flag } from "lucide-react";
 import { requireNationalScopeForPage } from "@/server/auth/guards";
@@ -11,6 +12,8 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { NATIONAL_ROLE_LABELS } from "@/lib/province-labels";
 
 /** Visão nacional (CNBB): províncias e dioceses do país. */
+export const metadata: Metadata = { title: "Visão nacional" };
+
 export default async function NacionalPage() {
   const session = await requireNationalScopeForPage();
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { HeartHandshake, Music, Check, CalendarDays, Clock } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -15,6 +16,8 @@ import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateOpportunityForm } from "@/app/(admin)/painel/servir/CreateOpportunityForm";
+
+export const metadata: Metadata = { title: "Servir" };
 
 export default async function ServirPage() {
   const session = await getSessionContext();

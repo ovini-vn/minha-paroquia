@@ -34,7 +34,27 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
     <div className="flex flex-col">
       <OAuthButtons inviteCode={inviteCode} />
 
-      {aberto ? (
+      {/*
+        O botão fica SEMPRE renderizado, e antes ficava só quando fechado.
+        Um controle que some ao ser acionado não pode anunciar `aria-expanded`
+        — quem usa leitor de tela ativaria algo que deixa de existir. De
+        quebra, resolve um problema de todo mundo: não havia como voltar para
+        Google e Facebook depois de abrir o formulário.
+      */}
+      <button
+        type="button"
+        onClick={() => setComSenha((atual) => !atual)}
+        aria-expanded={aberto}
+        // Só aponta para a região quando ela existe: o formulário é
+        // desmontado ao fechar, de propósito (ver comentário do estado).
+        aria-controls={aberto ? "form-senha" : undefined}
+        className="mt-5 flex items-center justify-center gap-2 text-[13.5px] font-medium text-muted transition-colors hover:text-primary"
+      >
+        <KeyRound className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+        Entrar com e-mail e senha
+      </button>
+
+      {aberto && (
         <>
           <div className="my-5 flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-eyebrow text-muted">
             <span className="rule-gold flex-1" />
@@ -42,7 +62,7 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
             <span className="rule-gold flex-1" />
           </div>
 
-          <form action={formAction}>
+          <form action={formAction} id="form-senha">
             {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
             <FormField label="E-mail" name="email" type="email" required autoComplete="email" />
             <FormField
@@ -69,15 +89,6 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
             </div>
           </form>
         </>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setComSenha(true)}
-          className="mt-5 flex items-center justify-center gap-2 text-[13.5px] font-medium text-muted transition-colors hover:text-primary"
-        >
-          <KeyRound className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-          Entrar com e-mail e senha
-        </button>
       )}
 
       <p className="mt-6 text-center text-[12px] text-muted">

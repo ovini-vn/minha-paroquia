@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { UserPen, Sparkles, CalendarDays, Users, HandCoins, Clock, LogOut } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -10,6 +11,8 @@ import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow } from "@/components/ui/Typography";
 import { logoutAction } from "@/server/actions/auth-actions";
 import { formatDateOnly } from "@/lib/date";
+
+export const metadata: Metadata = { title: "Eu" };
 
 export default async function ProfilePage() {
   const session = await getSessionContext();

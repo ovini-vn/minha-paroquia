@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Landmark, Church } from "lucide-react";
 import { requirePlatformAdminForPage } from "@/server/auth/guards";
@@ -22,6 +23,8 @@ import { DIOCESE_ROLE_LABELS } from "@/lib/diocese-labels";
 import { CreateDioceseForm, AssignDioceseMemberForm } from "./DioceseForms";
 
 /** Administração da plataforma: o mapa eclesiástico do sistema. */
+export const metadata: Metadata = { title: "Dioceses" };
+
 export default async function PlataformaDiocesesPage() {
   await requirePlatformAdminForPage();
 

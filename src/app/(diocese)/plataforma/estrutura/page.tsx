@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Landmark, Crown, Flag } from "lucide-react";
 import { requirePlatformAdminForPage } from "@/server/auth/guards";
@@ -29,6 +30,8 @@ import {
 } from "./StructureForms";
 
 /** Administração da plataforma: províncias, sedes metropolitanas e acesso nacional. */
+export const metadata: Metadata = { title: "Estrutura" };
+
 export default async function PlataformaEstruturaPage() {
   await requirePlatformAdminForPage();
 

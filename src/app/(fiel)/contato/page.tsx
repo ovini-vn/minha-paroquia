@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Church, Phone, MessageCircle, MapPin, Clock } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getParish, listOfficeHours } from "@/server/modules/parishes/service";
@@ -37,6 +38,8 @@ function paraWhatsapp(numero: string): string {
   const digitos = numero.replace(/\D/g, "");
   return digitos.startsWith("55") ? digitos : `55${digitos}`;
 }
+
+export const metadata: Metadata = { title: "Contato" };
 
 export default async function ContatoPage() {
   const session = await requireSessionForPage();

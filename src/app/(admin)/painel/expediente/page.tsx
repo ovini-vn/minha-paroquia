@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listOfficeHours } from "@/server/modules/parishes/service";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { ExpedienteForm } from "./ExpedienteForm";
+
+export const metadata: Metadata = { title: "Horário da secretaria" };
 
 export default async function ExpedienteAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);

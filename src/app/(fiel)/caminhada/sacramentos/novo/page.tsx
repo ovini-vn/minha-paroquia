@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionContext } from "@/server/auth/session";
 import { listPriests } from "@/server/modules/priests/service";
 import { Card } from "@/components/ui/Card";
@@ -5,6 +6,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { SacramentForm } from "./SacramentForm";
 import { HandHeart } from "lucide-react";
+
+export const metadata: Metadata = { title: "Registrar sacramento" };
 
 export default async function NewSacramentPage() {
   const session = await getSessionContext();

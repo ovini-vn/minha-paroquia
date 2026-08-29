@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParish } from "@/server/modules/parishes/service";
@@ -6,6 +7,8 @@ import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/upload
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { ParocoForm } from "./ParocoForm";
+
+export const metadata: Metadata = { title: "Nosso Pároco" };
 
 export default async function ParocoAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);

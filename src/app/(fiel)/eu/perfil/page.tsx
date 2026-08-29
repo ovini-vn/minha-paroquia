@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { findUserById } from "@/server/modules/users/repository";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { ProfileForm } from "./ProfileForm";
+
+export const metadata: Metadata = { title: "Meu perfil" };
 
 export default async function ProfileEditPage() {
   const session = await requireSessionForPage();

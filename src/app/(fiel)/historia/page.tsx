@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Landmark, Phone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getParish } from "@/server/modules/parishes/service";
@@ -12,6 +13,8 @@ import { TextoRico } from "@/components/ui/TextoRico";
  * Vive no banco, por paróquia, e não no código: cada comunidade tem a sua,
  * e quem a escreve é a secretaria, não quem programa.
  */
+export const metadata: Metadata = { title: "Nossa História" };
+
 export default async function HistoriaPage() {
   const session = await getSessionContext();
   if (!session?.membership) {

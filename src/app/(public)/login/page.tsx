@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { LoginForm } from "./LoginForm";
 
@@ -6,6 +7,8 @@ const OAUTH_ERROR_LABELS: Record<string, string> = {
   oauth_unavailable: "Esse login social não está disponível no momento.",
   oauth_state: "Sua sessão de login expirou. Tente novamente.",
 };
+
+export const metadata: Metadata = { title: "Entrar" };
 
 export default async function LoginPage({
   searchParams,

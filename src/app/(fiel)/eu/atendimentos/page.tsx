@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CalendarDays, UserRound } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getOwnPriestProfile } from "@/server/modules/priests/service";
@@ -23,6 +24,8 @@ const STATUS_TONE: Record<string, "warning" | "success" | "muted" | "error"> = {
   concluido: "muted",
   cancelado: "error",
 };
+
+export const metadata: Metadata = { title: "Meus atendimentos" };
 
 export default async function AppointmentsPage() {
   const session = await getSessionContext();

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getLiturgicalSeason, LITURGICAL_SEASONS, SEASON_NAMES } from "@/lib/liturgical-season";
 import { Sun, Moon } from "lucide-react";
@@ -10,6 +11,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+
+export const metadata: Metadata = { title: "Aparência" };
 
 export default async function AppearancePage() {
   const session = await requireSessionForPage();

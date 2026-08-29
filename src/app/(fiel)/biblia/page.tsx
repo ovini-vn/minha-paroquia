@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Search, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -24,6 +25,8 @@ const ORDEM_DOS_TESTAMENTOS: { chave: Testament; titulo: string }[] = [
   { chave: "antigo", titulo: "Antigo Testamento" },
   { chave: "novo", titulo: "Novo Testamento" },
 ];
+
+export const metadata: Metadata = { title: "Bíblia" };
 
 export default async function BibliaPage({
   searchParams,

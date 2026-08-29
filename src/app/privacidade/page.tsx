@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade — Minha Paróquia",
+  // Só o nome da tela: o layout raiz acrescenta "· Minha Paróquia"
+  // pelo template. Repetir aqui saía duplicado na aba do navegador.
+  title: "Política de Privacidade",
   description:
     "Como o aplicativo Minha Paróquia trata os dados de quem participa da vida da comunidade.",
 };

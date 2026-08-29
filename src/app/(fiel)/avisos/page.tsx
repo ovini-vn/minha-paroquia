@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Megaphone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
@@ -19,6 +20,8 @@ import { formatDateTime } from "@/lib/date";
  * Aqui o texto vem completo, e o histórico junto: um aviso de duas semanas
  * atrás ainda responde "o que mesmo eles falaram sobre a festa?".
  */
+export const metadata: Metadata = { title: "Avisos" };
+
 export default async function AvisosPage() {
   const session = await getSessionContext();
   if (!session?.membership) {

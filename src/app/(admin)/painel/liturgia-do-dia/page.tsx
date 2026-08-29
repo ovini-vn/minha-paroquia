@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -16,6 +17,8 @@ const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   month: "long",
   timeZone: "UTC",
 });
+
+export const metadata: Metadata = { title: "Leituras do dia" };
 
 export default async function PainelLiturgiaDoDiaPage() {
   const session = await requirePermissionForPage(PERMISSIONS.AVISOS_MANAGE);

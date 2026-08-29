@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CalendarDays, Church, PartyPopper } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -23,6 +24,8 @@ import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
  * A lista é o mesmo componente da Comunidade, para as duas não divergirem
  * de novo: antes só a de lá mostrava o cartaz do evento.
  */
+export const metadata: Metadata = { title: "Agenda" };
+
 export default async function AgendaPage() {
   const session = await getSessionContext();
   if (!session?.membership) {

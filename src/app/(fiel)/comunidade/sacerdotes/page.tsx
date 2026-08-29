@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, UserRound, Phone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -21,6 +22,8 @@ import { Avatar } from "@/components/ui/Avatar";
  * escolher um nome para descobrir depois que ele não abriu horário nenhum
  * faz a pessoa voltar e tentar outro às cegas.
  */
+export const metadata: Metadata = { title: "Falar com um sacerdote" };
+
 export default async function SacerdotesPage() {
   const session = await getSessionContext();
   if (!session?.membership) return null;

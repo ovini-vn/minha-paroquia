@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { KeyRound } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS, ROLES_QUE_ADMINISTRAM, type RoleCode } from "@/server/auth/rbac";
@@ -18,6 +19,8 @@ import { GerarLinkForm } from "./GerarLinkForm";
  * paróquia ficam de fora da lista dela, porque gerar link de nova senha é
  * tomar a conta: sem essa separação, a secretaria assumiria a paróquia.
  */
+export const metadata: Metadata = { title: "Esqueci minha senha" };
+
 export default async function AcessoPage() {
   const session = await requirePermissionForPage(PERMISSIONS.MEMBER_PASSWORD_RESET);
   if (!session.membership) return null;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HandCoins, Check } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyContributions } from "@/server/modules/dizimo/service";
@@ -6,6 +7,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { Path, PathItem } from "@/components/ui/Path";
 import { formatPeriodLabel } from "@/lib/date";
+
+export const metadata: Metadata = { title: "Meu dízimo" };
 
 export default async function MyTithePage() {
   const session = await getSessionContext();

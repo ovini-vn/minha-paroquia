@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyFamilyMembers } from "@/server/modules/family/service";
@@ -10,6 +11,8 @@ import { describeRelationship } from "@/lib/familia-labels";
 import { formatDateOnly } from "@/lib/date";
 import { FamilyMemberForm } from "./FamilyMemberForm";
 import { Users } from "lucide-react";
+
+export const metadata: Metadata = { title: "Minha família" };
 
 export default async function FamilyPage() {
   const session = await getSessionContext();

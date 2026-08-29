@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Check } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -14,6 +15,8 @@ import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 
 const PERIOD_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+export const metadata: Metadata = { title: "Dízimo" };
 
 export default async function DizimoAdminPage({
   searchParams,

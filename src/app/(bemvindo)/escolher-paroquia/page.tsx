@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Church } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
@@ -14,6 +15,8 @@ import { EscolherForm } from "./EscolherForm";
  * permissão nenhuma além de acompanhar a própria paróquia, e é o papel que
  * guarda o resto — não uma fila de espera.
  */
+export const metadata: Metadata = { title: "Escolher paróquia" };
+
 export default async function EscolherParoquiaPage({
   searchParams,
 }: {

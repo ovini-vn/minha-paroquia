@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { listActiveGroups } from "@/server/modules/pastorais/service";
 import { getPublicVapidKey } from "@/server/modules/push/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { Passos } from "./Passos";
+
+export const metadata: Metadata = { title: "Boas-vindas" };
 
 export default async function BemVindoPage() {
   const session = await requireSessionForPage();

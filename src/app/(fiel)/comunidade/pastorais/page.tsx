@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Users, Check, Clock, MapPin, UserRound } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listActiveGroups, listMyGroupInterests } from "@/server/modules/pastorais/service";
@@ -10,6 +11,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
+
+export const metadata: Metadata = { title: "Pastorais" };
 
 export default async function PastoraisPage() {
   const session = await getSessionContext();

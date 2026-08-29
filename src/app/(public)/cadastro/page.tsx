@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { validateInvitation } from "@/server/modules/invitations/service";
 import { RegisterForm } from "./RegisterForm";
 import { Mail } from "lucide-react";
+
+export const metadata: Metadata = { title: "Criar conta" };
 
 export default async function RegisterPage({
   searchParams,

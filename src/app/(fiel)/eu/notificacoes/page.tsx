@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Bell, BellRing, Check, CheckCheck, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyNotifications, listMyPreferences } from "@/server/modules/notifications/service";
@@ -28,6 +29,8 @@ function descreverAparelho(userAgent: string | null): string {
   if (/Mac OS/i.test(userAgent)) return "Computador (Mac)";
   return "Este navegador";
 }
+
+export const metadata: Metadata = { title: "Notificações" };
 
 export default async function NotificationsPage() {
   const session = await getSessionContext();

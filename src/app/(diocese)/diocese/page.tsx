@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Landmark } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { listDioceses } from "@/server/modules/dioceses/service";
@@ -11,6 +12,8 @@ import { DIOCESE_ROLE_LABELS } from "@/lib/diocese-labels";
  * Lista as dioceses que a pessoa supervisiona. Admin da plataforma vê todas;
  * bispo vê só as suas — filtramos pela sessão, nunca por parâmetro de URL.
  */
+export const metadata: Metadata = { title: "Diocese" };
+
 export default async function DioceseIndexPage() {
   const session = await requireSessionForPage();
 

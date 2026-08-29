@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { LayoutDashboard, BookOpen, Landmark, Crown, Flag, Settings } from "lucide-react";
 import { requireManagementPage } from "@/server/auth/management";
 import { Card } from "@/components/ui/Card";
@@ -16,6 +17,8 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
  * cabeçalho; esta página é o caminho de quem NÃO tem — a catequista, que só
  * acompanha turmas, e o bispo, que pode não ter paróquia nenhuma.
  */
+export const metadata: Metadata = { title: "Gestão" };
+
 export default async function GestaoPage() {
   const { session, acesso } = await requireManagementPage();
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HandCoins } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -15,6 +16,8 @@ import { DadosDeDoacaoForm } from "./DadosDeDoacaoForm";
 import { FinalidadeForm } from "./FinalidadeForm";
 import { IniciativaForm } from "./IniciativaForm";
 import { AcoesDoItem, EtiquetaOculto } from "./ListaOrdenavel";
+
+export const metadata: Metadata = { title: "Doação" };
 
 export default async function DoacaoAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);

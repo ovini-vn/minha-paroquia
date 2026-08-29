@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 import { TriangleAlert } from "lucide-react";
+
+export const metadata: Metadata = { title: "Escolher nova senha" };
 
 export default async function ResetPasswordPage({
   searchParams,

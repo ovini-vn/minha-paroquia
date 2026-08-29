@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Music, Check, X, CalendarDays } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listMyAvailability, listMySchedule } from "@/server/modules/liturgia/service";
@@ -12,6 +13,8 @@ import { WEEKDAY_LABELS } from "@/lib/pastoral-care-labels";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { AvailabilityForm } from "./AvailabilityForm";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+
+export const metadata: Metadata = { title: "Escala da liturgia" };
 
 export default async function LiturgiaPage() {
   const session = await getSessionContext();

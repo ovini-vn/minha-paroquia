@@ -3,9 +3,21 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { lerCapitulo, TRADUCAO } from "@/server/modules/biblia/service";
+import type { Metadata } from "next";
 import { findBook } from "@/lib/bible-books";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { BookOpen } from "lucide-react";
+
+/** "João 3", que é como a pessoa se refere ao que está lendo. */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ livro: string; capitulo: string }>;
+}): Promise<Metadata> {
+  const { livro, capitulo } = await params;
+  const encontrado = findBook(livro);
+  return { title: encontrado ? `${encontrado.name} ${capitulo}` : "Bíblia" };
+}
 
 /**
  * O capítulo, para ler.

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getOwnPriestProfile } from "@/server/modules/priests/service";
@@ -10,6 +11,8 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { WEEKDAY_LABELS, AVAILABILITY_TYPE_LABELS } from "@/lib/pastoral-care-labels";
 import { CreateAvailabilityForm } from "./CreateAvailabilityForm";
 import { CalendarDays } from "lucide-react";
+
+export const metadata: Metadata = { title: "Minha disponibilidade" };
 
 export default async function AvailabilityPage() {
   const session = await getSessionContext();

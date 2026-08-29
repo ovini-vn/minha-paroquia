@@ -3,8 +3,25 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { TRADUCAO } from "@/server/modules/biblia/service";
+import type { Metadata } from "next";
 import { findBook } from "@/lib/bible-books";
 import { Eyebrow } from "@/components/ui/Typography";
+
+/**
+ * O título traz o nome do livro, não "Bíblia".
+ *
+ * É o que distingue as abas de quem deixa três capítulos abertos, e o que o
+ * leitor de tela anuncia ao trocar de página. Título genérico em rota
+ * dinâmica é o mesmo que não ter título.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ livro: string }>;
+}): Promise<Metadata> {
+  const { livro } = await params;
+  return { title: findBook(livro)?.name ?? "Bíblia" };
+}
 
 /** Os capítulos de um livro, como grade de números. */
 export default async function LivroPage({ params }: { params: Promise<{ livro: string }> }) {

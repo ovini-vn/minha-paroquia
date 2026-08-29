@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HandHeart, Check, X } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -18,6 +19,8 @@ import { formatDateTime } from "@/lib/date";
  * privado, e moderar uma mensagem dirigida a ele, por ele mesmo, seria
  * circular.
  */
+export const metadata: Metadata = { title: "Moderar pedidos de oração" };
+
 export default async function ModerarOracaoPage() {
   const session = await requirePermissionForPage(PERMISSIONS.PRAYER_REQUESTS_MODERATE);
   if (!session.membership) return null;

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -40,6 +41,8 @@ function greeting(): string {
   if (hour < 18) return "Boa tarde";
   return "Boa noite";
 }
+
+export const metadata: Metadata = { title: "Início" };
 
 export default async function HomePage() {
   const session = await getSessionContext();

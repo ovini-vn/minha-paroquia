@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
@@ -12,6 +13,8 @@ import { PageHeader, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { PrayerRequestForm } from "./PrayerRequestForm";
 import { Badge } from "@/components/ui/Badge";
+
+export const metadata: Metadata = { title: "Pedidos de oração" };
 
 export default async function PrayerRequestsPage() {
   const session = await getSessionContext();

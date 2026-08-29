@@ -24,6 +24,9 @@ export function TabBar() {
             aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex flex-col items-center gap-[3px] rounded-md px-0.5 pb-[5px] pt-[7px] text-[10px] tracking-[0.04em] transition-colors",
+              // Sem folga (`ring-offset`) aqui: a barra é estreita e a folga
+              // faria o anel de um destino encostar no vizinho.
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
               active ? "font-semibold text-primary" : "font-medium text-muted",
             )}
           >

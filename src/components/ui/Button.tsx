@@ -22,8 +22,27 @@ const SIZE_CLASSES: Record<Size, string> = {
   sm: "px-3.5 py-2 text-xs",
 };
 
+/*
+ * Anel de foco visível.
+ *
+ * `focus-visible` e não `focus`: o navegador só o acende para quem chegou
+ * por teclado. Com `focus` puro, todo clique de mouse deixaria um anel
+ * aceso, e a primeira reação de quem desenha é remover o anel de novo — que
+ * é como se perde a acessibilidade.
+ *
+ * O `ring-offset-background` cria uma folga da cor do fundo entre o botão e
+ * o anel. Sem ela, no botão primário o anel roxo encostaria no fundo roxo
+ * do próprio botão e sumiria — justamente no botão mais usado do app.
+ *
+ * A cor do anel acompanha o tempo litúrgico, porque `primary` é um token
+ * que muda com ele.
+ */
+const FOCO_CLASSES =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
 const BASE_CLASSES =
-  "inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-[0.01em] transition-[background-color,border-color,color,transform] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-[0.01em] transition-[background-color,border-color,color,transform] active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50 " +
+  FOCO_CLASSES;
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: Variant;

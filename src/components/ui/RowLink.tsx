@@ -20,7 +20,7 @@ export function RowLink({
   return (
     <Link
       href={href}
-      className="flex items-center gap-3.5 border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint"
+      className="flex items-center gap-3.5 rounded-md border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-md bg-primary-tint text-primary">
         <Icon className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />

@@ -208,6 +208,25 @@ body {
   font-weight: 600;
 }
 
+/*
+ * Foco visível para qualquer coisa focalizável que não tenha anel próprio.
+ *
+ * O navegador já desenha um contorno, mas é fino (1px) e de cor decidida por
+ * ele — sobre o marfim do fundo quase desaparece. Quem navega por teclado
+ * perdia a noção de onde estava.
+ *
+ * `:where()` mantém especificidade ZERO de propósito: quem já tem tratamento
+ * próprio (o Button, com seu anel e `outline-none`) continua ganhando, e não
+ * fica com contorno e anel ao mesmo tempo.
+ *
+ * A cor acompanha o tempo litúrgico, porque `--color-primary` muda com ele.
+ */
+:where(a, button, [role="button"], summary, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

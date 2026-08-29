@@ -261,9 +261,40 @@ ferramenta:
 - **Contraste sobre imagem enviada pela paróquia** — não é medível por script:
   depende da foto.
 - **Leitor de tela** — VoiceOver no iPhone, TalkBack no Android.
-- **Lighthouse** — desempenho, boas práticas, acessibilidade.
-- **Landscape no celular** e recorte da tela com entalhe.
-- **Salto de altura do card** quando o formulário de senha abre.
+- **Lighthouse** — RODADO em 29/08 contra `/login`, em modo de produção:
+  desempenho 90, **acessibilidade 96**, boas práticas 100, SEO 90.
+  Deslocamento de layout (CLS) **0**. Três reprovações, e só uma é real:
+
+  - `color-contrast` — é o **botão do Facebook**, branco sobre o azul oficial
+    `#1877f2`, 4,23:1. O script `npm run contraste` não pega isso: ele mede os
+    nossos tokens, e a cor é da Meta. Corrigir contraria a marca deles.
+  - `meta-description` — **falso alarme**. O Next transmite metadados depois
+    do `</head>` para navegador comum, mas bloqueia e devolve dentro do
+    `<head>` para robô que não executa JavaScript. Conferido com os agentes do
+    Facebook e do WhatsApp: recebem certo. O Googlebot recebe transmitido de
+    propósito, porque executa JavaScript e espera.
+  - `bf-cache` — o `cache-control: no-store` do Next em página dinâmica. É o
+    preço de a página ler sessão.
+
+  A medição achou o que não estava na lista de ninguém: **não existia nenhuma
+  etiqueta Open Graph**. Num app que se espalha por link no grupo do WhatsApp,
+  a prévia saía sem imagem e sem nome do site. Corrigido no layout raiz.
+- **Navegação por teclado** — CONFERIDA em 29/08 na tela de entrada. Ordem de
+  tabulação igual à ordem visual (atalho para o conteúdo, Google, Facebook,
+  senha, criar conta, rodapé) e indicador visível em todas as paradas. Os
+  botões OAuth usam anel em `box-shadow`, não `outline` — conferir só o
+  `outline` faz parecer que não têm foco visível.
+- **Imagem de prévia própria (1200x630)** — não feita. A prévia usa hoje o
+  ícone quadrado de 512. Um cartão desenhado exigiria decisão de arte.
+- **Salto de altura do card** — MEDIDO em 29/08, e o achado foi outro. O salto
+  existe (306px) mas é inofensivo: o botão acionado não se move um pixel,
+  porque o formulário abre abaixo dele. O problema real era a página não
+  rolar: em 375x667 o botão "Entrar" ficava fora da tela, e em 360x640 o campo
+  de e-mail também. Tocar no botão parecia não fazer nada. Corrigido pelo
+  gancho `useRolarAoAbrir` (commit `7d033e5`).
+- **Landscape no celular** — MEDIDO em 29/08, junto com o item acima. Em
+  640x360 o formulário aparece inteiro depois da rolagem. **Recorte com
+  entalhe continua sem medição**: exige aparelho, não emulação.
 - **Service worker atrasando o primeiro desenho.**
 
 ---

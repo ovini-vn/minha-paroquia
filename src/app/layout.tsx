@@ -4,6 +4,7 @@ import { getSessionContext } from "@/server/auth/session";
 import { RegistrarServiceWorker } from "@/components/layout/RegistrarServiceWorker";
 import "./globals.css";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { appBaseUrl } from "@/lib/url";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const cormorant = Cormorant_Garamond({
@@ -26,6 +27,38 @@ export const metadata: Metadata = {
     template: "%s · Minha Paróquia",
   },
   description: "Caminhar · Pertencer · Servir",
+  /*
+   * Prévia do link quando alguém compartilha.
+   *
+   * É a forma como este app se espalha: a paróquia manda o endereço no
+   * grupo do WhatsApp. Sem estas etiquetas a prévia sai só com o endereço
+   * cru — medido em 29/08, não havia NENHUMA etiqueta Open Graph.
+   *
+   * Vale registrar o que a medição também mostrou, para ninguém "consertar"
+   * o que está certo: o Next transmite os metadados DEPOIS do </head> para
+   * navegador comum, e o Lighthouse acusa "sem meta description" por causa
+   * disso. Mas ele bloqueia e devolve dentro do <head> para robô que não
+   * executa JavaScript — conferido com os agentes do Facebook e do WhatsApp,
+   * que recebem certo. O Googlebot recebe transmitido de propósito, porque
+   * executa JavaScript e espera.
+   *
+   * `metadataBase` existe porque `images` precisa de endereço absoluto:
+   * sem ela o Next monta o caminho relativo e a prévia vem sem figura.
+   */
+  metadataBase: new URL(appBaseUrl()),
+  openGraph: {
+    type: "website",
+    siteName: "Minha Paróquia",
+    locale: "pt_BR",
+    title: "Minha Paróquia",
+    description: "A vida da sua comunidade durante a semana.",
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "Minha Paróquia" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "Minha Paróquia",
+    description: "A vida da sua comunidade durante a semana.",
+  },
   // O <link rel="manifest"> sai daqui automaticamente, de src/app/manifest.ts.
   appleWebApp: {
     // O iPhone ignora o `display: standalone` do manifest em versões mais

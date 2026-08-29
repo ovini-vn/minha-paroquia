@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { CampoDeSenha } from "@/components/ui/CampoDeSenha";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
+import { useRolarAoAbrir } from "@/lib/rolar-ao-abrir";
 
 const initialState: ActionState = {};
 
@@ -25,6 +26,8 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
   // Erro reabre o formulário: esconder levaria embora a explicação.
   const [comSenha, setComSenha] = useState(false);
   const aberto = comSenha || Boolean(state.error);
+  // Em aparelho pequeno o formulário abria fora da tela — ver o gancho.
+  const formRef = useRolarAoAbrir<HTMLFormElement>(aberto);
 
   return (
     <div className="flex flex-col">
@@ -38,7 +41,7 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
             <span className="rule-gold flex-1" />
           </div>
 
-          <form action={formAction} className="flex flex-col gap-4">
+          <form action={formAction} ref={formRef} className="flex flex-col gap-4 scroll-mb-6">
             {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
             <FormField label="Nome completo" name="fullName" required autoComplete="name" />
             <FormField label="E-mail" name="email" type="email" required autoComplete="email" />

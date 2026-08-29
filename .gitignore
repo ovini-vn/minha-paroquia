@@ -37,3 +37,8 @@ docs/apresentacao/apresentacao.pdf
 
 # Backup solto na pasta de documentação, não é fonte do projeto.
 docs/*.zip
+
+# Artefatos do Playwright: rastro e captura de teste que falhou. São
+# regerados a cada execução e podem ficar grandes.
+/test-results/
+/playwright-report/

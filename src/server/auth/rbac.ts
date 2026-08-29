@@ -54,6 +54,7 @@ export const PERMISSIONS = {
   PRAYER_REQUESTS_VIEW_PRIVATE: "prayer_requests.view_private",
   PRAYER_REQUESTS_MODERATE: "prayer_requests.moderate",
   PERMISSION_OVERRIDES_MANAGE: "permission_overrides.manage",
+  MEMBER_PASSWORD_RESET: "member.password_reset",
 } as const;
 
 export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -76,6 +77,7 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
   [PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE]: "Ver pedidos de oração privados",
   [PERMISSIONS.PRAYER_REQUESTS_MODERATE]: "Aprovar pedidos de oração do mural",
   [PERMISSIONS.PERMISSION_OVERRIDES_MANAGE]: "Delegar permissões",
+  [PERMISSIONS.MEMBER_PASSWORD_RESET]: "Gerar link de nova senha",
 };
 
 // PERMISSION_OVERRIDES_MANAGE só existe para PAROCO, de propósito — é
@@ -84,6 +86,7 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
 // loop de escalação de privilégio.
 export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
   PAROCO: [
+    PERMISSIONS.MEMBER_PASSWORD_RESET,
     PERMISSIONS.INVITATIONS_CREATE,
     PERMISSIONS.INVITATIONS_VIEW,
     PERMISSIONS.MEMBERS_VIEW,
@@ -113,6 +116,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
    * tem os poderes do Pároco e nenhuma das aparições dele.
    */
   ADMINISTRADOR_PAROQUIAL: [
+    PERMISSIONS.MEMBER_PASSWORD_RESET,
     PERMISSIONS.INVITATIONS_CREATE,
     PERMISSIONS.INVITATIONS_VIEW,
     PERMISSIONS.MEMBERS_VIEW,
@@ -129,6 +133,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
   ],
   SECRETARIA: [
+    PERMISSIONS.MEMBER_PASSWORD_RESET,
     PERMISSIONS.INVITATIONS_CREATE,
     PERMISSIONS.INVITATIONS_VIEW,
     PERMISSIONS.MEMBERS_VIEW,

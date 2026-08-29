@@ -1,4 +1,6 @@
 import { prisma } from "@/server/db/prisma";
+import { withTenantContext } from "@/server/db/tenant-context";
+import { ROLES_QUE_ADMINISTRAM, type RoleCode } from "@/server/auth/rbac";
 import { generateOpaqueToken, hashToken } from "@/server/auth/tokens";
 import { hashPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
@@ -52,4 +54,71 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
       data: { revokedAt: new Date() },
     }),
   ]);
+}
+
+/**
+ * Link de nova senha gerado PELA PARÓQUIA, para um membro dela.
+ *
+ * Existe porque a recuperação por e-mail não funciona: depende de domínio
+ * verificado, que ainda não há. Sem isto, quem esquece a senha não volta —
+ * e num piloto com gente mais velha isso acontece na primeira semana.
+ *
+ * A diferença para `createPasswordResetToken` é o que esta função RECUSA.
+ * Aquela aceita qualquer e-mail, porque serve ao fluxo público em que a
+ * própria pessoa pede. Esta é operada por terceiro, e por isso:
+ *
+ * 1. Não aceita e-mail. Aceita o id de um MEMBRO, e confirma o vínculo
+ *    ativo com esta paróquia. Sem isso, quem tem painel de uma paróquia
+ *    geraria link para a conta de qualquer pessoa da plataforma.
+ *
+ * 2. Recusa gerar link para quem ADMINISTRA a paróquia, a menos que quem
+ *    pede também administre. Link de nova senha é tomada de conta: sem esta
+ *    trava, a secretaria geraria um link para o pároco e assumiria a
+ *    paróquia — a escalação de privilégio que o RBAC evita em todo o resto.
+ */
+export type ResultadoDoLink =
+  | { ok: true; caminho: string; nome: string; expiraEm: Date }
+  | { ok: false; motivo: "nao-e-membro" | "precisa-ser-paroco" };
+
+export async function criarLinkDeNovaSenhaParaMembro(
+  parishId: string,
+  alvoUserId: string,
+  quemPede: { userId: string; podeGerenciarPermissoes: boolean },
+): Promise<ResultadoDoLink> {
+  const membro = await withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findFirst({
+      where: { parishId, userId: alvoUserId, status: "active" },
+      include: {
+        user: { select: { id: true, fullName: true } },
+        role: { select: { code: true } },
+      },
+    }),
+  );
+
+  if (!membro) return { ok: false, motivo: "nao-e-membro" };
+
+  const alvoAdministra = ROLES_QUE_ADMINISTRAM.includes(membro.role.code as RoleCode);
+  if (alvoAdministra && !quemPede.podeGerenciarPermissoes) {
+    return { ok: false, motivo: "precisa-ser-paroco" };
+  }
+
+  const token = generateOpaqueToken();
+  const expiraEm = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+
+  await prisma.passwordResetToken.create({
+    data: { userId: alvoUserId, tokenHash: hashToken(token), expiresAt: expiraEm },
+  });
+
+  // Fica no log do servidor enquanto não existe tabela de auditoria: é o
+  // único registro de quem gerou acesso para quem.
+  console.log(
+    `[acesso] ${quemPede.userId} gerou link de nova senha para ${alvoUserId} na paróquia ${parishId}`,
+  );
+
+  return {
+    ok: true,
+    caminho: `/recuperar-acesso/redefinir?token=${token}`,
+    nome: membro.user.fullName,
+    expiraEm,
+  };
 }

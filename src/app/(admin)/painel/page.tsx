@@ -264,6 +264,16 @@ export default async function AdminDashboardPage() {
             title="Sacramentos"
             subtitle={`${pendingSacramentCount} ${pendingSacramentCount === 1 ? "aguardando validação" : "aguardando validação"}`}
           />
+          {/* Vem ANTES de "Membros e papéis": é o que a secretaria mais
+              vai usar, e é a única entrada que ela enxerga neste bloco. */}
+          {session.permissions.includes(PERMISSIONS.MEMBER_PASSWORD_RESET) && (
+            <RowLink
+              href="/painel/acesso"
+              icon={KeyRound}
+              title="Esqueci minha senha"
+              subtitle="Gerar link de nova senha para quem não consegue entrar"
+            />
+          )}
           {session.permissions.includes(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
               href="/painel/membros"

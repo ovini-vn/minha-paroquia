@@ -163,6 +163,25 @@ export default async function AdminDashboardPage() {
           Áreas da paróquia
         </Eyebrow>
         <Card className="px-3.5 py-1.5">
+          {/*
+            PRIMEIRO da lista, e não no meio.
+            É a única tarefa aqui que chega com alguém esperando do outro
+            lado do balcão — quem não consegue entrar liga ou aparece, e a
+            secretaria precisa achar isto em segundos. Estava na posição 15
+            de 18, a 2.300px do topo: existia e não era encontrado.
+
+            O rótulo é do ponto de vista de QUEM OPERA. "Esqueci minha
+            senha" está escrito para o fiel; quem abre esta tela não esqueceu
+            senha nenhuma — está ajudando quem esqueceu.
+          */}
+          {podeAlcancar(session, PERMISSIONS.MEMBER_PASSWORD_RESET) && (
+            <RowLink
+              href="/painel/acesso"
+              icon={KeyRound}
+              title="Ajudar quem não consegue entrar"
+              subtitle="Gerar um link de nova senha para um membro"
+            />
+          )}
           <RowLink
             href="/painel/missas"
             icon={Repeat}
@@ -267,16 +286,6 @@ export default async function AdminDashboardPage() {
             title="Sacramentos"
             subtitle={`${pendingSacramentCount} ${pendingSacramentCount === 1 ? "aguardando validação" : "aguardando validação"}`}
           />
-          {/* Vem ANTES de "Membros e papéis": é o que a secretaria mais
-              vai usar, e é a única entrada que ela enxerga neste bloco. */}
-          {podeAlcancar(session, PERMISSIONS.MEMBER_PASSWORD_RESET) && (
-            <RowLink
-              href="/painel/acesso"
-              icon={KeyRound}
-              title="Esqueci minha senha"
-              subtitle="Gerar link de nova senha para quem não consegue entrar"
-            />
-          )}
           {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
               href="/painel/membros"

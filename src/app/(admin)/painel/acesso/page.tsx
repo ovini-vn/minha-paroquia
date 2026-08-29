@@ -19,7 +19,7 @@ import { GerarLinkForm } from "./GerarLinkForm";
  * paróquia ficam de fora da lista dela, porque gerar link de nova senha é
  * tomar a conta: sem essa separação, a secretaria assumiria a paróquia.
  */
-export const metadata: Metadata = { title: "Esqueci minha senha" };
+export const metadata: Metadata = { title: "Ajudar quem não consegue entrar" };
 
 export default async function AcessoPage() {
   const session = await requirePermissionForPage(PERMISSIONS.MEMBER_PASSWORD_RESET);
@@ -41,7 +41,7 @@ export default async function AcessoPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Esqueci minha senha"
+        title="Ajudar quem não consegue entrar"
         description="Gere um link para quem não consegue entrar. A pessoa escolhe a nova senha por conta própria."
       />
 

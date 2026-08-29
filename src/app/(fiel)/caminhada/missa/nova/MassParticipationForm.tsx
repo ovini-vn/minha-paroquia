@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { registerMassParticipationAction, type ActionState } from "@/server/actions/caminhada-actions";
 import { Button } from "@/components/ui/Button";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
@@ -20,8 +21,8 @@ export function MassParticipationForm() {
           name="participatedAt"
           type="date"
           required
-          defaultValue={new Date().toISOString().slice(0, 10)}
-          max={new Date().toISOString().slice(0, 10)}
+          defaultValue={hojeEmBrasilia()}
+          max={hojeEmBrasilia()}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>

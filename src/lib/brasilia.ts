@@ -82,3 +82,31 @@ export function diaEmBrasilia(instante: Date): string {
   const { year, month, day } = brasiliaParts(instante);
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
+
+/**
+ * O dia de HOJE em Brasília, como "2026-08-29".
+ *
+ * Existe para substituir `new Date().toISOString().slice(0, 10)`, que era o
+ * padrão espalhado por oito formulários e devolve o dia em **UTC**. Entre
+ * 21h e a meia-noite os dois discordam: o campo "hoje" já vinha preenchido
+ * com amanhã, e o `max` de "não pode ser data futura" já liberava amanhã.
+ *
+ * Também vale como defesa contra divergência de hidratação: servidor e
+ * navegador estão em fusos diferentes, e cada um resolvia um dia. Agora os
+ * dois calculam o mesmo dia a partir do próprio relógio.
+ */
+export function hojeEmBrasilia(): string {
+  return diaEmBrasilia(new Date());
+}
+
+/**
+ * A hora cheia agora em Brasília, de 0 a 23.
+ *
+ * `new Date().getHours()` lê o fuso de QUEM ESTÁ RODANDO. Num Server
+ * Component isso é o servidor, e na Vercel o servidor é UTC — a saudação do
+ * Início dizia "Boa noite" às seis da tarde e "Bom dia" às nove da noite.
+ * O defeito passa despercebido em qualquer máquina brasileira.
+ */
+export function horaEmBrasilia(): number {
+  return Math.floor(brasiliaParts(new Date()).minutes / 60);
+}

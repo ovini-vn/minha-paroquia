@@ -10,6 +10,7 @@ import {
 } from "@/server/actions/catequese-actions";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: PersonActionState = {};
 
@@ -43,7 +44,7 @@ function Cadastrar() {
           id="p-birthDate"
           name="birthDate"
           type="date"
-          max={new Date().toISOString().slice(0, 10)}
+          max={hojeEmBrasilia()}
           className={campo}
         />
       </div>

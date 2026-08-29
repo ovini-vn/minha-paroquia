@@ -17,6 +17,7 @@ import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
 import { formatDateOnly } from "@/lib/date";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 export const metadata: Metadata = { title: "Minha Caminhada" };
 
@@ -39,7 +40,7 @@ export default async function CaminhadaPage() {
     listMyConfessions(parishId, session.userId, 5),
   ]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = hojeEmBrasilia();
 
   return (
     <div className="flex flex-col">

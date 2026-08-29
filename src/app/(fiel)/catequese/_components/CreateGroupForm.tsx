@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createGroupAction, type ActionState } from "@/server/actions/catequese-actions";
 import { Button } from "@/components/ui/Button";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
@@ -34,7 +35,7 @@ export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
           name="year"
           type="number"
           required
-          defaultValue={new Date().getFullYear()}
+          defaultValue={Number(hojeEmBrasilia().slice(0, 4))}
           className="w-28 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>

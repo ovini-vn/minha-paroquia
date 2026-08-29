@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { createFamilyMemberAction, type ActionState } from "@/server/actions/family-actions";
 import { Button } from "@/components/ui/Button";
 import { RELATIONSHIP_LABELS } from "@/lib/familia-labels";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
@@ -47,7 +48,7 @@ export function FamilyMemberForm() {
           id="birthDate"
           name="birthDate"
           type="date"
-          max={new Date().toISOString().slice(0, 10)}
+          max={hojeEmBrasilia()}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>

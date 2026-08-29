@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateProfileAction, type ActionState } from "@/server/actions/auth-actions";
 import { Button } from "@/components/ui/Button";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
@@ -49,7 +50,7 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
           id="birthDate"
           name="birthDate"
           type="date"
-          max={new Date().toISOString().slice(0, 10)}
+          max={hojeEmBrasilia()}
           defaultValue={birthDate}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />

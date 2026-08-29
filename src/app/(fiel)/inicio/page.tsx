@@ -24,6 +24,7 @@ import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
+import { horaEmBrasilia } from "@/lib/brasilia";
 
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
@@ -35,8 +36,18 @@ const SHORTCUTS = [
   { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;
 
+/*
+ * A saudação é a primeira linha que o fiel lê, e estava errada em produção.
+ *
+ * `new Date().getHours()` lê o fuso de QUEM ESTÁ RODANDO. Esta função roda
+ * no servidor, e o servidor da Vercel é UTC: às seis da tarde de Brasília
+ * já são 21h lá, e o app dizia "Boa noite"; às nove da noite dizia
+ * "Bom dia". Passava despercebido porque em qualquer máquina brasileira
+ * sai certo — o mesmo jeito pelo qual o horário das missas já tinha
+ * escapado uma vez.
+ */
 function greeting(): string {
-  const hour = new Date().getHours();
+  const hour = horaEmBrasilia();
   if (hour < 12) return "Bom dia";
   if (hour < 18) return "Boa tarde";
   return "Boa noite";

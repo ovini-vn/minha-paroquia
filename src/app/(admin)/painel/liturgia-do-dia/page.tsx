@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { PublishLiturgyForm } from "./PublishLiturgyForm";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   weekday: "long",
@@ -26,7 +27,10 @@ export default async function PainelLiturgiaDoDiaPage() {
 
   const today = new Date();
   const upcoming = await listUpcomingLiturgy(session.membership.parishId, today);
-  const defaultDate = today.toISOString().slice(0, 10);
+  // `today` continua sendo o instante, que é o que a consulta quer. Já o
+  // padrão do campo é DIA, e dia em UTC não serve: depois das 21h a tela
+  // abria oferecendo as leituras de amanhã.
+  const defaultDate = hojeEmBrasilia();
 
   return (
     <div className="flex flex-col gap-6">

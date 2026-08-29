@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { WEEKDAY_LABELS, WEEK_OF_MONTH_LABELS } from "@/lib/recurrence";
 import { parseMinutes, formatMinutes } from "@/lib/brasilia";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ScheduleActionState = {};
 
@@ -218,7 +219,7 @@ export function CreateScheduleForm({
             name="startsOn"
             type="date"
             required
-            defaultValue={schedule ? paraInput(schedule.startsOn) : new Date().toISOString().slice(0, 10)}
+            defaultValue={schedule ? paraInput(schedule.startsOn) : hojeEmBrasilia()}
             className={campo}
           />
         </div>

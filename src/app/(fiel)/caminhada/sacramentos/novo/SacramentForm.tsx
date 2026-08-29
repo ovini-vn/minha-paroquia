@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { registerSacramentAction, type ActionState } from "@/server/actions/caminhada-actions";
 import { Button } from "@/components/ui/Button";
 import { SACRAMENT_TYPE_LABELS } from "@/lib/caminhada-labels";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
@@ -40,7 +41,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
           name="date"
           type="date"
           required
-          max={new Date().toISOString().slice(0, 10)}
+          max={hojeEmBrasilia()}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>

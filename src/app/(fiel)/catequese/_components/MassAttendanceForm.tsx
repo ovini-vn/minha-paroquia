@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Church } from "lucide-react";
 import { setMassAttendanceAction, type MassAttendanceState } from "@/server/actions/catequese-actions";
 import { Button } from "@/components/ui/Button";
+import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: MassAttendanceState = {};
 
@@ -35,8 +36,8 @@ export function MassAttendanceForm({
           name="attendedOn"
           type="date"
           required
-          max={new Date().toISOString().slice(0, 10)}
-          defaultValue={new Date().toISOString().slice(0, 10)}
+          max={hojeEmBrasilia()}
+          defaultValue={hojeEmBrasilia()}
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>

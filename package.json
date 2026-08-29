@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "next build",
+    "build": "node scripts/migrar-no-deploy.mjs && next build",
     "start": "next start",
     "lint": "eslint .",
     "icons:gerar": "node scripts/gerar-icones.mjs",

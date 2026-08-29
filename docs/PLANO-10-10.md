@@ -204,14 +204,30 @@ mesma causa — `grep` conta linha, não conta significado.
 
 ---
 
-## Onda 4 — polimento
+## Onda 4 — polimento — FEITA em 29/08, commit `2c087ba`
 
-- Preenchimento visual do desktop na área pública (a fonte sugere duas colunas;
-  o rodapé do item 3.5 pode bastar, e custa menos).
-- Sombra do `Card` alinhada aos tokens `--shadow-2` / `--shadow-3`.
-- Botão "mostrar senha" no campo de senha.
-- Página estática "Como funciona".
-- Cabeçalhos de segurança (CSP, `X-Frame-Options`) além do que a Vercel já dá.
+- **Preenchimento do desktop:** resolvido pelo rodapé da Onda 3, sem as duas
+  colunas que a fonte sugeria. Medido: `body` 1280x800 com o rodapé em
+  `top=724`.
+- **Sombra do `Card`:** o item supunha sombra escrita à mão para alinhar aos
+  tokens. Não havia sombra nenhuma — o comentário do componente prometia uma
+  desde sempre e a classe não existia. Agora usa `shadow-sm`, que já apontava
+  para `--shadow-1` em `tailwind.config.ts:73`.
+- **Botão "mostrar senha":** `CampoDeSenha`, nos três formulários. O acessório
+  virou capacidade do `FormField` em vez de código repetido.
+- **Página "Como funciona":** pública, ligada no rodapé antes da política.
+- **Cabeçalhos de segurança:** seis, conferidos na resposta HTTP. A CSP ficou
+  restrita ao que se impõe sem nonce (`frame-ancestors`, `base-uri`,
+  `form-action`); `script-src` exigiria `middleware.ts`, que o projeto não tem
+  de propósito.
+
+### O que a Onda 4 deixou em aberto
+
+Não existe canal público para uma paróquia PEDIR para usar a ferramenta. A
+página "Como funciona" termina em "criar conta", que serve a quem já pertence a
+uma paróquia atendida — o pároco que se interessar pela apresentação não tem
+para onde escrever. Não inventei um e-mail de contato; é decisão de quem
+mantém a plataforma.
 
 ---
 

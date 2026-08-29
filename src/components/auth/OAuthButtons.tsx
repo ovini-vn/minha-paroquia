@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+
 /**
  * Botões de login social nas marcas oficiais.
  *
@@ -50,8 +55,32 @@ function LogoFacebook() {
 export function OAuthButtons({ inviteCode }: { inviteCode?: string | null }) {
   const suffix = inviteCode ? `?convite=${encodeURIComponent(inviteCode)}` : "";
 
+  /*
+   * São âncoras, e uma âncora não tem estado de "carregando". Numa rede
+   * lenta o toque não produzia efeito nenhum por segundos — tempo de sobra
+   * para tocar de novo e disparar dois fluxos OAuth, sendo que o segundo
+   * invalida o estado do primeiro e a pessoa termina com um erro.
+   *
+   * Ao primeiro toque a âncora vira rodinha e os dois botões param de
+   * aceitar clique. Não desmonta nem desabilita o link: navegação já está a
+   * caminho, e trocar o elemento no meio disso cancelaria a ida.
+   */
+  const [indoPara, setIndoPara] = useState<"google" | "facebook" | null>(null);
+
+  function aoTocar(destino: "google" | "facebook") {
+    return (evento: React.MouseEvent) => {
+      if (indoPara) {
+        evento.preventDefault();
+        return;
+      }
+      setIndoPara(destino);
+    };
+  }
+
   const base =
-    "flex h-12 w-full items-center justify-center gap-3 rounded-xl text-[15px] font-medium transition-opacity hover:opacity-90";
+    "flex h-12 w-full items-center justify-center gap-3 rounded-xl text-[15px] font-medium transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+  const ocupado = indoPara !== null ? " pointer-events-none opacity-70" : "";
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -62,19 +91,31 @@ export function OAuthButtons({ inviteCode }: { inviteCode?: string | null }) {
       */}
       <a
         href={`/api/auth/google${suffix}`}
-        className={`${base} border border-[#747775] bg-white text-[#1f1f1f] dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3]`}
+        onClick={aoTocar("google")}
+        aria-busy={indoPara === "google"}
+        className={`${base}${ocupado} border border-[#747775] bg-white text-[#1f1f1f] dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3]`}
       >
-        <LogoGoogle />
-        Fazer login com o Google
+        {indoPara === "google" ? (
+          <Loader2 className="h-[18px] w-[18px] shrink-0 animate-spin" aria-hidden />
+        ) : (
+          <LogoGoogle />
+        )}
+        {indoPara === "google" ? "Abrindo o Google…" : "Fazer login com o Google"}
       </a>
 
       {/* #1877F2 é o azul de marca do Facebook — o mesmo em qualquer tema. */}
       <a
         href={`/api/auth/facebook${suffix}`}
-        className={`${base} bg-[#1877F2] text-white`}
+        onClick={aoTocar("facebook")}
+        aria-busy={indoPara === "facebook"}
+        className={`${base}${ocupado} bg-[#1877F2] text-white`}
       >
-        <LogoFacebook />
-        Continuar com o Facebook
+        {indoPara === "facebook" ? (
+          <Loader2 className="h-[19px] w-[19px] shrink-0 animate-spin" aria-hidden />
+        ) : (
+          <LogoFacebook />
+        )}
+        {indoPara === "facebook" ? "Abrindo o Facebook…" : "Continuar com o Facebook"}
       </a>
     </div>
   );

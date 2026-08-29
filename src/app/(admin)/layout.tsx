@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl animate-enter px-5 py-6">{children}</main>
+      <main id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl animate-enter px-5 py-6">{children}</main>
     </div>
   );
 }

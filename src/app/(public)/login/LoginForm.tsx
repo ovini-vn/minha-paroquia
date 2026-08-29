@@ -76,26 +76,38 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
             <Button type="submit" disabled={pending} className="mt-1 flex w-full">
               {pending ? "Entrando..." : "Entrar"}
             </Button>
-            <div className="mt-4 flex justify-between text-[13px] font-medium text-primary">
+            {/* "Esqueci minha senha" fica aqui porque só faz sentido para
+                quem está tentando entrar com senha. "Criar conta" saiu: quem
+                ainda não tem conta não abre um formulário de senha para
+                descobrir como criar uma. */}
+            <div className="mt-4 text-[13px] font-medium text-primary">
               <Link href="/recuperar-acesso" className="hover:underline">
                 Esqueci minha senha
-              </Link>
-              <Link
-                href={inviteCode ? `/cadastro?convite=${inviteCode}` : "/cadastro"}
-                className="hover:underline"
-              >
-                Criar conta
               </Link>
             </div>
           </form>
         </>
       )}
 
-      <p className="mt-6 text-center text-[12px] text-muted">
-        <Link href="/privacidade" className="underline underline-offset-2">
-          Política de Privacidade
+      {/*
+        SEMPRE visível, e antes ficava dentro do formulário de senha: quem
+        chegava sem convite e não queria usar Google ou Facebook não
+        encontrava como criar conta. É a porta de entrada do produto, e
+        estava atrás de um clique que não fazia sentido dar.
+      */}
+      <p className="mt-6 border-t border-border pt-5 text-center text-[13.5px] text-muted">
+        Ainda não tem conta?{" "}
+        <Link
+          href={inviteCode ? `/cadastro?convite=${inviteCode}` : "/cadastro"}
+          className="font-medium text-primary hover:underline"
+        >
+          Criar conta
         </Link>
       </p>
+
+      {/* O link da política saiu daqui: passou a viver no rodapé da área
+          pública, que vale para o cadastro e a recuperação também. Manter
+          nos dois lugares o fazia aparecer duas vezes na mesma tela. */}
     </div>
   );
 }

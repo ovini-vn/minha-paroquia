@@ -19,9 +19,30 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </div>
       </div>
 
-      <div className="relative z-[2] -mt-10 flex flex-1 justify-center px-4 pb-10">
+      <main
+        id="conteudo"
+        tabIndex={-1}
+        className="relative z-[2] -mt-10 flex flex-1 justify-center px-4 pb-10 outline-none"
+      >
         <div className="w-full max-w-sm animate-enter">{children}</div>
-      </div>
+      </main>
+
+      {/*
+        Rodapé da área pública. Resolve duas coisas de uma vez: dá acesso à
+        política de privacidade a quem AINDA NÃO tem conta — antes ela só
+        aparecia dentro do formulário de login —, e fecha o vazio que sobrava
+        embaixo do cartão nas telas largas.
+      */}
+      <footer className="px-6 pb-8 text-center">
+        <p className="text-[12px] leading-relaxed text-muted">
+          <a href="/privacidade" className="underline underline-offset-2 hover:text-primary">
+            Política de Privacidade
+          </a>
+        </p>
+        <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-muted">
+          Minha Paróquia
+        </p>
+      </footer>
     </div>
   );
 }

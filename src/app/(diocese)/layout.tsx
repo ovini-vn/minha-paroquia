@@ -28,7 +28,7 @@ export default function DioceseLayout({ children }: { children: React.ReactNode 
           </Link>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl animate-enter px-5 py-6">{children}</main>
+      <main id="conteudo" tabIndex={-1} className="mx-auto max-w-4xl animate-enter px-5 py-6">{children}</main>
     </div>
   );
 }

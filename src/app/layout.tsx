@@ -104,6 +104,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={`${inter.variable} ${cormorant.variable}`}
     >
       <body className="font-sans antialiased">
+        {/*
+          Primeiro elemento focalizável da página, e invisível até receber
+          foco. Quem navega por teclado ou leitor de tela chegava percorrendo
+          o cabeçalho e a navegação inteira antes do conteúdo, em TODA
+          troca de tela.
+
+          O destino tem tabIndex={-1} nos layouts: sem isso o navegador move
+          a rolagem mas não move o foco, e o teclado continua de onde estava.
+        */}
+        <a
+          href="#conteudo"
+          className="sr-only rounded-lg bg-primary px-4 py-2.5 text-[14px] font-semibold text-white focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50"
+        >
+          Ir para o conteúdo
+        </a>
         {children}
         <RegistrarServiceWorker />
       </body>

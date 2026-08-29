@@ -20,7 +20,15 @@ export default async function LoginPage({
 
   return (
     <Card className="p-6 shadow">
-      <h1 className="mb-5 font-serif text-2xl font-semibold text-foreground">Entrar</h1>
+      <h1 className="font-serif text-2xl font-semibold text-foreground">Entrar</h1>
+      {/*
+        Quem chega aqui pela primeira vez não sabia o que o aplicativo faz —
+        a tela pedia senha antes de dizer para quê. Uma linha resolve, e ela
+        vem da própria promessa do produto.
+      */}
+      <p className="mb-5 mt-1.5 text-[13.5px] leading-relaxed text-muted">
+        A vida da sua paróquia durante a semana: missas, avisos, a palavra do padre e a Bíblia.
+      </p>
       {errorMessage && <p className="mb-4 text-sm text-error">{errorMessage}</p>}
       <LoginForm inviteCode={convite ?? null} />
     </Card>

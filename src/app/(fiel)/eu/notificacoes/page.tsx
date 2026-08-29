@@ -119,9 +119,6 @@ export default async function NotificationsPage() {
         <Card className="px-3.5 py-1.5">
           {notifications.map((notification) => {
             const lida = Boolean(notification.readAt);
-            // Nem toda notificação tem para onde ir: as antigas foram
-            // gravadas antes de existir destino, e algumas só comunicam.
-            const leva = Boolean(notification.linkPath);
 
             const conteudo = (
               <>
@@ -158,28 +155,32 @@ export default async function NotificationsPage() {
                   lida && "opacity-60",
                 )}
               >
-                {leva ? (
-                  // Um formulário, e não um link: abrir precisa marcar como
-                  // lida no servidor antes de navegar. O formulário de
-                  // "marcar lida" fica FORA deste — form dentro de form é
-                  // inválido em HTML e o navegador desmonta o de dentro.
-                  <form action={abrirNotificacaoAction} className="min-w-0 flex-1">
-                    <input type="hidden" name="id" value={notification.id} />
-                    <button
-                      type="submit"
-                      className="flex w-full items-center gap-3.5 py-3.5 text-left transition-colors hover:bg-primary-tint"
-                    >
-                      {conteudo}
-                      <ChevronRight
-                        className="h-4 w-4 shrink-0 text-border-strong"
-                        strokeWidth={1.5}
-                        aria-hidden
-                      />
-                    </button>
-                  </form>
-                ) : (
-                  <div className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5">{conteudo}</div>
-                )}
+                {/*
+                  TODA notificação abre, e antes só abria a que tivesse
+                  destino gravado. As outras viravam linha morta: a pessoa
+                  lia, tocava e nada acontecia — em produção, três das seis
+                  do usuário estavam assim. Quem não gravou destino agora
+                  cai no padrão da categoria (ver `destinoPadraoDaCategoria`).
+
+                  Um formulário, e não um link: abrir precisa marcar como
+                  lida no servidor antes de navegar. O formulário de
+                  "marcar lida" fica FORA deste — form dentro de form é
+                  inválido em HTML e o navegador desmonta o de dentro.
+                */}
+                <form action={abrirNotificacaoAction} className="min-w-0 flex-1">
+                  <input type="hidden" name="id" value={notification.id} />
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-3.5 py-3.5 text-left transition-colors hover:bg-primary-tint"
+                  >
+                    {conteudo}
+                    <ChevronRight
+                      className="h-4 w-4 shrink-0 text-border-strong"
+                      strokeWidth={1.5}
+                      aria-hidden
+                    />
+                  </button>
+                </form>
 
                 {/* Continua sendo possível dispensar sem abrir — nem tudo
                     que se lê na lista precisa de uma visita. */}

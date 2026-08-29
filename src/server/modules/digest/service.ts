@@ -156,7 +156,11 @@ export async function enviarResumoSemanal(agora: Date): Promise<ResultadoDoResum
         select: { userId: true },
       });
       const ids = membros.map((m) => m.userId);
-      await notifyManyUsers(tx, parishId, ids, "pastoral", titulo, corpo);
+      // A Agenda, e não o Início: o corpo do resumo é exatamente a lista
+      // de celebrações e eventos da semana, e é lá que ela está inteira.
+      // Sem este destino a notificação mais frequente do app era a única
+      // que não respondia ao toque.
+      await notifyManyUsers(tx, parishId, ids, "pastoral", titulo, corpo, "/agenda");
       return ids;
     });
 

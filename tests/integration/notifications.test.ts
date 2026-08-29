@@ -163,6 +163,56 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
     expect(depois.find((n) => n.id === criada.id)?.readAt).not.toBeNull();
   });
 
+  it("notificação sem destino gravado ainda leva a algum lugar", async () => {
+    /*
+     * Regressão do que o usuário relatou em 29/08/2026: "consigo ler as
+     * mensagens, mas não consigo clicar nelas".
+     *
+     * Conferido na conta dele em produção: três das seis notificações não
+     * respondiam ao toque. O resumo semanal nunca gravou destino, e as
+     * "Palavra do Padre" mais antigas são de antes de o campo existir.
+     * Sem destino, a linha era um `div` inerte — a pessoa lia, tocava e
+     * nada acontecia.
+     */
+    await withTenantContext(parishId, (tx) =>
+      notifyUser(tx, {
+        parishId,
+        userId: fielId,
+        category: "espiritual",
+        // Sem linkPath, como as antigas.
+        title: "Nova Palavra do Padre",
+        body: "O pároco publicou uma nova mensagem.",
+      }),
+    );
+
+    const antiga = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.title === "Nova Palavra do Padre",
+    )!;
+    expect(antiga.linkPath).toBeNull();
+
+    expect(await openNotification(parishId, antiga.id, fielId)).toBe("/comunidade");
+  });
+
+  it("o destino gravado sempre vence o padrão da categoria", async () => {
+    // O padrão é rede de segurança, não regra: quem gravou destino manda.
+    await withTenantContext(parishId, (tx) =>
+      notifyUser(tx, {
+        parishId,
+        userId: fielId,
+        category: "espiritual",
+        linkPath: "/biblia",
+        title: "Com destino próprio",
+        body: "Vai para a Bíblia, não para a Comunidade.",
+      }),
+    );
+
+    const comDestino = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.title === "Com destino próprio",
+    )!;
+
+    expect(await openNotification(parishId, comDestino.id, fielId)).toBe("/biblia");
+  });
+
   it("não abre — nem marca como lida — a notificação de outra pessoa", async () => {
     // O destino sai do banco a partir do id. Se o id de outro usuário
     // passasse, daria para marcar como lido o que não é seu.

@@ -63,6 +63,34 @@ export function countUnreadNotifications(parishId: string, userId: string) {
 }
 
 /**
+ * Para onde vai uma notificação que não gravou destino próprio.
+ *
+ * Notificação sem destino vira linha morta: a pessoa lê, toca, e nada
+ * acontece. Medido em 29/08/2026 na conta do usuário em produção — três
+ * das seis notificações dele não respondiam ao toque. Duas causas, e o
+ * mesmo efeito: o resumo semanal nunca gravou destino, e as "Palavra do
+ * Padre" mais antigas são anteriores a existir o campo.
+ *
+ * Este mapa resolve as duas de uma vez, e sem migração de dados: a linha
+ * antiga passa a levar a algum lugar sensato na hora em que é aberta. O
+ * destino explícito, quando existe, sempre vence — isto é rede de
+ * segurança, não a regra.
+ *
+ * `/inicio` é o último recurso porque é a tela que responde "o que está
+ * acontecendo agora", e é para onde qualquer aviso da paróquia converge.
+ */
+const DESTINO_PADRAO: Record<string, string> = {
+  urgente: "/avisos",
+  espiritual: "/comunidade",
+  pastoral: "/agenda",
+  pessoal: "/eu",
+};
+
+export function destinoPadraoDaCategoria(categoria: string): string {
+  return DESTINO_PADRAO[categoria] ?? "/inicio";
+}
+
+/**
  * Dá a notificação por lida e devolve PARA ONDE ela leva.
  *
  * O destino sai do banco, nunca do formulário. Se viesse do formulário,
@@ -74,7 +102,7 @@ export async function openNotification(parishId: string, id: string, userId: str
   return withTenantContext(parishId, async (tx) => {
     const notificacao = await tx.notification.findFirst({
       where: { id, parishId, userId },
-      select: { linkPath: true },
+      select: { linkPath: true, category: true },
     });
     if (!notificacao) return null;
 
@@ -82,7 +110,7 @@ export async function openNotification(parishId: string, id: string, userId: str
       where: { id, parishId, userId, readAt: null },
       data: { readAt: new Date() },
     });
-    return notificacao.linkPath;
+    return notificacao.linkPath ?? destinoPadraoDaCategoria(notificacao.category);
   });
 }
 

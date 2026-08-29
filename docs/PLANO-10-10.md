@@ -313,11 +313,29 @@ ferramenta:
   renderização (não existe fora de manipulador de evento). Custo: o React
   descarta o HTML do servidor naquela árvore e redesenha. Fica registrado
   sem conserto — chutar aqui seria pior que admitir.
-- **`new Date().toISOString()` como padrão de formulário** — encontrado de
-  passagem, em 8 formulários. Isso dá a data em **UTC**, não em Brasília:
-  entre 21h e meia-noite, o campo "hoje" já mostra amanhã. Contraria a regra
-  do projeto de que o relógio de Brasília é a única fonte. Não corrigido
-  nesta rodada.
+- **Relógio do servidor em vez do de Brasília** — encontrado de passagem ao
+  investigar a hidratação, e maior do que parecia. CORRIGIDO em 29/08, commit
+  `b03442a`.
+
+  O pior caso não era formulário: `greeting()` no Início usava
+  `new Date().getHours()` num Server Component, e o servidor da Vercel é UTC.
+  **Conferido em produção antes de corrigir: às 16h de Brasília a tela dizia
+  "Boa noite".** Das 15h às 18h dava boa noite; das 21h à meia-noite, bom
+  dia. É a primeira linha que o fiel lê.
+
+  Junto, 11 lugares com `new Date().toISOString().slice(0, 10)`, que é o dia
+  em UTC: depois das 21h o campo "hoje" vinha com amanhã e o `max` de "não
+  pode ser data futura" liberava amanhã. Um deles escapou do primeiro `grep`
+  por estar quebrado em duas linhas.
+
+  Ficam `hojeEmBrasilia()` e `horaEmBrasilia()` em `src/lib/brasilia.ts`, e
+  quatro testes que fixam o relógio entre 21h e a meia-noite com valores
+  absolutos — é assim que este defeito para de atravessar todo teste local.
+
+  É a **terceira vez** que o mesmo erro aparece neste projeto, depois do
+  horário das missas e da data dos avisos. O padrão: qualquer leitura de
+  relógio sem passar por `brasilia.ts` sai certa em São Paulo e errada em
+  produção.
 - **Navegação por teclado** — CONFERIDA em 29/08 na tela de entrada. Ordem de
   tabulação igual à ordem visual (atalho para o conteúdo, Google, Facebook,
   senha, criar conta, rodapé) e indicador visível em todas as paradas. Os

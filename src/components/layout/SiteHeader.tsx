@@ -130,14 +130,37 @@ export function SiteHeader({
           </Link>
         )}
 
+        {/*
+          O número de não lidas entra no `aria-label`, e não só na bolinha.
+
+          Antes o rótulo era "Notificações" e ponto: quem usa leitor de tela
+          ouvia isso e NUNCA ficava sabendo que havia aviso esperando — a
+          contagem era só desenho. O Lighthouse acusou como
+          `label-content-name-mismatch` em 29/08, nas três telas internas
+          medidas; o cabeçalho é compartilhado, então valia para o app todo.
+
+          O mesmo defeito atrapalha quem comanda o computador por voz: com
+          um "3" visível que não está no nome, dizer "clicar em 3" não
+          aciona nada.
+
+          A bolinha continua `aria-hidden`, senão a contagem seria anunciada
+          duas vezes.
+        */}
         <Link
           href="/eu/notificacoes"
           className="relative grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
-          aria-label="Notificações"
+          aria-label={
+            unreadCount > 0
+              ? `Notificações, ${unreadCount} não ${unreadCount === 1 ? "lida" : "lidas"}`
+              : "Notificações"
+          }
         >
           <Bell className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-semibold leading-none text-[#3a2a05]">
+            <span
+              aria-hidden
+              className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[10px] font-semibold leading-none text-[#3a2a05]"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

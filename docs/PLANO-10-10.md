@@ -291,6 +291,33 @@ ferramenta:
   A medição achou o que não estava na lista de ninguém: **não existia nenhuma
   etiqueta Open Graph**. Num app que se espalha por link no grupo do WhatsApp,
   a prévia saía sem imagem e sem nome do site. Corrigido no layout raiz.
+- **Lighthouse nas telas de dentro** — RODADO em 29/08, entrando com uma
+  sessão emitida à mão no banco de desenvolvimento (apagada depois).
+
+  | tela | desempenho | acessibilidade | boas práticas |
+  |---|---|---|---|
+  | `/inicio` | 87 | **100** | 100 |
+  | `/agenda` | 89 | **100** | 96 |
+  | `/biblia` | 89 | **100** | 100 |
+
+  Achou um defeito real que valia para o app inteiro, porque mora no
+  cabeçalho compartilhado: o sino de notificações tinha `aria-label`
+  "Notificações" e a contagem só na bolinha. Quem usa leitor de tela nunca
+  ficava sabendo que havia aviso esperando. Corrigido.
+
+  **Pendência aberta:** um erro de hidratação do React (#418) aparece de
+  forma INTERMITENTE — em 1 de 4 corridas, e trocando de página entre elas.
+  Não reproduz em desenvolvimento nem no navegador comum; só sob a CPU
+  4x mais lenta que o Lighthouse simula. Descartado: formatação de data sem
+  idioma (não existe, tudo usa `pt-BR`) e API de navegador lida durante a
+  renderização (não existe fora de manipulador de evento). Custo: o React
+  descarta o HTML do servidor naquela árvore e redesenha. Fica registrado
+  sem conserto — chutar aqui seria pior que admitir.
+- **`new Date().toISOString()` como padrão de formulário** — encontrado de
+  passagem, em 8 formulários. Isso dá a data em **UTC**, não em Brasília:
+  entre 21h e meia-noite, o campo "hoje" já mostra amanhã. Contraria a regra
+  do projeto de que o relógio de Brasília é a única fonte. Não corrigido
+  nesta rodada.
 - **Navegação por teclado** — CONFERIDA em 29/08 na tela de entrada. Ordem de
   tabulação igual à ordem visual (atalho para o conteúdo, Google, Facebook,
   senha, criar conta, rodapé) e indicador visível em todas as paradas. Os

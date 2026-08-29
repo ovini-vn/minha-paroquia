@@ -252,12 +252,24 @@ ferramenta:
   abaixo de 0,183). Consertar o link derrubou o botão de 4,60 para 3,27 antes
   de eu perceber que eram o mesmo token.
 
-  **As 25 restantes são quatro decisões de identidade visual, adiadas de
-  propósito** em 29/08: a borda dos campos (1,60:1 nas 14 paletas, mínimo 3);
-  o dourado do Natal e da Páscoa em link e botão; a linha
-  CAMINHAR·PERTENCER·SERVIR sobre o topo dourado (2,00:1), que só melhora
-  mexendo no gradiente litúrgico; e o dourado do Tempo Comum (3,94:1).
-  `hover` e `disabled` continuam sem medição — o script não os cobre.
+  **Três das quatro decisões foram feitas em 29/08**, e sobraram 4 pares:
+
+  - borda dos campos: de `#d3cabb` para `#968c7c`, 1,60 -> 3,26. Vale para
+    campo de formulário e botão de contorno, nas 14 paletas;
+  - dourado do Natal e da Páscoa em link e botão, escurecido. **O gradiente
+    do topo NÃO mudou** — a atmosfera dourada da tela é a mesma;
+  - assinatura dourada, de `#e3ce95` para `#f0e0b4`, que resolve o Tempo
+    Comum (3,94 -> 4,66).
+
+  **Os 4 pares restantes só melhoram mexendo no gradiente litúrgico**, e
+  ficam por decidir: texto branco e assinatura dourada sobre o topo dourado
+  do Natal e da Páscoa. Nem branco puro resolve — dá 3,43 sobre aquele
+  dourado. É escurecer o gradiente ou aceitar.
+
+  `hover` e `disabled` continuam sem medição — o script não os cobre. Ao
+  escurecer o dourado eu ajustei o `-hover` do Natal e da Páscoa à mão, que
+  antes clareava para `#c9a44c` e deixava o texto branco em 2,36 ao passar o
+  mouse.
 - **Contraste sobre imagem enviada pela paróquia** — não é medível por script:
   depende da foto.
 - **Leitor de tela** — VoiceOver no iPhone, TalkBack no Android.

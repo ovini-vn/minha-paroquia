@@ -23,7 +23,7 @@
 :root {
   /* Marca */
   --color-gold: 201 164 76; /* #c9a44c */
-  --color-gold-soft: 227 206 149; /* #e3ce95 */
+  --color-gold-soft: 240 224 180; /* #f0e0b4 */
   --color-foreground: 36 33 36; /* #242124 grafite, nunca preto puro */
   --color-muted: 111 106 103; /* #6f6a67 */
 
@@ -35,7 +35,7 @@
 
   /* Bordas */
   --color-border: 228 222 211; /* #e4ded3 */
-  --color-border-strong: 211 202 187; /* #d3cabb */
+  --color-border-strong: 150 140 124; /* #d3cabb */
 
   /*
    * Estados. Estas cores NÃO fazem parte da atmosfera litúrgica: são
@@ -86,8 +86,8 @@
   --wash: linear-gradient(170deg, #5b2890 0%, #3a1860 100%);
 }
 [data-season="natal"] {
-  --color-primary: 138 107 36;
-  --color-primary-hover: 201 164 76;
+  --color-primary: 128 99 33;
+  --color-primary-hover: 145 113 38;
   --color-primary-light: 201 164 76;
   --color-primary-tint: 251 244 228;
   --wash: linear-gradient(170deg, #a8862f 0%, #7a5c1c 100%);
@@ -107,8 +107,8 @@
   --wash: linear-gradient(170deg, #3b3540 0%, #211d25 100%);
 }
 [data-season="pascoa"] {
-  --color-primary: 154 122 34;
-  --color-primary-hover: 201 164 76;
+  --color-primary: 120 94 26;
+  --color-primary-hover: 140 110 34;
   --color-primary-light: 201 164 76;
   --color-primary-tint: 250 243 226;
   --wash: linear-gradient(170deg, #b08e33 0%, #7e6318 100%);
@@ -140,7 +140,7 @@
   --color-sunken: 20 17 24;
   --color-inverse: 240 236 230;
   --color-border: 52 48 60;
-  --color-border-strong: 72 66 82;
+  --color-border-strong: 118 111 128;
   /*
    * As cores de estado no escuro.
    *

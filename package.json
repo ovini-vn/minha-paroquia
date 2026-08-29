@@ -20,7 +20,8 @@
     "apresentacao:prints": "node docs/apresentacao/capturar.mjs",
     "apresentacao:pdf": "node docs/apresentacao/export-pdf.mjs",
     "apresentacao:dados": "tsx docs/apresentacao/preparar-dados.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "contraste": "node scripts/contraste.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

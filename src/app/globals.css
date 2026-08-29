@@ -37,10 +37,20 @@
   --color-border: 228 222 211; /* #e4ded3 */
   --color-border-strong: 211 202 187; /* #d3cabb */
 
-  /* Estados */
-  --color-success: 62 122 94;
+  /*
+   * Estados. Estas cores NÃO fazem parte da atmosfera litúrgica: são
+   * funcionais, e por isso podem ser escurecidas até passar em contraste
+   * sem mexer na identidade de nenhum tempo.
+   *
+   * Medidas em 29/08 por `npm run contraste`: o sucesso ficava em 4,44
+   * sobre o próprio tom e a atenção em 3,71 sobre o cartão — reprovando
+   * o mínimo de 4,5 da norma para texto corrido. O app tem público idoso e
+   * quase todo o texto fica entre 13 e 14,5px, ou seja, no limite mais
+   * exigente.
+   */
+  --color-success: 51 108 81;
   --color-success-tint: 234 242 237;
-  --color-warning: 180 118 42;
+  --color-warning: 146 95 33;
   --color-warning-tint: 251 242 229;
   --color-error: 158 59 51;
   --color-error-tint: 248 237 235;
@@ -131,8 +141,19 @@
   --color-inverse: 240 236 230;
   --color-border: 52 48 60;
   --color-border-strong: 72 66 82;
+  /*
+   * As cores de estado no escuro.
+   *
+   * Só os FUNDOS eram redefinidos aqui; o texto continuava com a cor
+   * clara — vermelho escuro sobre cartão escuro, medido em 2,43:1. Não foi
+   * escolha de ninguém, foi sobrescrita esquecida, e o efeito era a
+   * mensagem de erro do login quase invisível para quem usa tema escuro.
+   */
+  --color-success: 132 190 158;
   --color-success-tint: 26 40 33;
+  --color-warning: 226 176 96;
   --color-warning-tint: 45 34 18;
+  --color-error: 224 128 120;
   --color-error-tint: 48 26 24;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);

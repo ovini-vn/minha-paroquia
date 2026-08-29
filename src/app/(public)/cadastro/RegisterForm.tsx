@@ -6,6 +6,7 @@ import { KeyRound } from "lucide-react";
 import { registerAction, type ActionState } from "@/server/actions/auth-actions";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { CampoDeSenha } from "@/components/ui/CampoDeSenha";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 const initialState: ActionState = {};
@@ -41,13 +42,13 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
             {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
             <FormField label="Nome completo" name="fullName" required autoComplete="name" />
             <FormField label="E-mail" name="email" type="email" required autoComplete="email" />
-            <FormField
+            <CampoDeSenha
               label="Senha"
               name="password"
-              type="password"
               required
               minLength={8}
               autoComplete="new-password"
+              hint="Pelo menos 8 caracteres."
             />
             {state.error && <p className="text-sm text-error">{state.error}</p>}
             <Button type="submit" disabled={pending}>

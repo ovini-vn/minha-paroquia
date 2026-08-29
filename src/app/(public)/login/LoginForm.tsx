@@ -6,6 +6,7 @@ import { KeyRound } from "lucide-react";
 import { loginAction, type ActionState } from "@/server/actions/auth-actions";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { CampoDeSenha } from "@/components/ui/CampoDeSenha";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
 const initialState: ActionState = {};
@@ -65,13 +66,7 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
           <form action={formAction} id="form-senha">
             {inviteCode && <input type="hidden" name="convite" value={inviteCode} />}
             <FormField label="E-mail" name="email" type="email" required autoComplete="email" />
-            <FormField
-              label="Senha"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-            />
+            <CampoDeSenha label="Senha" name="password" required autoComplete="current-password" />
             {state.error && <p className="mb-3 text-sm text-error">{state.error}</p>}
             <Button type="submit" disabled={pending} className="mt-1 flex w-full">
               {pending ? "Entrando..." : "Entrar"}

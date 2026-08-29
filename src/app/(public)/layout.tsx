@@ -34,7 +34,23 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         embaixo do cartão nas telas largas.
       */}
       <footer className="px-6 pb-8 text-center">
-        <p className="text-[12px] leading-relaxed text-muted">
+        {/*
+          "Como funciona" antes da política, de propósito: quem chega por um
+          link compartilhado quer saber no que está entrando, e a tela de
+          entrada só comporta uma linha sobre isso.
+
+          São âncoras, e não <Link>: as duas páginas ficam FORA deste grupo de
+          rotas, com layout próprio. Navegar por dentro do roteador traria o
+          cabeçalho da marca junto, e a política ganharia o lockup completo em
+          cima do texto jurídico.
+        */}
+        <p className="flex items-center justify-center gap-2.5 text-[12px] leading-relaxed text-muted">
+          <a href="/como-funciona" className="underline underline-offset-2 hover:text-primary">
+            Como funciona
+          </a>
+          <span aria-hidden className="text-gold">
+            ·
+          </span>
           <a href="/privacidade" className="underline underline-offset-2 hover:text-primary">
             Política de Privacidade
           </a>

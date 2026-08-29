@@ -4,6 +4,7 @@ import {
   withOwnMembershipLookup,
 } from "@/server/db/tenant-context";
 import { ROLES_QUE_ADMINISTRAM, type RoleCode } from "@/server/auth/rbac";
+import { registrar, ACOES } from "@/server/modules/auditoria/service";
 import { ValidationError } from "@/server/shared/errors";
 import { slugify } from "@/server/shared/slug";
 import { ensurePriestProfile, isPriestRole } from "@/server/modules/priests/ensure-priest-profile";
@@ -247,6 +248,18 @@ export async function changeMemberRole(
     const atualizado = await tx.parishMembership.update({
       where: { id: membership.id },
       data: { roleId: role.id },
+    });
+
+    // Na MESMA transação da troca: ou os dois acontecem, ou nenhum. Trocar
+    // papel é dar ou tirar acesso, e essa é a pergunta que um log de
+    // auditoria precisa saber responder meses depois.
+    await registrar(tx, {
+      parishId,
+      atorId: actingUserId,
+      acao: ACOES.PAPEL_TROCADO,
+      alvoTipo: "membro",
+      alvoId: targetUserId,
+      detalhe: { de: membership.role.code, para: roleCode },
     });
 
     // Virar sacerdote cria o perfil, igual ao aceite de convite — senão a

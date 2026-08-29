@@ -282,6 +282,7 @@ model Parish {
   donationPurposes        DonationPurpose[]
   donationInitiatives     DonationInitiative[]
   notificationDispatches  NotificationDispatch[]
+  auditLogs               AuditLog[]
   invitations             Invitation[]
   priestProfiles          PriestProfile[]
   celebrations            Celebration[]
@@ -1512,4 +1513,38 @@ model RateLimit {
 
   @@index([janelaExpira])
   @@map("rate_limits")
+}
+
+/// Registro de quem fez o quê, para as operações que dão ou tiram acesso.
+///
+/// Sem ele não há como responder "quem mudou o papel desta pessoa" nem
+/// "quem gerou link de acesso para quem" — perguntas que uma ferramenta com
+/// dado sensível precisa saber responder.
+///
+/// A entrada é gravada NA MESMA TRANSAÇÃO da mudança. Do lado de fora,
+/// mais cedo ou mais tarde existiria mudança sem registro — e um log com
+/// buracos não serve para responder nada.
+///
+/// `detalhe` guarda ids e códigos, NUNCA conteúdo. O texto de um pedido de
+/// oração ou de um aviso não entra aqui: o log diz que algo foi moderado,
+/// não o que estava escrito.
+///
+/// Não há caminho de edição nem de exclusão no código, de propósito.
+model AuditLog {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  /// Quem executou. Sem relação com User: se a conta for apagada, o registro
+  /// do que ela fez precisa sobreviver.
+  atorId    String   @map("ator_id")
+  /// Código estável, tipo "papel.trocado". O rótulo legível mora no código.
+  acao      String
+  alvoTipo  String?  @map("alvo_tipo")
+  alvoId    String?  @map("alvo_id")
+  detalhe   Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, createdAt])
+  @@map("audit_logs")
 }

@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db/prisma";
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ROLES_QUE_ADMINISTRAM, type RoleCode } from "@/server/auth/rbac";
+import { registrar, ACOES } from "@/server/modules/auditoria/service";
 import { generateOpaqueToken, hashToken } from "@/server/auth/tokens";
 import { hashPassword } from "@/server/auth/password";
 import { ValidationError } from "@/server/shared/errors";
@@ -105,15 +106,21 @@ export async function criarLinkDeNovaSenhaParaMembro(
   const token = generateOpaqueToken();
   const expiraEm = new Date(Date.now() + RESET_TOKEN_TTL_MS);
 
-  await prisma.passwordResetToken.create({
-    data: { userId: alvoUserId, tokenHash: hashToken(token), expiresAt: expiraEm },
+  // O token e o registro nascem na MESMA transação. Gerar acesso a uma conta
+  // alheia sem deixar rastro é justamente o que não pode acontecer, e antes
+  // desta tabela o rastro era um console.log — que se perde.
+  await withTenantContext(parishId, async (tx) => {
+    await tx.passwordResetToken.create({
+      data: { userId: alvoUserId, tokenHash: hashToken(token), expiresAt: expiraEm },
+    });
+    await registrar(tx, {
+      parishId,
+      atorId: quemPede.userId,
+      acao: ACOES.SENHA_LINK_GERADO,
+      alvoTipo: "membro",
+      alvoId: alvoUserId,
+    });
   });
-
-  // Fica no log do servidor enquanto não existe tabela de auditoria: é o
-  // único registro de quem gerou acesso para quem.
-  console.log(
-    `[acesso] ${quemPede.userId} gerou link de nova senha para ${alvoUserId} na paróquia ${parishId}`,
-  );
 
   return {
     ok: true,

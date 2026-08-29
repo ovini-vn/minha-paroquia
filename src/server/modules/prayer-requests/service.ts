@@ -1,5 +1,6 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import type { CreatePrayerRequestInput } from "./schema";
+import { registrar, ACOES } from "@/server/modules/auditoria/service";
 
 export type PrayerRequestListItem = {
   id: string;
@@ -110,12 +111,29 @@ export function moderatePrayerRequest(
   status: "aprovado" | "recusado",
   moderatorUserId: string,
 ) {
-  return withTenantContext(parishId, (tx) =>
-    tx.prayerRequest.updateMany({
+  return withTenantContext(parishId, async (tx) => {
+    const resultado = await tx.prayerRequest.updateMany({
       where: { id, parishId, visibility: "comunidade" },
       data: { status, moderatedBy: moderatorUserId, moderatedAt: new Date() },
-    }),
-  );
+    });
+
+    if (resultado.count > 0) {
+      // A DECISÃO entra no registro; o texto do pedido, nunca. O log diz que
+      // algo foi moderado, não o que a pessoa escreveu — e um pedido de
+      // oração é do tipo de coisa que ninguém deveria reler num histórico
+      // administrativo.
+      await registrar(tx, {
+        parishId,
+        atorId: moderatorUserId,
+        acao: ACOES.ORACAO_MODERADA,
+        alvoTipo: "pedido",
+        alvoId: id,
+        detalhe: { decisao: status },
+      });
+    }
+
+    return resultado;
+  });
 }
 
 /** Quantos esperam decisão — para o painel avisar sem abrir a tela. */

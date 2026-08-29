@@ -61,7 +61,7 @@ describe("permission_overrides: delegação fina (P2)", () => {
 
   it("remover um override tira ele da lista", async () => {
     await setOverride(parishId, coordenador, PERMISSIONS.AVISOS_MANAGE, true, paroco);
-    await removeOverride(parishId, coordenador, PERMISSIONS.AVISOS_MANAGE);
+    await removeOverride(parishId, coordenador, PERMISSIONS.AVISOS_MANAGE, paroco);
 
     const overrides = await listOverrides(parishId);
     expect(overrides.some((o) => o.userId === coordenador && o.permissionCode === PERMISSIONS.AVISOS_MANAGE)).toBe(

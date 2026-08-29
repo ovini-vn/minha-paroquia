@@ -287,6 +287,14 @@ export default async function AdminDashboardPage() {
           )}
           {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
             <RowLink
+              href="/painel/auditoria"
+              icon={ScrollText}
+              title="Histórico de acessos"
+              subtitle="Quem mudou papéis, permissões e senhas"
+            />
+          )}
+          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
+            <RowLink
               href="/painel/permissoes"
               icon={KeyRound}
               title="Delegar permissões"

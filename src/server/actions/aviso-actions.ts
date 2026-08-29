@@ -84,7 +84,7 @@ export async function excluirAvisoAction(formData: FormData): Promise<void> {
 
   const id = formData.get("id") as string;
   if (!id) return;
-  await deleteAviso(session.membership.parishId, id);
+  await deleteAviso(session.membership.parishId, id, session.userId);
 
   revalidateAvisoPaths();
 }

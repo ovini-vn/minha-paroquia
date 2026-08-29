@@ -2,6 +2,7 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { notifyManyUsers } from "@/server/modules/notifications/service";
 import { sendToUsers } from "@/server/modules/push/service";
 import type { CreateAvisoInput, UpdateAvisoInput } from "./schema";
+import { registrar, ACOES } from "@/server/modules/auditoria/service";
 
 /** O aviso inteiro não cabe numa notificação; o começo dele, sim. */
 function resumir(texto: string, limite = 140): string {
@@ -114,8 +115,22 @@ export function listAllAvisos(parishId: string) {
  * A notificação já enviada COPIA título e texto, então ela sobrevive: quem
  * recebeu continua vendo o que recebeu, e o histórico não some por baixo.
  */
-export function deleteAviso(parishId: string, id: string) {
-  return withTenantContext(parishId, (tx) =>
-    tx.aviso.deleteMany({ where: { id, parishId } }),
-  );
+export function deleteAviso(parishId: string, id: string, apagadoPor: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const resultado = await tx.aviso.deleteMany({ where: { id, parishId } });
+
+    if (resultado.count > 0) {
+      // Guarda o TÍTULO, não o corpo: é o bastante para alguém reconhecer o
+      // que sumiu, sem transformar o histórico numa cópia do conteúdo.
+      await registrar(tx, {
+        parishId,
+        atorId: apagadoPor,
+        acao: ACOES.AVISO_APAGADO,
+        alvoTipo: "aviso",
+        alvoId: id,
+      });
+    }
+
+    return resultado;
+  });
 }

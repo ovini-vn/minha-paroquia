@@ -34,6 +34,11 @@ export async function removeOverrideAction(formData: FormData): Promise<void> {
   const permissionCode = formData.get("permissionCode") as string;
   if (!userId || !VALID_CODES.has(permissionCode)) return;
 
-  await removeOverride(session.membership.parishId, userId, permissionCode as PermissionCode);
+  await removeOverride(
+    session.membership.parishId,
+    userId,
+    permissionCode as PermissionCode,
+    session.userId,
+  );
   revalidatePath("/painel/permissoes");
 }

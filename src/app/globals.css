@@ -280,6 +280,49 @@ body {
  * É o mesmo mecanismo do zoom do navegador: o layout reflui sozinho, sem
  * rolagem lateral.
  */
+/*
+ * A família da letra, escolhida em /eu/aparencia.
+ *
+ * `--font-sans` é o que o tailwind.config.ts consome; aqui ele apenas
+ * APONTA para uma das três famílias carregadas no layout raiz. Assim a
+ * troca alcança o app inteiro sem tocar em componente nenhum, do mesmo
+ * jeito que o tempo litúrgico troca as cores.
+ *
+ * O `font-size-adjust` é o que impede a troca de sair pela culatra.
+ * Medido a 100px em 30/08/2026: a altura-x da Inter é 55 e a da Atkinson é
+ * 50 — ou seja, no MESMO tamanho nominal a Atkinson desenha letras 9%
+ * menores. Quem troca está pedindo para enxergar melhor; entregar letra
+ * menor seria o contrário. `font-size-adjust: from-font` faz o navegador
+ * igualar a altura-x à da fonte de referência, e a letra alternativa chega
+ * do tamanho que a pessoa já estava lendo.
+ *
+ * O valor 0.55 é a proporção altura-x/em da Inter, medida no navegador. Se
+ * um dia a letra padrão mudar, este número muda junto.
+ */
+/* O padrão: a Inter no corpo e a Cormorant nos títulos. */
+:root[data-font-family="inter"] {
+  --font-sans: var(--fonte-inter);
+  --font-serif: var(--fonte-cormorant);
+}
+:root[data-font-family="atkinson"] {
+  --font-sans: var(--fonte-atkinson);
+  /* A serifada TAMBÉM troca, e isto é o ponto da escolha, não um efeito
+     colateral. A Cormorant tem altura-x 29% menor que a Inter: nos 26px de
+     um título, a minúscula dela tem o tamanho de uma Inter de 18px, e as
+     hastes finas somem primeiro quando a vista embaça. Deixar os títulos
+     nela para quem acabou de pedir letra legível seria entregar a metade
+     mais difícil da tela intacta.
+
+     A marca não se perde: o lockup do "Minha Paróquia" é SVG, não texto. */
+  --font-serif: var(--fonte-atkinson);
+  font-size-adjust: 0.55;
+}
+:root[data-font-family="lexend"] {
+  --font-sans: var(--fonte-lexend);
+  --font-serif: var(--fonte-lexend);
+  font-size-adjust: 0.55;
+}
+
 :root[data-font-scale="m"] {
   zoom: 1.15;
 }

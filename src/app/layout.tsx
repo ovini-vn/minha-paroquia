@@ -1,16 +1,46 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Atkinson_Hyperlegible_Next, Cormorant_Garamond, Inter, Lexend } from "next/font/google";
 import { getSessionContext } from "@/server/auth/session";
 import { RegistrarServiceWorker } from "@/components/layout/RegistrarServiceWorker";
 import "./globals.css";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { appBaseUrl } from "@/lib/url";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ["latin"], variable: "--fonte-inter" });
+
+/*
+ * As duas letras alternativas, escolhidas em /eu/aparencia.
+ *
+ * `preload: false` nas duas é o detalhe que importa: o padrão do next/font é
+ * pré-carregar toda família declarada, e isso faria TODO MUNDO baixar três
+ * fontes para usar uma. Sem o preload, o navegador só busca a que a página
+ * de fato pinta — quem ficar na Inter não paga nada pelas outras existirem.
+ *
+ * A Atkinson Hyperlegible Next vem do Braille Institute e é desenhada para
+ * baixa visão: I maiúsculo, l minúsculo e 1 são três desenhos distintos, e
+ * as aberturas do c, e, a e s ficam abertas em vez de fechar. Medida a
+ * 100px, ela é 7% mais estreita que a Inter e tem altura-x 9% menor — por
+ * isso o CSS compensa o corpo dela, senão trocar deixaria o texto
+ * opticamente MENOR, que é o contrário do que quem troca está pedindo.
+ *
+ * A Lexend é mais larga e espaçada, feita para fluência: ajuda quem se
+ * perde na linha mais do que quem não enxerga a letra.
+ */
+const atkinson = Atkinson_Hyperlegible_Next({
+  subsets: ["latin"],
+  variable: "--fonte-atkinson",
+  preload: false,
+  // O Next não tem as métricas desta família para gerar a fonte de reserva
+  // ajustada, e avisa a cada build. Declarar `false` diz que a ausência é
+  // conhecida, em vez de deixar um aviso que todo mundo aprende a ignorar.
+  // O efeito prático é só o instante antes de a fonte chegar.
+  adjustFontFallback: false,
+});
+const lexend = Lexend({ subsets: ["latin"], variable: "--fonte-lexend", preload: false });
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-serif",
+  variable: "--fonte-cormorant",
 });
 
 export const metadata: Metadata = {
@@ -126,15 +156,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Renderizado no servidor, como o tema: a página já chega no tamanho
   // certo, sem a letra crescer depois que a pessoa começou a ler.
   const fontScale = session?.fontScale ?? "p";
+  // A família da letra, mesmo raciocínio: quem não escolheu — e quem não
+  // está autenticado — recebe a Inter, que é a letra da identidade.
+  const fontFamily = session?.fontFamily ?? "inter";
 
   return (
     <html
       lang="pt-BR"
       data-color-scheme={colorScheme}
       data-font-scale={fontScale}
+      data-font-family={fontFamily}
       // Faz os controles nativos (scrollbar, campos de data) acompanharem.
       style={{ colorScheme }}
-      className={`${inter.variable} ${cormorant.variable}`}
+      className={`${inter.variable} ${atkinson.variable} ${lexend.variable} ${cormorant.variable}`}
     >
       <body className="font-sans antialiased">
         {/*

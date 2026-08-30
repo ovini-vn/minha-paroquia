@@ -12,6 +12,7 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     themePreference: "default",
     colorScheme: "light",
     fontScale: "p",
+    fontFamily: "inter",
   onboardedAt: null,
     membership: null,
     dioceses: [],

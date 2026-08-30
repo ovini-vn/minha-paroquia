@@ -6,6 +6,7 @@ import {
   setThemePreferenceAction,
   setColorSchemeAction,
   setFontScaleAction,
+  setFontFamilyAction,
 } from "@/server/actions/appearance-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -90,6 +91,54 @@ export default async function AppearancePage() {
                   {option.label}
                 </span>
                 <span className="text-[11px] opacity-80">{option.desc}</span>
+              </button>
+            );
+          })}
+        </form>
+      </Card>
+
+      <Card>
+        <p className="mb-1 font-serif text-xl font-semibold text-foreground">Desenho da letra</p>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          Se aumentar o tamanho não bastou, troque a letra. A Legível foi desenhada para quem
+          enxerga pouco: ela separa as letras que se parecem, como o L minúsculo, o i maiúsculo e o
+          número 1.
+        </p>
+        {/*
+          Cada botão é escrito NA PRÓPRIA LETRA que oferece, como os de
+          tamanho mostram o tamanho. Quem tem dificuldade de ler escolhe
+          pelo que consegue enxergar, não por um nome de fonte que não diz
+          nada — "Atkinson Hyperlegible" não significa nada para o fiel.
+
+          A amostra é "Il1 lha", de propósito: é onde as três se separam.
+        */}
+        <form action={setFontFamilyAction} className="flex flex-wrap gap-2">
+          {(
+            [
+              { value: "inter", label: "Padrão", classe: "font-[family-name:var(--fonte-inter)]" },
+              { value: "atkinson", label: "Legível", classe: "font-[family-name:var(--fonte-atkinson)]" },
+              { value: "lexend", label: "Espaçada", classe: "font-[family-name:var(--fonte-lexend)]" },
+            ] as const
+          ).map((option) => {
+            const atual = session.fontFamily === option.value;
+            return (
+              <button
+                key={option.value}
+                type="submit"
+                name="fontFamily"
+                value={option.value}
+                aria-pressed={atual}
+                aria-label={`Desenho da letra: ${option.label}`}
+                className={
+                  atual
+                    ? "inline-flex min-w-[104px] flex-col items-center gap-1 rounded-xl border border-primary bg-primary px-4 py-3 text-white dark:bg-primary-light"
+                    : "inline-flex min-w-[104px] flex-col items-center gap-1 rounded-xl border border-border-strong bg-surface px-4 py-3 text-foreground transition-colors hover:border-primary hover:text-primary"
+                }
+              >
+                <span className={`${option.classe} text-[19px] font-semibold leading-none`}>
+                  Il1 lha
+                </span>
+                <span className="text-[11px] opacity-80">{option.label}</span>
               </button>
             );
           })}

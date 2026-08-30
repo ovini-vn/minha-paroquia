@@ -61,8 +61,12 @@ const config: Config = {
         wash: "var(--wash)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
-        serif: ["var(--font-serif)"],
+        // `--font-sans` vem de globals.css e aponta para a família escolhida
+        // em /eu/aparencia; a Inter é o padrão quando ninguém escolheu.
+        sans: ["var(--font-sans, var(--fonte-inter))"],
+        // Troca junto com a sans quando a pessoa escolhe uma letra legível
+        // (ver globals.css); a Cormorant é o padrão.
+        serif: ["var(--font-serif, var(--fonte-cormorant))"],
       },
       borderRadius: {
         md: "0.75rem",

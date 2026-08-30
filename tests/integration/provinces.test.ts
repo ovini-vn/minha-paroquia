@@ -30,6 +30,7 @@ function session(partial: Partial<SessionContext> = {}): SessionContext {
     themePreference: "default",
     colorScheme: "light",
     fontScale: "p",
+    fontFamily: "inter",
     onboardedAt: null,
     membership: null,
     dioceses: [],

@@ -5,7 +5,7 @@ import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
-import type { ColorScheme, DioceseRole, FontScale, NationalRole, ProvinceRole, ThemePreference } from "@prisma/client";
+import type { ColorScheme, DioceseRole, FontScale, NationalRole, ProvinceRole, ThemePreference, FontFamily } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
@@ -19,6 +19,8 @@ export type SessionContext = {
   /** Claro ou escuro — eixo separado do tema litúrgico. */
   colorScheme: ColorScheme;
   fontScale: FontScale;
+  /** A família da letra: Inter, Atkinson ou Lexend. */
+  fontFamily: FontFamily;
   /** Nulo enquanto a pessoa não passou pelas boas-vindas. */
   onboardedAt: Date | null;
   membership: {
@@ -146,6 +148,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       themePreference: user.themePreference,
       colorScheme: user.colorScheme,
       fontScale: user.fontScale,
+      fontFamily: user.fontFamily,
       onboardedAt: user.onboardedAt,
       membership: null,
       dioceses,
@@ -165,6 +168,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     themePreference: user.themePreference,
     colorScheme: user.colorScheme,
     fontScale: user.fontScale,
+    fontFamily: user.fontFamily,
     onboardedAt: user.onboardedAt,
     membership: {
       parishId: membershipRow.parishId,

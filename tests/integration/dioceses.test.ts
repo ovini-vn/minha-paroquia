@@ -33,6 +33,7 @@ function sessionWith(
     themePreference: "default",
     colorScheme: "light",
     fontScale: "p",
+    fontFamily: "inter",
     onboardedAt: null,
     membership: null,
     dioceses,

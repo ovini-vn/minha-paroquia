@@ -43,6 +43,28 @@ enum FontScale {
   g
 }
 
+/// A família da letra. Quarto eixo da aparência, e o mais recente: medindo o
+/// contraste e a legibilidade em 29/08/2026 ficou claro que tamanho grande
+/// não resolve sozinho — o DESENHO da letra decide se ela se lê com a vista
+/// embaçada.
+///
+/// `inter` continua o padrão: é a letra da identidade, e ninguém que está
+/// enxergando bem precisa trocar.
+///
+/// `atkinson` é a Atkinson Hyperlegible Next, desenhada pelo Braille
+/// Institute para baixa visão. Ela diferencia de propósito os caracteres que
+/// se confundem — I maiúsculo, l minúsculo e 1 são três desenhos distintos,
+/// O e 0 não se misturam — e mantém abertas as aberturas do c, e, a e s, que
+/// são as letras que fecham e viram bolinha quando a vista embaça.
+///
+/// `lexend` é mais larga e espaçada, feita para fluência de leitura. Ajuda
+/// quem se perde na linha mais do que quem não enxerga a letra.
+enum FontFamily {
+  inter
+  atkinson
+  lexend
+}
+
 // Inscrição de um NAVEGADOR/dispositivo para receber notificação fora do
 // app (Web Push). Uma pessoa pode ter várias: celular, computador do
 // trabalho, etc. — por isso a chave é o endpoint, não o usuário.
@@ -83,6 +105,7 @@ model User {
   themePreference ThemePreference @default(default) @map("theme_preference")
   colorScheme     ColorScheme     @default(light) @map("color_scheme")
   fontScale       FontScale       @default(p) @map("font_scale")
+  fontFamily      FontFamily      @default(inter) @map("font_family")
   // Quando a pessoa passou (ou pulou) as boas-vindas. Nulo = ainda não viu.
   // Guardar a data em vez de um booleano permite saber QUANDO alguém entrou
   // de fato na comunidade, que é diferente de quando criou a conta.

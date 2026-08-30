@@ -1,5 +1,5 @@
 import { prisma } from "@/server/db/prisma";
-import type { ColorScheme, FontScale, OAuthProvider, ThemePreference } from "@prisma/client";
+import type { ColorScheme, FontScale, OAuthProvider, ThemePreference, FontFamily } from "@prisma/client";
 
 /**
  * users é uma tabela global (não tenant-scoped) — um usuário existe
@@ -67,4 +67,8 @@ export function linkOAuthAccount(
 
 export function updateUserFontScale(userId: string, fontScale: FontScale) {
   return prisma.user.update({ where: { id: userId }, data: { fontScale } });
+}
+
+export function updateUserFontFamily(userId: string, fontFamily: FontFamily) {
+  return prisma.user.update({ where: { id: userId }, data: { fontFamily } });
 }

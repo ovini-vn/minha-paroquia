@@ -42,3 +42,9 @@ docs/*.zip
 # regerados a cada execução e podem ficar grandes.
 /test-results/
 /playwright-report/
+
+# Prints do passo a passo: gerados por `npm run passo:prints` a partir do
+# banco local, e o HTML final embute todos em base64 (2 MB). Versionar
+# imagem gerada é encher o histórico de binário que se refaz num comando.
+docs/passo-a-passo/prints/
+docs/passo-a-passo/passo-a-passo.html

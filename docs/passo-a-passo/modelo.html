@@ -1,0 +1,670 @@
+<title>Passo a Passo da Catequese</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400..700&display=swap">
+
+<style>
+  :root {
+    --papel: #f4f1ea;
+    --folha: #ffffff;
+    --tinta: #1f1c22;
+    --tinta-fraca: #5f5966;
+    --regra: #ddd6c9;
+    --violeta: #5b2890;
+    --violeta-tenue: #efe9f6;
+    --ouro: #8a6b24;
+    --ouro-tenue: #f7f0dd;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --papel: #14111a;
+      --folha: #1f1b27;
+      --tinta: #f0ebe4;
+      --tinta-fraca: #ada5b4;
+      --regra: #352f3e;
+      --violeta: #b493d4;
+      --violeta-tenue: #262031;
+      --ouro: #cca55e;
+      --ouro-tenue: #2a2317;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --papel: #14111a;
+    --folha: #1f1b27;
+    --tinta: #f0ebe4;
+    --tinta-fraca: #ada5b4;
+    --regra: #352f3e;
+    --violeta: #b493d4;
+    --violeta-tenue: #262031;
+    --ouro: #cca55e;
+    --ouro-tenue: #2a2317;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--papel);
+    color: var(--tinta);
+    /* A mesma letra que o app agora oferece a quem enxerga pouco. Este é um
+       papel para ser impresso e entregue a voluntárias da paróquia, muitas
+       delas com presbiopia — a escolha aqui vale mais que a estética. */
+    font-family: "Atkinson Hyperlegible Next", system-ui, -apple-system, sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .folha { max-width: 780px; margin: 0 auto; padding: 0 22px 80px; }
+
+  /* ---------- topo ---------- */
+  .topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 44px 0 26px;
+    border-bottom: 2px solid var(--tinta);
+  }
+
+  .selo {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ouro);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-size: clamp(30px, 6vw, 42px);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .imprimir {
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 22px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--violeta);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .imprimir:hover { opacity: 0.9; }
+  .imprimir:focus-visible {
+    outline: 3px solid var(--ouro);
+    outline-offset: 3px;
+  }
+
+  .abertura {
+    margin: 22px 0 0;
+    max-width: 62ch;
+    color: var(--tinta-fraca);
+  }
+
+  /* ---------- sumário ---------- */
+  .sumario {
+    display: grid;
+    gap: 10px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sumario a {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 13px 16px;
+    border: 1px solid var(--regra);
+    border-radius: 10px;
+    background: var(--folha);
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .sumario a:hover { border-color: var(--violeta); }
+  .sumario span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--violeta);
+  }
+  .sumario em {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14.5px;
+    color: var(--tinta-fraca);
+  }
+
+  /* ---------- partes ---------- */
+  .parte { margin-top: 56px; }
+
+  .faixa {
+    background: var(--violeta);
+    color: #fff;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 26px;
+  }
+  .faixa p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.82;
+  }
+  .faixa h2 {
+    margin: 5px 0 0;
+    font-size: clamp(23px, 4.6vw, 30px);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  /* ---------- passos ---------- */
+  .passo {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 16px;
+    padding: 0 0 26px;
+  }
+
+  .numero {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--violeta-tenue);
+    color: var(--violeta);
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .passo h3 {
+    margin: 3px 0 6px;
+    font-size: 18.5px;
+    font-weight: 700;
+    line-height: 1.28;
+  }
+
+  .passo p { margin: 0 0 8px; max-width: 62ch; }
+  .passo p:last-child { margin-bottom: 0; }
+
+  .onde {
+    display: inline-block;
+    background: var(--ouro-tenue);
+    border: 1px solid var(--ouro);
+    color: var(--tinta);
+    border-radius: 6px;
+    padding: 2px 9px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .atencao {
+    border-left: 4px solid var(--ouro);
+    background: var(--folha);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin-top: 10px;
+    font-size: 15.5px;
+  }
+  .atencao strong { font-weight: 700; }
+
+  /* ---------- prints ---------- */
+  .tela { margin: 14px 0 4px; }
+
+  .moldura {
+    position: relative;
+    display: inline-block;
+    max-width: 260px;
+    width: 100%;
+    border: 1px solid var(--regra);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--folha);
+    line-height: 0;
+  }
+
+  .moldura img { display: block; width: 100%; height: auto; }
+
+  /*
+    O destaque é posicionado em PORCENTAGEM, a partir da medida que o script
+    de captura tirou do elemento na tela real. Não é desenhado na imagem:
+    assim a marcação continua certa quando o layout mudar, porque a medida é
+    refeita a cada captura.
+  */
+  .destaque {
+    position: absolute;
+    border: 3px solid var(--ouro);
+    border-radius: 8px;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+    pointer-events: none;
+  }
+
+  .tela figcaption {
+    margin-top: 9px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--tinta-fraca);
+    max-width: 40ch;
+  }
+
+  ul.lista { margin: 0 0 8px; padding-left: 22px; max-width: 62ch; }
+  ul.lista li { margin-bottom: 6px; }
+
+  .fecho {
+    margin-top: 56px;
+    padding-top: 22px;
+    border-top: 1px solid var(--regra);
+    font-size: 14.5px;
+    color: var(--tinta-fraca);
+  }
+
+  /* ---------- impressão ---------- */
+  @media print {
+    @page { size: A4; margin: 16mm 15mm 18mm; }
+
+    body {
+      background: #fff;
+      color: #000;
+      font-size: 10.5pt;
+      line-height: 1.5;
+    }
+
+    .folha { max-width: none; padding: 0; }
+    .nao-imprime { display: none !important; }
+
+    .topo { padding-top: 0; border-bottom-color: #000; }
+
+    /* Cada público começa numa folha nova: o papel é entregue separado à
+       coordenação, à catequista e à família — não é um manual único. */
+    .parte { break-before: page; margin-top: 0; }
+
+    .faixa {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 0;
+    }
+    .faixa p { opacity: 1; }
+
+    /* Um passo cortado no meio da página é um passo que se perde. */
+    .passo { break-inside: avoid; }
+
+    /* O print encolhe na impressão: o que importa é reconhecer a tela, e
+       uma folha A4 tem de caber o passo inteiro junto com ela. */
+    .moldura { max-width: 46mm; border-color: #000; }
+    .tela figcaption { color: #000; }
+    /* Contorno preto e grosso: o dourado some numa impressora sem cor. */
+    .destaque { border-color: #000; border-width: 2.5pt; box-shadow: none; }
+
+    .numero {
+      background: #fff;
+      border: 1.5px solid #000;
+      color: #000;
+    }
+
+    .onde {
+      background: #fff;
+      border-color: #000;
+    }
+
+    .atencao {
+      border-left-color: #000;
+      background: #fff;
+    }
+
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+
+<div class="folha">
+
+  <header class="topo">
+    <div>
+      <p class="selo">Minha Paróquia</p>
+      <h1>Passo a passo da catequese</h1>
+    </div>
+    <button type="button" class="imprimir nao-imprime" id="imprimir">
+      Imprimir ou salvar em PDF
+    </button>
+  </header>
+
+  <p class="abertura">
+    Três roteiros, um para cada pessoa da caminhada, com a tela de cada passo
+    e o contorno no que se deve tocar. Ao imprimir, cada roteiro sai numa
+    folha separada — a coordenação recebe o dela, a catequista o seu, e a
+    família o terceiro.
+  </p>
+
+  <ul class="sumario nao-imprime">
+    <li>
+      <a href="#coordenacao">
+        <span>1</span>
+        Coordenação da catequese
+        <em>— monta o itinerário, as turmas e acompanha</em>
+      </a>
+    </li>
+    <li>
+      <a href="#catequista">
+        <span>2</span>
+        Catequista
+        <em>— lança o encontro, as duas presenças e o conteúdo</em>
+      </a>
+    </li>
+    <li>
+      <a href="#familia">
+        <span>3</span>
+        Catequizando e família
+        <em>— acompanham a caminhada</em>
+      </a>
+    </li>
+  </ul>
+
+  <!-- ================= COORDENAÇÃO ================= -->
+  <section class="parte" id="coordenacao">
+    <div class="faixa">
+      <p>Roteiro 1</p>
+      <h2>Coordenação da catequese</h2>
+    </div>
+
+    <div class="passo">
+      <span class="numero">1</span>
+      <div>
+        <h3>Escreva o itinerário antes de tudo</h3>
+        <span class="onde">Catequese › Itinerários</span>
+        <p>
+          O itinerário é o plano que uma turma segue — por exemplo,
+          "Eucaristia · 1º ano". Ele é digitado pela paróquia, e não vem pronto
+          no aplicativo, porque o material muda de arquidiocese para
+          arquidiocese.
+        </p>
+        <p>
+          Dê um nome e, se quiser, diga de onde vem o material na descrição.
+        </p>
+        <!--TELA:coord-hub|Na Catequese, a primeira linha leva aos Itinerários.-->
+        <!--TELA:coord-itinerarios|Preencha o nome e toque em "Criar itinerário".-->
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">2</span>
+      <div>
+        <h3>Digite os encontros previstos, na ordem</h3>
+        <span class="onde">Catequese › Itinerários › o itinerário</span>
+        <p>
+          Um por um, na sequência em que acontecem ao longo do ano. Cada
+          encontro tem um tema e, se ajudar a catequista, o material: a página
+          do livro, a leitura bíblica, o que aquele dia trabalha.
+        </p>
+        <!--TELA:coord-temas|Um encontro por vez: o tema e, se ajudar, o material. Ele entra no fim da lista.-->
+        <div class="atencao">
+          <strong>É esta lista que faz o resto funcionar.</strong> É dela que a
+          catequista escolhe o que deu, e é contra ela que a evolução da turma
+          é medida. Sem os encontros digitados, "12 encontros dados" não
+          responde "de quantos".
+        </div>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">3</span>
+      <div>
+        <h3>Dê o papel de Catequista a quem vai lecionar</h3>
+        <span class="onde">Painel › Membros e papéis</span>
+        <p>
+          Sem o papel, a pessoa não aparece na lista ao criar a turma e não
+          consegue lançar chamada.
+        </p>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">4</span>
+      <div>
+        <h3>Crie a turma e aponte o itinerário dela</h3>
+        <span class="onde">Catequese › Nova turma</span>
+        <p>
+          Nome, ano e a catequista responsável. Depois abra a turma e escolha,
+          em "Itinerário da turma", qual plano ela segue.
+        </p>
+        <!--TELA:coord-turma-itinerario|Dentro da turma: escolha o plano na lista e toque em Salvar.-->
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">5</span>
+      <div>
+        <h3>Cadastre os catequizandos e matricule</h3>
+        <span class="onde">Catequese › Catequizandos</span>
+        <p>
+          Cadastre a criança <strong>mesmo que a família não use o
+          aplicativo</strong> — basta o nome e o contato de um responsável. Se
+          um dia a família entrar, é só vincular: a matrícula e todo o
+          histórico continuam os mesmos.
+        </p>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">6</span>
+      <div>
+        <h3>Acompanhe pelo quadro, não turma por turma</h3>
+        <span class="onde">Catequese › Turmas</span>
+        <p>Cada turma é uma linha, e a linha diz o que decide se ela precisa de atenção:</p>
+        <ul class="lista">
+          <li>a catequista e quantos estão matriculados;</li>
+          <li>quanto do itinerário já foi dado — por exemplo, <strong>7 de 30</strong>;</li>
+          <li>um sinal vermelho quando há encontro sem conteúdo lançado.</li>
+        </ul>
+        <!--TELA:coord-quadro|Cada turma numa linha: o itinerário, quantos encontros já foram dados e o sinal de conteúdo em falta.-->
+        <div class="atencao">
+          O sinal vermelho só acende depois de <strong>sete dias</strong>. Um
+          encontro de ontem sem lançamento não é falha de ninguém — a
+          catequista lança amanhã. O que precisa da coordenação é o que
+          atravessou a semana.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">7</span>
+      <div>
+        <h3>Registre os ritos de cada catequizando</h3>
+        <span class="onde">Catequese › a turma › a ficha do catequizando</span>
+        <p>
+          Entrega do Pai-Nosso, entrega do Credo, apresentação à comunidade.
+          Cada rito tem uma data prevista e é marcado como concluído quando
+          acontece. Os próximos ritos agendados aparecem na visão geral da
+          catequese.
+        </p>
+        <div class="atencao">
+          <strong>Hoje o rito é registrado um a um.</strong> Numa turma grande
+          isso é trabalhoso, e a mudança para registrar o rito da turma inteira
+          de uma vez já está prevista.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CATEQUISTA ================= -->
+  <section class="parte" id="catequista">
+    <div class="faixa">
+      <p>Roteiro 2</p>
+      <h2>Catequista</h2>
+    </div>
+
+    <div class="passo">
+      <span class="numero">1</span>
+      <div>
+        <h3>Abra a sua turma</h3>
+        <span class="onde">Catequese › Minhas turmas</span>
+        <p>
+          Você enxerga apenas as turmas que são suas. Dentro delas estão os
+          matriculados, os encontros e a ficha de cada criança.
+        </p>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">2</span>
+      <div>
+        <h3>Crie o encontro e diga qual tema deu</h3>
+        <span class="onde">a turma › Encontros › Novo encontro</span>
+        <p>
+          Informe a data e escolha o tema do itinerário na lista. Se saiu do
+          roteiro naquele dia, ou fez algo a mais, escreva no campo de
+          observações — ele continua livre.
+        </p>
+        <!--TELA:cat-turma|A lista de temas vem do itinerário da turma.-->
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">3</span>
+      <div>
+        <h3>Faça as duas chamadas da semana</h3>
+        <span class="onde">a turma › o encontro › Chamada</span>
+        <p>Na mesma tela, uma embaixo da outra, com a mesma lista de nomes:</p>
+        <ul class="lista">
+          <li>
+            <strong>Presença no encontro</strong> — quem veio à catequese
+            naquele dia.
+          </li>
+          <li>
+            <strong>Presença na missa</strong> — quem esteve na missa. O
+            aplicativo já sugere o domingo mais recente antes do encontro;
+            mude a data se for outro dia.
+          </li>
+        </ul>
+        <!--TELA:cat-chamada|A segunda chamada, logo abaixo da primeira. A data do domingo já vem sugerida.-->
+        <div class="atencao">
+          São coisas diferentes e nenhuma substitui a outra. Quem você
+          <strong>não marcar</strong> na missa simplesmente não tem presença
+          registrada naquele domingo — não fica marcado como faltoso.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">4</span>
+      <div>
+        <h3>Lance o conteúdo no mesmo dia</h3>
+        <p>
+          O encontro que já aconteceu e ainda não teve o conteúdo lançado
+          aparece avisado na turma. Passando de uma semana, o aviso fica
+          vermelho e a coordenação também o vê.
+        </p>
+        <!--TELA:cat-aviso|O aviso aparece na turma, com a data do encontro que está em falta.-->
+        <div class="atencao">
+          O aviso diz <strong>a data</strong> do encontro mais antigo sem
+          lançamento, e não só quantos faltam — assim você vai direto ao que
+          precisa preencher.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">5</span>
+      <div>
+        <h3>Acompanhe a ficha de cada catequizando</h3>
+        <span class="onde">a turma › o nome da criança</span>
+        <p>
+          Ali estão as presenças nos encontros, as missas, os ritos e o
+          histórico completo. É a mesma ficha que a família enxerga.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAMÍLIA ================= -->
+  <section class="parte" id="familia">
+    <div class="faixa">
+      <p>Roteiro 3</p>
+      <h2>Catequizando e família</h2>
+    </div>
+
+    <div class="passo">
+      <span class="numero">1</span>
+      <div>
+        <h3>Entre no aplicativo e abra a Catequese</h3>
+        <span class="onde">Catequese</span>
+        <p>
+          Quem tem filho matriculado vê a caminhada dele assim que entra. Se
+          não aparecer nada, peça à secretaria para vincular o cadastro da
+          criança ao seu.
+        </p>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">2</span>
+      <div>
+        <h3>Veja a ficha do seu filho</h3>
+        <p>Ela mostra, em números e em lista:</p>
+        <ul class="lista">
+          <li>as presenças nos encontros já realizados;</li>
+          <li>as presenças na missa;</li>
+          <li>os ritos já recebidos e os que estão agendados;</li>
+          <li>os encontros da turma, com o tema de cada um.</li>
+        </ul>
+        <!--TELA:familia-ficha|A ficha do catequizando: presenças, missas e ritos, com o histórico dos encontros.-->
+        <div class="atencao">
+          A conta de presenças considera só os encontros <strong>já
+          realizados</strong>. Os que ainda vão acontecer não entram — senão
+          pareceria que a criança está faltando ao que nem foi dado.
+        </div>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">3</span>
+      <div>
+        <h3>Quem registra o quê</h3>
+        <p>
+          Tudo o que aparece na ficha é lançado pela catequista ou pela
+          coordenação — a família acompanha, não preenche. Se algo estiver
+          errado, fale com a catequista da turma: o nome de quem lançou fica
+          registrado.
+        </p>
+      </div>
+    </div>
+
+    <div class="passo">
+      <span class="numero">4</span>
+      <div>
+        <h3>Sem aplicativo, a criança continua cadastrada</h3>
+        <p>
+          A paróquia cadastra o catequizando mesmo quando a família não usa o
+          aplicativo. Se um dia vocês entrarem, o histórico já está lá — nada
+          se perde e nada precisa ser digitado de novo.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <p class="fecho">
+    Este roteiro descreve o aplicativo como ele está em 30 de agosto de 2026.
+    Onde algo ainda não existe — como o registro do rito para a turma inteira —
+    o texto diz com todas as letras, em vez de prometer.
+  </p>
+
+</div>
+
+<script>
+  document.getElementById("imprimir").addEventListener("click", function () {
+    window.print();
+  });
+</script>

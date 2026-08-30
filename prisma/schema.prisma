@@ -326,6 +326,8 @@ model Parish {
   confessionLogs          ConfessionLog[]
   familyMembers           FamilyMember[]
   catechismGroups         CatechismGroup[]
+  itinerarios             Itinerario[]
+  itinerarioTemas         ItinerarioTema[]
   catechismEnrollments    CatechismEnrollment[]
   catechismSessions       CatechismSession[]
   catechismAttendance     CatechismAttendance[]
@@ -1073,15 +1075,71 @@ model FamilyMemberGuardian {
   @@map("family_member_guardians")
 }
 
+/// O plano que uma turma segue: os encontros previstos, na ordem.
+///
+/// É DA PARÓQUIA e digitado por ela, não embutido no app. O material da
+/// catequese muda de arquidiocese para arquidiocese, e um roteiro fixo aqui
+/// dentro estaria errado para quase todo mundo. A coordenação escreve o
+/// itinerário dela uma vez e reaproveita todo ano.
+///
+/// É o denominador que faltava. Sem ele, "12 encontros dados" não responde
+/// nada — a coordenação pede evolução, e evolução é uma fração.
+model Itinerario {
+  id          String   @id @default(uuid())
+  parishId    String   @map("parish_id")
+  nome        String
+  descricao   String?
+  /// Posição na caminhada: 1º ano da Eucaristia antes do 2º.
+  ordem       Int      @default(0)
+  /// Itinerário aposentado não some — as turmas antigas continuam
+  /// apontando para ele —, apenas deixa de ser oferecido em turma nova.
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  parish Parish            @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  temas  ItinerarioTema[]
+  grupos CatechismGroup[]
+
+  @@index([parishId])
+  @@map("itinerarios")
+}
+
+/// Um encontro previsto do itinerário: o tema e o material daquele dia.
+///
+/// `ordem` NÃO é única de propósito. Reordenar uma lista com posição única
+/// exige dança de números para não colidir no meio do caminho, e o custo
+/// disso não se paga: empate na ordem resolve pela data de criação.
+model ItinerarioTema {
+  id           String   @id @default(uuid())
+  parishId     String   @map("parish_id")
+  itinerarioId String   @map("itinerario_id")
+  ordem        Int      @default(0)
+  titulo       String
+  /// O material previsto para o encontro, como a paróquia o descreve.
+  descricao    String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  parish      Parish             @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  itinerario  Itinerario         @relation(fields: [itinerarioId], references: [id], onDelete: Cascade)
+  encontros   CatechismSession[]
+
+  @@index([parishId, itinerarioId])
+  @@map("itinerario_temas")
+}
+
 model CatechismGroup {
   id              String   @id @default(uuid())
   parishId        String   @map("parish_id")
   name            String
   year            Int
   catechistUserId String?  @map("catechist_user_id")
+  /// Opcional: as turmas criadas antes do itinerário existir seguem sem um,
+  /// e continuam funcionando — só não têm contra o que medir evolução.
+  itinerarioId    String?  @map("itinerario_id")
   createdAt       DateTime @default(now()) @map("created_at")
 
   parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  itinerario  Itinerario?           @relation(fields: [itinerarioId], references: [id], onDelete: SetNull)
   catechist   User?                 @relation(fields: [catechistUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
   sessions    CatechismSession[]
@@ -1116,11 +1174,18 @@ model CatechismSession {
   parishId         String   @map("parish_id")
   catechismGroupId String   @map("catechism_group_id")
   date             DateTime @db.Date
+  /// O tema do itinerário que foi dado. Opcional porque nem toda turma
+  /// segue um itinerário, e porque o catequista pode ter dado outra coisa.
+  itinerarioTemaId String?  @map("itinerario_tema_id")
+  /// O que foi dado, em texto. Continua existindo mesmo com o tema
+  /// escolhido: serve para o complemento ("fizemos também a visita à
+  /// capela") e para quem saiu do roteiro.
   topic            String?
   createdAt        DateTime @default(now()) @map("created_at")
 
   parish      Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
   group       CatechismGroup        @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  tema        ItinerarioTema?       @relation(fields: [itinerarioTemaId], references: [id], onDelete: SetNull)
   attendances CatechismAttendance[]
 
   @@index([parishId, catechismGroupId])

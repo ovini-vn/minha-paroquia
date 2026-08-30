@@ -18,8 +18,19 @@ import {
   requireEnrollmentAccess,
   requireSessionAccess,
   requireRiteAccess,
+  criarItinerario,
+  criarTema,
+  removerTema,
+  arquivarItinerario,
+  definirItinerarioDaTurma,
 } from "@/server/modules/catequese/service";
-import { createGroupInputSchema, createSessionInputSchema, createRiteInputSchema } from "@/server/modules/catequese/schema";
+import {
+  createGroupInputSchema,
+  createSessionInputSchema,
+  createRiteInputSchema,
+  criarItinerarioSchema,
+  criarTemaSchema,
+} from "@/server/modules/catequese/schema";
 import {
   createParishPerson,
   linkParishPersonToUser,
@@ -106,6 +117,7 @@ export async function createSessionAction(_prev: ActionState, formData: FormData
     const input = createSessionInputSchema.parse({
       date: formData.get("date"),
       topic: formData.get("topic") || undefined,
+      itinerarioTemaId: formData.get("itinerarioTemaId") || undefined,
     });
 
     await createSession(session.membership.parishId, groupId, input, catechistScope(session));
@@ -351,4 +363,105 @@ export async function setMassAttendanceAction(
 
   revalidatePath(`/catequese/aluno/${enrollmentId}`);
   return { ok: "Presença lançada." };
+}
+
+// ---------------------------------------------------------------------------
+// Itinerário — só quem coordena escreve o plano.
+//
+// O catequista SEGUE o itinerário e lança o que deu; ele não redefine o
+// roteiro da paróquia no meio do ano. Por isso estas ações pedem
+// CATEQUESE_MANAGE, e não CATEQUESE_TEACH.
+// ---------------------------------------------------------------------------
+
+export async function criarItinerarioAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você não pertence a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  try {
+    const input = criarItinerarioSchema.parse({
+      nome: formData.get("nome"),
+      descricao: formData.get("descricao") || undefined,
+      ordem: formData.get("ordem") || undefined,
+    });
+    await criarItinerario(session.membership.parishId, input);
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath("/catequese/itinerarios");
+  return {};
+}
+
+export async function criarTemaAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você não pertence a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const itinerarioId = formData.get("itinerarioId");
+  if (typeof itinerarioId !== "string") return { error: "Itinerário não informado." };
+
+  try {
+    const input = criarTemaSchema.parse({
+      titulo: formData.get("titulo"),
+      descricao: formData.get("descricao") || undefined,
+      ordem: formData.get("ordem") || undefined,
+    });
+    const criado = await criarTema(session.membership.parishId, itinerarioId, input);
+    if (!criado) return { error: "Itinerário não encontrado." };
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/itinerarios/${itinerarioId}`);
+  return {};
+}
+
+export async function removerTemaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const temaId = formData.get("temaId");
+  const itinerarioId = formData.get("itinerarioId");
+  if (typeof temaId !== "string") return;
+
+  await removerTema(session.membership.parishId, temaId);
+  revalidatePath(`/catequese/itinerarios/${typeof itinerarioId === "string" ? itinerarioId : ""}`);
+}
+
+export async function arquivarItinerarioAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const id = formData.get("itinerarioId");
+  if (typeof id !== "string") return;
+
+  await arquivarItinerario(session.membership.parishId, id);
+  revalidatePath("/catequese/itinerarios");
+}
+
+export async function definirItinerarioDaTurmaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const groupId = formData.get("groupId");
+  const itinerarioId = formData.get("itinerarioId");
+  if (typeof groupId !== "string") return;
+
+  await definirItinerarioDaTurma(
+    session.membership.parishId,
+    groupId,
+    typeof itinerarioId === "string" && itinerarioId ? itinerarioId : null,
+  );
+  revalidatePath(`/catequese/turma/${groupId}`);
 }

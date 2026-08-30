@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Users, GraduationCap, Sparkles, CalendarDays, TriangleAlert } from "lucide-react";
+import {
+  BookOpen,
+  Users,
+  GraduationCap,
+  Sparkles,
+  CalendarDays,
+  TriangleAlert,
+  Route,
+  ChevronRight,
+} from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
   listGroups,
   listGroupsForCatechist,
+  obterQuadroDaCoordenacao,
   listEnrollmentsForCatechist,
   listMyChildrenEnrollments,
   getCatequeseOverview,
@@ -53,7 +63,7 @@ export default async function CatequesePage() {
   const coordena = pode(PERMISSIONS.CATEQUESE_MANAGE);
   const leciona = pode(PERMISSIONS.CATEQUESE_TEACH);
 
-  const [overview, grupos, catequistas, pessoasSoltas, minhasTurmas, meusAlunos, filhos] =
+  const [overview, grupos, catequistas, pessoasSoltas, minhasTurmas, meusAlunos, filhos, quadro] =
     await Promise.all([
       coordena ? getCatequeseOverview(parishId) : null,
       coordena ? listGroups(parishId) : [],
@@ -62,6 +72,7 @@ export default async function CatequesePage() {
       leciona ? listGroupsForCatechist(parishId, session.userId) : [],
       leciona ? listEnrollmentsForCatechist(parishId, session.userId) : [],
       listMyChildrenEnrollments(parishId, session.userId),
+      coordena ? obterQuadroDaCoordenacao(parishId, new Date()) : [],
     ]);
 
   const nadaParaMostrar = !coordena && !leciona && filhos.length === 0;
@@ -88,6 +99,23 @@ export default async function CatequesePage() {
             <Eyebrow tone="accent" className="mb-3">
               Visão geral
             </Eyebrow>
+            {/* O itinerário é a peça que dá denominador aos números abaixo:
+                sem ele, "12 encontros dados" não responde "de quantos". */}
+            <Link
+              href="/catequese/itinerarios"
+              className="mb-3 flex items-center gap-3.5 rounded-lg border border-border bg-surface px-3.5 py-3 transition-colors hover:border-primary"
+            >
+              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                <Route className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14.5px] font-medium text-foreground">Itinerários</span>
+                <span className="block text-[12.5px] text-muted">
+                  Os encontros previstos de cada etapa, digitados pela paróquia.
+                </span>
+              </span>
+              <ChevronRight className="h-4 w-4 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
+            </Link>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat label="Turmas" value={String(overview.turmas)} />
               <Stat label="Catequizandos" value={String(overview.matriculas)} />
@@ -144,14 +172,64 @@ export default async function CatequesePage() {
               />
             ) : (
               <Card className="px-3.5 py-1.5">
-                {grupos.map((grupo) => (
-                  <RowLink
-                    key={grupo.id}
-                    href={`/catequese/turma/${grupo.id}`}
-                    icon={GraduationCap}
-                    title={`${grupo.name} · ${grupo.year}`}
-                    subtitle={`${grupo.catechist ? grupo.catechist.fullName : "Sem catequista"} · ${grupo._count.enrollments} ${grupo._count.enrollments === 1 ? "matriculado" : "matriculados"}`}
-                  />
+                {/*
+                  O quadro, e não mais uma lista de nomes.
+
+                  A coordenação pediu para "acompanhar a evolução das turmas".
+                  Antes era preciso abrir turma por turma para descobrir qual
+                  estava travada: a lista dizia o nome do catequista e quantos
+                  matriculados, que é o que menos muda.
+
+                  Agora cada linha carrega o que decide se aquela turma precisa
+                  de atenção — quanto do itinerário já foi dado e se há conteúdo
+                  sem lançar. O sinal vermelho é só para atraso de verdade
+                  (mais de uma semana); encontro de ontem sem lançamento não
+                  acende nada, senão a coordenação aprende a ignorar a cor.
+                */}
+                {quadro.map((turma) => (
+                  <Link
+                    key={turma.id}
+                    href={`/catequese/turma/${turma.id}`}
+                    className="flex items-center gap-3.5 border-b border-border py-3.5 transition-colors last:border-b-0 hover:bg-primary-tint"
+                  >
+                    <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                      <GraduationCap className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14.5px] font-medium text-foreground">
+                        {turma.nome} · {turma.ano}
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {turma.catequista ?? "Sem catequista"} · {turma.matriculados}{" "}
+                        {turma.matriculados === 1 ? "matriculado" : "matriculados"}
+                      </p>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px]">
+                        {turma.itinerario && turma.previstos > 0 ? (
+                          <span className="text-muted">
+                            {turma.itinerario.nome} ·{" "}
+                            <span className="font-medium text-foreground">
+                              {turma.dados}/{turma.previstos}
+                            </span>{" "}
+                            encontros dados
+                          </span>
+                        ) : (
+                          <span className="text-muted">Sem itinerário definido</span>
+                        )}
+                        {turma.lancamento.atrasados > 0 && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-error-tint px-2 py-0.5 font-semibold text-error">
+                            <TriangleAlert className="h-3 w-3" strokeWidth={2} aria-hidden />
+                            {turma.lancamento.atrasados}{" "}
+                            {turma.lancamento.atrasados === 1 ? "sem conteúdo" : "sem conteúdo"}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <ChevronRight
+                      className="h-4 w-4 shrink-0 text-border-strong"
+                      strokeWidth={1.5}
+                      aria-hidden
+                    />
+                  </Link>
                 ))}
               </Card>
             )}

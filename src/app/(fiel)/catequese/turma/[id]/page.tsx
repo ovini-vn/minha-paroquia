@@ -3,10 +3,14 @@ import { notFound } from "next/navigation";
 import { BookOpen, Users, CalendarDays } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
+import { TriangleAlert } from "lucide-react";
 import {
   getGroup,
   listEnrollments,
   listSessions,
+  listarTemasDaTurma,
+  obterAndamentoDaTurma,
+  listarItinerarios,
   listRitesForEnrollment,
 } from "@/server/modules/catequese/service";
 import { listAllFamilyMembers } from "@/server/modules/family/service";
@@ -14,6 +18,8 @@ import { completeRiteAction } from "@/server/actions/catequese-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { INPUT_CLASSES } from "@/components/ui/FormField";
+import { definirItinerarioDaTurmaAction } from "@/server/actions/catequese-actions";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateOnly } from "@/lib/date";
@@ -44,9 +50,12 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const group = await getGroup(parishId, id, coordena ? undefined : session.userId);
   if (!group) notFound();
 
-  const [enrollments, sessions] = await Promise.all([
+  const [enrollments, sessions, temas, andamento, itinerarios] = await Promise.all([
     listEnrollments(parishId, id),
     listSessions(parishId, id),
+    listarTemasDaTurma(parishId, id),
+    obterAndamentoDaTurma(parishId, id, new Date()),
+    coordena ? listarItinerarios(parishId) : [],
   ]);
 
   const ritesByEnrollment = await Promise.all(
@@ -94,13 +103,112 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
+      {coordena && (
+        <section className="pt-7">
+          <Eyebrow className="mb-3">Itinerário da turma</Eyebrow>
+          <Card>
+            {/* Quem coordena define o plano; o catequista segue e lança. */}
+            <form action={definirItinerarioDaTurmaAction} className="flex flex-wrap items-end gap-3">
+              <input type="hidden" name="groupId" value={id} />
+              <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
+                <label htmlFor="itinerarioId" className="text-sm font-medium text-muted">
+                  Plano que esta turma segue
+                </label>
+                <select
+                  id="itinerarioId"
+                  name="itinerarioId"
+                  defaultValue={group.itinerarioId ?? ""}
+                  className={INPUT_CLASSES}
+                >
+                  <option value="">Sem itinerário</option>
+                  {itinerarios.map((it) => (
+                    <option key={it.id} value={it.id}>
+                      {it.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button type="submit">Salvar</Button>
+            </form>
+            {itinerarios.length === 0 && (
+              <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+                Nenhum itinerário cadastrado ainda. Crie o primeiro em{" "}
+                <Link href="/catequese/itinerarios" className="font-medium text-primary hover:underline">
+                  Itinerários
+                </Link>
+                .
+              </p>
+            )}
+          </Card>
+        </section>
+      )}
+
       {leciona && (
         <section className="pt-7">
           <Eyebrow tone="accent" className="mb-3">
             Encontros
           </Eyebrow>
+
+          {/*
+            O aviso de conteúdo não lançado, pedido pela catequista.
+
+            Cita o encontro mais antigo pela DATA, e não só a quantidade: um
+            aviso que diz "3 pendentes" manda a pessoa procurar quais; dizendo
+            "o de 12 de agosto está há 18 dias", ela sabe onde tocar.
+
+            Vermelho só no atrasado. Encontro que acabou ontem e ainda não foi
+            lançado não é falha de ninguém, e pintar os dois de vermelho
+            ensinaria a ignorar os dois.
+          */}
+          {andamento && andamento.lancamento.maisAntigo && (
+            <div
+              className={
+                andamento.lancamento.atrasados > 0
+                  ? "mb-3 flex items-start gap-2.5 rounded-lg border border-error/40 bg-error-tint px-3.5 py-3"
+                  : "mb-3 flex items-start gap-2.5 rounded-lg border border-border bg-sunken px-3.5 py-3"
+              }
+            >
+              <TriangleAlert
+                className={
+                  andamento.lancamento.atrasados > 0
+                    ? "mt-0.5 h-4 w-4 shrink-0 text-error"
+                    : "mt-0.5 h-4 w-4 shrink-0 text-muted"
+                }
+                strokeWidth={1.6}
+                aria-hidden
+              />
+              <p className="text-[13px] leading-relaxed text-foreground">
+                {andamento.lancamento.atrasados > 0 ? (
+                  <>
+                    <strong className="font-semibold">
+                      Falta lançar o conteúdo de{" "}
+                      {andamento.lancamento.atrasados === 1
+                        ? "um encontro"
+                        : `${andamento.lancamento.atrasados} encontros`}
+                      .
+                    </strong>{" "}
+                    O mais antigo é o de {formatDateOnly(andamento.lancamento.maisAntigo.date)}, há{" "}
+                    {andamento.lancamento.maisAntigo.dias} dias.
+                  </>
+                ) : (
+                  <>
+                    O encontro de {formatDateOnly(andamento.lancamento.maisAntigo.date)} ainda está
+                    sem conteúdo lançado.
+                  </>
+                )}
+              </p>
+            </div>
+          )}
+
+          {andamento?.itinerario && andamento.previstos > 0 && (
+            <p className="mb-3 text-[12.5px] text-muted">
+              Itinerário{" "}
+              <span className="font-medium text-foreground">{andamento.itinerario.nome}</span> —{" "}
+              {andamento.dados} de {andamento.previstos} encontros previstos já dados.
+            </p>
+          )}
           <Card>
-            <CreateSessionForm groupId={id} />
+            <CreateSessionForm groupId={id} temas={temas} />
           </Card>
           {sessions.length === 0 ? (
             <p className="mt-3 text-sm text-muted">Nenhum encontro lançado ainda.</p>
@@ -117,9 +225,14 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium text-foreground">
-                      {s.topic || "Encontro"}
+                      {s.tema?.titulo || s.topic || "Encontro"}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">{formatDateOnly(s.date)}</p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {formatDateOnly(s.date)}
+                      {/* Sem conteúdo é a informação que a catequista procura
+                          na lista — dizer só a data a faria abrir uma a uma. */}
+                      {!s.tema && !s.topic?.trim() && " · sem conteúdo lançado"}
+                    </p>
                   </div>
                   <span className="text-[12.5px] text-muted">Chamada →</span>
                 </Link>

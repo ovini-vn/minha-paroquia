@@ -1,6 +1,13 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
-import type { CreateGroupInput, CreateSessionInput, CreateRiteInput } from "./schema";
+import { resumirLancamento } from "@/lib/lancamento-de-conteudo";
+import type {
+  CreateGroupInput,
+  CreateSessionInput,
+  CreateRiteInput,
+  CriarItinerarioInput,
+  CriarTemaInput,
+} from "./schema";
 
 // ---- Turmas -------------------------------------------------------------
 
@@ -103,15 +110,40 @@ export function createSession(
     });
     if (!group) throw new ValidationError("Turma não encontrada.");
 
+    // O tema precisa ser do itinerário DESTA turma. Sem esta conferência, um
+    // id colado no formulário ligaria o encontro ao roteiro de outra turma e
+    // a evolução das duas sairia errada.
+    let temaId: string | null = null;
+    if (input.itinerarioTemaId) {
+      const tema = await tx.itinerarioTema.findFirst({
+        where: { id: input.itinerarioTemaId, parishId, itinerarioId: group.itinerarioId ?? "" },
+        select: { id: true },
+      });
+      if (!tema) throw new ValidationError("Esse tema não pertence ao itinerário da turma.");
+      temaId = tema.id;
+    }
+
     return tx.catechismSession.create({
-      data: { parishId, catechismGroupId: groupId, date: input.date, topic: input.topic || null },
+      data: {
+        parishId,
+        catechismGroupId: groupId,
+        date: input.date,
+        topic: input.topic || null,
+        itinerarioTemaId: temaId,
+      },
     });
   });
 }
 
 export function listSessions(parishId: string, groupId: string) {
   return withTenantContext(parishId, (tx) =>
-    tx.catechismSession.findMany({ where: { parishId, catechismGroupId: groupId }, orderBy: { date: "desc" } }),
+    tx.catechismSession.findMany({
+      where: { parishId, catechismGroupId: groupId },
+      orderBy: { date: "desc" },
+      // O tema junto: a lista mostra o que foi dado, e é por ele que a
+      // catequista reconhece o encontro — a data sozinha não diz nada.
+      include: { tema: { select: { titulo: true, ordem: true } } },
+    }),
   );
 }
 
@@ -437,4 +469,211 @@ export async function requireRiteAccess(
     throw new ValidationError("Esta turma não é sua.");
   }
   return linha.enrollment.catechismGroupId;
+}
+
+// ---------------------------------------------------------------------------
+// Itinerário: o plano que a turma segue.
+//
+// A paróquia escreve o dela. Nada aqui vem pronto de propósito — o material
+// da catequese muda de arquidiocese, e um roteiro embutido estaria errado
+// para quase todo mundo.
+// ---------------------------------------------------------------------------
+
+export function listarItinerarios(parishId: string, incluirInativos = false) {
+  return withTenantContext(parishId, (tx) =>
+    tx.itinerario.findMany({
+      where: { parishId, ...(incluirInativos ? {} : { ativo: true }) },
+      orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+      include: {
+        _count: { select: { temas: true, grupos: true } },
+      },
+    }),
+  );
+}
+
+export function obterItinerario(parishId: string, id: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.itinerario.findFirst({
+      where: { id, parishId },
+      include: {
+        // Empate na ordem resolve pela criação: é o que permite a ordem não
+        // ser única e ainda assim a lista sair estável.
+        temas: { orderBy: [{ ordem: "asc" }, { createdAt: "asc" }] },
+        grupos: { select: { id: true, name: true, year: true } },
+      },
+    }),
+  );
+}
+
+export function criarItinerario(parishId: string, input: CriarItinerarioInput) {
+  return withTenantContext(parishId, (tx) =>
+    tx.itinerario.create({
+      data: {
+        parishId,
+        nome: input.nome,
+        descricao: input.descricao || null,
+        ordem: input.ordem ?? 0,
+      },
+    }),
+  );
+}
+
+/**
+ * Aposentar um itinerário, e não apagar.
+ *
+ * As turmas antigas continuam apontando para ele, e o histórico do que uma
+ * criança percorreu não pode sumir porque a paróquia trocou de material.
+ */
+export function arquivarItinerario(parishId: string, id: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.itinerario.updateMany({ where: { id, parishId }, data: { ativo: false } }),
+  );
+}
+
+export async function criarTema(parishId: string, itinerarioId: string, input: CriarTemaInput) {
+  return withTenantContext(parishId, async (tx) => {
+    const itinerario = await tx.itinerario.findFirst({
+      where: { id: itinerarioId, parishId },
+      select: { id: true },
+    });
+    if (!itinerario) return null;
+
+    // Sem ordem informada, entra no fim: a coordenação digita os encontros
+    // na sequência em que eles acontecem, e numerar à mão seria trabalho.
+    const ordem =
+      input.ordem ??
+      ((await tx.itinerarioTema.aggregate({
+        where: { parishId, itinerarioId },
+        _max: { ordem: true },
+      }))._max.ordem ?? 0) + 1;
+
+    return tx.itinerarioTema.create({
+      data: {
+        parishId,
+        itinerarioId,
+        titulo: input.titulo,
+        descricao: input.descricao || null,
+        ordem,
+      },
+    });
+  });
+}
+
+export function removerTema(parishId: string, temaId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.itinerarioTema.deleteMany({ where: { id: temaId, parishId } }),
+  );
+}
+
+export function definirItinerarioDaTurma(
+  parishId: string,
+  groupId: string,
+  itinerarioId: string | null,
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismGroup.updateMany({ where: { id: groupId, parishId }, data: { itinerarioId } }),
+  );
+}
+
+/** Os temas oferecidos ao catequista na hora de lançar o encontro. */
+export function listarTemasDaTurma(parishId: string, groupId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const grupo = await tx.catechismGroup.findFirst({
+      where: { id: groupId, parishId },
+      select: { itinerarioId: true },
+    });
+    if (!grupo?.itinerarioId) return [];
+    return tx.itinerarioTema.findMany({
+      where: { parishId, itinerarioId: grupo.itinerarioId },
+      orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+    });
+  });
+}
+
+/**
+ * O andamento de uma turma: quanto do itinerário já foi dado, e o que está
+ * sem lançamento.
+ *
+ * `dados` conta TEMAS distintos já lançados, não encontros: dois encontros
+ * sobre o mesmo tema não fazem a turma andar duas casas.
+ */
+export async function obterAndamentoDaTurma(parishId: string, groupId: string, agora: Date) {
+  return withTenantContext(parishId, async (tx) => {
+    const grupo = await tx.catechismGroup.findFirst({
+      where: { id: groupId, parishId },
+      include: { itinerario: { include: { _count: { select: { temas: true } } } } },
+    });
+    if (!grupo) return null;
+
+    const encontros = await tx.catechismSession.findMany({
+      where: { parishId, catechismGroupId: groupId },
+      orderBy: { date: "asc" },
+      select: { id: true, date: true, topic: true, itinerarioTemaId: true },
+    });
+
+    const temasDados = new Set(
+      encontros.map((e) => e.itinerarioTemaId).filter((id): id is string => Boolean(id)),
+    );
+
+    return {
+      itinerario: grupo.itinerario,
+      previstos: grupo.itinerario?._count.temas ?? 0,
+      dados: temasDados.size,
+      encontros,
+      lancamento: resumirLancamento(encontros, agora),
+    };
+  });
+}
+
+/**
+ * O quadro da coordenação: uma linha por turma, com o sinal do que trava.
+ *
+ * Faz UMA consulta de encontros para todas as turmas, e não uma por turma —
+ * numa paróquia com vinte turmas isso seria vinte idas ao banco para montar
+ * uma tela só.
+ */
+export async function obterQuadroDaCoordenacao(parishId: string, agora: Date) {
+  return withTenantContext(parishId, async (tx) => {
+    const [grupos, encontros] = await Promise.all([
+      tx.catechismGroup.findMany({
+        where: { parishId },
+        orderBy: [{ year: "desc" }, { name: "asc" }],
+        include: {
+          catechist: { select: { fullName: true } },
+          itinerario: { include: { _count: { select: { temas: true } } } },
+          _count: { select: { enrollments: true } },
+        },
+      }),
+      tx.catechismSession.findMany({
+        where: { parishId },
+        select: { id: true, date: true, topic: true, itinerarioTemaId: true, catechismGroupId: true },
+      }),
+    ]);
+
+    const porTurma = new Map<string, typeof encontros>();
+    for (const e of encontros) {
+      const lista = porTurma.get(e.catechismGroupId) ?? [];
+      lista.push(e);
+      porTurma.set(e.catechismGroupId, lista);
+    }
+
+    return grupos.map((grupo) => {
+      const meus = porTurma.get(grupo.id) ?? [];
+      const temasDados = new Set(
+        meus.map((e) => e.itinerarioTemaId).filter((id): id is string => Boolean(id)),
+      );
+      return {
+        id: grupo.id,
+        nome: grupo.name,
+        ano: grupo.year,
+        catequista: grupo.catechist?.fullName ?? null,
+        matriculados: grupo._count.enrollments,
+        itinerario: grupo.itinerario ? { id: grupo.itinerario.id, nome: grupo.itinerario.nome } : null,
+        previstos: grupo.itinerario?._count.temas ?? 0,
+        dados: temasDados.size,
+        encontrosRealizados: meus.filter((e) => e.date <= agora).length,
+        lancamento: resumirLancamento(meus, agora),
+      };
+    });
+  });
 }

@@ -677,3 +677,76 @@ export async function obterQuadroDaCoordenacao(parishId: string, agora: Date) {
     });
   });
 }
+
+/**
+ * A presença na missa da TURMA INTEIRA, num domingo só.
+ *
+ * Existia só o lançamento individual, dentro da ficha de cada catequizando:
+ * numa turma de 25, marcar quem foi à missa eram 25 telas. É o mesmo defeito
+ * do rito, e a mesma correção — a chamada é da turma, não da criança.
+ *
+ * Quem NÃO está na lista tem a presença daquele dia removida, e não marcada
+ * como ausente. A tabela guarda presença, não chamada: ausência na missa não
+ * é falta a ser cobrada, e desmarcar por engano não pode deixar rastro de
+ * algo que não aconteceu.
+ */
+export function registrarMissaDaTurma(
+  parishId: string,
+  groupId: string,
+  attendedOn: Date,
+  presentes: string[],
+  notedBy: string,
+  celebrationId?: string | null,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const daTurma = await tx.catechismEnrollment.findMany({
+      where: { parishId, catechismGroupId: groupId },
+      select: { id: true },
+    });
+    if (daTurma.length === 0) return { presentes: 0 };
+
+    const permitidas = new Set(daTurma.map((e) => e.id));
+    const marcadas = presentes.filter((id) => permitidas.has(id));
+    const desmarcadas = [...permitidas].filter((id) => !marcadas.includes(id));
+
+    await tx.catechismMassAttendance.deleteMany({
+      where: { parishId, attendedOn, enrollmentId: { in: desmarcadas } },
+    });
+
+    for (const enrollmentId of marcadas) {
+      await tx.catechismMassAttendance.upsert({
+        where: { enrollmentId_attendedOn: { enrollmentId, attendedOn } },
+        update: { celebrationId: celebrationId ?? null, notedBy },
+        create: {
+          parishId,
+          enrollmentId,
+          attendedOn,
+          celebrationId: celebrationId ?? null,
+          notedBy,
+        },
+      });
+    }
+
+    return { presentes: marcadas.length };
+  });
+}
+
+/** O encontro em si — a chamada precisa da data dele para sugerir o domingo. */
+export function obterEncontro(parishId: string, sessionId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismSession.findFirst({
+      where: { id: sessionId, parishId },
+      select: { id: true, date: true, catechismGroupId: true },
+    }),
+  );
+}
+
+/** Quem da turma já está marcado na missa daquele dia. */
+export function listarMissaDaTurma(parishId: string, groupId: string, attendedOn: Date) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismMassAttendance.findMany({
+      where: { parishId, attendedOn, enrollment: { catechismGroupId: groupId } },
+      select: { enrollmentId: true },
+    }),
+  );
+}

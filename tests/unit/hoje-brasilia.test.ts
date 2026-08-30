@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
+import { domingoAte, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 
 /**
  * Regressão do defeito achado em 29/08/2026 medindo as telas internas.
@@ -47,5 +47,27 @@ describe("hoje e agora são os de Brasília, não os do processo", () => {
     em("2026-08-29T12:00:00.000Z");
     expect(hojeEmBrasilia()).toBe("2026-08-29");
     expect(horaEmBrasilia()).toBe(9);
+  });
+});
+
+describe("o domingo sugerido para a chamada da missa", () => {
+  it("de uma quarta-feira, aponta o domingo anterior", () => {
+    // 26/08/2026 é uma quarta; o domingo anterior é 23/08.
+    expect(domingoAte(new Date("2026-08-26T15:00:00.000Z"))).toBe("2026-08-23");
+  });
+
+  it("de um domingo, aponta o próprio dia", () => {
+    expect(domingoAte(new Date("2026-08-23T15:00:00.000Z"))).toBe("2026-08-23");
+  });
+
+  it("de um sábado, aponta o domingo da semana que passou", () => {
+    // Catequese de sábado: a missa a lançar é a do domingo anterior, não a
+    // do dia seguinte, que ainda não aconteceu.
+    expect(domingoAte(new Date("2026-08-29T15:00:00.000Z"))).toBe("2026-08-23");
+  });
+
+  it("de madrugada, ainda é o dia de Brasília, não o de UTC", () => {
+    // 24/08 00:30 UTC = domingo 23/08 às 21h30 em Brasília.
+    expect(domingoAte(new Date("2026-08-24T00:30:00.000Z"))).toBe("2026-08-23");
   });
 });

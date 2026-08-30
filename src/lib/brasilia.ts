@@ -110,3 +110,22 @@ export function hojeEmBrasilia(): string {
 export function horaEmBrasilia(): number {
   return Math.floor(brasiliaParts(new Date()).minutes / 60);
 }
+
+/**
+ * O domingo mais recente até uma data, como "2026-08-30".
+ *
+ * Serve à chamada da missa na catequese: a missa não é no dia do encontro,
+ * e o padrão útil é o domingo anterior — o caso comum de uma catequese de
+ * sábado ou de meio de semana. Se o próprio dia já for domingo, é ele.
+ *
+ * Calculado no calendário de Brasília, como tudo que envolve dia neste
+ * projeto: `getDay()` sobre o fuso do processo devolveria sábado para um
+ * domingo de madrugada em produção.
+ */
+export function domingoAte(instante: Date): string {
+  const { year, month, day, weekday } = brasiliaParts(instante);
+  const domingo = new Date(Date.UTC(year, month, day - weekday));
+  return `${domingo.getUTCFullYear()}-${String(domingo.getUTCMonth() + 1).padStart(2, "0")}-${String(
+    domingo.getUTCDate(),
+  ).padStart(2, "0")}`;
+}

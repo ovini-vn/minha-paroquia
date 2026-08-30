@@ -23,6 +23,7 @@ import {
   removerTema,
   arquivarItinerario,
   definirItinerarioDaTurma,
+  registrarMissaDaTurma,
 } from "@/server/modules/catequese/service";
 import {
   createGroupInputSchema,
@@ -463,5 +464,56 @@ export async function definirItinerarioDaTurmaAction(formData: FormData): Promis
     groupId,
     typeof itinerarioId === "string" && itinerarioId ? itinerarioId : null,
   );
+  revalidatePath(`/catequese/turma/${groupId}`);
+}
+
+/**
+ * A presença na missa da turma inteira, a partir da tela de chamada.
+ *
+ * Mesmas guardas da chamada do encontro: quem coordena alcança qualquer
+ * turma, quem leciona só as suas — e a conferência é feita no banco, com
+ * `getGroup` escopado, não na tela.
+ */
+export async function registrarMissaDaTurmaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+
+  const coordena = coordenaCatequese(session);
+  const leciona = session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH);
+  if (!coordena && !leciona) return;
+
+  const groupId = formData.get("groupId");
+  const sessionId = formData.get("sessionId");
+  const attendedOnRaw = formData.get("attendedOn");
+  if (typeof groupId !== "string" || typeof attendedOnRaw !== "string" || !attendedOnRaw) return;
+
+  const attendedOn = new Date(`${attendedOnRaw}T00:00:00.000Z`);
+  if (Number.isNaN(attendedOn.getTime())) return;
+
+  const daMinhaTurma = await getGroup(
+    session.membership.parishId,
+    groupId,
+    catechistScope(session),
+  );
+  if (!daMinhaTurma) return;
+
+  const presentes = formData
+    .getAll("missa")
+    .filter((valor): valor is string => typeof valor === "string");
+
+  const celebrationId = (formData.get("celebrationId") as string) || null;
+
+  await registrarMissaDaTurma(
+    session.membership.parishId,
+    groupId,
+    attendedOn,
+    presentes,
+    session.userId,
+    celebrationId,
+  );
+
+  if (typeof sessionId === "string") {
+    revalidatePath(`/catequese/turma/${groupId}/encontro/${sessionId}`);
+  }
   revalidatePath(`/catequese/turma/${groupId}`);
 }

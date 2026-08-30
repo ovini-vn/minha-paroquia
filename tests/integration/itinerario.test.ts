@@ -2,9 +2,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
+import { createFamilyMember } from "@/server/modules/family/service";
 import {
   createGroup,
   createSession,
+  enrollFamilyMember,
+  registrarMissaDaTurma,
+  listarMissaDaTurma,
+  getEnrollmentProgress,
   criarItinerario,
   criarTema,
   definirItinerarioDaTurma,
@@ -169,5 +174,95 @@ describe("itinerário da catequese", () => {
     expect(linha?.previstos).toBe(1);
     expect(linha?.lancamento.atrasados).toBe(1);
     expect(linha?.lancamento.maisAntigo?.dias).toBe(22);
+  });
+});
+
+/**
+ * As duas chamadas da semana.
+ *
+ * O encontro e a missa são presenças diferentes, e nenhuma substitui a
+ * outra. A da missa existia só na ficha individual — numa turma de 25, eram
+ * 25 telas para marcar um domingo.
+ */
+describe("presença na missa, da turma inteira", () => {
+  let parishId: string;
+  let responsavelId: string;
+  let turmaId: string;
+  let matriculas: string[] = [];
+  const userIds: string[] = [];
+  const parishIds: string[] = [];
+  const domingo = new Date("2026-08-23T00:00:00.000Z");
+
+  beforeAll(async () => {
+    await ensureRolesAndPermissionsSeeded();
+    const paroquia = await registerParish({ name: `Paróquia Missa ${Date.now()}` });
+    parishId = paroquia.id;
+    parishIds.push(paroquia.id);
+
+    const responsavel = await registerUser({
+      fullName: "Responsável Missa",
+      email: `resp-missa-${Date.now()}@test.comunidade.app`,
+      password: "Senha@12345",
+    });
+    responsavelId = responsavel.id;
+    userIds.push(responsavel.id);
+
+    const turma = await createGroup({ parishId, name: "Turma Missa", year: 2026 });
+    turmaId = turma.id;
+
+    const criancas = [];
+    for (const nome of ["Ana", "Bento", "Clara"]) {
+      criancas.push(
+        await createFamilyMember({
+          parishId,
+          responsibleUserId: responsavelId,
+          fullName: nome,
+          relationship: "filho",
+        }),
+      );
+    }
+    matriculas = [];
+    for (const crianca of criancas) {
+      const m = await enrollFamilyMember(parishId, turmaId, crianca.id);
+      matriculas.push(m.id);
+    }
+  });
+
+  afterAll(async () => {
+    await cleanupTenantData({ parishIds, userIds });
+  });
+
+  it("marca a turma inteira num domingo só", async () => {
+    await registrarMissaDaTurma(
+      parishId,
+      turmaId,
+      domingo,
+      [matriculas[0]!, matriculas[1]!],
+      responsavelId,
+    );
+    expect((await listarMissaDaTurma(parishId, turmaId, domingo)).length).toBe(2);
+  });
+
+  it("quem sai da lista tem a presença REMOVIDA, não marcada como ausente", async () => {
+    // A tabela guarda presença, não chamada: ausência na missa não é falta a
+    // ser cobrada, e desmarcar por engano não pode deixar rastro de algo que
+    // não aconteceu.
+    await registrarMissaDaTurma(parishId, turmaId, domingo, [matriculas[0]!], responsavelId);
+
+    const depois = await listarMissaDaTurma(parishId, turmaId, domingo);
+    expect(depois.map((m) => m.enrollmentId)).toEqual([matriculas[0]!]);
+
+    const progresso = await getEnrollmentProgress(parishId, matriculas[0]!);
+    expect(progresso?.resumo.missas).toBe(1);
+
+    const semMissa = await getEnrollmentProgress(parishId, matriculas[1]!);
+    expect(semMissa?.resumo.missas).toBe(0);
+  });
+
+  it("ignora matrícula que não é da turma", async () => {
+    await registrarMissaDaTurma(parishId, turmaId, domingo, ["id-que-nao-existe"], responsavelId);
+    // A lista não ganhou ninguém, e quem estava marcado saiu — porque não
+    // veio na lista de presentes.
+    expect(await listarMissaDaTurma(parishId, turmaId, domingo)).toEqual([]);
   });
 });

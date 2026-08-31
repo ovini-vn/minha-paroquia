@@ -32,11 +32,12 @@
  * Sem `--aplicar` é ENSAIO: lê, mapeia e conta, sem escrever nada.
  */
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import vm from "node:vm";
 import { withPlatformContext } from "../src/server/db/tenant-context";
 import { getFeastOn } from "../src/lib/liturgical-feasts";
-import { brasiliaWallClockToUtc } from "../src/lib/brasilia";
-import { occurrencesBetween } from "../src/lib/recurrence";
+import { brasiliaWallClockToUtc, hojeEmBrasilia } from "../src/lib/brasilia";
+import { occurrencesBetween, type RecurrenceRule } from "../src/lib/recurrence";
 import type { CelebrationType } from "@prisma/client";
 
 type Marcacao = { t: string; c: string; m?: string };
@@ -131,6 +132,41 @@ function normalizar(texto: string): string {
     .trim();
 }
 
+type RotinaDaParoquia = RecurrenceRule & { type: string; title: string | null };
+
+/**
+ * Os dias do ano em que a paróquia já tem MISSA por rotina, de hoje em diante.
+ *
+ * Serve a uma pergunta diferente de `cobertoPorRotina`: lá é "esta marcação
+ * é a mesma que a rotina"; aqui é "já há missa neste dia, com qualquer
+ * nome". A paróquia tem "Missa Sexta, toda sexta, 19h30", e o calendário
+ * repete a missa da primeira sexta com outro nome e sem hora.
+ *
+ * Só rotina de MISSA conta: a Adoração de sábado não deve calar uma missa.
+ *
+ * Vale a REGRA, e não as datas já geradas, porque a regra é verdadeira além
+ * do horizonte que o job da madrugada preenche. E só do dia de hoje em
+ * diante: a rotina não gera para trás, então o que já passou fica.
+ */
+export function diasComMissaDeRotina(
+  rotinas: RotinaDaParoquia[],
+  ano: number,
+  hoje: Date,
+): Set<string> {
+  const inicioDoAno = new Date(Date.UTC(ano, 0, 1));
+  const fimDoAno = new Date(Date.UTC(ano + 1, 0, 1));
+  const daquiPraFrente = hoje > inicioDoAno ? hoje : inicioDoAno;
+
+  const dias = new Set<string>();
+  for (const rotina of rotinas) {
+    if (rotina.type !== "missa") continue;
+    for (const dia of occurrencesBetween(rotina, daquiPraFrente, fimDoAno)) {
+      dias.add(dia.toISOString().slice(0, 10));
+    }
+  }
+  return dias;
+}
+
 async function main() {
   const [caminho, anoBruto, bandeira] = process.argv.slice(2);
   const aplicar = bandeira === "--aplicar";
@@ -194,6 +230,21 @@ async function main() {
         endsOn: true,
       },
     });
+    /*
+     * Os dias em que a paróquia já tem MISSA por rotina, daqui pra frente.
+     *
+     * Separado do conjunto acima porque a pergunta é outra: lá é "esta
+     * marcação é a mesma que a rotina"; aqui é "já há missa neste dia". A
+     * paróquia tem "Missa Sexta, toda sexta, 19h30", e o calendário repete
+     * a missa da primeira sexta com outro nome e sem hora — sem isto, a
+     * mesma missa aparece duas vezes, uma delas sem horário.
+     *
+     * Só do dia de hoje em diante: janeiro já passou, e a rotina não gera
+     * para trás. Vale a REGRA, não as datas já materializadas, porque a
+     * regra é verdadeira além do horizonte que o job preenche.
+     */
+    const diasComMissa = diasComMissaDeRotina(rotinas, ano, new Date(hojeEmBrasilia()));
+
     for (const rotina of rotinas) {
       if (!rotina.title) continue;
       const dias = occurrencesBetween(
@@ -211,6 +262,7 @@ async function main() {
     let pulados = 0;
     let jaExistiam = 0;
     let porRotina = 0;
+    const missaNoMesmoDia: string[] = [];
     let corrigidos = 0;
 
     for (const mes of MONTHS) {
@@ -233,9 +285,24 @@ async function main() {
             porRotina++;
             continue;
           }
+
+          const classe = classificar(marcacao);
+
+          /*
+           * Missa sem hora num dia em que a paróquia já tem missa.
+           *
+           * Decisão do pároco, e ela custa: quando houver de fato DUAS
+           * missas no mesmo dia — "Missa na Colina", numa comunidade —, a
+           * segunda some. Por isso as puladas são listadas nome por nome no
+           * fim, e não contadas: quem lê decide se falta alguma, em vez de
+           * descobrir pela ausência.
+           */
+          if (minutos === null && classe.tipo === "celebracao" && classe.ct === "missa" && diasComMissa.has(chaveDoDia)) {
+            missaNoMesmoDia.push(`${chaveDoDia} · ${marcacao.t}`);
+            continue;
+          }
           const local = localDoDetalhe(marcacao.m);
           const quando = brasiliaWallClockToUtc(ano, mes.n - 1, dia, minutos ?? 0);
-          const classe = classificar(marcacao);
 
           if (classe.tipo === "celebracao") {
             const existe = await tx.celebration.findFirst({
@@ -311,12 +378,24 @@ async function main() {
     console.log(`Já existiam: ${jaExistiam}${corrigidos ? ` (${corrigidos} corrigidos)` : ""}`);
     console.log(`Pulados (o app já calcula a festa naquele dia): ${pulados}`);
     console.log(`Pulados (a paróquia já tem a rotina, com hora): ${porRotina}`);
+    console.log(`Pulados (missa sem hora num dia que já tem missa): ${missaNoMesmoDia.length}`);
+    for (const linha of missaNoMesmoDia) console.log(`  · ${linha}`);
   });
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((erro) => {
-    console.error(erro);
-    process.exit(1);
-  });
+/*
+ * Só roda quando é CHAMADO, nunca quando é importado.
+ *
+ * Sem esta guarda, um teste que importa `importar-calendario` para exercitar uma
+ * das funções puras dispara o import inteiro: ele tenta abrir o banco, não
+ * acha o arquivo do calendário e derruba o processo com exit(1) no meio da
+ * suíte.
+ */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main()
+    .then(() => process.exit(0))
+    .catch((erro) => {
+      console.error(erro);
+      process.exit(1);
+    });
+}

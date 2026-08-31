@@ -31,6 +31,7 @@
  *   npx tsx scripts/importar-plano-pastoral.ts <arquivo.html> [--aplicar]
  */
 import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
 import { withPlatformContext } from "../src/server/db/tenant-context";
 import { hojeEmBrasilia } from "../src/lib/brasilia";
 import { generateAllUpcomingOccurrences } from "../src/server/modules/celebrations/service";
@@ -446,9 +447,19 @@ async function main() {
   }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((erro) => {
-    console.error(erro);
-    process.exit(1);
-  });
+/*
+ * Só roda quando é CHAMADO, nunca quando é importado.
+ *
+ * Sem esta guarda, um teste que importa `importar-plano-pastoral` para exercitar uma
+ * das funções puras dispara o import inteiro: ele tenta abrir o banco, não
+ * acha o arquivo do calendário e derruba o processo com exit(1) no meio da
+ * suíte.
+ */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main()
+    .then(() => process.exit(0))
+    .catch((erro) => {
+      console.error(erro);
+      process.exit(1);
+    });
+}

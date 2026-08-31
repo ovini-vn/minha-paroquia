@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Symbol } from "@/components/brand/Symbol";
+import { getSessionContext } from "@/server/auth/session";
+import { atributoDoTempo } from "@/lib/liturgical-season";
 
 /**
  * Área diocesana — separada de (admin), que é o painel de UMA paróquia.
  * Aqui o escopo é a diocese inteira: quem entra é bispo ou admin da
  * plataforma, e o que se vê é o conjunto das paróquias.
  */
-export default function DioceseLayout({ children }: { children: React.ReactNode }) {
+export default async function DioceseLayout({ children }: { children: React.ReactNode }) {
+  // A mesma atmosfera do app e do painel — ver o comentário em (admin).
+  const session = await getSessionContext();
+
   return (
-    <div className="min-h-dvh bg-sunken">
+    <div className="min-h-dvh bg-sunken" data-season={atributoDoTempo(session?.themePreference)}>
       <header className="sticky top-0 z-40 bg-wash px-5 py-3.5 text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gold after:to-transparent after:opacity-80">
         <div className="mx-auto flex max-w-4xl items-center gap-3">
           <Symbol className="h-9 w-auto shrink-0 text-white" />

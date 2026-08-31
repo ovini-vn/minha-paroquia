@@ -1,6 +1,7 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
 import { resumirLancamento } from "@/lib/lancamento-de-conteudo";
+import { montarCaminhada, proximoRito } from "@/lib/caminhada-da-catequese";
 import type {
   CreateGroupInput,
   CreateSessionInput,
@@ -341,13 +342,26 @@ export async function getEnrollmentGroupId(parishId: string, enrollmentId: strin
  * Usada pela família (só o próprio filho) e pelo catequista (os da turma
  * dele). Quem chama já decidiu que esta pessoa pode ver ESTA matrícula.
  */
-export async function getEnrollmentProgress(parishId: string, enrollmentId: string) {
+export async function getEnrollmentProgress(
+  parishId: string,
+  enrollmentId: string,
+  agora: Date = new Date(),
+) {
   return withTenantContext(parishId, async (tx) => {
     const enrollment = await tx.catechismEnrollment.findFirst({
       where: { id: enrollmentId, parishId },
       include: {
         familyMember: { select: { fullName: true } },
-        group: { include: { catechist: { select: { fullName: true } } } },
+        group: {
+          include: {
+            catechist: { select: { fullName: true } },
+            // O itinerário vem junto: é dele que sai "onde estamos e o que
+            // vem", que era a pergunta sem resposta da família.
+            itinerario: {
+              include: { temas: { orderBy: [{ ordem: "asc" }, { createdAt: "asc" }] } },
+            },
+          },
+        },
       },
     });
     if (!enrollment) return null;
@@ -356,6 +370,9 @@ export async function getEnrollmentProgress(parishId: string, enrollmentId: stri
       tx.catechismSession.findMany({
         where: { parishId, catechismGroupId: enrollment.catechismGroupId },
         orderBy: { date: "desc" },
+        // O tema junto: a lista da ficha mostrava "Encontro" para tudo que
+        // não tinha texto livre, mesmo quando o tema estava lá.
+        include: { tema: { select: { titulo: true } } },
       }),
       tx.catechismAttendance.findMany({ where: { parishId, enrollmentId } }),
       tx.catechismRite.findMany({ where: { parishId, enrollmentId }, orderBy: { createdAt: "desc" } }),
@@ -366,9 +383,29 @@ export async function getEnrollmentProgress(parishId: string, enrollmentId: stri
     ]);
 
     const presencaPorSessao = new Map(presencas.map((p) => [p.sessionId, p.present]));
+
+    // A caminhada só existe quando a turma segue um itinerário. Sem ele, a
+    // ficha continua sendo o que sempre foi — histórico, sem previsão.
+    const caminhada = enrollment.group.itinerario
+      ? montarCaminhada(
+          enrollment.group.itinerario.temas.map((t) => ({
+            id: t.id,
+            ordem: t.ordem,
+            titulo: t.titulo,
+            descricao: t.descricao,
+          })),
+          encontros.map((e) => ({
+            id: e.id,
+            date: e.date,
+            itinerarioTemaId: e.itinerarioTemaId,
+          })),
+          presencaPorSessao,
+          agora,
+        )
+      : null;
     // Só conta encontros JÁ REALIZADOS: incluir os futuros faria a família
     // ver "3 de 10" e achar que o filho está faltando.
-    const realizados = encontros.filter((e) => e.date <= new Date());
+    const realizados = encontros.filter((e) => e.date <= agora);
     const presentes = realizados.filter((e) => presencaPorSessao.get(e.id) === true).length;
 
     return {
@@ -377,6 +414,8 @@ export async function getEnrollmentProgress(parishId: string, enrollmentId: stri
       presencaPorSessao,
       ritos,
       missas,
+      caminhada,
+      proximoRito: proximoRito(ritos, agora),
       resumo: {
         encontrosRealizados: realizados.length,
         presencas: presentes,

@@ -133,3 +133,23 @@ export function getLiturgicalSeason(date: Date): LiturgicalSeasonInfo {
 
   return { season, name: SEASON_NAMES[season] };
 }
+
+/**
+ * O atributo `data-season` que troca a paleta do app inteiro, ou nada.
+ *
+ * A regra é UMA e mora aqui porque ela já divergiu: o app do fiel aplicava
+ * o tempo litúrgico e o painel de gestão não, então entrar no painel mudava
+ * a cor do verde do Tempo Comum para o violeta da marca, sem que ninguém
+ * tivesse pedido. Quem escolheu a cor do tempo escolheu para a ferramenta,
+ * não para uma parte dela.
+ *
+ * Recebe a preferência como texto, e não a sessão inteira: `lib` não
+ * conhece autenticação, e este arquivo é o único lugar que sabe QUE tempo
+ * é hoje.
+ */
+export function atributoDoTempo(
+  preferencia: string | null | undefined,
+  agora: Date = new Date(),
+): string | undefined {
+  return preferencia === "liturgical" ? getLiturgicalSeason(agora).season : undefined;
+}

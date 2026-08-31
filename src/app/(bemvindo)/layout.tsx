@@ -1,4 +1,5 @@
-import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { atributoDoTempo } from "@/lib/liturgical-season";
+import { getSessionContext } from "@/server/auth/session";
 
 /**
  * Sem cabeçalho, sem abas, sem rodapé.
@@ -8,11 +9,20 @@ import { getLiturgicalSeason } from "@/lib/liturgical-season";
  * saída antes de explicar entrada é o que faz alguém sumir na primeira
  * tela.
  */
-export default function BemVindoLayout({ children }: { children: React.ReactNode }) {
-  const season = getLiturgicalSeason(new Date());
+export default async function BemVindoLayout({ children }: { children: React.ReactNode }) {
+  /*
+   * O tempo litúrgico aqui era aplicado SEMPRE — o mesmo desencontro do
+   * painel, ao contrário. Nas boas-vindas a pessoa ESCOLHE a aparência, e a
+   * tela precisa mostrar o que ela acabou de escolher: pintando de tempo
+   * litúrgico quem pediu a cor da marca, o botão não confirmava nada.
+   */
+  const session = await getSessionContext();
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col bg-background" data-season={season.season}>
+    <div
+      className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col bg-background"
+      data-season={atributoDoTempo(session?.themePreference)}
+    >
       {children}
     </div>
   );

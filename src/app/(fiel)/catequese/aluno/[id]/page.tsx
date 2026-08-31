@@ -56,7 +56,8 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
   const podeLancar = coordena || ehCatequistaDaTurma;
   const celebracoes = podeLancar ? await listUpcomingCelebrations(parishId, 10) : [];
 
-  const { enrollment, encontros, presencaPorSessao, ritos, missas, resumo } = progresso;
+  const { enrollment, encontros, presencaPorSessao, ritos, missas, resumo, caminhada } = progresso;
+  const proximo = progresso.proximoRito;
   const hoje = new Date();
 
   return (
@@ -73,6 +74,112 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
           {enrollment.group.catechist ? ` · ${enrollment.group.catechist.fullName}` : ""}
         </p>
       </div>
+
+      {/*
+        A linha do tempo da caminhada.
+
+        A ficha mostrava só o passado — presenças, missas, ritos recebidos. A
+        família perguntava "onde estamos e quais os próximos passos", e a
+        resposta não existia porque nada tinha sido previsto. Com o itinerário
+        declarado pela paróquia, o próximo passo deixa de ser um campo a
+        preencher e passa a ser uma conta.
+
+        Vem ANTES dos números, de propósito: "3 de 6, agora o pão da vida" é o
+        que a mãe quer saber; quantas missas o filho foi vem depois.
+      */}
+      {caminhada && caminhada.previstos > 0 && (
+        <section className="pt-4">
+          <Card className="border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">
+            <Eyebrow className="mb-2">A caminhada</Eyebrow>
+            <p className="text-[15px] font-medium text-foreground">
+              Encontro {caminhada.concluidos} de {caminhada.previstos}
+            </p>
+
+            {/* A barra é aria-hidden e o texto acima diz o mesmo: quem usa
+                leitor de tela não precisa ouvir "elemento gráfico". */}
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-sunken" aria-hidden>
+              <div
+                className="h-full rounded-full bg-primary transition-[width]"
+                style={{
+                  width: `${Math.round((caminhada.concluidos / caminhada.previstos) * 100)}%`,
+                }}
+              />
+            </div>
+
+            {caminhada.proximo ? (
+              <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
+                O próximo encontro é{" "}
+                <span className="font-medium text-foreground">{caminhada.proximo.titulo}</span>.
+              </p>
+            ) : (
+              <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
+                Todos os encontros previstos já foram dados.
+              </p>
+            )}
+
+            {proximo && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-[13.5px] leading-relaxed text-muted">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-gold" strokeWidth={1.6} aria-hidden />
+                <span>
+                  <span className="font-medium text-foreground">{proximo.name}</span>
+                  {proximo.scheduledAt ? ` em ${formatDateOnly(proximo.scheduledAt)}` : ""}.
+                </span>
+              </p>
+            )}
+          </Card>
+
+          <Card className="mt-3 px-3.5 py-1.5">
+            {caminhada.passos.map((passo, i) => (
+              <div
+                key={passo.temaId}
+                className="flex items-start gap-3.5 border-b border-border py-3 last:border-b-0"
+              >
+                {/*
+                  Três estados, três desenhos. O "agora" é o único cheio:
+                  numa lista de dez linhas, a família precisa achar onde está
+                  sem ler todas.
+                */}
+                <span
+                  className={
+                    passo.estado === "concluido"
+                      ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary-tint text-[12px] font-semibold text-primary"
+                      : passo.estado === "atual"
+                        ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary text-[12px] font-semibold text-white dark:bg-primary-light"
+                        : "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-border-strong text-[12px] font-semibold text-muted"
+                  }
+                >
+                  {passo.estado === "concluido" ? (
+                    <Check className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={
+                      passo.estado === "previsto"
+                        ? "text-[14px] text-muted"
+                        : "text-[14px] font-medium text-foreground"
+                    }
+                  >
+                    {passo.titulo}
+                  </p>
+                  <p className="mt-0.5 text-[12px] text-muted">
+                    {passo.estado === "atual" && "É o próximo"}
+                    {passo.estado === "previsto" && "Ainda vem"}
+                    {passo.estado === "concluido" && passo.data && formatDateOnly(passo.data)}
+                    {/* Presença desconhecida NÃO vira falta: a chamada pode
+                        simplesmente não ter sido lançada. */}
+                    {passo.estado === "concluido" && passo.presente === true && " · esteve"}
+                    {passo.estado === "concluido" && passo.presente === false && " · faltou"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </Card>
+        </section>
+      )}
 
       <section className="pt-4">
         <div className="grid grid-cols-3 gap-3">
@@ -107,7 +214,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium text-foreground">
-                      {encontro.topic || "Encontro"}
+                      {encontro.tema?.titulo || encontro.topic || "Encontro"}
                     </p>
                     <p className="mt-0.5 text-[12.5px] text-muted">{formatDateOnly(encontro.date)}</p>
                   </div>

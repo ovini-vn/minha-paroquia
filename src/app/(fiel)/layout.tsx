@@ -3,7 +3,7 @@ import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import { countUnreadNotifications } from "@/server/modules/notifications/service";
 import { getParish } from "@/server/modules/parishes/service";
-import { getLiturgicalSeason } from "@/lib/liturgical-season";
+import { atributoDoTempo, getLiturgicalSeason } from "@/lib/liturgical-season";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { TabBar } from "@/components/layout/TabBar";
@@ -31,7 +31,11 @@ export default async function FielLayout({ children }: { children: React.ReactNo
   // "Usar cor do Tempo Litúrgico" (/eu/aparencia): o atributo troca a paleta
   // inteira via CSS (ver [data-season] em globals.css). Sem ele, fica a
   // atmosfera padrão da marca — nenhuma cor é calculada em JS.
-  const seasonAttr = session.themePreference === "liturgical" ? season.season : undefined;
+  //
+  // A regra vem de `atributoDoTempo` e não está escrita aqui: o painel de
+  // gestão precisa da MESMA, e foi por ela estar em um lugar só que as duas
+  // divergiram antes.
+  const seasonAttr = atributoDoTempo(session.themePreference);
 
   // Quem tem o painel entra direto nele — é o uso diário da secretaria e
   // não pode custar dois cliques. Quem não tem (catequista, bispo) vai ao

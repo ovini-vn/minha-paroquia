@@ -128,11 +128,20 @@ const TELAS = [
 
   // ---- Família ----
   {
+    arquivo: "familia-caminhada",
+    quem: "catequista",
+    url: "/catequese",
+    clicar: 'a[href^="/catequese/aluno/"]',
+    espera: "text=A CAMINHADA",
+    alvo: "text=Encontro 3 de",
+  },
+  {
     arquivo: "familia-ficha",
     quem: "catequista",
     url: "/catequese",
     clicar: 'a[href^="/catequese/aluno/"]',
-    espera: "text=Encontros",
+    espera: "text=ENCONTROS",
+    rolarAte: "text=Missas",
   },
 ];
 

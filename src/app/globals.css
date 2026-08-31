@@ -618,12 +618,14 @@ body {
  * `@container` resolve na raiz: o componente se adapta onde quer que seja
  * usado, sem precisar saber quem o usou nem receber uma propriedade a mais.
  */
-.lista-de-encontros {
+.lista-de-encontros,
+.lista-adaptavel {
   container-type: inline-size;
 }
 
 @container (min-width: 620px) {
-  .lista-de-encontros > .card-encontros {
+  .lista-de-encontros > .card-encontros,
+  .lista-adaptavel > .card-adaptavel {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
@@ -633,7 +635,8 @@ body {
     padding: 0;
   }
 
-  .lista-de-encontros > .card-encontros > * {
+  .lista-de-encontros > .card-encontros > *,
+  .lista-adaptavel > .card-adaptavel > * {
     border: 1px solid rgb(var(--color-border));
     border-radius: 1.125rem;
     background: rgb(var(--color-surface));

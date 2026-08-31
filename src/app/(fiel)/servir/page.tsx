@@ -16,6 +16,7 @@ import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateOpportunityForm } from "@/app/(admin)/painel/servir/CreateOpportunityForm";
+import { DuasColunas } from "@/components/layout/DuasColunas";
 
 export const metadata: Metadata = { title: "Servir" };
 
@@ -103,6 +104,13 @@ export default async function ServirPage() {
         )}
       </div>
 
+      {/*
+        Principal: onde precisam de você — é o que a pessoa veio ver.
+        Lateral: a escala da liturgia, que é consulta.
+      */}
+      <DuasColunas
+        principal={
+          <>
       <section className="pt-7">
         <SectionTitle eyebrow="Oportunidades" title="Onde precisam de você" />
         {podeLancar && (
@@ -163,6 +171,10 @@ export default async function ServirPage() {
         )}
       </section>
 
+          </>
+        }
+        lateral={
+          <>
       <section className="pt-7">
         <Eyebrow tone="accent" className="mb-3">
           Servir na celebração
@@ -176,6 +188,9 @@ export default async function ServirPage() {
           />
         </Card>
       </section>
+          </>
+        }
+      />
 
       <div className="rule-gold my-7" />
     </div>

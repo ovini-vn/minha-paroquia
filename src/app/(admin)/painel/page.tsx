@@ -162,7 +162,9 @@ export default async function AdminDashboardPage() {
         <Eyebrow tone="accent" className="mb-3">
           Áreas da paróquia
         </Eyebrow>
-        <Card className="px-3.5 py-1.5">
+        {/* Grade quando couber — ver `.lista-adaptavel` em globals.css. */}
+        <div className="lista-adaptavel">
+        <Card className="card-adaptavel px-3.5 py-1.5">
           {/*
             PRIMEIRO da lista, e não no meio.
             É a única tarefa aqui que chega com alguém esperando do outro
@@ -311,6 +313,7 @@ export default async function AdminDashboardPage() {
             />
           )}
         </Card>
+        </div>
       </section>
 
       {(acesso.national || acesso.provinces || acesso.dioceses || acesso.platform) && (
@@ -318,7 +321,9 @@ export default async function AdminDashboardPage() {
           <Eyebrow tone="accent" className="mb-3">
             Acompanhamento
           </Eyebrow>
-          <Card className="px-3.5 py-1.5">
+          {/* Grade quando couber — ver `.lista-adaptavel` em globals.css. */}
+          <div className="lista-adaptavel">
+          <Card className="card-adaptavel px-3.5 py-1.5">
             {acesso.national && (
               <RowLink
                 href="/nacional"
@@ -361,6 +366,7 @@ export default async function AdminDashboardPage() {
               </>
             )}
           </Card>
+          </div>
         </section>
       )}
 

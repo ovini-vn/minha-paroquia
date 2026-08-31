@@ -172,7 +172,10 @@ export default async function CatequesePage() {
                 description="Crie a primeira abaixo."
               />
             ) : (
-              <Card className="px-3.5 py-1.5">
+              /* Grade quando couber: a régua é o espaço do contêiner, não o
+                 tamanho da tela — ver `.lista-adaptavel` em globals.css. */
+              <div className="lista-adaptavel">
+              <Card className="card-adaptavel px-3.5 py-1.5">
                 {/*
                   O quadro, e não mais uma lista de nomes.
 
@@ -234,6 +237,7 @@ export default async function CatequesePage() {
                   </Link>
                 ))}
               </Card>
+              </div>
             )}
             <Card className="mt-3">
               <Eyebrow className="mb-3">Nova turma</Eyebrow>

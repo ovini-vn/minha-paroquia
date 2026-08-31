@@ -30,6 +30,7 @@ import { PalavraDoDiaCard } from "@/components/domain/PalavraDoDiaCard";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
+import { DuasColunas } from "@/components/layout/DuasColunas";
 
 export const metadata: Metadata = { title: "Palavra" };
 
@@ -110,6 +111,13 @@ export default async function OracaoPage() {
         <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
       </Link>
 
+      {/*
+        Principal: a palavra do padre e a leitura do dia — o que se LÊ.
+        Lateral: rezar hoje e o mural, que são atalhos e consulta.
+      */}
+      <DuasColunas
+        principal={
+          <>
       {/* Palavra do Padre — o que ESTA paróquia tem a dizer vem antes do
           que chega de fora. */}
       {latestPost && assinatura && (
@@ -154,6 +162,10 @@ export default async function OracaoPage() {
         <PalavraDoDiaCard palavra={palavraDoDia} />
       </section>
 
+          </>
+        }
+        lateral={
+          <>
       <section className="pt-[26px]">
         <Eyebrow tone="accent" className="mb-3">
           Rezar hoje
@@ -209,6 +221,9 @@ export default async function OracaoPage() {
           </div>
         )}
       </section>
+          </>
+        }
+      />
 
       <div className="rule-gold my-7" />
     </div>

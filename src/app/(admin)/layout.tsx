@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-dvh bg-sunken" data-season={atributoDoTempo(session?.themePreference)}>
       <header className="sticky top-0 z-40 bg-wash px-5 py-3.5 text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gold after:to-transparent after:opacity-80">
-        <div className="mx-auto flex max-w-3xl items-center gap-3">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 lg:max-w-6xl">
           <Symbol className="h-9 w-auto shrink-0 text-white" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-serif text-[19px] font-semibold leading-tight">
@@ -40,7 +40,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
         </div>
       </header>
-      <main id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl animate-enter px-5 py-6">{children}</main>
+      {/*
+        Mesma largura do app no computador.
+
+        O painel ficava em 768px enquanto o app do fiel usa 1152px — a
+        mesma paróquia com duas medidas, e a gestão espremida numa fita
+        justamente onde há mais tabela e mais lista para ler.
+      */}
+      <main
+        id="conteudo"
+        tabIndex={-1}
+        className="mx-auto max-w-3xl animate-enter px-5 py-6 lg:max-w-6xl lg:px-8 lg:py-9"
+      >
+        {children}
+      </main>
     </div>
   );
 }

@@ -38,6 +38,7 @@
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { lerPlanoDoHtml } from "../src/lib/plano-do-html";
+import { porExtenso } from "../src/lib/siglas";
 import { withPlatformContext } from "../src/server/db/tenant-context";
 import { hojeEmBrasilia } from "../src/lib/brasilia";
 import { generateAllUpcomingOccurrences } from "../src/server/modules/celebrations/service";
@@ -82,7 +83,9 @@ function lerHorariosFixos(caminho: string): Fixo[] {
         .replace(/<[^>]+>/g, "")
         .trim();
       if (!nome || !quando) throw new Error(`Linha de horário fixo ilegível: ${dentro}`);
-      fixos.push({ nome, quando, onde, ritmo });
+      // Sigla por extenso já na leitura: "Visita da Pastoral da Saúde ao
+      // HU" vira o nome do grupo que o fiel vê na lista de pastorais.
+      fixos.push({ nome: porExtenso(nome), quando, onde, ritmo });
     }
   }
   return fixos;
@@ -482,7 +485,7 @@ async function main() {
           parishId: paroquia.id,
           ano,
           titulo: `${plano.titulo} ${ano}`,
-          introducao: plano.introducao,
+          introducao: plano.introducao ? porExtenso(plano.introducao) : null,
           createdBy: autor.userId,
         },
       });
@@ -491,9 +494,9 @@ async function main() {
           parishId: paroquia.id,
           planoId: criado.id,
           ordem: i + 1,
-          rotulo: secao.rotulo,
-          titulo: secao.titulo,
-          corpo: secao.corpo,
+          rotulo: secao.rotulo ? porExtenso(secao.rotulo) : null,
+          titulo: porExtenso(secao.titulo),
+          corpo: porExtenso(secao.corpo),
         })),
       });
       planoDito = `${plano.secoes.length} seções criadas como RASCUNHO — revise e publique em /painel/plano`;

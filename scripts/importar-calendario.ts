@@ -38,6 +38,7 @@ import { withPlatformContext } from "../src/server/db/tenant-context";
 import { getFeastOn } from "../src/lib/liturgical-feasts";
 import { brasiliaWallClockToUtc, hojeEmBrasilia } from "../src/lib/brasilia";
 import { occurrencesBetween, type RecurrenceRule } from "../src/lib/recurrence";
+import { porExtenso } from "../src/lib/siglas";
 import type { CelebrationType } from "@prisma/client";
 
 export type Marcacao = { t: string; c: string; m?: string };
@@ -301,7 +302,21 @@ async function main() {
         const dia = Number(diaBruto);
         const chaveDoDia = `${ano}-${String(mes.n).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
 
-        for (const marcacao of marcacoes) {
+        for (const marcacaoCrua of marcacoes) {
+          /*
+           * As siglas entram por extenso.
+           *
+           * A fonte marca "GBR" e "Congresso da IAM" porque quem imprime o
+           * calendário tem o glossário na página seguinte. Na agenda de um
+           * telefone não há página seguinte: ou o nome está escrito, ou a
+           * pessoa não sabe o que está marcado no próprio calendário.
+           */
+          const marcacao = {
+            ...marcacaoCrua,
+            t: porExtenso(marcacaoCrua.t),
+            m: marcacaoCrua.m ? porExtenso(marcacaoCrua.m) : marcacaoCrua.m,
+          };
+
           const festa = jaCalculadas.get(chaveDoDia);
           if (festa && normalizar(marcacao.t) === festa) {
             pulados++;

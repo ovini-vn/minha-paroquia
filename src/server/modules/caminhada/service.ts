@@ -177,3 +177,61 @@ export function listMyConfessions(parishId: string, userId: string, limit = 20) 
     }),
   );
 }
+
+/**
+ * Os dados de uma certidão de sacramento.
+ *
+ * Certidão do SACRAMENTO RECEBIDO — não de conclusão de curso. O que ela
+ * atesta é o ato: quem recebeu, qual sacramento, quando, onde, e em que
+ * livro está lançado.
+ *
+ * Devolve `livro` separado justamente porque ele pode faltar. O app NÃO
+ * inventa número de livro: uma certidão que afirma um assento inexistente é
+ * pior que uma certidão sem ele, e a paróquia é quem responde pelo
+ * documento.
+ */
+export function obterDadosDaCertidao(parishId: string, sacramentId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const sacramento = await tx.sacrament.findFirst({
+      where: { id: sacramentId, parishId },
+      include: {
+        user: { select: { fullName: true, birthDate: true } },
+        familyMember: { select: { fullName: true, birthDate: true } },
+        priestProfile: { include: { user: { select: { fullName: true } } } },
+      },
+    });
+    if (!sacramento) return null;
+
+    const [paroquia, paroco] = await Promise.all([
+      tx.parish.findUnique({
+        where: { id: parishId },
+        select: { name: true, city: true, state: true, address: true },
+      }),
+      tx.parishMembership
+        .findFirst({
+          where: { parishId, status: "active", role: { code: "PAROCO" } },
+          select: { userId: true },
+        })
+        .then((f) =>
+          f
+            ? tx.priestProfile.findUnique({
+                where: { userId_parishId: { userId: f.userId, parishId } },
+                include: { user: { select: { fullName: true } } },
+              })
+            : null,
+        ),
+    ]);
+
+    return {
+      sacramento,
+      // Uma das duas pontas existe, garantido por CHECK no banco.
+      nome: sacramento.user?.fullName ?? sacramento.familyMember?.fullName ?? null,
+      nascimento: sacramento.user?.birthDate ?? sacramento.familyMember?.birthDate ?? null,
+      paroquia,
+      // Quem celebrou, quando registrado; senão o pároco atual assina.
+      celebrante: sacramento.priestProfile?.user.fullName ?? null,
+      paroco: paroco ? { nome: paroco.user.fullName, titulo: paroco.title } : null,
+      livro: sacramento.note?.trim() || null,
+    };
+  });
+}

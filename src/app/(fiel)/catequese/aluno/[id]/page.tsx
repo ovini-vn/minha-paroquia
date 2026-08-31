@@ -346,6 +346,14 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                       {sac.note ? ` · ${sac.note}` : ""}
                     </p>
                   </div>
+                  {/* Da ficha direto para a certidão: é onde a coordenação
+                      está quando a família pede o documento. */}
+                  <Link
+                    href={`/painel/sacramentos/${sac.id}/certidao`}
+                    className="shrink-0 text-[12.5px] font-medium text-primary hover:underline"
+                  >
+                    Certidão →
+                  </Link>
                 </div>
               ))}
             </Card>

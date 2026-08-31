@@ -389,3 +389,211 @@ body {
   white-space: nowrap;
   letter-spacing: 0;
 }
+
+/*
+ * A certidão de sacramento, feita para o papel.
+ *
+ * Fica aqui, em CSS, e não em classes utilitárias: é o único lugar do app
+ * cuja saída é uma FOLHA, com regra de página, quebra e tinta preta. Escrever
+ * isso com utilitários espalharia `print:` por trinta lugares de um
+ * componente que ninguém mais reaproveita.
+ */
+.certidao-pagina {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.certidao {
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 14px;
+  padding: 40px 38px;
+  line-height: 1.75;
+}
+
+.certidao-topo {
+  text-align: center;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgb(var(--color-border));
+}
+
+.certidao-paroquia {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
+  color: rgb(var(--color-foreground));
+  margin: 0;
+}
+
+.certidao-lugar {
+  font-size: 12.5px;
+  color: rgb(var(--color-muted));
+  margin: 2px 0 0;
+}
+
+.certidao-titulo {
+  font-family: var(--font-serif);
+  font-size: 27px;
+  font-weight: 600;
+  text-align: center;
+  color: rgb(var(--color-foreground));
+  margin: 30px 0 26px;
+  letter-spacing: 0.01em;
+}
+
+.certidao-corpo {
+  font-size: 15.5px;
+  text-align: justify;
+  color: rgb(var(--color-foreground));
+  margin: 0 0 26px;
+}
+
+.certidao-assento {
+  margin: 0 0 34px;
+  padding: 14px 16px;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 10px;
+}
+
+.certidao-assento dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--color-muted));
+}
+
+.certidao-assento dd {
+  margin: 5px 0 0;
+  font-size: 15px;
+  color: rgb(var(--color-foreground));
+}
+
+/* Linha para preencher à mão quando o assento não foi registrado. */
+.certidao-linha {
+  display: block;
+  height: 1px;
+  margin-top: 12px;
+  background: rgb(var(--color-border-strong));
+}
+
+.certidao-data {
+  font-size: 15px;
+  text-align: right;
+  color: rgb(var(--color-foreground));
+  margin: 0 0 46px;
+}
+
+.certidao-assinatura {
+  text-align: center;
+}
+
+.certidao-linha-assinatura {
+  display: block;
+  width: 260px;
+  max-width: 100%;
+  height: 1px;
+  margin: 0 auto 8px;
+  background: rgb(var(--color-foreground));
+}
+
+.certidao-assinante {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgb(var(--color-foreground));
+  margin: 0;
+}
+
+.certidao-cargo {
+  font-size: 12.5px;
+  color: rgb(var(--color-muted));
+  margin: 2px 0 0;
+}
+
+.certidao-rodape {
+  margin: 40px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgb(var(--color-border));
+  font-size: 11.5px;
+  text-align: center;
+  color: rgb(var(--color-muted));
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 22mm 20mm;
+  }
+
+  /* Tinta preta sobre branco: a certidão sai na impressora da secretaria,
+     que quase sempre é monocromática — e o marfim da marca vira um cinza
+     sujo sobre o papel. */
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .nao-imprime,
+  header.sticky,
+  nav {
+    display: none !important;
+  }
+
+  /*
+   * O layout do painel embrulha a página em containers com fundo e
+   * espaçamento que não fazem sentido numa folha.
+   *
+   * Zerar só o `body` não basta: o `bg-sunken` do invólucro imprimia uma
+   * moldura bege em volta da certidão — tinta gasta à toa, e uma folha que
+   * não parece documento.
+   *
+   * O `:has()` prende a regra à página da certidão. Sem ele, isto mudaria a
+   * impressão de QUALQUER tela do app, que não é o que se está pedindo aqui.
+   */
+  body:has(.certidao) > div,
+  body:has(.certidao) main {
+    background: #fff !important;
+  }
+
+  .certidao-pagina {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .certidao {
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    /* Uma certidão nunca começa numa página e termina noutra. */
+    break-inside: avoid;
+  }
+
+  .certidao-topo,
+  .certidao-assento,
+  .certidao-rodape {
+    border-color: #000;
+  }
+
+  .certidao-paroquia,
+  .certidao-titulo,
+  .certidao-corpo,
+  .certidao-assento dd,
+  .certidao-data,
+  .certidao-assinante {
+    color: #000;
+  }
+
+  .certidao-lugar,
+  .certidao-assento dt,
+  .certidao-cargo,
+  .certidao-rodape {
+    color: #333;
+  }
+
+  .certidao-linha,
+  .certidao-linha-assinatura {
+    background: #000;
+  }
+}

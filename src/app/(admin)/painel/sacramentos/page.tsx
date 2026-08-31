@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { ScrollText, Check } from "lucide-react";
+import { ScrollText, Check, FileText } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listSacramentsForValidation } from "@/server/modules/caminhada/service";
 import { setSacramentValidationAction } from "@/server/actions/caminhada-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
@@ -48,6 +48,15 @@ export default async function SacramentsAdminPage() {
             {validated && <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />}
             {SACRAMENT_STATUS_LABELS[sacrament.status]}
           </Badge>
+          {/* A certidão só é oferecida depois de VALIDADO: certidão de
+              sacramento autodeclarado seria a paróquia atestando o que ela
+              não conferiu. */}
+          {validated && (
+            <LinkButton href={`/painel/sacramentos/${sacrament.id}/certidao`} variant="ghost" size="sm">
+              <FileText className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
+              Certidão
+            </LinkButton>
+          )}
           <form action={setSacramentValidationAction}>
             <input type="hidden" name="id" value={sacrament.id} />
             <input type="hidden" name="validated" value={validated ? "false" : "true"} />

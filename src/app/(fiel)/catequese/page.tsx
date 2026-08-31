@@ -148,10 +148,11 @@ export default async function CatequesePage() {
                       <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14.5px] font-medium text-foreground">{rito.name}</p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">
-                        {rito.enrollment.familyMember.fullName} · {rito.enrollment.group.name}
-                      </p>
+                      {/* O rito é da TURMA. Antes esta lista mostrava o nome
+                          da criança, e a mesma entrega do Credo aparecia
+                          vinte e cinco vezes — uma por matrícula. */}
+                      <p className="text-[14.5px] font-medium text-foreground">{rito.nome}</p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">{rito.group.name}</p>
                     </div>
                     {rito.scheduledAt && <Badge>{formatDateOnly(rito.scheduledAt)}</Badge>}
                   </div>

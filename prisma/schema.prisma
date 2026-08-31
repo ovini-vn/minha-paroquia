@@ -328,6 +328,7 @@ model Parish {
   catechismGroups         CatechismGroup[]
   itinerarios             Itinerario[]
   itinerarioTemas         ItinerarioTema[]
+  catechismGroupRites     CatechismGroupRite[]
   catechismEnrollments    CatechismEnrollment[]
   catechismSessions       CatechismSession[]
   catechismAttendance     CatechismAttendance[]
@@ -1143,6 +1144,7 @@ model CatechismGroup {
   catechist   User?                 @relation(fields: [catechistUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
   sessions    CatechismSession[]
+  ritos       CatechismGroupRite[]
 
   @@index([parishId])
   @@map("catechism_groups")
@@ -1241,10 +1243,41 @@ model CatechismMassAttendance {
   @@map("catechism_mass_attendance")
 }
 
+/// Um rito da TURMA: a entrega do Pai-Nosso, a apresentação à comunidade.
+///
+/// Rito acontece num domingo, para a turma inteira. Antes só existia o
+/// registro individual, e marcar a entrega do Credo numa turma de 25 eram 25
+/// digitações — cada uma podendo grafar o nome de um jeito, o que fazia a
+/// coordenação não conseguir contar nada.
+///
+/// A participação de cada criança continua existindo (`CatechismRite`), e
+/// passa a DERIVAR daqui. Os ritos individuais gravados antes deste modelo
+/// não foram migrados de propósito: são registro sacramental válido, e
+/// reescrevê-los em massa para arrumar a forma seria arriscar o conteúdo.
+model CatechismGroupRite {
+  id               String    @id @default(uuid())
+  parishId         String    @map("parish_id")
+  catechismGroupId String    @map("catechism_group_id")
+  nome             String
+  scheduledAt      DateTime? @map("scheduled_at") @db.Date
+  completedAt      DateTime? @map("completed_at") @db.Date
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  parish        Parish          @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group         CatechismGroup  @relation(fields: [catechismGroupId], references: [id], onDelete: Cascade)
+  participacoes CatechismRite[]
+
+  @@index([parishId, catechismGroupId])
+  @@map("catechism_group_rites")
+}
+
 model CatechismRite {
   id           String    @id @default(uuid())
   parishId     String    @map("parish_id")
   enrollmentId String    @map("enrollment_id")
+  /// De qual rito da turma este registro veio. Nulo nos lançados um a um,
+  /// inclusive os anteriores ao rito de turma existir.
+  grupoRitoId  String?   @map("grupo_rito_id")
   name         String
   scheduledAt  DateTime? @map("scheduled_at") @db.Date
   completedAt  DateTime? @map("completed_at") @db.Date
@@ -1252,7 +1285,11 @@ model CatechismRite {
 
   parish     Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
   enrollment CatechismEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  grupoRito  CatechismGroupRite? @relation(fields: [grupoRitoId], references: [id], onDelete: SetNull)
 
+  /// Uma participação por criança por rito da turma — marcar duas vezes o
+  /// mesmo rito não pode duplicar o registro.
+  @@unique([enrollmentId, grupoRitoId])
   @@index([parishId])
   @@map("catechism_rites")
 }

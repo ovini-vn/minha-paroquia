@@ -41,3 +41,9 @@ export const criarTemaSchema = z.object({
   ordem: z.coerce.number().int().min(0).max(999).optional(),
 });
 export type CriarTemaInput = z.infer<typeof criarTemaSchema>;
+
+export const criarRitoDaTurmaSchema = z.object({
+  nome: z.string().trim().min(2, "Informe o nome do rito."),
+  scheduledAt: z.coerce.date().optional(),
+});
+export type CriarRitoDaTurmaInput = z.infer<typeof criarRitoDaTurmaSchema>;

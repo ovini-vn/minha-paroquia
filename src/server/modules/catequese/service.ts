@@ -288,15 +288,21 @@ export async function getCatequeseOverview(parishId: string) {
           distinct: ["catechistUserId"],
         }),
         tx.catechismGroup.count({ where: { parishId, catechistUserId: null } }),
-        tx.catechismRite.findMany({
+        /*
+         * Os ritos de TURMA agendados. Antes esta lista vinha dos ritos
+         * individuais, e mostrava a mesma entrega do Credo vinte e cinco
+         * vezes — uma por criança. O rito é um evento da turma, e é assim
+         * que a coordenação precisa vê-lo.
+         *
+         * Os individuais lançados à mão entram junto, porque continuam
+         * existindo para o caso da criança que recebeu fora do domingo da
+         * turma.
+         */
+        tx.catechismGroupRite.findMany({
           where: { parishId, completedAt: null, scheduledAt: { not: null } },
           orderBy: { scheduledAt: "asc" },
           take: 5,
-          include: {
-            enrollment: {
-              include: { familyMember: { select: { fullName: true } }, group: { select: { name: true } } },
-            },
-          },
+          include: { group: { select: { name: true } } },
         }),
         tx.catechismSession.findMany({
           where: { parishId, date: { gte: new Date() } },
@@ -366,7 +372,7 @@ export async function getEnrollmentProgress(
     });
     if (!enrollment) return null;
 
-    const [encontros, presencas, ritos, missas] = await Promise.all([
+    const [encontros, presencas, ritos, missas, ritosDaTurma] = await Promise.all([
       tx.catechismSession.findMany({
         where: { parishId, catechismGroupId: enrollment.catechismGroupId },
         orderBy: { date: "desc" },
@@ -379,6 +385,13 @@ export async function getEnrollmentProgress(
       tx.catechismMassAttendance.findMany({
         where: { parishId, enrollmentId },
         orderBy: { attendedOn: "desc" },
+      }),
+      // Os ritos da turma entram porque o rito AGENDADO ainda não tem linha
+      // individual: sem eles, a família só saberia do rito depois que ele
+      // acontecesse — que é exatamente quando deixa de ser "próximo passo".
+      tx.catechismGroupRite.findMany({
+        where: { parishId, catechismGroupId: enrollment.catechismGroupId },
+        orderBy: [{ scheduledAt: "asc" }],
       }),
     ]);
 
@@ -415,7 +428,33 @@ export async function getEnrollmentProgress(
       ritos,
       missas,
       caminhada,
-      proximoRito: proximoRito(ritos, agora),
+      ritosDaTurma,
+      /*
+       * O próximo rito sai de DUAS fontes, e nenhuma serve sozinha: o rito
+       * da turma cobre o que ainda vai acontecer, e o individual cobre o que
+       * foi lançado à mão para aquela criança. Os individuais derivados de
+       * um rito de turma ficam de fora, senão o mesmo rito entraria duas
+       * vezes na disputa.
+       */
+      proximoRito: proximoRito(
+        [
+          ...ritos
+            .filter((r) => !r.grupoRitoId)
+            .map((r) => ({
+              id: r.id,
+              name: r.name,
+              scheduledAt: r.scheduledAt,
+              completedAt: r.completedAt,
+            })),
+          ...ritosDaTurma.map((r) => ({
+            id: r.id,
+            name: r.nome,
+            scheduledAt: r.scheduledAt,
+            completedAt: r.completedAt,
+          })),
+        ],
+        agora,
+      ),
       resumo: {
         encontrosRealizados: realizados.length,
         presencas: presentes,
@@ -788,4 +827,128 @@ export function listarMissaDaTurma(parishId: string, groupId: string, attendedOn
       select: { enrollmentId: true },
     }),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Rito da turma.
+//
+// O rito acontece num domingo para a turma inteira. Antes só existia o
+// registro individual, e marcar a entrega do Credo numa turma de 25 eram 25
+// digitações.
+// ---------------------------------------------------------------------------
+
+export function criarRitoDaTurma(
+  parishId: string,
+  groupId: string,
+  input: { nome: string; scheduledAt?: Date | null },
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const grupo = await tx.catechismGroup.findFirst({
+      where: { id: groupId, parishId },
+      select: { id: true },
+    });
+    if (!grupo) throw new ValidationError("Turma não encontrada.");
+
+    return tx.catechismGroupRite.create({
+      data: {
+        parishId,
+        catechismGroupId: groupId,
+        nome: input.nome,
+        scheduledAt: input.scheduledAt ?? null,
+      },
+    });
+  });
+}
+
+export function listarRitosDaTurma(parishId: string, groupId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismGroupRite.findMany({
+      where: { parishId, catechismGroupId: groupId },
+      orderBy: [{ scheduledAt: "asc" }, { createdAt: "asc" }],
+      include: { _count: { select: { participacoes: true } } },
+    }),
+  );
+}
+
+export function obterRitoDaTurma(parishId: string, ritoId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismGroupRite.findFirst({
+      where: { id: ritoId, parishId },
+      include: {
+        group: { select: { id: true, name: true, catechistUserId: true } },
+        participacoes: { select: { enrollmentId: true } },
+      },
+    }),
+  );
+}
+
+/**
+ * Quem participou do rito, de uma vez.
+ *
+ * A regra de segurança que importa: a sincronização só mexe nas linhas que
+ * VIERAM DESTE rito (`grupoRitoId`). Um rito individual lançado à mão —
+ * inclusive os anteriores a este modelo existir — nunca é apagado por aqui.
+ * Registro sacramental não pode sumir como efeito colateral de uma chamada.
+ *
+ * Marcar a participação também dá o rito por realizado: na prática são o
+ * mesmo ato, e pedir dois cliques faria a turma ficar com rito eternamente
+ * "agendado" mesmo depois de acontecer.
+ */
+export function registrarParticipacaoNoRito(
+  parishId: string,
+  ritoId: string,
+  presentes: string[],
+  quando: Date,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const rito = await tx.catechismGroupRite.findFirst({
+      where: { id: ritoId, parishId },
+      select: { id: true, nome: true, catechismGroupId: true, scheduledAt: true },
+    });
+    if (!rito) throw new ValidationError("Rito não encontrado.");
+
+    const daTurma = await tx.catechismEnrollment.findMany({
+      where: { parishId, catechismGroupId: rito.catechismGroupId },
+      select: { id: true },
+    });
+    const permitidas = new Set(daTurma.map((e) => e.id));
+    const marcadas = presentes.filter((id) => permitidas.has(id));
+
+    // Só as participações DESTE rito saem. `grupoRitoId` no filtro é o que
+    // protege o que foi lançado à mão.
+    await tx.catechismRite.deleteMany({
+      where: { parishId, grupoRitoId: ritoId, enrollmentId: { notIn: marcadas } },
+    });
+
+    for (const enrollmentId of marcadas) {
+      const existe = await tx.catechismRite.findFirst({
+        where: { parishId, grupoRitoId: ritoId, enrollmentId },
+        select: { id: true },
+      });
+      if (existe) {
+        await tx.catechismRite.update({
+          where: { id: existe.id },
+          data: { name: rito.nome, completedAt: quando, scheduledAt: rito.scheduledAt },
+        });
+        continue;
+      }
+      await tx.catechismRite.create({
+        data: {
+          parishId,
+          enrollmentId,
+          grupoRitoId: ritoId,
+          name: rito.nome,
+          scheduledAt: rito.scheduledAt,
+          completedAt: quando,
+        },
+      });
+    }
+
+    await tx.catechismGroupRite.update({
+      where: { id: ritoId },
+      data: { completedAt: marcadas.length > 0 ? quando : null },
+    });
+
+    return { participantes: marcadas.length };
+  });
 }

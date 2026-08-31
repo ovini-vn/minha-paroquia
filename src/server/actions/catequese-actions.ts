@@ -24,6 +24,9 @@ import {
   arquivarItinerario,
   definirItinerarioDaTurma,
   registrarMissaDaTurma,
+  criarRitoDaTurma,
+  registrarParticipacaoNoRito,
+  obterRitoDaTurma,
 } from "@/server/modules/catequese/service";
 import {
   createGroupInputSchema,
@@ -31,6 +34,7 @@ import {
   createRiteInputSchema,
   criarItinerarioSchema,
   criarTemaSchema,
+  criarRitoDaTurmaSchema,
 } from "@/server/modules/catequese/schema";
 import {
   createParishPerson,
@@ -516,4 +520,83 @@ export async function registrarMissaDaTurmaAction(formData: FormData): Promise<v
     revalidatePath(`/catequese/turma/${groupId}/encontro/${sessionId}`);
   }
   revalidatePath(`/catequese/turma/${groupId}`);
+}
+
+/**
+ * Criar um rito da turma. Catequista e coordenação — quem conduz o rito é a
+ * catequista, e travar isso na coordenação faria a turma esperar por alguém
+ * que não está lá no domingo.
+ */
+export async function criarRitoDaTurmaAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+
+  const coordena = coordenaCatequese(session);
+  if (!coordena && !session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH)) {
+    return { error: "Você não tem permissão para isso." };
+  }
+
+  const groupId = formData.get("groupId");
+  if (typeof groupId !== "string") return { error: "Turma não informada." };
+
+  const daMinhaTurma = await getGroup(session.membership.parishId, groupId, catechistScope(session));
+  if (!daMinhaTurma) return { error: "Esta turma não é sua." };
+
+  try {
+    const bruto = formData.get("scheduledAt");
+    const input = criarRitoDaTurmaSchema.parse({
+      nome: formData.get("nome"),
+      scheduledAt: bruto ? `${bruto as string}T00:00:00.000Z` : undefined,
+    });
+    await criarRitoDaTurma(session.membership.parishId, groupId, input);
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/turma/${groupId}`);
+  return {};
+}
+
+/** Quem participou do rito, marcado de uma vez para a turma. */
+export async function registrarParticipacaoNoRitoAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+
+  const coordena = coordenaCatequese(session);
+  if (!coordena && !session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH)) return;
+
+  const ritoId = formData.get("ritoId");
+  const quandoBruto = formData.get("quando");
+  if (typeof ritoId !== "string") return;
+
+  const rito = await obterRitoDaTurma(session.membership.parishId, ritoId);
+  if (!rito) return;
+
+  // O escopo do catequista é conferido pela TURMA do rito, no banco.
+  const daMinhaTurma = await getGroup(
+    session.membership.parishId,
+    rito.group.id,
+    catechistScope(session),
+  );
+  if (!daMinhaTurma) return;
+
+  const quando =
+    typeof quandoBruto === "string" && quandoBruto
+      ? new Date(`${quandoBruto}T00:00:00.000Z`)
+      : new Date();
+  if (Number.isNaN(quando.getTime())) return;
+
+  const presentes = formData
+    .getAll("participou")
+    .filter((valor): valor is string => typeof valor === "string");
+
+  await registrarParticipacaoNoRito(session.membership.parishId, ritoId, presentes, quando);
+
+  revalidatePath(`/catequese/turma/${rito.group.id}/rito/${ritoId}`);
+  revalidatePath(`/catequese/turma/${rito.group.id}`);
 }

@@ -10,6 +10,9 @@ import {
   registrarMissaDaTurma,
   listarMissaDaTurma,
   getEnrollmentProgress,
+  createRite,
+  criarRitoDaTurma,
+  registrarParticipacaoNoRito,
   criarItinerario,
   criarTema,
   definirItinerarioDaTurma,
@@ -264,5 +267,129 @@ describe("presença na missa, da turma inteira", () => {
     // A lista não ganhou ninguém, e quem estava marcado saiu — porque não
     // veio na lista de presentes.
     expect(await listarMissaDaTurma(parishId, turmaId, domingo)).toEqual([]);
+  });
+});
+
+/**
+ * O rito da turma.
+ *
+ * O que estes testes protegem, além do caminho feliz: um rito lançado à mão
+ * na ficha de uma criança NÃO pode ser apagado quando alguém desmarca a
+ * participação no rito da turma. Registro sacramental não some como efeito
+ * colateral de uma chamada.
+ */
+describe("rito da turma", () => {
+  let parishId: string;
+  let responsavelId: string;
+  let turmaId: string;
+  let matriculas: string[] = [];
+  const userIds: string[] = [];
+  const parishIds: string[] = [];
+
+  beforeAll(async () => {
+    await ensureRolesAndPermissionsSeeded();
+    const paroquia = await registerParish({ name: `Paróquia Rito ${Date.now()}` });
+    parishId = paroquia.id;
+    parishIds.push(paroquia.id);
+
+    const responsavel = await registerUser({
+      fullName: "Responsável Rito",
+      email: `resp-rito-${Date.now()}@test.comunidade.app`,
+      password: "Senha@12345",
+    });
+    responsavelId = responsavel.id;
+    userIds.push(responsavel.id);
+
+    const turma = await createGroup({ parishId, name: "Turma Rito", year: 2026 });
+    turmaId = turma.id;
+
+    matriculas = [];
+    for (const nome of ["Ana", "Bento", "Clara"]) {
+      const crianca = await createFamilyMember({
+        parishId,
+        responsibleUserId: responsavelId,
+        fullName: nome,
+        relationship: "filho",
+      });
+      const m = await enrollFamilyMember(parishId, turmaId, crianca.id);
+      matriculas.push(m.id);
+    }
+  });
+
+  afterAll(async () => {
+    await cleanupTenantData({ parishIds, userIds });
+  });
+
+  it("um rito marcado uma vez vira participação de vários", async () => {
+    const rito = await criarRitoDaTurma(parishId, turmaId, {
+      nome: "Entrega do Pai-Nosso",
+      scheduledAt: new Date("2026-09-13T00:00:00.000Z"),
+    });
+
+    const r = await registrarParticipacaoNoRito(
+      parishId,
+      rito.id,
+      [matriculas[0]!, matriculas[1]!],
+      new Date("2026-09-13T00:00:00.000Z"),
+    );
+    expect(r.participantes).toBe(2);
+
+    // Cada criança recebe o SEU registro, com o nome vindo do rito da turma —
+    // é o que impede duas grafias para a mesma entrega.
+    const daAna = await getEnrollmentProgress(parishId, matriculas[0]!);
+    expect(daAna?.ritos.map((x) => x.name)).toEqual(["Entrega do Pai-Nosso"]);
+    expect(daAna?.ritos[0]?.completedAt).not.toBeNull();
+
+    const daClara = await getEnrollmentProgress(parishId, matriculas[2]!);
+    expect(daClara?.ritos).toEqual([]);
+  });
+
+  it("desmarcar tira a participação daquele rito", async () => {
+    const rito = await criarRitoDaTurma(parishId, turmaId, { nome: "Entrega do Credo" });
+
+    await registrarParticipacaoNoRito(parishId, rito.id, [matriculas[0]!], new Date("2026-10-04"));
+    await registrarParticipacaoNoRito(parishId, rito.id, [], new Date("2026-10-04"));
+
+    const daAna = await getEnrollmentProgress(parishId, matriculas[0]!);
+    expect(daAna?.ritos.map((x) => x.name)).not.toContain("Entrega do Credo");
+  });
+
+  it("NÃO apaga o rito lançado à mão na ficha da criança", async () => {
+    // A regra que protege registro sacramental: a sincronização só mexe nas
+    // linhas que vieram DAQUELE rito de turma.
+    await createRite(parishId, matriculas[2]!, {
+      name: "Batismo de emergência",
+      scheduledAt: new Date("2026-05-01"),
+    });
+
+    const rito = await criarRitoDaTurma(parishId, turmaId, { nome: "Apresentação à comunidade" });
+    await registrarParticipacaoNoRito(parishId, rito.id, [], new Date("2026-11-01"));
+
+    const daClara = await getEnrollmentProgress(parishId, matriculas[2]!);
+    expect(daClara?.ritos.map((x) => x.name)).toContain("Batismo de emergência");
+  });
+
+  it("ignora matrícula que não é da turma", async () => {
+    const rito = await criarRitoDaTurma(parishId, turmaId, { nome: "Rito de escopo" });
+    const r = await registrarParticipacaoNoRito(
+      parishId,
+      rito.id,
+      ["id-que-nao-existe"],
+      new Date("2026-11-08"),
+    );
+    expect(r.participantes).toBe(0);
+  });
+
+  it("o rito agendado da turma é o próximo passo da família, antes de acontecer", async () => {
+    // Sem isto, a família só saberia do rito depois que ele acontecesse — que
+    // é exatamente quando ele deixa de ser "próximo passo".
+    const rito = await criarRitoDaTurma(parishId, turmaId, {
+      nome: "Entrega da Bíblia",
+      scheduledAt: new Date("2099-03-01T00:00:00.000Z"),
+    });
+    expect(rito.completedAt).toBeNull();
+
+    const progresso = await getEnrollmentProgress(parishId, matriculas[0]!, new Date("2026-09-01"));
+    expect(progresso?.proximoRito?.name).toBe("Entrega da Bíblia");
   });
 });

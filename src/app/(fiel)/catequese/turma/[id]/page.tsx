@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { BookOpen, Users, CalendarDays } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, Sparkles } from "lucide-react";
 import {
   getGroup,
   listEnrollments,
@@ -11,6 +11,7 @@ import {
   listarTemasDaTurma,
   obterAndamentoDaTurma,
   listarItinerarios,
+  listarRitosDaTurma,
   listRitesForEnrollment,
 } from "@/server/modules/catequese/service";
 import { listAllFamilyMembers } from "@/server/modules/family/service";
@@ -26,6 +27,7 @@ import { formatDateOnly } from "@/lib/date";
 import { EnrollForm } from "../../_components/EnrollForm";
 import { CreateSessionForm } from "../../_components/CreateSessionForm";
 import { CreateRiteForm } from "../../_components/CreateRiteForm";
+import { CriarRitoDaTurmaForm } from "../../_components/CriarRitoDaTurmaForm";
 
 /**
  * A turma, vista por quem coordena e/ou por quem dá aula.
@@ -50,12 +52,13 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const group = await getGroup(parishId, id, coordena ? undefined : session.userId);
   if (!group) notFound();
 
-  const [enrollments, sessions, temas, andamento, itinerarios] = await Promise.all([
+  const [enrollments, sessions, temas, andamento, itinerarios, ritosDaTurma] = await Promise.all([
     listEnrollments(parishId, id),
     listSessions(parishId, id),
     listarTemasDaTurma(parishId, id),
     obterAndamentoDaTurma(parishId, id, new Date()),
     coordena ? listarItinerarios(parishId) : [],
+    listarRitosDaTurma(parishId, id),
   ]);
 
   const ritesByEnrollment = await Promise.all(
@@ -311,10 +314,56 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         )}
 
         {leciona && enrollments.length > 0 && (
-          <Card className="mt-3">
-            <Eyebrow className="mb-3">Registrar um rito</Eyebrow>
-            <CreateRiteForm enrollments={enrollments} />
-          </Card>
+          <>
+            {/*
+              O rito da TURMA vem primeiro, e é o caminho normal: o rito
+              acontece num domingo para todos. Registrar criança por criança
+              eram 25 digitações numa turma de 25, cada uma podendo grafar o
+              nome de um jeito — e aí a coordenação não conseguia contar nada.
+            */}
+            <Card className="mt-3">
+              <Eyebrow className="mb-3">Marcar um rito para a turma</Eyebrow>
+              <CriarRitoDaTurmaForm groupId={id} />
+
+              {ritosDaTurma.length > 0 && (
+                <div className="mt-4 border-t border-border pt-1">
+                  {ritosDaTurma.map((rito) => (
+                    <Link
+                      key={rito.id}
+                      href={`/catequese/turma/${id}/rito/${rito.id}`}
+                      className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
+                    >
+                      <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
+                        <Sparkles className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] font-medium text-foreground">{rito.nome}</p>
+                        <p className="mt-0.5 text-[12.5px] text-muted">
+                          {rito.completedAt
+                            ? `Realizado · ${rito._count.participacoes} ${
+                                rito._count.participacoes === 1 ? "participou" : "participaram"
+                              }`
+                            : rito.scheduledAt
+                              ? `Previsto para ${formatDateOnly(rito.scheduledAt)}`
+                              : "Sem data marcada"}
+                        </p>
+                      </div>
+                      <span className="text-[12.5px] text-muted">
+                        {rito.completedAt ? "Corrigir →" : "Marcar quem participou →"}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* O individual continua existindo: serve ao caso de uma criança
+                que recebeu o rito fora do domingo da turma. */}
+            <Card className="mt-3">
+              <Eyebrow className="mb-3">Registrar um rito de uma criança só</Eyebrow>
+              <CreateRiteForm enrollments={enrollments} />
+            </Card>
+          </>
         )}
       </section>
 

@@ -977,9 +977,25 @@ enum SacramentStatus {
 // Auto-declarado pelo fiel (status self_reported) — nunca é fonte oficial
 // sem validação humana. A tela/ação de validação pela secretaria é P2 (ver
 // docs/ARQUITETURA.md); o schema já deixa o campo pronto.
+/// Batismo, primeira eucaristia, crisma, casamento.
+///
+/// Pende de UMA das duas pontas, nunca das duas: de um usuário do app, ou de
+/// um membro da família sem conta.
+///
+/// A segunda existe porque a vida sacramental de quem participa NÃO depende
+/// de usar o aplicativo. A criança que faz a Primeira Eucaristia tem sete
+/// anos e não tem celular; exigir conta para registrar o sacramento dela
+/// seria deixar de fora justamente quem a catequese existe para acompanhar.
+///
+/// A regra "um e só um" é garantida por CHECK no banco, e não por confiança
+/// no código: um registro sem dono, ou com dois, é um registro que ninguém
+/// consegue encontrar depois.
 model Sacrament {
   id              String          @id @default(uuid())
-  userId          String          @map("user_id")
+  /// Quem tem conta no app.
+  userId          String?         @map("user_id")
+  /// Quem não tem — catequizando, criança, dependente.
+  familyMemberId  String?         @map("family_member_id")
   parishId        String          @map("parish_id")
   type            SacramentType
   date            DateTime        @db.Date
@@ -991,11 +1007,13 @@ model Sacrament {
   validatedAt     DateTime?       @map("validated_at")
   createdAt       DateTime        @default(now()) @map("created_at")
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyMember  FamilyMember?  @relation(fields: [familyMemberId], references: [id], onDelete: Cascade)
   parish        Parish         @relation(fields: [parishId], references: [id], onDelete: Cascade)
   priestProfile PriestProfile? @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
 
   @@index([parishId, userId])
+  @@index([parishId, familyMemberId])
   @@map("sacraments")
 }
 
@@ -1047,6 +1065,7 @@ model FamilyMember {
   linkedUser  User?                  @relation("FamilyMemberLinked", fields: [linkedUserId], references: [id], onDelete: SetNull)
   enrollments CatechismEnrollment[]
   guardians   FamilyMemberGuardian[]
+  sacraments  Sacrament[]
 
   @@index([parishId, responsibleUserId])
   @@index([parishId, fullName])

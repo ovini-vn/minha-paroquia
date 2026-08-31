@@ -25,18 +25,21 @@ export default async function SacramentsAdminPage() {
 
   const linha = (sacrament: (typeof sacraments)[number]) => {
     const validated = sacrament.status === "validated";
+    // Uma das duas pontas existe, garantido por CHECK no banco. O
+    // catequizando sem conta aparece aqui como qualquer outro.
+    const nome = sacrament.user?.fullName ?? sacrament.familyMember?.fullName ?? "Sem nome";
     return (
       <div
         key={sacrament.id}
         className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
       >
-        <Avatar name={sacrament.user.fullName} size="sm" />
+        <Avatar name={nome} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="text-[14.5px] font-medium text-foreground">
             {SACRAMENT_TYPE_LABELS[sacrament.type]}
           </p>
           <p className="mt-0.5 text-[12.5px] text-muted">
-            {sacrament.user.fullName} · {formatDateOnly(sacrament.date)}
+            {nome} · {formatDateOnly(sacrament.date)}
             {sacrament.location ? ` · ${sacrament.location}` : ""}
           </p>
         </div>

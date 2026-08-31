@@ -95,7 +95,10 @@ export function listSacramentsForValidation(parishId: string) {
     tx.sacrament.findMany({
       where: { parishId },
       orderBy: [{ status: "asc" }, { date: "desc" }],
-      include: { user: { select: { fullName: true } } },
+      include: {
+        user: { select: { fullName: true } },
+        familyMember: { select: { fullName: true } },
+      },
     }),
   );
 }
@@ -122,10 +125,28 @@ export async function setSacramentValidation(
         : { status: "self_reported", validatedBy: null, validatedAt: null },
     });
 
-    if (validated) {
+    /*
+     * A quem avisar.
+     *
+     * Se o sacramento é de quem tem conta, avisa a própria pessoa. Se é de
+     * um catequizando sem conta, avisa quem responde por ele — a criança não
+     * tem para onde receber, e a família é quem acompanha.
+     */
+    const aviso = sacrament.userId
+      ? sacrament.userId
+      : sacrament.familyMemberId
+        ? (
+            await tx.familyMember.findUnique({
+              where: { id: sacrament.familyMemberId },
+              select: { responsibleUserId: true },
+            })
+          )?.responsibleUserId ?? null
+        : null;
+
+    if (validated && aviso) {
       await notifyUser(tx, {
         parishId,
-        userId: sacrament.userId,
+        userId: aviso,
         category: "espiritual",
         linkPath: "/caminhada",
         title: "Sacramento validado",

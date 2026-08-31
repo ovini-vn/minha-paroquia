@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, X, Sparkles, Church } from "lucide-react";
+import { Check, X, Sparkles, Church, Award } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
@@ -8,9 +8,11 @@ import {
   getEnrollmentGroupId,
   getGroup,
 } from "@/server/modules/catequese/service";
-import { listMyChildrenEnrollments } from "@/server/modules/catequese/service";
+import { listMyChildrenEnrollments, listarSacramentosDoCatequizando } from "@/server/modules/catequese/service";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { Card } from "@/components/ui/Card";
+import { SACRAMENT_TYPE_LABELS } from "@/lib/caminhada-labels";
+import { ConcluirComSacramentoForm } from "../../_components/ConcluirComSacramentoForm";
 import { Badge } from "@/components/ui/Badge";
 import { Stat } from "@/components/ui/Stat";
 import { Eyebrow } from "@/components/ui/Typography";
@@ -55,6 +57,8 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
 
   const podeLancar = coordena || ehCatequistaDaTurma;
   const celebracoes = podeLancar ? await listUpcomingCelebrations(parishId, 10) : [];
+  // Só a coordenação conclui, então só ela precisa da lista.
+  const sacramentos = coordena ? await listarSacramentosDoCatequizando(parishId, id) : [];
 
   const { enrollment, encontros, presencaPorSessao, ritos, missas, resumo, caminhada } = progresso;
   const proximo = progresso.proximoRito;
@@ -306,6 +310,57 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
       </section>
 
       <div className="rule-gold my-7" />
+      {/*
+        O fim da caminhada.
+
+        Só para quem coordena: sacramento é registro do livro da paróquia, e
+        quem responde por ele não é quem dá a aula.
+
+        O registro pende do CATEQUIZANDO, e não de uma conta — a criança de
+        sete anos não usa o aplicativo, e era isso que faltava para a
+        catequese poder terminar dentro da ferramenta.
+      */}
+      {coordena && (
+        <section className="pt-7">
+          <Eyebrow tone="accent" className="mb-3">
+            Concluir a caminhada
+          </Eyebrow>
+
+          {sacramentos.length > 0 && (
+            <Card className="mb-3 border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent px-3.5 py-1.5">
+              {sacramentos.map((sac) => (
+                <div
+                  key={sac.id}
+                  className="flex items-center gap-3.5 border-b border-border py-3 last:border-b-0"
+                >
+                  <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
+                    <Award className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-medium text-foreground">
+                      {SACRAMENT_TYPE_LABELS[sac.type]}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {formatDateOnly(sac.date)}
+                      {sac.location ? ` · ${sac.location}` : ""}
+                      {sac.note ? ` · ${sac.note}` : ""}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          <Card>
+            <p className="mb-3 text-[13px] leading-relaxed text-muted">
+              Registre o sacramento recebido. Ele passa a constar na paróquia mesmo que a família
+              não use o aplicativo, e é dele que sai o certificado.
+            </p>
+            <ConcluirComSacramentoForm enrollmentId={id} />
+          </Card>
+        </section>
+      )}
+
     </div>
   );
 }

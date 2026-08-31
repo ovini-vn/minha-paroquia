@@ -13,6 +13,8 @@ import {
   createRite,
   criarRitoDaTurma,
   registrarParticipacaoNoRito,
+  concluirComSacramento,
+  listarSacramentosDoCatequizando,
   criarItinerario,
   criarTema,
   definirItinerarioDaTurma,
@@ -391,5 +393,96 @@ describe("rito da turma", () => {
 
     const progresso = await getEnrollmentProgress(parishId, matriculas[0]!, new Date("2026-09-01"));
     expect(progresso?.proximoRito?.name).toBe("Entrega da Bíblia");
+  });
+});
+
+/**
+ * A catequese termina no sacramento — e o catequizando NÃO tem conta.
+ *
+ * Era o que travava o certificado: `Sacrament` exigia `userId`, e a criança
+ * que faz a Primeira Eucaristia tem sete anos. A vida sacramental de quem
+ * participa não depende de usar o aplicativo.
+ */
+describe("conclusão da catequese em sacramento", () => {
+  let parishId: string;
+  let responsavelId: string;
+  let matriculaId: string;
+  let familyMemberId: string;
+  const userIds: string[] = [];
+  const parishIds: string[] = [];
+
+  beforeAll(async () => {
+    await ensureRolesAndPermissionsSeeded();
+    const paroquia = await registerParish({ name: `Paróquia Conclusão ${Date.now()}` });
+    parishId = paroquia.id;
+    parishIds.push(paroquia.id);
+
+    const responsavel = await registerUser({
+      fullName: "Responsável Conclusão",
+      email: `resp-concl-${Date.now()}@test.comunidade.app`,
+      password: "Senha@12345",
+    });
+    responsavelId = responsavel.id;
+    userIds.push(responsavel.id);
+
+    const turma = await createGroup({ parishId, name: "Turma Conclusão", year: 2026 });
+    const crianca = await createFamilyMember({
+      parishId,
+      responsibleUserId: responsavelId,
+      fullName: "Cecília sem conta",
+      relationship: "filho",
+    });
+    familyMemberId = crianca.id;
+    const m = await enrollFamilyMember(parishId, turma.id, crianca.id);
+    matriculaId = m.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTenantData({ parishIds, userIds });
+  });
+
+  it("registra o sacramento de quem não tem conta nenhuma", async () => {
+    const sac = await concluirComSacramento(
+      parishId,
+      matriculaId,
+      {
+        type: "primeira_eucaristia",
+        date: new Date("2026-11-15T00:00:00.000Z"),
+        location: "Igreja Matriz",
+        note: "Livro 12, folha 43, nº 118",
+      },
+      responsavelId,
+    );
+
+    expect(sac.userId).toBeNull();
+    expect(sac.familyMemberId).toBe(familyMemberId);
+    // Nasce validado: quem lança é a paróquia, a partir do próprio livro.
+    expect(sac.status).toBe("validated");
+
+    const lista = await listarSacramentosDoCatequizando(parishId, matriculaId);
+    expect(lista.map((s) => s.type)).toEqual(["primeira_eucaristia"]);
+  });
+
+  it("relançar o mesmo tipo CORRIGE, não duplica", async () => {
+    // Duas primeiras eucaristias na ficha seriam erro de registro, e o
+    // certificado sairia com a data errada.
+    await concluirComSacramento(
+      parishId,
+      matriculaId,
+      { type: "primeira_eucaristia", date: new Date("2026-11-22T00:00:00.000Z") },
+      responsavelId,
+    );
+
+    const lista = await listarSacramentosDoCatequizando(parishId, matriculaId);
+    expect(lista).toHaveLength(1);
+    expect(lista[0]?.date.toISOString().slice(0, 10)).toBe("2026-11-22");
+  });
+
+  it("o aniversário do sacramento entra no painel da paróquia", async () => {
+    // A criança sem conta é da comunidade do mesmo jeito: o aniversário de
+    // Primeira Eucaristia dela precisa aparecer para a secretaria.
+    const { listarAniversarios } = await import("@/server/modules/aniversarios/service");
+    const proximos = await listarAniversarios(parishId, new Date("2026-11-20"), 10);
+    expect(proximos.some((a) => a.nome === "Cecília sem conta")).toBe(true);
   });
 });

@@ -47,3 +47,11 @@ export const criarRitoDaTurmaSchema = z.object({
   scheduledAt: z.coerce.date().optional(),
 });
 export type CriarRitoDaTurmaInput = z.infer<typeof criarRitoDaTurmaSchema>;
+
+export const concluirComSacramentoSchema = z.object({
+  type: z.enum(["batismo", "primeira_eucaristia", "crisma", "matrimonio", "outro"]),
+  date: z.coerce.date(),
+  location: z.string().trim().max(160).optional(),
+  note: z.string().trim().max(400).optional(),
+});
+export type ConcluirComSacramentoInput = z.infer<typeof concluirComSacramentoSchema>;

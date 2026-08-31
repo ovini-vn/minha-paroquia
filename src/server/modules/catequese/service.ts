@@ -2,6 +2,7 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
 import { resumirLancamento } from "@/lib/lancamento-de-conteudo";
 import { montarCaminhada, proximoRito } from "@/lib/caminhada-da-catequese";
+import type { SacramentType } from "@prisma/client";
 import type {
   CreateGroupInput,
   CreateSessionInput,
@@ -950,5 +951,77 @@ export function registrarParticipacaoNoRito(
     });
 
     return { participantes: marcadas.length };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Conclusão: a catequese termina no sacramento.
+// ---------------------------------------------------------------------------
+
+/**
+ * Registra o sacramento recebido pelo catequizando, concluindo a caminhada.
+ *
+ * O registro pende do MEMBRO DA FAMÍLIA, não de um usuário: a criança que faz
+ * a Primeira Eucaristia tem sete anos e não tem conta. Exigir conta aqui
+ * deixaria de fora justamente quem a catequese existe para acompanhar — e era
+ * o que travava o certificado.
+ *
+ * Nasce `validated`: quem lança é a paróquia, a partir do próprio livro. O
+ * status `self_reported` existe para o fiel que declara o próprio sacramento,
+ * e não é este caso.
+ */
+export function concluirComSacramento(
+  parishId: string,
+  enrollmentId: string,
+  input: { type: SacramentType; date: Date; location?: string | null; note?: string | null },
+  quemRegistrou: string,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const matricula = await tx.catechismEnrollment.findFirst({
+      where: { id: enrollmentId, parishId },
+      select: { familyMemberId: true },
+    });
+    if (!matricula) throw new ValidationError("Matrícula não encontrada.");
+
+    // Um sacramento do mesmo tipo por pessoa: relançar corrige, não duplica.
+    // Duas primeiras eucaristias na ficha seriam erro de registro, e o
+    // certificado sairia com a data errada.
+    const existe = await tx.sacrament.findFirst({
+      where: { parishId, familyMemberId: matricula.familyMemberId, type: input.type },
+      select: { id: true },
+    });
+
+    const dados = {
+      type: input.type,
+      date: input.date,
+      location: input.location || null,
+      note: input.note || null,
+      status: "validated" as const,
+      validatedBy: quemRegistrou,
+      validatedAt: new Date(),
+    };
+
+    if (existe) {
+      return tx.sacrament.update({ where: { id: existe.id }, data: dados });
+    }
+    return tx.sacrament.create({
+      data: { parishId, familyMemberId: matricula.familyMemberId, ...dados },
+    });
+  });
+}
+
+/** Os sacramentos já registrados de um catequizando. */
+export function listarSacramentosDoCatequizando(parishId: string, enrollmentId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const matricula = await tx.catechismEnrollment.findFirst({
+      where: { id: enrollmentId, parishId },
+      select: { familyMemberId: true },
+    });
+    if (!matricula) return [];
+
+    return tx.sacrament.findMany({
+      where: { parishId, familyMemberId: matricula.familyMemberId },
+      orderBy: { date: "desc" },
+    });
   });
 }

@@ -27,6 +27,7 @@ import {
   criarRitoDaTurma,
   registrarParticipacaoNoRito,
   obterRitoDaTurma,
+  concluirComSacramento,
 } from "@/server/modules/catequese/service";
 import {
   createGroupInputSchema,
@@ -35,6 +36,7 @@ import {
   criarItinerarioSchema,
   criarTemaSchema,
   criarRitoDaTurmaSchema,
+  concluirComSacramentoSchema,
 } from "@/server/modules/catequese/schema";
 import {
   createParishPerson,
@@ -599,4 +601,49 @@ export async function registrarParticipacaoNoRitoAction(formData: FormData): Pro
 
   revalidatePath(`/catequese/turma/${rito.group.id}/rito/${ritoId}`);
   revalidatePath(`/catequese/turma/${rito.group.id}`);
+}
+
+/**
+ * Concluir a caminhada: registrar o sacramento recebido.
+ *
+ * Só a COORDENAÇÃO. Sacramento é registro do livro da paróquia, e quem
+ * responde por ele não é quem dá a aula — a mesma razão pela qual o
+ * itinerário também não é escrito pela catequista.
+ */
+export async function concluirComSacramentoAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const enrollmentId = formData.get("enrollmentId");
+  if (typeof enrollmentId !== "string") return { error: "Matrícula não informada." };
+
+  try {
+    const bruto = formData.get("date");
+    const input = concluirComSacramentoSchema.parse({
+      type: formData.get("type"),
+      // `@db.Date` é dia de calendário: entra como meia-noite UTC e sai
+      // igual. Converter por fuso aqui devolveria o dia anterior.
+      date: bruto ? `${bruto as string}T00:00:00.000Z` : undefined,
+      location: formData.get("location") || undefined,
+      note: formData.get("note") || undefined,
+    });
+
+    await concluirComSacramento(
+      session.membership.parishId,
+      enrollmentId,
+      input,
+      session.userId,
+    );
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/aluno/${enrollmentId}`);
+  return {};
 }

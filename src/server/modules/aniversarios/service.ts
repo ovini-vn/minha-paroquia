@@ -28,7 +28,16 @@ export async function listarAniversarios(
       }),
       tx.sacrament.findMany({
         where: { parishId },
-        select: { userId: true, type: true, date: true, user: { select: { fullName: true } } },
+        select: {
+          userId: true,
+          familyMemberId: true,
+          type: true,
+          date: true,
+          user: { select: { fullName: true } },
+          // O sacramento pode ser de quem não tem conta — a criança da
+          // catequese. O aniversário dela é da comunidade do mesmo jeito.
+          familyMember: { select: { fullName: true } },
+        },
       }),
     ]);
 
@@ -45,9 +54,14 @@ export async function listarAniversarios(
     }
 
     for (const s of sacramentos) {
+      // Uma das duas pontas está preenchida, garantido por CHECK no banco.
+      const pessoaId = s.userId ?? s.familyMemberId;
+      const nome = s.user?.fullName ?? s.familyMember?.fullName;
+      if (!pessoaId || !nome) continue;
+
       datas.push({
-        pessoaId: s.userId,
-        nome: s.user.fullName,
+        pessoaId,
+        nome,
         tipo: s.type as TipoDeAniversario,
         data: s.date,
       });

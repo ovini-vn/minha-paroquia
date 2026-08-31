@@ -327,6 +327,8 @@ model Parish {
   familyMembers           FamilyMember[]
   catechismGroups         CatechismGroup[]
   itinerarios             Itinerario[]
+  planosPastorais         PlanoPastoral[]
+  planoSecoes             PlanoSecao[]
   itinerarioTemas         ItinerarioTema[]
   catechismGroupRites     CatechismGroupRite[]
   catechismEnrollments    CatechismEnrollment[]
@@ -1351,6 +1353,64 @@ enum LiturgicalRoleType {
 
 // "Fiel informa disponibilidade" (PRD seção 22) — um por (usuário, função);
 // reenviar para a mesma função atualiza em vez de duplicar.
+/// O plano pastoral do ano: por que a paróquia faz o que faz.
+///
+/// Existe porque o calendário responde "quando" e nada responde "por quê".
+/// A Assembleia define prioridades, a arquidiocese define eixos, e essas
+/// decisões governam o ano inteiro — mas ficavam num PDF que ninguém abre.
+///
+/// Um por ano, por paróquia. O do ano passado não some quando o novo entra:
+/// a caminhada de 2025 é o que ilumina a de 2026, e apagá-la seria perder a
+/// única memória de rumo que a comunidade tem.
+model PlanoPastoral {
+  id          String   @id @default(uuid())
+  parishId    String   @map("parish_id")
+  ano         Int
+  titulo      String
+  /// A frase de abertura, quando a paróquia quer uma.
+  introducao  String?  @db.Text
+  /// Rascunho não aparece para o fiel. O plano se escreve aos poucos, e uma
+  /// seção pela metade na tela de quem lê é pior do que nada.
+  publicado   Boolean  @default(false)
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  secoes PlanoSecao[]
+
+  @@unique([parishId, ano])
+  @@index([parishId, publicado])
+  @@map("planos_pastorais")
+}
+
+/// Um trecho do plano, na ordem em que se lê.
+///
+/// Deliberadamente genérico: "Prioridades paroquiais", "Eixo 1 · Comunhão" e
+/// "O que os grupos levantaram" são seções do mesmo tipo. Modelar cada
+/// formato daria uma tabela por arquidiocese — e o plano muda de estrutura
+/// de uma para outra, como o itinerário da catequese muda.
+model PlanoSecao {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  planoId   String   @map("plano_id")
+  ordem     Int      @default(0)
+  /// A tarja acima do título: "PRIORIDADE 1", "EIXO 3". Opcional porque nem
+  /// toda seção pertence a uma série.
+  rotulo    String?
+  titulo    String
+  /// Parágrafos separados por linha em branco. É texto, e não HTML, porque
+  /// quem escreve é a secretaria da paróquia, não alguém que marca.
+  corpo     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  plano  PlanoPastoral @relation(fields: [planoId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, planoId])
+  @@map("plano_secoes")
+}
+
 model LiturgicalAvailability {
   id          String             @id @default(uuid())
   parishId    String             @map("parish_id")

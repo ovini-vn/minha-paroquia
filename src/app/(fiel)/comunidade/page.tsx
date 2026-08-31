@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, CalendarDays, Church, Megaphone, Users } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  Church,
+  Compass,
+  Megaphone,
+  Users,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listPriests, getParoco } from "@/server/modules/priests/service";
 import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
+import { temPlanoPublicado } from "@/server/modules/plano/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { listRecentPosts } from "@/server/modules/posts/service";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
@@ -44,15 +52,17 @@ export default async function ComunidadePage() {
 
   const parishId = session.membership.parishId;
   const canPublish = session.permissions.includes(PERMISSIONS.POSTS_CREATE);
-  const [parish, parocoRegistrado, priests, celebrations, events, posts, avisos] = await Promise.all([
-    getParish(parishId),
-    getParoco(parishId),
-    listPriests(parishId),
-    listUpcomingCelebrations(parishId, 5),
-    listUpcomingEvents(parishId, 5),
-    listRecentPosts(parishId, 5),
-    listPublishedAvisos(parishId, 5),
-  ]);
+  const [parish, parocoRegistrado, priests, celebrations, events, posts, avisos, temPlano] =
+    await Promise.all([
+      getParish(parishId),
+      getParoco(parishId),
+      listPriests(parishId),
+      listUpcomingCelebrations(parishId, 5),
+      listUpcomingEvents(parishId, 5),
+      listRecentPosts(parishId, 5),
+      listPublishedAvisos(parishId, 5),
+      temPlanoPublicado(parishId),
+    ]);
 
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
 
@@ -293,6 +303,17 @@ export default async function ComunidadePage() {
             title="Agenda completa"
             subtitle="Missas, eventos e meus atendimentos"
           />
+          {/* Só aparece quando há plano publicado: a agenda diz QUANDO, e o
+              plano diz POR QUÊ — mas um link para uma tela vazia ensina a
+              pessoa a não clicar mais nele. */}
+          {temPlano && (
+            <RowLink
+              href="/plano"
+              icon={Compass}
+              title="Plano pastoral"
+              subtitle="Por que a paróquia faz o que faz neste ano"
+            />
+          )}
         </Card>
       </section>
           </>

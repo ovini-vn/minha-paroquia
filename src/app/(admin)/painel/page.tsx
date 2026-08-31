@@ -32,7 +32,28 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import { BookOpen, Cake, Church, Clock, Crown, Flag, HandCoins, HandHeart, HeartHandshake, KeyRound, Landmark, Megaphone, Music, PartyPopper, Repeat, ScrollText, Settings, UserRound, Users } from "lucide-react";
+import {
+  BookOpen,
+  Cake,
+  Church,
+  Clock,
+  Compass,
+  Crown,
+  Flag,
+  HandCoins,
+  HandHeart,
+  HeartHandshake,
+  KeyRound,
+  Landmark,
+  Megaphone,
+  Music,
+  PartyPopper,
+  Repeat,
+  ScrollText,
+  Settings,
+  UserRound,
+  Users,
+} from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",
@@ -256,6 +277,14 @@ export default async function AdminDashboardPage() {
             title="Servir"
             subtitle={`${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`}
           />
+          {podeAlcancar(session, PERMISSIONS.PLANO_MANAGE) && (
+            <RowLink
+              href="/painel/plano"
+              icon={Compass}
+              title="Plano pastoral"
+              subtitle="O objetivo do ano, as prioridades e os eixos"
+            />
+          )}
           <RowLink
             href="/painel/pastorais"
             icon={Users}

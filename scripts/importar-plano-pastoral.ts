@@ -22,16 +22,22 @@
  * - A palavra dos padres vira um `Post` no mural — que é exatamente o que
  *   um Post é: um recado dos padres para a paróquia.
  *
+ * - O plano do ano vira um `PlanoPastoral` com suas seções, em RASCUNHO.
+ *   Nunca publicado: o que sai de um HTML é ponto de partida, e quem decide
+ *   se aquilo é o que a paróquia quer mostrar é a paróquia, revisando em
+ *   /painel/plano.
+ *
  * O QUE NÃO ENTRA, e é dito no fim da execução em vez de forçado: ato
  * litúrgico SEM hora (Batizados no 3º domingo, Dia da Palavra na 1ª
  * quinta), porque a regra de recorrência exige um horário e não há um a
- * copiar; e o plano pastoral em si, que é documento e ainda não tem tela.
+ * copiar.
  *
  * Uso:
  *   npx tsx scripts/importar-plano-pastoral.ts <arquivo.html> [--aplicar]
  */
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { lerPlanoDoHtml } from "../src/lib/plano-do-html";
 import { withPlatformContext } from "../src/server/db/tenant-context";
 import { hojeEmBrasilia } from "../src/lib/brasilia";
 import { generateAllUpcomingOccurrences } from "../src/server/modules/celebrations/service";
@@ -236,6 +242,14 @@ async function apagarAvulsasCobertas(
   return ids.length;
 }
 
+/** O ano do calendário, dito pelo próprio arquivo. */
+function anoDoArquivo(html: string): number {
+  const achado = /calend[áa]rio[^<]*?(20\d{2})/i.exec(html) ?? /(20\d{2})/.exec(html);
+  const ano = Number(achado?.[1]);
+  if (!ano) throw new Error("Não achei o ano do calendário no arquivo.");
+  return ano;
+}
+
 async function main() {
   const [caminho, bandeira] = process.argv.slice(2);
   const aplicar = bandeira === "--aplicar";
@@ -249,6 +263,9 @@ async function main() {
 
   const fixos = lerHorariosFixos(caminho);
   const palavra = lerPalavraDosPadres(caminho);
+  const html = readFileSync(caminho, "utf8");
+  const plano = lerPlanoDoHtml(html);
+  const ano = anoDoArquivo(html);
 
   await withPlatformContext(async (tx) => {
     const paroquia = await tx.parish.findFirst({
@@ -437,6 +454,51 @@ async function main() {
       });
     }
 
+    /*
+     * O plano pastoral do ano.
+     *
+     * Entra como RASCUNHO, sempre. O que sai de um HTML é ponto de partida:
+     * a hierarquia de títulos acerta a estrutura, mas quem decide se aquilo
+     * é o que a paróquia quer mostrar é a paróquia — e ela revisa em
+     * /painel/plano antes de publicar.
+     *
+     * Idempotente pelo ano: existindo plano daquele ano, não mexe. Reescrever
+     * um plano que alguém já editou à mão apagaria o trabalho dessa pessoa,
+     * que é exatamente o oposto do que o importador serve.
+     */
+    let planoDito = "";
+    const planoExistente = await tx.planoPastoral.findFirst({
+      where: { parishId: paroquia.id, ano },
+      select: { id: true, publicado: true },
+    });
+
+    if (planoExistente) {
+      planoDito = `já existe o plano de ${ano} — não foi tocado`;
+    } else if (!aplicar) {
+      planoDito = `${plano.secoes.length} seções seriam criadas como rascunho`;
+    } else {
+      const criado = await tx.planoPastoral.create({
+        data: {
+          parishId: paroquia.id,
+          ano,
+          titulo: `${plano.titulo} ${ano}`,
+          introducao: plano.introducao,
+          createdBy: autor.userId,
+        },
+      });
+      await tx.planoSecao.createMany({
+        data: plano.secoes.map((secao, i) => ({
+          parishId: paroquia.id,
+          planoId: criado.id,
+          ordem: i + 1,
+          rotulo: secao.rotulo,
+          titulo: secao.titulo,
+          corpo: secao.corpo,
+        })),
+      });
+      planoDito = `${plano.secoes.length} seções criadas como RASCUNHO — revise e publique em /painel/plano`;
+    }
+
     const listar = (titulo: string, linhas: string[]) => {
       console.log(`${titulo} (${linhas.length})`);
       for (const linha of linhas) console.log(`  · ${linha}`);
@@ -450,6 +512,7 @@ async function main() {
       `Marcações sem hora substituídas pela rotina (daqui pra frente): ${substituidas}`,
     );
     console.log(`Palavra dos padres no mural: ${temPost ? "já estava lá" : "publicada"}`);
+    console.log(`Plano pastoral: ${planoDito}`);
   });
 
   /*

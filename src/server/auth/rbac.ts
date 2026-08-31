@@ -51,6 +51,7 @@ export const PERMISSIONS = {
   DIZIMO_MANAGE: "dizimo.manage",
   SACRAMENTS_VALIDATE: "sacraments.validate",
   AVISOS_MANAGE: "avisos.manage",
+  PLANO_MANAGE: "plano.manage",
   PRAYER_REQUESTS_VIEW_PRIVATE: "prayer_requests.view_private",
   PRAYER_REQUESTS_MODERATE: "prayer_requests.moderate",
   PERMISSION_OVERRIDES_MANAGE: "permission_overrides.manage",
@@ -74,6 +75,7 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
   [PERMISSIONS.DIZIMO_MANAGE]: "Gerenciar dízimo",
   [PERMISSIONS.SACRAMENTS_VALIDATE]: "Validar sacramentos",
   [PERMISSIONS.AVISOS_MANAGE]: "Gerenciar avisos",
+  [PERMISSIONS.PLANO_MANAGE]: "Escrever o plano pastoral",
   [PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE]: "Ver pedidos de oração privados",
   [PERMISSIONS.PRAYER_REQUESTS_MODERATE]: "Aprovar pedidos de oração do mural",
   [PERMISSIONS.PERMISSION_OVERRIDES_MANAGE]: "Delegar permissões",
@@ -103,6 +105,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PRAYER_REQUESTS_VIEW_PRIVATE,
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
+    PERMISSIONS.PLANO_MANAGE,
   ],
   /**
    * Administra a paróquia sem ser clero.
@@ -131,6 +134,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
+    PERMISSIONS.PLANO_MANAGE,
   ],
   SECRETARIA: [
     PERMISSIONS.MEMBER_PASSWORD_RESET,
@@ -149,6 +153,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.SACRAMENTS_VALIDATE,
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
+    PERMISSIONS.PLANO_MANAGE,
   ],
   SACERDOTE: [
     PERMISSIONS.MEMBERS_VIEW,

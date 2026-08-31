@@ -23,21 +23,40 @@ import type { ReactNode } from "react";
 export function DuasColunas({
   principal,
   lateral,
+  lateralPrimeiroNoCelular = false,
   className,
 }: {
   principal: ReactNode;
   lateral: ReactNode;
+  /**
+   * No celular, a lateral vem ANTES da principal.
+   *
+   * A regra normal é o contrário — quem abre a Agenda quer a agenda, não o
+   * quadro ao lado dela. A exceção é o sumário de um documento longo: no
+   * plano pastoral são doze seções, e um índice colocado depois delas está
+   * abaixo justamente do que serve para não precisar rolar.
+   */
+  lateralPrimeiroNoCelular?: boolean;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8 xl:gap-10",
+        "flex flex-col lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8 xl:gap-10",
         className,
       )}
     >
-      <div className="flex flex-col">{principal}</div>
-      <div className="flex flex-col lg:sticky lg:top-24">{lateral}</div>
+      <div className={cn("flex flex-col", lateralPrimeiroNoCelular && "order-2 lg:order-none")}>
+        {principal}
+      </div>
+      <div
+        className={cn(
+          "flex flex-col lg:sticky lg:top-24",
+          lateralPrimeiroNoCelular && "order-1 lg:order-none",
+        )}
+      >
+        {lateral}
+      </div>
     </div>
   );
 }

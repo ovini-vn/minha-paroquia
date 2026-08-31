@@ -373,8 +373,16 @@ body {
  */
 
 /* Seis atalhos em três colunas viram 78px de coluna no G. Em duas, 120px. */
+/*
+ * No tamanho G o rótulo do atalho só cabe em duas colunas — e isso vale
+ * também no computador, onde o padrão passou a ser seis.
+ *
+ * `!important` porque o utilitário `lg:grid-cols-6` do Tailwind entra por
+ * media query e ganharia da classe simples. Quem escolheu letra grande
+ * escolheu para a tela toda, não só para o celular.
+ */
 :root[data-font-scale="g"] .grade-de-atalhos {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 /*
@@ -595,5 +603,41 @@ body {
   .certidao-linha,
   .certidao-linha-assinatura {
     background: #000;
+  }
+}
+
+/*
+ * A lista de encontros vira grade quando TEM ESPAÇO — e o espaço é o do
+ * contêiner, não o da tela.
+ *
+ * A primeira tentativa usou `lg:` do Tailwind, que olha o viewport. Deu
+ * certo na Agenda, onde a lista ocupa a largura toda, e errado na
+ * Comunidade, onde ela vive numa coluna lateral: no computador virava uma
+ * grade de cartões de 190px com o título em três linhas.
+ *
+ * `@container` resolve na raiz: o componente se adapta onde quer que seja
+ * usado, sem precisar saber quem o usou nem receber uma propriedade a mais.
+ */
+.lista-de-encontros {
+  container-type: inline-size;
+}
+
+@container (min-width: 620px) {
+  .lista-de-encontros > .card-encontros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .lista-de-encontros > .card-encontros > * {
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 1.125rem;
+    background: rgb(var(--color-surface));
+    padding: 1rem;
+    box-shadow: var(--shadow-1);
   }
 }

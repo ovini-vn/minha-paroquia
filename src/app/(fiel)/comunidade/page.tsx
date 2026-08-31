@@ -20,6 +20,7 @@ import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { PostCard } from "@/components/domain/PostCard";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { DuasColunas } from "@/components/layout/DuasColunas";
 import { ProximosEncontros, type Encontro } from "@/components/domain/ProximosEncontros";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
@@ -164,6 +165,18 @@ export default async function ComunidadePage() {
         </p>
       )}
 
+      {/*
+        Duas colunas no computador.
+
+        Principal: o que a pessoa veio ler — os avisos da secretaria e a
+        palavra do padre. Lateral: o que ela consulta de relance — a agenda,
+        quem são os sacerdotes e os atalhos.
+
+        No celular volta a ser uma pilha, na ordem em que está escrito.
+      */}
+      <DuasColunas
+        principal={
+          <>
       {avisos.length > 0 && (
         <section className="pt-6">
           <SectionTitle
@@ -215,6 +228,10 @@ export default async function ComunidadePage() {
         )}
       </section>
 
+          </>
+        }
+        lateral={
+          <>
       <section className="pt-7">
         <SectionTitle eyebrow="Agenda" title="Próximos encontros" />
         <ProximosEncontros encontros={agendaItems} />
@@ -276,6 +293,9 @@ export default async function ComunidadePage() {
           />
         </Card>
       </section>
+          </>
+        }
+      />
 
       <div className="rule-gold my-7" />
     </div>

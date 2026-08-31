@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { formatDateTime } from "@/lib/date";
+import { Leitura } from "@/components/layout/DuasColunas";
 
 /**
  * Os avisos da paróquia, por inteiro.
@@ -37,7 +38,7 @@ export default async function AvisosPage() {
   const avisos = await listPublishedAvisos(session.membership.parishId, 30);
 
   return (
-    <div className="flex flex-col">
+    <Leitura className="flex flex-col">
       {/* Chegar aqui É ter lido: não faz sentido pedir um segundo toque em
           outra tela para dizer que se leu o que se acabou de ler. */}
       <LidoAoAbrir caminho="/avisos" />
@@ -80,6 +81,6 @@ export default async function AvisosPage() {
           ))}
         </div>
       )}
-    </div>
+    </Leitura>
   );
 }

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LinkButton } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/Typography";
 import { TextoRico } from "@/components/ui/TextoRico";
+import { Leitura } from "@/components/layout/DuasColunas";
 
 /**
  * "Nossa História" — o memorial da paróquia.
@@ -31,7 +32,7 @@ export default async function HistoriaPage() {
   if (!parish) return null;
 
   return (
-    <div className="flex flex-col">
+    <Leitura className="flex flex-col">
       <PageHeader title="Nossa História" description={parish.name} />
 
       {/* A foto vem antes do texto: é o que a pessoa reconhece — a igreja
@@ -65,6 +66,6 @@ export default async function HistoriaPage() {
       </div>
 
       <div className="rule-gold my-7" />
-    </div>
+    </Leitura>
   );
 }

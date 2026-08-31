@@ -153,7 +153,19 @@ export default async function HomePage() {
           Forçar a cor litúrgica aqui — como estava — passava por cima de
           uma preferência explícita do usuário.
         */}
-        <div className="grade-de-atalhos grid grid-cols-3 gap-3">
+        {/*
+          Três colunas no celular, SEIS no computador.
+
+          Com a tela larga e três colunas, cada atalho virava um quadrado de
+          380px com um ícone pequeno no meio — muito vazio, e duas fileiras
+          para o que cabe numa. Em seis, a fila fica única e a mão do olho
+          percorre tudo de uma vez.
+
+          O tamanho G continua mandando: a regra dele em globals.css tem
+          especificidade maior e reduz para duas colunas, que é o que faz o
+          rótulo caber quando a letra é grande.
+        */}
+        <div className="grade-de-atalhos grid grid-cols-3 gap-3 lg:grid-cols-6">
           {SHORTCUTS.map((shortcut) => {
             const Icon = shortcut.icon;
             return (

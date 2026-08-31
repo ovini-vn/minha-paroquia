@@ -32,10 +32,31 @@ export function ProximosEncontros({ encontros }: { encontros: Encontro[] }) {
     );
   }
 
+  /*
+   * Lista quando o espaço é estreito, GRADE quando é largo — e quem decide
+   * é o ESPAÇO DISPONÍVEL, não o tamanho da tela.
+   *
+   * A primeira versão usava `lg:`, que olha o viewport. Deu certo na Agenda,
+   * onde a lista ocupa a largura toda, e errado na Comunidade, onde ela vive
+   * numa coluna lateral estreita: no computador virou uma grade de cartões
+   * de 190px com o título quebrando em três linhas.
+   *
+   * `container-type: inline-size` faz a régua ser o próprio contêiner. O
+   * componente passa a se adaptar onde quer que seja usado, sem precisar
+   * saber quem o usou.
+   *
+   * O separador muda junto: linha entre itens só faz sentido numa pilha —
+   * em grade, cada encontro vira um cartão com borda própria, senão as
+   * bordas do meio se encontram e viram uma cruz.
+   */
   return (
-    <Card className="px-3.5 py-1.5">
+    <div className="lista-de-encontros">
+    <Card className="card-encontros px-3.5 py-1.5">
       {encontros.map((item) => (
-        <div key={item.id} className="border-b border-border py-3.5 last:border-b-0">
+        <div
+          key={item.id}
+          className="border-b border-border py-3.5 last:border-b-0"
+        >
           <div className="flex items-center gap-3.5">
             <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
               <CalendarDays className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
@@ -73,5 +94,6 @@ export function ProximosEncontros({ encontros }: { encontros: Encontro[] }) {
         </div>
       ))}
     </Card>
+    </div>
   );
 }

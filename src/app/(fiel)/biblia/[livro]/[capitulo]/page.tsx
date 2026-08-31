@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Leitura } from "@/components/layout/DuasColunas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { lerCapitulo, TRADUCAO } from "@/server/modules/biblia/service";
@@ -48,7 +49,15 @@ export default async function CapituloPage({
   const proximo = capitulo < livro.chapters ? capitulo + 1 : null;
 
   return (
-    <div className="flex flex-col">
+    /*
+     * Largura de leitura, e não a largura da tela.
+     *
+     * Com o app mais largo no computador, o capítulo passou a ocupar 1152px
+     * — linhas de cerca de 150 caracteres, em que o olho perde a volta. É
+     * Escritura: o texto é o produto, e ler mal aqui é pior do que em
+     * qualquer outra tela.
+     */
+    <Leitura className="flex flex-col">
       <Link
         href={`/biblia/${livro.slug}`}
         className="mb-3 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-primary"
@@ -113,6 +122,6 @@ export default async function CapituloPage({
       </p>
 
       <div className="rule-gold my-7" />
-    </div>
+    </Leitura>
   );
 }

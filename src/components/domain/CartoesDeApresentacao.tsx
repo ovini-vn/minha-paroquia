@@ -52,9 +52,16 @@ export function CartoesDeApresentacao({
             href={cartao.href}
             className="group overflow-hidden rounded-xl border border-border bg-surface transition-colors hover:border-primary"
           >
-            {/* Proporção fixa para os dois cartões ficarem do mesmo tamanho
-                com fotos de formatos diferentes. */}
-            <div className="relative aspect-[4/3] w-full bg-primary-tint">
+            {/*
+              Proporção fixa para os dois cartões ficarem do mesmo tamanho com
+              fotos de formatos diferentes.
+
+              No computador a proporção dá lugar a uma ALTURA fixa: com o
+              cartão a 570px de largura, 4/3 são 430px de foto — meia tela
+              para uma imagem de apoio, e a página inteira empurrada para
+              baixo. A altura fixa mantém os dois iguais sem esse custo.
+            */}
+            <div className="relative aspect-[4/3] w-full bg-primary-tint lg:aspect-auto lg:h-[200px]">
               {cartao.imagem ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

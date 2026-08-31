@@ -141,5 +141,13 @@ describe("repetição de celebrações", () => {
     expect(describeRule({ frequency: "mensal", weekday: 5, weekOfMonth: 5, timeMinutes: 900 })).toBe(
       "Última sexta-feira do mês, 15:00",
     );
+    // O ordinal também concorda: a Adoração do calendário de 2026 é no
+    // último SÁBADO, e "Última sábado" é o erro que uma tabela só produz.
+    expect(describeRule({ frequency: "mensal", weekday: 6, weekOfMonth: 5, timeMinutes: 960 })).toBe(
+      "Último sábado do mês, 16:00",
+    );
+    expect(describeRule({ frequency: "mensal", weekday: 0, weekOfMonth: 3, timeMinutes: 540 })).toBe(
+      "Terceiro domingo do mês, 09:00",
+    );
   });
 });

@@ -1,7 +1,7 @@
 import { CalendarDays } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatDateTime } from "@/lib/date";
+import { formatDateTime, formatDateOnly } from "@/lib/date";
 
 export type Encontro = {
   id: string;
@@ -10,6 +10,14 @@ export type Encontro = {
   location: string | null;
   /** Só eventos têm; celebração vem nula. */
   description: string | null;
+  /**
+   * O encontro tem dia, mas não hora.
+   *
+   * O calendário pastoral é assim: "Dia Mundial dos Enfermos" é no dia 11,
+   * e ponto. Mostrar "00:00" seria informação falsa, e escolher um horário
+   * plausível seria pior — alguém apareceria na hora errada.
+   */
+  semHora?: boolean;
   imageUrl: string | null;
 };
 
@@ -64,7 +72,7 @@ export function ProximosEncontros({ encontros }: { encontros: Encontro[] }) {
             <div className="min-w-0">
               <p className="text-[14.5px] font-medium text-foreground">{item.label}</p>
               <p className="mt-0.5 text-[12.5px] text-muted">
-                {formatDateTime(item.startsAt)}
+                {item.semHora ? formatDateOnly(item.startsAt) : formatDateTime(item.startsAt)}
                 {item.location ? ` · ${item.location}` : ""}
               </p>
             </div>

@@ -573,6 +573,13 @@ model Celebration {
   type            CelebrationType @default(missa)
   title           String?
   startsAt        DateTime        @map("starts_at")
+  /// A celebração tem DIA, mas não hora.
+  ///
+  /// Mesmo motivo do evento: o calendário pastoral marca "Tríduo de Santa
+  /// Inês" e "Missa na Colina" pelo dia, e a hora se define depois. Sem
+  /// isto, a agenda mostrava "00:00" — que é pior do que não dizer, porque
+  /// parece informação.
+  semHora         Boolean         @default(false) @map("sem_hora")
   location        String?
   priestProfileId String?         @map("priest_profile_id")
   // Preenchido quando a celebração nasceu de uma regra de repetição; nulo
@@ -650,6 +657,15 @@ model Event {
   title       String
   description String?
   startsAt    DateTime    @map("starts_at")
+  /// O evento tem DIA mas não hora.
+  ///
+  /// Existe porque o calendário pastoral de uma paróquia é assim: das 286
+  /// marcações de 2026, 256 dizem só o dia — "Dia Mundial dos Enfermos",
+  /// "Tríduo de Santa Inês", "Assembleia dos Missionários". Guardar isso
+  /// como instante obrigaria a inventar um horário, e a agenda mostraria
+  /// "00:00" ou uma hora que ninguém marcou. As duas saídas são piores que
+  /// dizer a verdade: é no dia 11, e a hora se confirma depois.
+  semHora     Boolean     @default(false) @map("sem_hora")
   location    String?
   // Cartaz do evento. URL, como logoUrl da paróquia e photoUrl do
   // sacerdote — o app não tem upload de arquivo em lugar nenhum.

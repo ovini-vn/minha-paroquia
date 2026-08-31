@@ -64,6 +64,7 @@ export default async function ComunidadePage() {
       location: c.location,
       imageUrl: null,
       description: null,
+      semHora: c.semHora,
     })),
     ...events.map((e) => ({
       id: `event-${e.id}`,
@@ -72,6 +73,7 @@ export default async function ComunidadePage() {
       location: e.location,
       imageUrl: e.imageUrl,
       description: e.description,
+      semHora: e.semHora,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 

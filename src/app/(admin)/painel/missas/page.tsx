@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
-import { formatDateTime } from "@/lib/date";
+import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { describeRule } from "@/lib/recurrence";
 import { CreateScheduleForm } from "./CreateScheduleForm";
@@ -135,7 +135,9 @@ export default async function MissasAdminPage() {
                       {celebration.title || CELEBRATION_TYPE_LABELS[celebration.type]}
                     </p>
                     <p className="mt-0.5 text-[12.5px] text-muted">
-                      {formatDateTime(celebration.startsAt)}
+                      {celebration.semHora
+                        ? formatDateOnly(celebration.startsAt)
+                        : formatDateTime(celebration.startsAt)}
                       {celebration.location ? ` · ${celebration.location}` : ""}
                     </p>
                   </div>

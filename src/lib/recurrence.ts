@@ -31,6 +31,20 @@ export const WEEK_OF_MONTH_LABELS: Record<number, string> = {
   5: "Última",
 };
 
+/**
+ * O mesmo ordinal no masculino, para domingo e sábado.
+ *
+ * "Última sábado do mês" é o que sai de uma tabela só. Os cinco dias do
+ * meio são femininos porque são "feiras"; as duas pontas não.
+ */
+const WEEK_OF_MONTH_LABELS_M: Record<number, string> = {
+  1: "Primeiro",
+  2: "Segundo",
+  3: "Terceiro",
+  4: "Quarto",
+  5: "Último",
+};
+
 export type RecurrenceRule = {
   frequency: "semanal" | "mensal";
   /** 0 = domingo. */
@@ -117,6 +131,8 @@ export function describeRule(rule: Pick<RecurrenceRule, "frequency" | "weekday" 
     return `${artigo} ${dia.toLowerCase()}, ${hora}`;
   }
 
-  const ordinal = WEEK_OF_MONTH_LABELS[rule.weekOfMonth ?? 1] ?? "Primeira";
+  const tabela =
+    rule.weekday === 0 || rule.weekday === 6 ? WEEK_OF_MONTH_LABELS_M : WEEK_OF_MONTH_LABELS;
+  const ordinal = tabela[rule.weekOfMonth ?? 1] ?? tabela[1]!;
   return `${ordinal} ${dia.toLowerCase()} do mês, ${hora}`;
 }

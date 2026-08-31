@@ -56,6 +56,7 @@ export default async function AgendaPage() {
       location: c.location,
       description: null,
       imageUrl: null,
+      semHora: c.semHora,
     })),
     ...events.map((e) => ({
       id: `event-${e.id}`,
@@ -64,6 +65,7 @@ export default async function AgendaPage() {
       location: e.location,
       description: e.description,
       imageUrl: e.imageUrl,
+      semHora: e.semHora,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 

@@ -16,7 +16,7 @@ import { listGroups } from "@/server/modules/catequese/service";
 import { listAllAvailability } from "@/server/modules/liturgia/service";
 import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
 import { listAllGroups } from "@/server/modules/pastorais/service";
-import { currentPeriod, formatPeriodLabel } from "@/lib/date";
+import { currentPeriod, formatPeriodLabel, formatDateOnly } from "@/lib/date";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -116,6 +116,7 @@ export default async function AdminDashboardPage() {
       label: c.title || CELEBRATION_TYPE_LABELS[c.type],
       location: c.location,
       priestName: c.priestProfile?.user.fullName ?? null,
+      semHora: c.semHora,
     })),
     ...events.map((e) => ({
       id: `event-${e.id}`,
@@ -123,6 +124,7 @@ export default async function AdminDashboardPage() {
       label: e.title,
       location: e.location,
       priestName: null as string | null,
+      semHora: e.semHora,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
@@ -453,7 +455,7 @@ export default async function AdminDashboardPage() {
                 <div>
                   <p className="text-foreground">{item.label}</p>
                   <p className="text-xs text-muted">
-                    {formatDateTime(item.startsAt)}
+                    {item.semHora ? formatDateOnly(item.startsAt) : formatDateTime(item.startsAt)}
                     {item.location ? ` · ${item.location}` : ""}
                     {item.priestName ? ` · ${item.priestName}` : ""}
                   </p>

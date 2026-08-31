@@ -18,7 +18,7 @@ import { Eyebrow, SectionTitle } from "@/components/ui/Typography";
 import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { FeastList } from "@/components/domain/FeastList";
-import { formatDateTime } from "@/lib/date";
+import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { VideoDoPost } from "@/components/domain/VideoDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
@@ -127,7 +127,9 @@ export default async function HomePage() {
                   {nextCelebration.title || CELEBRATION_TYPE_LABELS[nextCelebration.type]}
                 </p>
                 <p className="mt-1 text-[13px] text-muted">
-                  {formatDateTime(nextCelebration.startsAt)}
+                  {nextCelebration.semHora
+                    ? formatDateOnly(nextCelebration.startsAt)
+                    : formatDateTime(nextCelebration.startsAt)}
                   {nextCelebration.location ? ` · ${nextCelebration.location}` : ""}
                 </p>
               </>

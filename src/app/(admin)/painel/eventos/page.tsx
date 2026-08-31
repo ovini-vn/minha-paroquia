@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
-import { formatDateTime } from "@/lib/date";
+import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { PartyPopper } from "lucide-react";
 
 export const metadata: Metadata = { title: "Eventos" };
@@ -54,7 +54,7 @@ export default async function EventsAdminPage() {
                         {event.title}
                       </p>
                       <p className="mt-1 text-[12.5px] text-muted">
-                        {formatDateTime(event.startsAt)}
+                        {event.semHora ? formatDateOnly(event.startsAt) : formatDateTime(event.startsAt)}
                         {event.location ? ` · ${event.location}` : ""}
                       </p>
                     </div>

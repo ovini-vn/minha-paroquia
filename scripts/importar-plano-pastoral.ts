@@ -295,6 +295,28 @@ async function main() {
           substituidas += await apagarAvulsasCobertas(tx, paroquia.id, fixo.nome, aplicar);
           continue;
         }
+
+        /*
+         * A paróquia real já tem sua grade. Na Nossa Senhora de Fátima existe
+         * "Missa Sexta, toda sexta, 19h30" — e o calendário chama a missa da
+         * primeira sexta de "Missa do Apostolado da Oração", mesmo dia, mesma
+         * hora. É a MESMA missa com dois nomes; cadastrar a rotina faria a
+         * agenda mostrar duas às 19h30 toda primeira sexta.
+         *
+         * A guarda do app (`createCelebrationSchedule`) não pega este caso:
+         * ela compara regras iguais, e semanal contra mensal são diferentes.
+         * Aqui a comparação é pelo que o fiel vê — dia da semana e horário.
+         */
+        const ocupado = await tx.celebrationSchedule.findFirst({
+          where: { parishId: paroquia.id, active: true, weekday, timeMinutes: minutos },
+          select: { id: true, title: true, frequency: true },
+        });
+        if (ocupado) {
+          foraDeAlcance.push(
+            `${fixo.nome} (${fixo.quando}) — a paróquia já tem "${ocupado.title ?? "sem título"}" nesse dia e horário`,
+          );
+          continue;
+        }
         if (aplicar) {
           await tx.celebrationSchedule.create({
             data: {

@@ -91,9 +91,21 @@ export function minutosDoDetalhe(detalhe?: string): number | null {
   return hora * 60 + minuto;
 }
 
-/** O local, quando o detalhe traz um antes da hora. */
+/**
+ * O local — e SÓ quando o detalhe realmente traz um.
+ *
+ * O campo de detalhe da fonte é solto: às vezes é lugar e hora ("Mãe
+ * Admirável, 16h"), às vezes é uma nota ("1º dia", "31 anos", "para
+ * retirada", "até 4 de setembro"). Das trinta variações do arquivo, vinte
+ * não são lugar.
+ *
+ * A regra que separa as duas coisas: lugar é o que vem ANTES de uma hora.
+ * Sem hora no detalhe, não há lugar — e a nota vai para a descrição do
+ * evento, em vez de aparecer na tela onde se lê o endereço da missa.
+ */
 export function localDoDetalhe(detalhe?: string): string | null {
   if (!detalhe) return null;
+  if (!/\d{1,2}\s*h/i.test(detalhe)) return null;
   const semHora = detalhe.replace(/,?\s*\d{1,2}\s*h\s*(\d{2})?/i, "").trim();
   return semHora.replace(/[,;]$/, "").trim() || null;
 }
@@ -228,16 +240,20 @@ async function main() {
           if (classe.tipo === "celebracao") {
             const existe = await tx.celebration.findFirst({
               where: { parishId: paroquia.id, startsAt: quando, title: marcacao.t },
-              select: { id: true, semHora: true },
+              select: { id: true, semHora: true, location: true },
             });
             if (existe) {
-              // Corrige quem entrou antes de a celebração saber dizer "só o
-              // dia" — senão a missa importada continua mostrando 00:00.
-              if (aplicar && existe.semHora !== (minutos === null)) {
-                await tx.celebration.update({
-                  where: { id: existe.id },
-                  data: { semHora: minutos === null },
-                });
+              /*
+               * Conserta o que entrou numa passada anterior: a marca de "só
+               * o dia", que não existia no começo, e o local, que já recebeu
+               * nota em vez de lugar. Rodar de novo passa a ser conserto, e
+               * não só uma contagem.
+               */
+              const arrumar: { semHora?: boolean; location?: string | null } = {};
+              if (existe.semHora !== (minutos === null)) arrumar.semHora = minutos === null;
+              if (existe.location !== local) arrumar.location = local;
+              if (aplicar && Object.keys(arrumar).length > 0) {
+                await tx.celebration.update({ where: { id: existe.id }, data: arrumar });
                 corrigidos++;
               }
               jaExistiam++;
@@ -260,9 +276,13 @@ async function main() {
           } else {
             const existe = await tx.event.findFirst({
               where: { parishId: paroquia.id, startsAt: quando, title: marcacao.t },
-              select: { id: true },
+              select: { id: true, location: true },
             });
             if (existe) {
+              if (aplicar && existe.location !== local) {
+                await tx.event.update({ where: { id: existe.id }, data: { location: local } });
+                corrigidos++;
+              }
               jaExistiam++;
               continue;
             }
@@ -288,7 +308,7 @@ async function main() {
     console.log("");
     console.log(`Celebrações: ${celebracoes}`);
     console.log(`Eventos:     ${eventos}`);
-    console.log(`Já existiam: ${jaExistiam}${corrigidos ? ` (${corrigidos} corrigidos para "só o dia")` : ""}`);
+    console.log(`Já existiam: ${jaExistiam}${corrigidos ? ` (${corrigidos} corrigidos)` : ""}`);
     console.log(`Pulados (o app já calcula a festa naquele dia): ${pulados}`);
     console.log(`Pulados (a paróquia já tem a rotina, com hora): ${porRotina}`);
   });

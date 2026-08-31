@@ -25,6 +25,7 @@ export const ACOES = {
   SENHA_LINK_GERADO: "senha.link_gerado",
   AVISO_APAGADO: "aviso.apagado",
   ORACAO_MODERADA: "oracao.moderada",
+  TURMA_APAGADA: "turma.apagada",
 } as const;
 
 export type Acao = (typeof ACOES)[keyof typeof ACOES];
@@ -36,6 +37,7 @@ export const ROTULO_DA_ACAO: Record<Acao, string> = {
   [ACOES.PERMISSAO_REMOVIDA]: "Removeu a permissão avulsa",
   [ACOES.SENHA_LINK_GERADO]: "Gerou link de nova senha",
   [ACOES.AVISO_APAGADO]: "Apagou um aviso",
+  [ACOES.TURMA_APAGADA]: "Excluiu uma turma de catequese",
   [ACOES.ORACAO_MODERADA]: "Moderou um pedido de oração",
 };
 

@@ -75,7 +75,11 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
         </h1>
         <p className="mt-1 text-sm text-muted">
           {enrollment.group.name} · {enrollment.group.year}
-          {enrollment.group.catechist ? ` · ${enrollment.group.catechist.fullName}` : ""}
+          {enrollment.group.catechist
+            ? ` · ${enrollment.group.catechist.fullName}`
+            : enrollment.group.catechistName
+              ? ` · ${enrollment.group.catechistName}`
+              : ""}
         </p>
       </div>
 

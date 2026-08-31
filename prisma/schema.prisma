@@ -1153,6 +1153,17 @@ model CatechismGroup {
   name            String
   year            Int
   catechistUserId String?  @map("catechist_user_id")
+  /// A catequista que ainda NÃO tem conta no app, pelo nome.
+  ///
+  /// Uma turma tem uma catequista só — mas a paróquia sabe quem é antes de
+  /// ela se cadastrar, e travar a turma até isso acontecer deixaria a coluna
+  /// vazia justamente na hora de organizar o ano. Quando ela entra no app, a
+  /// coordenação troca o nome pela conta e o histórico da turma continua o
+  /// mesmo.
+  ///
+  /// Nunca as duas preenchidas: é CHECK no banco. Duas fontes para o mesmo
+  /// nome divergem, e a tela passaria a ter de escolher qual mostrar.
+  catechistName   String?  @map("catechist_name")
   /// Opcional: as turmas criadas antes do itinerário existir seguem sem um,
   /// e continuam funcionando — só não têm contra o que medir evolução.
   itinerarioId    String?  @map("itinerario_id")

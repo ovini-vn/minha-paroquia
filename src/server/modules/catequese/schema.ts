@@ -55,3 +55,14 @@ export const concluirComSacramentoSchema = z.object({
   note: z.string().trim().max(400).optional(),
 });
 export type ConcluirComSacramentoInput = z.infer<typeof concluirComSacramentoSchema>;
+
+export const editarTurmaSchema = z.object({
+  name: z.string().trim().min(2, "Informe um nome para a turma."),
+  year: z.coerce.number().int().min(2020).max(2100),
+});
+
+export const editarEncontroSchema = z.object({
+  date: z.coerce.date(),
+  topic: z.string().trim().max(160).optional(),
+  itinerarioTemaId: z.string().uuid().optional(),
+});

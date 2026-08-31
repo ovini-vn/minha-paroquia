@@ -28,6 +28,9 @@ import { EnrollForm } from "../../_components/EnrollForm";
 import { CreateSessionForm } from "../../_components/CreateSessionForm";
 import { CreateRiteForm } from "../../_components/CreateRiteForm";
 import { CriarRitoDaTurmaForm } from "../../_components/CriarRitoDaTurmaForm";
+import { GestaoDaTurma } from "../../_components/GestaoDaTurma";
+import { EditarEncontroForm } from "../../_components/EditarEncontroForm";
+import { listMembersByRole } from "@/server/modules/parishes/service";
 
 /**
  * A turma, vista por quem coordena e/ou por quem dá aula.
@@ -52,13 +55,15 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const group = await getGroup(parishId, id, coordena ? undefined : session.userId);
   if (!group) notFound();
 
-  const [enrollments, sessions, temas, andamento, itinerarios, ritosDaTurma] = await Promise.all([
+  const [enrollments, sessions, temas, andamento, itinerarios, ritosDaTurma, catequistas] =
+    await Promise.all([
     listEnrollments(parishId, id),
     listSessions(parishId, id),
     listarTemasDaTurma(parishId, id),
     obterAndamentoDaTurma(parishId, id, new Date()),
     coordena ? listarItinerarios(parishId) : [],
     listarRitosDaTurma(parishId, id),
+    coordena ? listMembersByRole(parishId, "CATEQUISTA") : [],
   ]);
 
   const ritesByEnrollment = await Promise.all(
@@ -81,7 +86,11 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           {group.name} · {group.year}
         </h1>
         <p className="mt-1 text-sm text-muted">
-          {group.catechist ? `Catequista: ${group.catechist.fullName}` : "Sem catequista designado"}
+          {group.catechist
+            ? `Catequista: ${group.catechist.fullName}`
+            : group.catechistName
+              ? `Catequista: ${group.catechistName} (ainda sem app)`
+              : "Sem catequista designado"}
         </p>
       </div>
 
@@ -108,8 +117,22 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
 
       {coordena && (
         <section className="pt-7">
-          <Eyebrow className="mb-3">Itinerário da turma</Eyebrow>
+          <Eyebrow tone="accent" className="mb-3">
+            Gestão da turma
+          </Eyebrow>
+          <Card className="mb-3">
+            <GestaoDaTurma
+              groupId={id}
+              nome={group.name}
+              ano={group.year}
+              catequistas={catequistas.map((c) => ({ id: c.user.id, fullName: c.user.fullName }))}
+              catechistUserId={group.catechistUserId}
+              catechistName={group.catechistName}
+            />
+          </Card>
+
           <Card>
+            <Eyebrow className="mb-3">Itinerário da turma</Eyebrow>
             {/* Quem coordena define o plano; o catequista segue e lança. */}
             <form action={definirItinerarioDaTurmaAction} className="flex flex-wrap items-end gap-3">
               <input type="hidden" name="groupId" value={id} />
@@ -146,7 +169,15 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </section>
       )}
 
-      {leciona && (
+      {/*
+        Encontros: quem leciona E quem coordena.
+        
+        Era só de quem leciona, e isso deixava a coordenação sem conseguir
+        corrigir um encontro lançado errado — apesar de a ação do servidor
+        sempre ter permitido. A tela e a guarda tinham regras diferentes, que
+        é o mesmo desencontro do `podeAlcancar` e do tempo litúrgico.
+      */}
+      {(leciona || coordena) && (
         <section className="pt-7">
           <Eyebrow tone="accent" className="mb-3">
             Encontros
@@ -218,10 +249,13 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           ) : (
             <Card className="mt-3 px-3.5 py-1.5">
               {sessions.map((s) => (
-                <Link
+                <div
                   key={s.id}
+                  className="flex flex-wrap items-center gap-x-3.5 gap-y-1 border-b border-border py-3 last:border-b-0"
+                >
+                <Link
                   href={`/catequese/turma/${id}/encontro/${s.id}`}
-                  className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
+                  className="flex flex-1 items-center gap-3.5 rounded-md transition-colors hover:bg-primary-tint"
                 >
                   <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
                     <CalendarDays className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
@@ -239,6 +273,15 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <span className="text-[12.5px] text-muted">Chamada →</span>
                 </Link>
+                <EditarEncontroForm
+                  groupId={id}
+                  sessionId={s.id}
+                  date={s.date.toISOString().slice(0, 10)}
+                  topic={s.topic}
+                  itinerarioTemaId={s.itinerarioTemaId}
+                  temas={temas}
+                />
+                </div>
               ))}
             </Card>
           )}
@@ -313,7 +356,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           </div>
         )}
 
-        {leciona && enrollments.length > 0 && (
+        {(leciona || coordena) && enrollments.length > 0 && (
           <>
             {/*
               O rito da TURMA vem primeiro, e é o caminho normal: o rito

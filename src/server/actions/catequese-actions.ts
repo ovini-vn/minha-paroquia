@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { findMemberByExactName } from "@/server/modules/parishes/service";
@@ -28,6 +29,11 @@ import {
   registrarParticipacaoNoRito,
   obterRitoDaTurma,
   concluirComSacramento,
+  definirCatequista,
+  editarTurma,
+  editarEncontro,
+  apagarEncontro,
+  apagarTurma,
 } from "@/server/modules/catequese/service";
 import {
   createGroupInputSchema,
@@ -37,6 +43,8 @@ import {
   criarTemaSchema,
   criarRitoDaTurmaSchema,
   concluirComSacramentoSchema,
+  editarTurmaSchema,
+  editarEncontroSchema,
 } from "@/server/modules/catequese/schema";
 import {
   createParishPerson,
@@ -646,4 +654,141 @@ export async function concluirComSacramentoAction(
 
   revalidatePath(`/catequese/aluno/${enrollmentId}`);
   return {};
+}
+
+/**
+ * A catequista da turma: uma conta do app, ou um nome digitado.
+ *
+ * Só a coordenação. Quem leciona não escolhe quem leciona.
+ */
+export async function definirCatequistaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const groupId = formData.get("groupId");
+  if (typeof groupId !== "string") return;
+
+  const userId = formData.get("catechistUserId");
+  const nome = formData.get("catechistName");
+
+  await definirCatequista(session.membership.parishId, groupId, {
+    userId: typeof userId === "string" ? userId : null,
+    nome: typeof nome === "string" ? nome : null,
+  });
+
+  revalidatePath(`/catequese/turma/${groupId}`);
+  revalidatePath("/catequese");
+}
+
+export async function editarTurmaAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const groupId = formData.get("groupId");
+  if (typeof groupId !== "string") return { error: "Turma não informada." };
+
+  try {
+    const dados = editarTurmaSchema.parse({
+      name: formData.get("name"),
+      year: formData.get("year"),
+    });
+    await editarTurma(session.membership.parishId, groupId, dados);
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/turma/${groupId}`);
+  revalidatePath("/catequese");
+  return {};
+}
+
+/** Corrigir um encontro já lançado. Catequista e coordenação. */
+export async function editarEncontroAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+
+  const coordena = coordenaCatequese(session);
+  if (!coordena && !session.permissions.includes(PERMISSIONS.CATEQUESE_TEACH)) {
+    return { error: "Você não tem permissão para isso." };
+  }
+
+  const sessionId = formData.get("sessionId");
+  const groupId = formData.get("groupId");
+  if (typeof sessionId !== "string" || typeof groupId !== "string") {
+    return { error: "Encontro não informado." };
+  }
+
+  // O escopo do catequista é conferido no banco, pela turma.
+  const daMinhaTurma = await getGroup(session.membership.parishId, groupId, catechistScope(session));
+  if (!daMinhaTurma) return { error: "Esta turma não é sua." };
+
+  try {
+    if (formData.get("apagar") === "sim") {
+      await apagarEncontro(session.membership.parishId, sessionId);
+    } else {
+      const dados = editarEncontroSchema.parse({
+        date: formData.get("date"),
+        topic: formData.get("topic") || undefined,
+        itinerarioTemaId: formData.get("itinerarioTemaId") || undefined,
+      });
+      await editarEncontro(session.membership.parishId, sessionId, dados);
+    }
+  } catch (erro) {
+    if (erro instanceof ZodError) return { error: erro.issues[0]?.message ?? "Dados inválidos." };
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/turma/${groupId}`);
+  return {};
+}
+
+/**
+ * Excluir a turma.
+ *
+ * Destrutivo de verdade: leva matrículas, encontros, chamadas e ritos por
+ * cascata. Exige que a pessoa DIGITE o nome da turma — não é confirmação de
+ * "tem certeza?", que se clica no automático, e o nome é o que ela precisa
+ * ter olhado antes de apagar.
+ */
+export async function apagarTurmaAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const groupId = formData.get("groupId");
+  const confirmacao = formData.get("confirmacao");
+  const nomeEsperado = formData.get("nomeDaTurma");
+  if (typeof groupId !== "string") return { error: "Turma não informada." };
+
+  if (
+    typeof confirmacao !== "string" ||
+    typeof nomeEsperado !== "string" ||
+    confirmacao.trim().toLowerCase() !== nomeEsperado.trim().toLowerCase()
+  ) {
+    return { error: "Digite o nome da turma exatamente como está escrito para confirmar." };
+  }
+
+  try {
+    await apagarTurma(session.membership.parishId, groupId, session.userId);
+  } catch (erro) {
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath("/catequese");
+  redirect("/catequese");
 }

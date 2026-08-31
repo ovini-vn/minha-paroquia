@@ -3,6 +3,7 @@ import { ValidationError } from "@/server/shared/errors";
 import { resumirLancamento } from "@/lib/lancamento-de-conteudo";
 import { montarCaminhada, proximoRito } from "@/lib/caminhada-da-catequese";
 import type { SacramentType } from "@prisma/client";
+import { registrar, ACOES } from "@/server/modules/auditoria/service";
 import type {
   CreateGroupInput,
   CreateSessionInput,
@@ -745,7 +746,10 @@ export async function obterQuadroDaCoordenacao(parishId: string, agora: Date) {
         id: grupo.id,
         nome: grupo.name,
         ano: grupo.year,
-        catequista: grupo.catechist?.fullName ?? null,
+        // A conta, ou o nome digitado de quem ainda não usa o app. Uma das
+        // duas, nunca as duas — é CHECK no banco.
+        catequista: grupo.catechist?.fullName ?? grupo.catechistName ?? null,
+        catequistaSemApp: !grupo.catechist && Boolean(grupo.catechistName),
         matriculados: grupo._count.enrollments,
         itinerario: grupo.itinerario ? { id: grupo.itinerario.id, nome: grupo.itinerario.nome } : null,
         previstos: grupo.itinerario?._count.temas ?? 0,
@@ -1023,5 +1027,140 @@ export function listarSacramentosDoCatequizando(parishId: string, enrollmentId: 
       where: { parishId, familyMemberId: matricula.familyMemberId },
       orderBy: { date: "desc" },
     });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Editar e excluir.
+// ---------------------------------------------------------------------------
+
+/**
+ * Define a catequista da turma: uma conta do app OU um nome digitado.
+ *
+ * Uma turma tem UMA catequista. As duas formas existem porque a paróquia
+ * sabe quem é antes de a pessoa se cadastrar — e travar a turma até isso
+ * acontecer deixaria a coluna vazia justamente na hora de organizar o ano.
+ *
+ * Definir uma LIMPA a outra, sempre. É o que garante que a troca "ela se
+ * cadastrou, agora aponta para a conta" não deixe o nome antigo para trás,
+ * divergindo do que a conta diz.
+ */
+export function definirCatequista(
+  parishId: string,
+  groupId: string,
+  quem: { userId?: string | null; nome?: string | null },
+) {
+  const userId = quem.userId?.trim() || null;
+  const nome = userId ? null : quem.nome?.trim() || null;
+
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismGroup.updateMany({
+      where: { id: groupId, parishId },
+      data: { catechistUserId: userId, catechistName: nome },
+    }),
+  );
+}
+
+export function editarTurma(
+  parishId: string,
+  groupId: string,
+  dados: { name: string; year: number },
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismGroup.updateMany({
+      where: { id: groupId, parishId },
+      data: { name: dados.name, year: dados.year },
+    }),
+  );
+}
+
+/**
+ * Corrigir um encontro já lançado: a data e o que foi dado.
+ *
+ * O tema é conferido contra o itinerário DA TURMA, como na criação — sem
+ * isso, um id colado no formulário ligaria o encontro ao roteiro de outra
+ * turma e a evolução das duas sairia errada.
+ */
+export function editarEncontro(
+  parishId: string,
+  sessionId: string,
+  dados: { date: Date; topic?: string | null; itinerarioTemaId?: string | null },
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const encontro = await tx.catechismSession.findFirst({
+      where: { id: sessionId, parishId },
+      select: { id: true, group: { select: { itinerarioId: true } } },
+    });
+    if (!encontro) throw new ValidationError("Encontro não encontrado.");
+
+    let temaId: string | null = null;
+    if (dados.itinerarioTemaId) {
+      const tema = await tx.itinerarioTema.findFirst({
+        where: {
+          id: dados.itinerarioTemaId,
+          parishId,
+          itinerarioId: encontro.group.itinerarioId ?? "",
+        },
+        select: { id: true },
+      });
+      if (!tema) throw new ValidationError("Esse tema não pertence ao itinerário da turma.");
+      temaId = tema.id;
+    }
+
+    return tx.catechismSession.update({
+      where: { id: sessionId },
+      data: { date: dados.date, topic: dados.topic || null, itinerarioTemaId: temaId },
+    });
+  });
+}
+
+export function apagarEncontro(parishId: string, sessionId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.catechismSession.deleteMany({ where: { id: sessionId, parishId } }),
+  );
+}
+
+/**
+ * Excluir a turma inteira.
+ *
+ * É destrutivo de verdade: leva junto matrículas, encontros, chamadas,
+ * presenças na missa e ritos da turma, por cascata. NÃO leva o cadastro dos
+ * catequizandos — eles são da paróquia, não da turma — nem os sacramentos,
+ * que pendem do membro da família.
+ *
+ * Fica registrado na auditoria ANTES de apagar, e com a contagem do que
+ * sumiu: depois do delete não há a quem perguntar quantos eram. É a única
+ * pergunta que alguém faz quando descobre que uma turma foi excluída por
+ * engano.
+ */
+export function apagarTurma(parishId: string, groupId: string, quemApagou: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const turma = await tx.catechismGroup.findFirst({
+      where: { id: groupId, parishId },
+      select: {
+        id: true,
+        name: true,
+        year: true,
+        _count: { select: { enrollments: true, sessions: true } },
+      },
+    });
+    if (!turma) throw new ValidationError("Turma não encontrada.");
+
+    await registrar(tx, {
+      parishId,
+      atorId: quemApagou,
+      acao: ACOES.TURMA_APAGADA,
+      alvoTipo: "catechism_group",
+      alvoId: turma.id,
+      detalhe: {
+        nome: turma.name,
+        ano: turma.year,
+        matriculas: turma._count.enrollments,
+        encontros: turma._count.sessions,
+      },
+    });
+
+    await tx.catechismGroup.delete({ where: { id: turma.id } });
+    return { nome: turma.name, matriculas: turma._count.enrollments };
   });
 }

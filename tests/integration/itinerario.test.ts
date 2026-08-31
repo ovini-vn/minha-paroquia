@@ -15,6 +15,12 @@ import {
   registrarParticipacaoNoRito,
   concluirComSacramento,
   listarSacramentosDoCatequizando,
+  definirCatequista,
+  editarTurma,
+  editarEncontro,
+  apagarTurma,
+  getGroup,
+  listSessions,
   criarItinerario,
   criarTema,
   definirItinerarioDaTurma,
@@ -484,5 +490,96 @@ describe("conclusão da catequese em sacramento", () => {
     const { listarAniversarios } = await import("@/server/modules/aniversarios/service");
     const proximos = await listarAniversarios(parishId, new Date("2026-11-20"), 10);
     expect(proximos.some((a) => a.nome === "Cecília sem conta")).toBe(true);
+  });
+});
+
+/**
+ * Editar e excluir, e a catequista que ainda não usa o app.
+ */
+describe("gestão da turma", () => {
+  let parishId: string;
+  let catequistaId: string;
+  let turmaId: string;
+  const userIds: string[] = [];
+  const parishIds: string[] = [];
+
+  beforeAll(async () => {
+    await ensureRolesAndPermissionsSeeded();
+    const paroquia = await registerParish({ name: `Paróquia Gestão ${Date.now()}` });
+    parishId = paroquia.id;
+    parishIds.push(paroquia.id);
+
+    const catequista = await registerUser({
+      fullName: "Rosa Catequista",
+      email: `rosa-${Date.now()}@test.comunidade.app`,
+      password: "Senha@12345",
+    });
+    catequistaId = catequista.id;
+    userIds.push(catequista.id);
+
+    const turma = await createGroup({ parishId, name: "Turma Gestão", year: 2026 });
+    turmaId = turma.id;
+  });
+
+  afterAll(async () => {
+    await cleanupTenantData({ parishIds, userIds });
+  });
+
+  it("aceita a catequista pelo NOME, sem conta nenhuma", async () => {
+    await definirCatequista(parishId, turmaId, { nome: "Dona Marta" });
+    const turma = await getGroup(parishId, turmaId);
+    expect(turma?.catechistName).toBe("Dona Marta");
+    expect(turma?.catechistUserId).toBeNull();
+  });
+
+  it("ao apontar a conta, LIMPA o nome digitado", async () => {
+    // É o que garante que a troca "ela se cadastrou" não deixe o nome antigo
+    // para trás, divergindo do que a conta diz.
+    await definirCatequista(parishId, turmaId, { userId: catequistaId });
+    const turma = await getGroup(parishId, turmaId);
+    expect(turma?.catechistUserId).toBe(catequistaId);
+    expect(turma?.catechistName).toBeNull();
+  });
+
+  it("edita nome e ano da turma", async () => {
+    await editarTurma(parishId, turmaId, { name: "Crisma 2027", year: 2027 });
+    const turma = await getGroup(parishId, turmaId);
+    expect(turma?.name).toBe("Crisma 2027");
+    expect(turma?.year).toBe(2027);
+  });
+
+  it("corrige um encontro já lançado", async () => {
+    const encontro = await createSession(parishId, turmaId, {
+      date: new Date("2026-04-04"),
+      topic: "Errado",
+    });
+    await editarEncontro(parishId, encontro.id, {
+      date: new Date("2026-04-11"),
+      topic: "Certo",
+    });
+
+    const lista = await listSessions(parishId, turmaId);
+    const corrigido = lista.find((e) => e.id === encontro.id);
+    expect(corrigido?.topic).toBe("Certo");
+    expect(corrigido?.date.toISOString().slice(0, 10)).toBe("2026-04-11");
+  });
+
+  it("excluir a turma leva o que é dela e DEIXA registro na auditoria", async () => {
+    const { listar } = await import("@/server/modules/auditoria/service");
+
+    const resultado = await apagarTurma(parishId, turmaId, catequistaId);
+    expect(resultado.nome).toBe("Crisma 2027");
+
+    expect(await getGroup(parishId, turmaId)).toBeNull();
+
+    // O registro é escrito ANTES do delete, com a contagem: depois não há a
+    // quem perguntar quantos eram.
+    const trilha = await listar(parishId, 20);
+    const linha = trilha.find(
+      (l) => l.acao === "turma.apagada" && (l.detalhe as { nome?: string })?.nome === "Crisma 2027",
+    );
+    expect(linha).toBeDefined();
+    // A contagem do que sumiu é a única pergunta que alguém faz depois.
+    expect((linha?.detalhe as { encontros?: number })?.encontros).toBe(1);
   });
 });

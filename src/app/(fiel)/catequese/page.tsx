@@ -201,7 +201,8 @@ export default async function CatequesePage() {
                         {turma.nome} · {turma.ano}
                       </p>
                       <p className="mt-0.5 text-[12.5px] text-muted">
-                        {turma.catequista ?? "Sem catequista"} · {turma.matriculados}{" "}
+                        {turma.catequista ?? "Sem catequista"}
+                        {turma.catequistaSemApp && " (sem app)"} · {turma.matriculados}{" "}
                         {turma.matriculados === 1 ? "matriculado" : "matriculados"}
                       </p>
                       <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px]">

@@ -96,6 +96,27 @@ const TELAS = [
     rolarAte: "text=Itinerário da turma",
   },
 
+  {
+    arquivo: "coord-conclusao",
+    quem: "coordenacao",
+    url: "/catequese",
+    clicar: 'a[href^="/catequese/aluno/"]',
+    espera: "text=CONCLUIR A CAMINHADA",
+    // Rola até o PRÓPRIO formulário, e não até o título: ele tem quase
+    // metade da altura da tela, e rolando pelo título metade dele ficava
+    // fora da imagem — e a marcação junto.
+    rolarAte: "form:has(#sac-type)",
+    alvo: "form:has(#sac-type)",
+  },
+  {
+    arquivo: "coord-certidao",
+    quem: "coordenacao",
+    url: "/painel/sacramentos",
+    clicar: 'a[href*="/certidao"]',
+    espera: "text=Certidão de",
+    alvo: ".certidao-assento",
+  },
+
   // ---- Catequista ----
   {
     arquivo: "cat-turma",

@@ -139,6 +139,47 @@ async function main() {
       });
     }
 
+    /*
+     * A conclusão: um sacramento registrado para o catequizando.
+     *
+     * Sem ele, a captura da certidão sairia de uma tela vazia — e é
+     * justamente a certidão que o roteiro precisa mostrar. O registro pende
+     * do MEMBRO DA FAMÍLIA, que é o ponto: a criança não tem conta.
+     */
+    const primeiraMatricula = await tx.catechismEnrollment.findFirst({
+      where: { catechismGroupId: turma.id },
+      select: { familyMemberId: true },
+    });
+    if (primeiraMatricula) {
+      const jaTem = await tx.sacrament.findFirst({
+        where: {
+          parishId: turma.parishId,
+          familyMemberId: primeiraMatricula.familyMemberId,
+          type: "primeira_eucaristia",
+        },
+        select: { id: true },
+      });
+      if (!jaTem) {
+        const paroco = await tx.parishMembership.findFirst({
+          where: { parishId: turma.parishId, role: { code: "PAROCO" } },
+          select: { userId: true },
+        });
+        await tx.sacrament.create({
+          data: {
+            parishId: turma.parishId,
+            familyMemberId: primeiraMatricula.familyMemberId,
+            type: "primeira_eucaristia",
+            date: new Date("2026-11-15T00:00:00.000Z"),
+            location: "Igreja Matriz",
+            note: "Livro 12, folha 43, nº 118",
+            status: "validated",
+            validatedBy: paroco?.userId ?? null,
+            validatedAt: new Date(),
+          },
+        });
+      }
+    }
+
     console.log(`Itinerário "${itinerario.nome}" com ${temas.length} encontros.`);
     console.log(`Turma "${turma.name}" apontada para ele, com 4 encontros (1 sem conteúdo).`);
   });

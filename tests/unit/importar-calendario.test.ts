@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  classificar,
   diasComMissaDeRotina,
   localDoDetalhe,
   minutosDoDetalhe,
@@ -102,5 +103,47 @@ describe("o campo solto de detalhe da fonte", () => {
     expect(localDoDetalhe("até 4 de setembro")).toBeNull();
     expect(localDoDetalhe("para retirada")).toBeNull();
     expect(localDoDetalhe("Centro Juvenil Vocacional")).toBeNull();
+  });
+});
+
+describe("o que é celebração e o que é evento", () => {
+  it("missa é missa, esteja na gaveta que estiver", () => {
+    /*
+     * A categoria da fonte serve ao filtro da página impressa e não diz o
+     * que a coisa é. Estas três missas estão em "Juventude e IAM" e em
+     * "GBR e setores"; indo pela categoria, entrariam como evento — sem
+     * tratamento litúrgico e escapando da regra que evita duas missas no
+     * mesmo dia.
+     */
+    expect(classificar({ t: "Missa dos coroinhas na Catedral", c: "juv", m: "15h" })).toEqual({
+      tipo: "celebracao",
+      ct: "missa",
+    });
+    expect(classificar({ t: "Missa no setor 7", c: "gbr" })).toEqual({
+      tipo: "celebracao",
+      ct: "missa",
+    });
+    expect(classificar({ t: "Missa de aniversário da IAM", c: "juv", m: "31 anos" })).toEqual({
+      tipo: "celebracao",
+      ct: "missa",
+    });
+  });
+
+  it("continua reconhecendo missa pela categoria", () => {
+    expect(classificar({ t: "Missa na Colina", c: "mis" })).toEqual({
+      tipo: "celebracao",
+      ct: "missa",
+    });
+  });
+
+  it("não confunde com o que só começa parecido", () => {
+    // "Missão" e "Missionária" não são missas, e a regra casa pelo título.
+    expect(classificar({ t: "Missão Jovem", c: "juv" }).tipo).toBe("evento");
+    expect(classificar({ t: "Gincana Missionária", c: "juv" }).tipo).toBe("evento");
+  });
+
+  it("curso e retiro não são atos litúrgicos", () => {
+    expect(classificar({ t: "Curso de Batismo", c: "sac" }).tipo).toBe("evento");
+    expect(classificar({ t: "Retiro do Clero", c: "cle" }).tipo).toBe("evento");
   });
 });

@@ -40,7 +40,7 @@ import { brasiliaWallClockToUtc, hojeEmBrasilia } from "../src/lib/brasilia";
 import { occurrencesBetween, type RecurrenceRule } from "../src/lib/recurrence";
 import type { CelebrationType } from "@prisma/client";
 
-type Marcacao = { t: string; c: string; m?: string };
+export type Marcacao = { t: string; c: string; m?: string };
 type Mes = { n: number; name: string; days: Record<string, Marcacao[]> };
 
 /** Lê os dados executando as PRÓPRIAS estruturas do arquivo. */
@@ -63,10 +63,20 @@ function lerCalendario(caminho: string): { CATS: Record<string, string>; MONTHS:
  * diferença importa: celebração entra na agenda litúrgica e pode receber
  * escala de quem serve; evento não.
  */
-function classificar(m: Marcacao): { tipo: "celebracao"; ct: CelebrationType } | { tipo: "evento" } {
+export function classificar(m: Marcacao): { tipo: "celebracao"; ct: CelebrationType } | { tipo: "evento" } {
   const t = m.t.toLowerCase();
 
-  if (m.c === "mis") return { tipo: "celebracao", ct: "missa" };
+  /*
+   * Missa é missa, esteja na gaveta que estiver.
+   *
+   * A categoria da fonte serve ao filtro da página impressa, e não diz o
+   * que a coisa É: "Missa dos coroinhas na Catedral" e "Missa de
+   * aniversário da IAM" estão em "Juventude e IAM", "Missa no setor 7"
+   * está em "GBR e setores". Indo pela categoria, as três entrariam como
+   * evento — sem tratamento litúrgico, sem poder receber escala de quem
+   * serve, e escapando da regra que evita duas missas no mesmo dia.
+   */
+  if (m.c === "mis" || /^missas?\s/.test(t)) return { tipo: "celebracao", ct: "missa" };
   if (/ador(a|)ção ao santíssimo/.test(t)) return { tipo: "celebracao", ct: "adoracao" };
   if (/^batizados?$/.test(t) || /celebração dos batizados/.test(t))
     return { tipo: "celebracao", ct: "batizado" };
@@ -202,11 +212,32 @@ async function main() {
     });
     if (!paroquia) throw new Error("Não achei a paróquia neste banco.");
 
-    const autor = await tx.parishMembership.findFirst({
-      where: { parishId: paroquia.id, role: { code: "PAROCO" } },
-      select: { userId: true },
+    /*
+     * Quem assina os lançamentos.
+     *
+     * Todo registro guarda `createdBy`, e essa coluna é o que a auditoria
+     * responde depois. Era só o pároco — e a paróquia real não tem um: ela
+     * tem um administrador paroquial. Um importador que exige o cargo mais
+     * alto para de funcionar na única paróquia que existe.
+     *
+     * A ordem é a de quem responde pela agenda: pároco, administrador,
+     * secretaria. Quem ficou é impresso, porque assinar em nome de alguém
+     * não pode ser silencioso.
+     */
+    const PODEM_ASSINAR = ["PAROCO", "ADMINISTRADOR_PAROQUIAL", "SECRETARIA"];
+    const responsaveis = await tx.parishMembership.findMany({
+      where: { parishId: paroquia.id, role: { code: { in: PODEM_ASSINAR } } },
+      select: { userId: true, role: { select: { code: true } }, user: { select: { fullName: true } } },
     });
-    if (!autor) throw new Error("Não achei o pároco desta paróquia para assinar os lançamentos.");
+    const autor = PODEM_ASSINAR.map((code) =>
+      responsaveis.find((m) => m.role.code === code),
+    ).find(Boolean);
+    if (!autor) {
+      throw new Error(
+        `Não achei quem assine os lançamentos: a paróquia não tem ninguém com ${PODEM_ASSINAR.join(", ")}.`,
+      );
+    }
+    console.log(`Assinando como: ${autor.user.fullName} (${autor.role.code})`);
 
     console.log(`Paróquia: ${paroquia.name}`);
 

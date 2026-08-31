@@ -256,11 +256,32 @@ async function main() {
       select: { id: true, name: true },
     });
     if (!paroquia) throw new Error("Não achei a paróquia neste banco.");
-    const autor = await tx.parishMembership.findFirst({
-      where: { parishId: paroquia.id, role: { code: "PAROCO" } },
-      select: { userId: true },
+    /*
+     * Quem assina os lançamentos.
+     *
+     * Todo registro guarda `createdBy`, e essa coluna é o que a auditoria
+     * responde depois. Era só o pároco — e a paróquia real não tem um: ela
+     * tem um administrador paroquial. Um importador que exige o cargo mais
+     * alto para de funcionar na única paróquia que existe.
+     *
+     * A ordem é a de quem responde pela agenda: pároco, administrador,
+     * secretaria. Quem ficou é impresso, porque assinar em nome de alguém
+     * não pode ser silencioso.
+     */
+    const PODEM_ASSINAR = ["PAROCO", "ADMINISTRADOR_PAROQUIAL", "SECRETARIA"];
+    const responsaveis = await tx.parishMembership.findMany({
+      where: { parishId: paroquia.id, role: { code: { in: PODEM_ASSINAR } } },
+      select: { userId: true, role: { select: { code: true } }, user: { select: { fullName: true } } },
     });
-    if (!autor) throw new Error("Não achei o pároco desta paróquia para assinar os lançamentos.");
+    const autor = PODEM_ASSINAR.map((code) =>
+      responsaveis.find((m) => m.role.code === code),
+    ).find(Boolean);
+    if (!autor) {
+      throw new Error(
+        `Não achei quem assine os lançamentos: a paróquia não tem ninguém com ${PODEM_ASSINAR.join(", ")}.`,
+      );
+    }
+    console.log(`Assinando como: ${autor.user.fullName} (${autor.role.code})`);
     console.log(`Paróquia: ${paroquia.name}\n`);
 
     const jaTem = await tx.pastoralGroup.findMany({

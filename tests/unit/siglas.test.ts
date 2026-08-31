@@ -59,11 +59,18 @@ describe("siglas por extenso", () => {
     );
   });
 
-  it("não desmonta uma enumeração de siglas", () => {
-    // A fonte nunca diz o que são CPC e CAEP. Expandir só o primeiro membro
-    // deixaria a lista sem ler nem como sigla nem como nome.
+  it("a lista com barras vira enumeração de verdade", () => {
+    // "(Conselho.../Conselho.../Conselho...)" se leria pior que a sigla.
     expect(porExtenso("garantir a aplicação dos estatutos (CPP/CPC/CAEP) nas comunidades")).toBe(
-      "garantir a aplicação dos estatutos (CPP/CPC/CAEP) nas comunidades",
+      "garantir a aplicação dos estatutos (Conselho Pastoral Paroquial, Conselho Pastoral Comunitário e Conselho de Assuntos Econômicos Paroquial) nas comunidades",
+    );
+  });
+
+  it("lista com sigla desconhecida fica inteira como está", () => {
+    // Meio traduzida seria pior que intacta: ninguém leria "Conselho
+    // Pastoral Paroquial/XYZ" como uma lista de conselhos.
+    expect(porExtenso("os estatutos (CPP/XYZ) nas comunidades")).toBe(
+      "os estatutos (CPP/XYZ) nas comunidades",
     );
   });
 

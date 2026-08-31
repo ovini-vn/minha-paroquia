@@ -8,12 +8,12 @@
  * lê "GBR" precisa sair da agenda para entender o que está no seu próprio
  * calendário.
  *
- * Todas as equivalências saem do PRÓPRIO arquivo da paróquia — do glossário
- * dele ou do texto que já traz a expansão entre parênteses. Nenhuma foi
- * inventada, e por isso duas ficaram de fora: "CPC" e "CAEP" aparecem uma
- * vez, dentro de "(CPP/CPC/CAEP)", e a fonte nunca diz o que são. Chutar o
- * nome dos conselhos de uma paróquia é o palpite que fica bonito na tela e
- * errado na vida.
+ * Quase todas as equivalências saem do PRÓPRIO arquivo da paróquia — do
+ * glossário dele ou do texto que já traz a expansão entre parênteses.
+ * Nenhuma foi adivinhada: "CPC" e "CAEP" aparecem uma vez só, dentro de
+ * "(CPP/CPC/CAEP)", e a fonte nunca diz o que são, então ficaram de fora
+ * até o pároco dizer os nomes. Chutar como se chamam os conselhos de uma
+ * paróquia é o palpite que fica bonito na tela e errado na vida.
  */
 
 type Sigla = {
@@ -38,6 +38,10 @@ export const SIGLAS: Record<string, Sigla> = {
   IVC: { nome: "Iniciação à Vida Cristã", genero: "f", numero: "s" },
   PPI: { nome: "Pastoral da Pessoa Idosa", genero: "f", numero: "s" },
   HU: { nome: "Hospital Universitário", genero: "m", numero: "s" },
+  // Estas duas não estão no glossário do arquivo nem são expandidas em
+  // lugar nenhum do texto: vieram do pároco, perguntado em 31/08/2026.
+  CPC: { nome: "Conselho Pastoral Comunitário", genero: "m", numero: "s" },
+  CAEP: { nome: "Conselho de Assuntos Econômicos Paroquial", genero: "m", numero: "s" },
 };
 
 /**
@@ -88,9 +92,11 @@ function concordar(artigo: string, sigla: Sigla): string {
  *    Comissão Missionária Paroquial". O plural da sigla some porque o nome
  *    já é plural; o artigo passa a concordar com o nome.
  *
- * 4. Sigla encostada em barra não é trocada. "(CPP/CPC/CAEP)" é uma
- *    enumeração compacta, e expandir só o primeiro membro quebraria a lista
- *    em algo que não se lê nem como sigla nem como nome.
+ * 4. "(CPP/CPC/CAEP)" vira "(Conselho Pastoral Paroquial, Conselho Pastoral
+ *    Comunitário e Conselho de Assuntos Econômicos Paroquial)" — lista com
+ *    vírgulas, não com barras, que é como se lê em português. E só quando
+ *    TODOS os membros são conhecidos: uma lista meio traduzida não se lê nem
+ *    como sigla nem como nome.
  */
 export function porExtenso(texto: string): string {
   let saida = texto;
@@ -114,6 +120,29 @@ export function porExtenso(texto: string): string {
       },
     );
   }
+
+  /*
+   * A enumeração compacta vira enumeração de verdade.
+   *
+   * A fonte escreve "os estatutos (CPP/CPC/CAEP)". Trocar as barras por
+   * nomes daria "(Conselho Pastoral Paroquial/Conselho Pastoral
+   * Comunitário/Conselho de Assuntos Econômicos Paroquial)", que se lê pior
+   * do que a sigla. Como lista — vírgulas e um "e" no fim — se lê como
+   * português.
+   *
+   * Só quando TODOS os membros são conhecidos: os lookarounds de barra
+   * garantem que uma lista com uma sigla que não sabemos expandir fique
+   * inteira como está, em vez de sair meio traduzida.
+   */
+  const alternativa = Object.keys(SIGLAS).join("|");
+  saida = saida.replace(
+    new RegExp(`(?<!/)\\b((?:${alternativa})(?:/(?:${alternativa}))+)\\b(?!/)`, "g"),
+    (lista) => {
+      const nomes = lista.split("/").map((s) => SIGLAS[s]!.nome);
+      const ultimo = nomes.pop()!;
+      return `${nomes.join(", ")} e ${ultimo}`;
+    },
+  );
 
   for (const [sigla, dados] of Object.entries(SIGLAS)) {
     /*

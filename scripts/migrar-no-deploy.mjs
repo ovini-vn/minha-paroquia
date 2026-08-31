@@ -54,3 +54,31 @@ try {
   console.error("[migration] subir código sem o schema dele quebra a aplicação para todos.");
   process.exit(1);
 }
+
+/*
+ * Papéis e permissões, logo depois do schema.
+ *
+ * A migration cria a TABELA; ela não cria a LINHA que diz que "plano.manage"
+ * existe e que o pároco a tem. Isso vive em `src/server/auth/rbac.ts` e só
+ * chega ao banco por `ensureRolesAndPermissionsSeeded`.
+ *
+ * Era manual, e o manual foi esquecido na primeira oportunidade: a tela do
+ * plano pastoral subiu íntegra em produção e ficou inalcançável para todo
+ * mundo, porque a permissão dela não existia no banco. Não quebrou nada —
+ * e é justamente por não quebrar que ninguém perceberia.
+ *
+ * Idempotente: são upserts sobre papel, permissão e o par dos dois. Roda a
+ * cada deploy sem efeito, até o dia em que há uma permissão nova.
+ *
+ * Falhar aqui também derruba o build, pela mesma razão da migration: um
+ * deploy com a permissão faltando entrega uma tela que ninguém alcança.
+ */
+try {
+  const tsx = path.join(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
+  execFileSync(process.execPath, [tsx, "prisma/seed-production.ts"], { stdio: "inherit" });
+  console.log("[rbac] Concluído.");
+} catch {
+  console.error("[rbac] FALHOU ao sincronizar papéis e permissões. O build para aqui:");
+  console.error("[rbac] uma permissão que existe no código e não no banco esconde a tela dela.");
+  process.exit(1);
+}

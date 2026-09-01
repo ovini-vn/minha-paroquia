@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CelebrationType } from "@prisma/client";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
@@ -14,6 +15,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { FiltroDeCelebracoes } from "./_components/FiltroDeCelebracoes";
 import { describeRule } from "@/lib/recurrence";
 import { CreateScheduleForm } from "./CreateScheduleForm";
 import { DeactivateScheduleButton } from "./DeactivateScheduleButton";
@@ -21,18 +23,46 @@ import { Repeat, CalendarDays } from "lucide-react";
 
 export const metadata: Metadata = { title: "Horários das missas" };
 
-export default async function MissasAdminPage() {
+export default async function MissasAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tipo?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.AGENDA_MANAGE);
   if (!session.membership) return null;
 
+  const { tipo } = await searchParams;
+  // Tipo desconhecido no endereço é ignorado, como nas outras telas: estes
+  // endereços são guardados e compartilhados.
+  const escolhido =
+    tipo && tipo in CELEBRATION_TYPE_LABELS ? (tipo as CelebrationType) : null;
+
   const parishId = session.membership.parishId;
-  const [schedules, celebrations, priests] = await Promise.all([
+  const [schedules, celebrations, todasParaLegenda, priests] = await Promise.all([
     listCelebrationSchedules(parishId),
-    listCelebrationsForAdmin(parishId, 30),
+    listCelebrationsForAdmin(parishId, 30, escolhido),
+    /*
+     * Uma consulta só para saber QUAIS tipos a paróquia tem.
+     *
+     * Sem ela, os tipos oferecidos sairiam da lista já filtrada — e ao
+     * filtrar por Adoração o filtro passaria a oferecer só Adoração, sem
+     * caminho de volta para os outros.
+     */
+    listCelebrationsForAdmin(parishId, 300),
     listPriests(parishId),
   ]);
 
-  const ativas = schedules.filter((s) => s.active);
+  const todasAsRepeticoes = schedules.filter((s) => s.active);
+  const ativas = escolhido
+    ? todasAsRepeticoes.filter((s) => s.type === escolhido)
+    : todasAsRepeticoes;
+
+  const presentes = [
+    ...new Set([
+      ...todasParaLegenda.map((c) => c.type),
+      ...todasAsRepeticoes.map((s) => s.type),
+    ]),
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,6 +82,13 @@ export default async function MissasAdminPage() {
         </Eyebrow>
         <CreateScheduleForm priests={priests} />
       </Card>
+
+      {/*
+        O filtro fica ANTES das duas seções porque vale para as duas:
+        procurar "Adoração" e ver a repetição dela sem as datas, ou o
+        contrário, seria meia resposta.
+      */}
+      <FiltroDeCelebracoes atual={escolhido} presentes={presentes} />
 
       <section>
         <Eyebrow tone="accent" className="mb-3">
@@ -118,8 +155,16 @@ export default async function MissasAdminPage() {
         {celebrations.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
-            title="Nada na agenda"
-            description="Crie uma repetição acima, ou lance uma celebração avulsa pelo painel."
+            title={
+              escolhido
+                ? `Nenhuma data de ${CELEBRATION_TYPE_LABELS[escolhido]}`
+                : "Nada na agenda"
+            }
+            description={
+              escolhido
+                ? "Há celebrações de outros tipos marcadas."
+                : "Crie uma repetição acima, ou lance uma celebração avulsa pelo painel."
+            }
           />
         ) : (
           <Card className="px-3.5 py-1.5">

@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { CelebrationType, Prisma } from "@prisma/client";
 import { withTenantContext, withPlatformContext } from "@/server/db/tenant-context";
 import { brasiliaWallClockToUtc } from "@/lib/brasilia";
 import { occurrencesBetween, type RecurrenceRule } from "@/lib/recurrence";
@@ -333,10 +333,22 @@ export async function deactivateCelebrationSchedule(parishId: string, scheduleId
  * Lista para o painel: inclui as CANCELADAS, ao contrário da agenda pública.
  * Quem administra precisa enxergar o que cancelou para poder reabrir.
  */
-export function listCelebrationsForAdmin(parishId: string, limit = 30) {
+/**
+ * As próximas celebrações do painel, opcionalmente de um tipo só.
+ *
+ * O filtro vai ao BANCO, e não à lista já carregada: a consulta traz as
+ * trinta próximas, e filtrar essas trinta diria "nenhum batizado" só porque
+ * o batizado é o quadragésimo. Assim "Batizado" traz os trinta próximos
+ * batizados, que é o que a pergunta quer dizer.
+ */
+export function listCelebrationsForAdmin(
+  parishId: string,
+  limit = 30,
+  tipo?: CelebrationType | null,
+) {
   return withTenantContext(parishId, (tx) =>
     tx.celebration.findMany({
-      where: { parishId, startsAt: { gte: new Date() } },
+      where: { parishId, startsAt: { gte: new Date() }, ...(tipo ? { type: tipo } : {}) },
       orderBy: { startsAt: "asc" },
       take: limit,
       include: {

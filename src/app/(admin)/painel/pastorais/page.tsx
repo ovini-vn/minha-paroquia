@@ -11,18 +11,57 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CreatePastoralGroupForm } from "./CreatePastoralGroupForm";
+import {
+  FiltroDePastorais,
+  VISOES,
+  type VisaoDePastorais,
+} from "./_components/FiltroDePastorais";
 
 export const metadata: Metadata = { title: "Grupos e pastorais" };
 
-export default async function PainelPastoraisPage() {
+export default async function PainelPastoraisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ver?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.OPPORTUNITIES_MANAGE);
   if (!session.membership) return null;
 
   const parishId = session.membership.parishId;
-  const [groups, interests] = await Promise.all([
+  const [todas, interests] = await Promise.all([
     listAllGroups(parishId),
     listInterestsForParish(parishId),
   ]);
+
+  const { ver } = await searchParams;
+  const visao: VisaoDePastorais = VISOES.some((v) => v.id === ver)
+    ? (ver as VisaoDePastorais)
+    : "ativas";
+
+  /*
+   * O recorte é feito aqui, e não no banco.
+   *
+   * São quinze pastorais, e uma delas — "faltando informação" — depende de
+   * dois campos vazios ao mesmo tempo, que em SQL fica pior de ler do que
+   * de executar. No painel de missas o filtro foi ao banco porque lá a lista
+   * vinha truncada em trinta e o recorte mentiria; aqui ela vem inteira.
+   */
+  const ativa = (g: (typeof todas)[number]) => g.status !== "inativa";
+  const recorte: Record<VisaoDePastorais, (g: (typeof todas)[number]) => boolean> = {
+    ativas: ativa,
+    interessados: (g) => g._count.interests > 0,
+    // As faltas só valem para quem está em atividade: cobrar o coordenador
+    // de uma pastoral encerrada é pendência inventada.
+    "sem-coordenador": (g) => ativa(g) && !g.leaderName,
+    "sem-horario": (g) => ativa(g) && !g.meetsWhen,
+    inativas: (g) => g.status === "inativa",
+    todas: () => true,
+  };
+
+  const groups = todas.filter(recorte[visao]);
+  const quantos = Object.fromEntries(
+    VISOES.map((v) => [v.id, todas.filter(recorte[v.id]).length]),
+  ) as Record<VisaoDePastorais, number>;
 
   return (
     <div className="flex flex-col gap-6">
@@ -40,11 +79,33 @@ export default async function PainelPastoraisPage() {
         <Eyebrow tone="accent" className="mb-3">
           Pastorais cadastradas
         </Eyebrow>
+        <div className="mb-4">
+          <FiltroDePastorais atual={visao} quantos={quantos} />
+        </div>
+
         {groups.length === 0 ? (
           <EmptyState
             icon={Users}
-            title="Nenhuma pastoral cadastrada"
-            description="Cadastre acima as pastorais e grupos que existem na sua paróquia."
+            title={
+              todas.length === 0
+                ? "Nenhuma pastoral cadastrada"
+                : visao === "sem-coordenador"
+                  ? "Toda pastoral ativa tem coordenador"
+                  : visao === "sem-horario"
+                    ? "Toda pastoral ativa tem horário"
+                    : visao === "interessados"
+                      ? "Ninguém esperando contato"
+                      : "Nada neste recorte"
+            }
+            description={
+              todas.length === 0
+                ? "Cadastre acima as pastorais e grupos que existem na sua paróquia."
+                : visao === "sem-coordenador" || visao === "sem-horario"
+                  ? "O cadastro está completo — nada a preencher por aqui."
+                  : visao === "interessados"
+                    ? "Quando alguém se oferecer para servir numa pastoral, ela aparece aqui."
+                    : "Há pastorais cadastradas em outro recorte."
+            }
           />
         ) : (
           <Card className="px-3.5 py-1.5">

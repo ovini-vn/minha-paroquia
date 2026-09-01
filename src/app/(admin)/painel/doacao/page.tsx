@@ -18,7 +18,7 @@ import { listarFinalidades } from "@/server/modules/contribuicao/service";
 import { IniciativaForm } from "./IniciativaForm";
 import { AcoesDoItem, EtiquetaOculto } from "./ListaOrdenavel";
 
-export const metadata: Metadata = { title: "Doação" };
+export const metadata: Metadata = { title: "Ofertar" };
 
 export default async function DoacaoAdminPage() {
   const session = await requirePermissionForPage(PERMISSIONS.DASHBOARD_PARISH_VIEW);
@@ -27,7 +27,7 @@ export default async function DoacaoAdminPage() {
   const parishId = session.membership.parishId;
   /*
    * Duas listas com nomes parecidos, e elas NÃO são a mesma coisa:
-   * `finalidades` são os cartões de "Sua doação ajuda", que contam uma
+   * `finalidades` são os cartões de "Sua oferta ajuda", que contam uma
    * história; `finalidadesDeContribuicao` são para onde o dinheiro vai, e
    * vivem em Financeiro. Ligar a iniciativa à primeira apontaria o caminho
    * de contribuir para um texto.
@@ -47,8 +47,8 @@ export default async function DoacaoAdminPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Doação"
-        description="O que o fiel vê em Doação: onde a contribuição ajuda, o que a paróquia está realizando e a chave PIX."
+        title="Ofertar"
+        description="O que o fiel vê em Ofertar: onde a oferta ajuda, o que a paróquia está realizando e a chave PIX."
       />
 
       <Card>
@@ -71,7 +71,7 @@ export default async function DoacaoAdminPage() {
 
       <section>
         <Eyebrow tone="accent" className="mb-1">
-          Sua doação ajuda
+          Sua oferta ajuda
         </Eyebrow>
         <p className="mb-3 text-[12.5px] text-muted">
           Os cards que explicam para onde vai a contribuição, em geral.
@@ -81,7 +81,7 @@ export default async function DoacaoAdminPage() {
           <EmptyState
             icon={HandCoins}
             title="Nenhuma finalidade cadastrada"
-            description="Crie a primeira abaixo — ela aparece na tela de Doação."
+            description="Crie a primeira abaixo — ela aparece na tela de Ofertar."
           />
         ) : (
           <div className="flex flex-col gap-2.5">

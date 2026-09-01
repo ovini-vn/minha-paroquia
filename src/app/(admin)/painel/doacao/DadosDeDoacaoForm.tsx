@@ -58,7 +58,7 @@ export function DadosDeDoacaoForm({ dados }: { dados: DadosDeDoacao }) {
               className={campo}
             />
             <p className="text-[12px] text-muted">
-              Aparece na tela de doação, para o fiel conferir a quem está doando.
+              Aparece na tela de Ofertar, para o fiel conferir a quem está ofertando.
             </p>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -105,7 +105,7 @@ export function DadosDeDoacaoForm({ dados }: { dados: DadosDeDoacao }) {
             </label>
             <input id="doacao-chave" name="pixKey" defaultValue={dados.pixKey} className={campo} />
             <p className="text-[12px] text-muted">
-              Conferimos o formato antes de salvar. Em branco, a área de doação não aparece para o
+              Conferimos o formato antes de salvar. Em branco, a área de oferta não aparece para o
               fiel.
             </p>
           </div>
@@ -135,7 +135,7 @@ export function DadosDeDoacaoForm({ dados }: { dados: DadosDeDoacao }) {
       <section className="flex flex-col gap-3 border-t border-border pt-5">
         <p className="font-serif text-lg font-semibold text-foreground">Pastoral do Dízimo</p>
         <p className="text-[12.5px] leading-relaxed text-muted">
-          Dízimo não é doação: é compromisso contínuo, acompanhado pela pastoral. Esta seção convida
+          Dízimo não é oferta avulsa: é compromisso contínuo, acompanhado pela pastoral. Esta seção convida
           o fiel a conversar com alguém — não abre um pagamento.
         </p>
 
@@ -146,7 +146,7 @@ export function DadosDeDoacaoForm({ dados }: { dados: DadosDeDoacao }) {
             defaultChecked={dados.dizimoAtivo}
             className="h-4 w-4 rounded border-border"
           />
-          Mostrar o convite ao dízimo na tela de Doação
+          Mostrar o convite ao dízimo na tela de Ofertar
         </label>
 
         <div className="flex flex-col gap-1.5">

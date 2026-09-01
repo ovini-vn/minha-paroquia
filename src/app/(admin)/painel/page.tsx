@@ -225,7 +225,7 @@ export default async function AdminDashboardPage() {
           <RowLink
             href="/painel/doacao"
             icon={HandCoins}
-            title="Doação"
+            title="Ofertar"
             subtitle="Chave PIX, finalidades e o que a paróquia realiza"
           />
           <RowLink

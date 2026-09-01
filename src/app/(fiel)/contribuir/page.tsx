@@ -18,7 +18,7 @@ import { formatDateOnly } from "@/lib/date";
 import { iconeDeDoacao } from "@/lib/doacao";
 import { EscolherFinalidade } from "./_components/EscolherFinalidade";
 
-export const metadata: Metadata = { title: "Contribuir" };
+export const metadata: Metadata = { title: "Minha oferta" };
 
 /** "R$ 150,00" a partir de centavos inteiros. */
 export function emReais(centavos: number): string {
@@ -26,7 +26,7 @@ export function emReais(centavos: number): string {
 }
 
 /**
- * Minha participação: onde o fiel escolhe a finalidade e gera o próprio Pix.
+ * Minha oferta: onde o fiel escolhe a finalidade e gera o próprio Pix.
  *
  * Não é uma tela de pagamento, e a linguagem cuida disso: ninguém deve nada,
  * ninguém cobra nada. O valor é opcional porque o dízimo é assim — cada um
@@ -61,8 +61,8 @@ export default async function ContribuirPage({
   return (
     <div className="flex flex-col">
       <PageHeader
-        title="Minha participação"
-        description="Acompanhe suas contribuições para a vida da comunidade."
+        title="Minha oferta"
+        description="Escolha a finalidade, gere o seu código e acompanhe o que você já ofertou."
       />
 
       <DuasColunas
@@ -70,20 +70,20 @@ export default async function ContribuirPage({
           <div className="flex flex-col gap-7">
             <section>
               <Eyebrow tone="accent" className="mb-3">
-                Contribuir
+                Ofertar
               </Eyebrow>
 
               {semChave ? (
                 <EmptyState
                   icon={HandHeart}
-                  title="A paróquia ainda não abriu as contribuições pelo app"
-                  description="Assim que a secretaria cadastrar a chave PIX, você poderá gerar aqui o seu código de contribuição."
+                  title="A paróquia ainda não abriu as ofertas pelo app"
+                  description="Assim que a secretaria cadastrar a chave PIX, você poderá gerar aqui o seu código de oferta."
                 />
               ) : finalidades.length === 0 ? (
                 <EmptyState
                   icon={HandHeart}
                   title="Ainda não há finalidades cadastradas"
-                  description="A paróquia define para onde as contribuições podem ir — dízimo, doação, coleta, catequese. Assim que ela cadastrar, elas aparecem aqui."
+                  description="A paróquia define para onde as ofertas podem ir — dízimo, obras, coleta, catequese. Assim que ela cadastrar, elas aparecem aqui."
                 />
               ) : (
                 <EscolherFinalidade
@@ -101,7 +101,7 @@ export default async function ContribuirPage({
             {historico.length > 0 && (
               <section>
                 <Eyebrow tone="accent" className="mb-3">
-                  Minhas contribuições
+                  Minhas ofertas
                 </Eyebrow>
                 <div className="flex flex-col gap-2">
                   {historico.map((c) => (
@@ -120,12 +120,12 @@ export default async function ContribuirPage({
                 </div>
                 {/*
                   Nada de txid, identificador ou "conciliado" aqui. Para quem
-                  contribuiu, a pergunta é se a paróquia recebeu — e uma
-                  contribuição só aparece nesta lista depois que recebeu.
+                  ofertou, a pergunta é se a paróquia recebeu — e uma oferta
+                  só aparece nesta lista depois que recebeu.
                 */}
                 <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
-                  A lista mostra o que a paróquia já registrou como recebido. Contribuições em
-                  dinheiro ou envelope aparecem quando a secretaria as lança.
+                  A lista mostra o que a paróquia já registrou como recebido. Ofertas em dinheiro
+                  ou envelope aparecem quando a secretaria as lança.
                 </p>
               </section>
             )}
@@ -163,7 +163,7 @@ export default async function ContribuirPage({
                 <li>Escolha a finalidade e, se quiser, um valor.</li>
                 <li>Copie o código e cole no aplicativo do seu banco.</li>
                 <li>
-                  Não precisa enviar comprovante: a contribuição aparece aqui quando a paróquia a
+                  Não precisa enviar comprovante: a oferta aparece aqui quando a paróquia a
                   registrar.
                 </li>
               </ol>
@@ -176,7 +176,7 @@ export default async function ContribuirPage({
                   <Icone className="mt-0.5 h-5 w-5 shrink-0 text-primary" strokeWidth={1.5} aria-hidden />
                   <p className="text-[13px] leading-relaxed text-muted">
                     O dinheiro vai direto para a conta da paróquia. O aplicativo não guarda valor
-                    nenhum: ele só ajuda a saber de que finalidade foi cada contribuição.
+                    nenhum: ele só ajuda a saber de que finalidade foi cada oferta.
                   </p>
                 </Card>
               );

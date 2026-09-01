@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   HandCoins,
+  HandHeart,
   HeartHandshake,
   Sparkles,
 } from "lucide-react";
@@ -23,18 +24,23 @@ import { formatarChavePix, ehTipoDeChavePix } from "@/lib/pix";
 import { formatDateOnly } from "@/lib/date";
 
 /**
- * Doação — por que doar, antes de como doar.
+ * Ofertar — por que ofertar, antes de como ofertar.
  *
  * A chave PIX é a última coisa da tela de propósito. Quem chega aqui já
  * sabe que quer ajudar; o que falta é ver onde o dinheiro chega. Uma tela
  * que abre com dados bancários pede sem contar para quê.
  *
- * Doação não é dízimo: doação é contribuição espontânea para o que está
- * acontecendo agora; dízimo é compromisso contínuo, acompanhado pela
- * pastoral. Por isso o dízimo aparece no fim, como convite — nunca como
- * mais uma forma de pagar.
+ * "Oferta" e não "doação": doação é o que se dá a uma instituição, de fora
+ * para dentro; oferta é o que a comunidade põe em comum, e não existe
+ * oferta devida. É também a palavra da própria missa — o ofertório —, o que
+ * poupa a tela de ensinar vocabulário novo a quem já é daqui.
+ *
+ * Oferta não é dízimo: a oferta é espontânea, para o que está acontecendo
+ * agora; o dízimo é compromisso contínuo, acompanhado pela pastoral. Por
+ * isso o dízimo aparece no fim, como convite — nunca como mais uma forma de
+ * pagar.
  */
-export const metadata: Metadata = { title: "Doação" };
+export const metadata: Metadata = { title: "Ofertar" };
 
 export default async function DoacaoPage() {
   const session = await getSessionContext();
@@ -76,15 +82,15 @@ export default async function DoacaoPage() {
   return (
     <div className="flex flex-col">
       <PageHeader
-        title="Doação"
-        description="Sua doação ajuda a manter nossa comunidade viva e a levar esperança a quem precisa."
+        title="Ofertar"
+        description="Sua oferta mantém nossa comunidade viva e leva esperança a quem precisa."
       />
 
       {/* Nada cadastrado ainda: uma frase honesta, em vez de seções vazias. */}
       {finalidades.length === 0 && iniciativas.length === 0 && !chaveFormatada && (
         <EmptyState
           icon={HandCoins}
-          title="A paróquia ainda não abriu as doações"
+          title="A paróquia ainda não abriu as ofertas"
           description="Assim que a secretaria cadastrar a chave PIX e as necessidades da comunidade, elas aparecem aqui."
         />
       )}
@@ -92,7 +98,7 @@ export default async function DoacaoPage() {
       {finalidades.length > 0 && (
         <section>
           <Eyebrow tone="accent" className="mb-3">
-            Sua doação ajuda
+            Sua oferta ajuda
           </Eyebrow>
           {/* Três colunas em qualquer tela. No celular cada card tem cerca
               de 105px, então o conteúdo se empilha na vertical — ícone em
@@ -163,7 +169,7 @@ export default async function DoacaoPage() {
       {/*
         A ordem diz o que a paróquia pensa sobre contribuir.
 
-        Primeiro o porquê — os cartões de "Sua doação ajuda". Depois o
+        Primeiro o porquê — os cartões de "Sua oferta ajuda". Depois o
         caminho de quem já quer participar. Depois o dízimo, que é
         pertencimento contínuo e não campanha. E só então as
         iniciativas, que são o que está acontecendo agora.
@@ -171,20 +177,45 @@ export default async function DoacaoPage() {
         Pedido pontual por último de propósito: campanha antes de
         vínculo é a ordem de quem arrecada, não a de quem convida.
       */}
+      {/*
+        O caminho principal da tela, e o único botão CHEIO do app aqui.
+
+        Era um botão pequeno, encostado à direita de um cartão de rodapé,
+        depois de rolar a grade inteira de finalidades: o gesto mais
+        importante da página tinha o menor alvo de toque dela. Agora ocupa a
+        largura toda, com o preenchimento primário — e nada mais nesta tela
+        é um botão preenchido, nem o do dízimo, que é de contorno dourado.
+        Quem chega rolando encontra uma coisa só para tocar.
+
+        O destaque é do BOTÃO, não do cartão: o fundo continua o mesmo das
+        outras superfícies. Tingir o cartão brigaria com o convite ao
+        dízimo, que vem logo abaixo em dourado, e a tela passaria a ter dois
+        pedidos gritando ao mesmo tempo.
+
+        A pergunta do título é sobre o NOME, não sobre o valor. "Quer que
+        sua oferta seja identificada?" descrevia uma propriedade técnica do
+        Pix; "chegue com o seu nome" descreve o que a pessoa ganha — a
+        paróquia sabe quem ofertou e para quê.
+      */}
       {chaveFormatada && (
         <section className="pt-7">
-          <Card className="flex flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[14.5px] font-semibold text-foreground">
-                Quer que sua contribuição seja identificada?
-              </p>
-              <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
-                Gere um código por finalidade — dízimo, catequese, festa — e acompanhe seu
-                histórico.
+          <Card className="border-primary/40">
+            <div className="flex items-center gap-3">
+              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                <HandHeart className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+              </span>
+              <p className="font-serif text-[18px] font-semibold leading-tight text-foreground">
+                Quer que sua oferta chegue com o seu nome?
               </p>
             </div>
-            <LinkButton href="/contribuir" size="sm">
-              Minha participação
+
+            <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
+              Gere um código por finalidade — dízimo, catequese, festa — e acompanhe o seu
+              histórico. O valor é sempre seu: o app não sugere quantia nenhuma.
+            </p>
+
+            <LinkButton href="/contribuir" className="mt-4 w-full">
+              Quero ofertar
             </LinkButton>
           </Card>
         </section>
@@ -295,7 +326,7 @@ export default async function DoacaoPage() {
       {/*
         A ponte para a contribuição identificada.
         
-        Esta tela mostra UMA chave para tudo — serve para quem quer só doar.
+        Esta tela mostra UMA chave para tudo — serve para quem quer só ofertar.
         Quem quer que a paróquia saiba a que se refere (dízimo, catequese,
         festa) precisa de um código com identificador, e é ali que ele nasce.
       */}

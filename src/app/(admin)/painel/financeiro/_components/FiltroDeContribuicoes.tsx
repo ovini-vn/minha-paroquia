@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DOACAO_ESPONTANEA } from "@/server/modules/contribuicao/schema";
+import { OFERTA_ESPONTANEA } from "@/server/modules/contribuicao/schema";
 import {
   enderecoDoFinanceiro,
   PERIODOS,
@@ -15,7 +15,7 @@ import {
  * combinação possível numa tela de dinheiro: dois números verdadeiros
  * dizendo coisas diferentes, sem avisar.
  *
- * A doação espontânea entra como uma opção, e não como ausência: ela é um
+ * A oferta espontânea entra como uma opção, e não como ausência: ela é um
  * recorte legítimo — "quanto veio sem destino declarado" é uma pergunta que
  * a paróquia faz.
  */
@@ -36,7 +36,7 @@ export function FiltroDeContribuicoes({
 
   const opcoes = [
     ...finalidades.map((f) => ({ id: f.id, rotulo: f.nome })),
-    ...(temEspontanea ? [{ id: "sem", rotulo: DOACAO_ESPONTANEA }] : []),
+    ...(temEspontanea ? [{ id: "sem", rotulo: OFERTA_ESPONTANEA }] : []),
   ];
 
   return (

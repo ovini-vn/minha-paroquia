@@ -63,7 +63,7 @@ export function FinalidadeForm({
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`fin-desc-${id}`} className="text-sm font-medium text-muted">
-          Onde essa doação ajuda
+          Onde essa oferta ajuda
         </label>
         <textarea
           id={`fin-desc-${id}`}
@@ -97,7 +97,7 @@ export function FinalidadeForm({
           </select>
           <p className="text-[12px] leading-relaxed text-muted">
             Escolhendo uma finalidade, o cartão inteiro vira um caminho para contribuir. Em branco,
-            ele continua sendo só a explicação de onde a doação ajuda.
+            ele continua sendo só a explicação de onde a oferta ajuda.
           </p>
         </div>
       )}

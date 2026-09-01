@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { gerarPixAction, type ActionState } from "@/server/actions/contribuicao-actions";
+import { OFERTA_ESPONTANEA } from "@/server/modules/contribuicao/schema";
 import { Button } from "@/components/ui/Button";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { Heart } from "lucide-react";
@@ -27,7 +28,7 @@ export type FinalidadeOferecida = {
  * que é onde a pessoa está mais à vontade para decidir.
  */
 /**
- * A doação espontânea é uma escolha, e não a falta de uma.
+ * A oferta espontânea é uma escolha, e não a falta de uma.
  *
  * Ela não é cadastrada por ninguém: existe sempre, porque "quero ajudar e
  * não faço questão de dizer para quê" é um gesto inteiro. Fica no fim das
@@ -46,7 +47,7 @@ export function EscolherFinalidade({
 }) {
   /*
    * Só aceita o que existe e está sendo oferecido. Um endereço com uma
-   * finalidade desativada não deve deixar a pessoa contribuir para algo que
+   * finalidade desativada não deve deixar a pessoa ofertar para algo que
    * a paróquia encerrou.
    */
   const [escolhida, setEscolhida] = useState<string | null>(
@@ -113,7 +114,7 @@ export function EscolherFinalidade({
             aria-hidden
           />
           <span className="text-[13.5px] font-semibold leading-tight text-foreground">
-            Doação espontânea
+            {OFERTA_ESPONTANEA}
           </span>
           <span className="line-clamp-2 text-[12px] leading-snug text-muted">
             Sem destino definido — a paróquia aplica onde for mais necessário.

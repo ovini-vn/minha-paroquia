@@ -180,7 +180,7 @@ export function IniciativaForm({
         linkAtual={imageUrl}
         podeEnviarArquivo={podeEnviarArquivo}
         motivoIndisponivel={motivoIndisponivel}
-        ajuda="Uma foto da obra ou da ação ajuda o fiel a ver onde a doação chega."
+        ajuda="Uma foto da obra ou da ação ajuda o fiel a ver onde a oferta chega."
       />
 
       <div className="flex flex-col gap-2">

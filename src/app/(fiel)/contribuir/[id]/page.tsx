@@ -22,7 +22,7 @@ export const metadata: Metadata = { title: "Seu código PIX" };
  * da festa, e aí ele vem com o caso que o justifica.
  *
  * Não aparece nesta tela: identificador, txid, "conciliação". São conceitos
- * de quem administra. Para quem contribui, a única pergunta é se já pode
+ * de quem administra. Para quem oferta, a única pergunta é se já pode
  * fechar o aplicativo — e a resposta está escrita.
  */
 export default async function PixDeContribuicaoPage({
@@ -56,7 +56,7 @@ export default async function PixDeContribuicaoPage({
           </p>
           {!pix.centavos && (
             <p className="mt-1 text-[13px] leading-relaxed text-muted">
-              O aplicativo do seu banco vai perguntar quanto você quer contribuir.
+              O aplicativo do seu banco vai perguntar quanto você quer ofertar.
             </p>
           )}
 
@@ -78,8 +78,8 @@ export default async function PixDeContribuicaoPage({
 
         <Card className="bg-sunken">
           <p className="text-[13.5px] leading-relaxed text-foreground">
-            Depois de pagar, <strong>você não precisa enviar comprovante</strong>. A contribuição
-            aparece em Minha participação quando a paróquia a registrar.
+            Depois de confirmar no banco, <strong>você não precisa enviar comprovante</strong>. A oferta
+            aparece em Minha oferta quando a paróquia a registrar.
           </p>
           <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
             O dinheiro vai direto para a conta da paróquia — o aplicativo não recebe nem guarda
@@ -88,7 +88,7 @@ export default async function PixDeContribuicaoPage({
         </Card>
 
         <LinkButton href="/contribuir" variant="ghost" size="sm">
-          Voltar para Minha participação
+          Voltar para Minha oferta
         </LinkButton>
       </Leitura>
     </div>

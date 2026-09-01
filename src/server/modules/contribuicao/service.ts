@@ -96,7 +96,7 @@ export function editarFinalidade(input: EditarFinalidadeInput & { parishId: stri
 
 /**
  * Copia para as finalidades do Pix o que a paróquia já escreveu em "Sua
- * doação ajuda".
+ * oferta ajuda".
  *
  * Existe porque a paróquia curou aquela lista antes deste módulo existir, e
  * pedir que ela digite tudo de novo é desperdiçar o trabalho dela. Copia em
@@ -162,7 +162,7 @@ export function gerarPixDeContribuicao(
 ) {
   return withTenantContext(input.parishId, async (tx) => {
     /*
-     * Sem finalidade é doação espontânea, e é um caminho válido — não um
+     * Sem finalidade é oferta espontânea, e é um caminho válido — não um
      * erro. Só se verifica o que foi escolhido; a ausência não precisa
      * existir em lugar nenhum.
      */
@@ -501,7 +501,7 @@ export function cancelarContribuicao(parishId: string, contribuicaoId: string) {
 /**
  * O que entrou, para a tesouraria conferir e para o relatório.
  *
- * `finalidade: "sem"` é a doação espontânea — a ausência de finalidade É o
+ * `finalidade: "sem"` é a oferta espontânea — a ausência de finalidade É o
  * recorte, e não a falta dele. Sem esse caso, o único jeito de ver as
  * espontâneas seria não filtrar nada.
  */

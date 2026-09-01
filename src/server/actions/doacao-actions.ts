@@ -95,7 +95,7 @@ export async function salvarDadosDeDoacaoAction(
 
   atualizarTelas();
   revalidatePath("/contato");
-  return { ok: "Dados de doação salvos." };
+  return { ok: "Dados da oferta salvos." };
 }
 
 function iconeValido(chave: string): string {
@@ -111,7 +111,7 @@ export async function salvarFinalidadeAction(
     const title = texto(formData, "title");
     const description = texto(formData, "description");
     if (!title) return { error: "Informe o título." };
-    if (!description) return { error: "Escreva uma frase explicando onde essa doação ajuda." };
+    if (!description) return { error: "Escreva uma frase explicando onde essa oferta ajuda." };
     if (title.length > 80) return { error: "O título ficou longo demais." };
     if (description.length > 400) return { error: "O texto ficou longo demais." };
 

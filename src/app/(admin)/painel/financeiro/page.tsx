@@ -123,8 +123,8 @@ export default async function FinanceiroPage({
         <Card className="border-error/40">
           <Eyebrow className="mb-1 !text-error">Falta a chave PIX</Eyebrow>
           <p className="text-[13.5px] leading-relaxed text-muted">
-            Sem a chave cadastrada em <strong className="text-foreground">Doação</strong>, ninguém
-            consegue gerar um código de contribuição — a tela do fiel mostra um aviso no lugar.
+            Sem a chave cadastrada em <strong className="text-foreground">Ofertar</strong>, ninguém
+            consegue gerar um código de oferta — a tela do fiel mostra um aviso no lugar.
           </p>
           <LinkButton href="/painel/doacao" size="sm" className="mt-3">
             Cadastrar a chave PIX
@@ -147,13 +147,13 @@ export default async function FinanceiroPage({
           <EmptyState
             icon={HandCoins}
             title="Nenhuma finalidade cadastrada"
-            description="Sem finalidade, quem abre Minha participação não tem o que escolher. Comece pelo dízimo e pela doação; catequese, festa e campanhas entram quando fizerem sentido."
+            description="Sem finalidade, quem abre Minha oferta não tem o que escolher. Comece pelo dízimo e pela oferta livre; catequese, festa e campanhas entram quando fizerem sentido."
             action={
               podeCopiar ? (
                 <form action={copiarFinalidadesAction}>
                   <Button type="submit" size="sm">
                     <Sparkles className="h-[17px] w-[17px]" strokeWidth={1.6} aria-hidden />
-                    Usar as {cardsDeDoacao.length} de &ldquo;Sua doação ajuda&rdquo;
+                    Usar as {cardsDeDoacao.length} de &ldquo;Sua oferta ajuda&rdquo;
                   </Button>
                 </form>
               ) : undefined
@@ -210,7 +210,7 @@ export default async function FinanceiroPage({
         {aguardando.length === 0 ? (
           <Card className="bg-sunken">
             <p className="text-[13px] leading-relaxed text-muted">
-              Nenhum código esperando. Quando alguém gerar um PIX em Minha participação, ele aparece
+              Nenhum código esperando. Quando alguém gerar um PIX em Minha oferta, ele aparece
               aqui.
             </p>
           </Card>

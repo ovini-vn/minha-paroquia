@@ -11,7 +11,7 @@ export const PERIODOS: { id: PeriodoDeContribuicoes; rotulo: string }[] = [
 
 export type FiltrosDeContribuicoes = {
   periodo: PeriodoDeContribuicoes;
-  /** Id da finalidade, "sem" para a doação espontânea, ou nulo para todas. */
+  /** Id da finalidade, "sem" para a oferta espontânea, ou nulo para todas. */
   finalidade: string | null;
 };
 

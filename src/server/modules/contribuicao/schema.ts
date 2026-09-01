@@ -30,7 +30,7 @@ const valorOpcional = z
   });
 
 /**
- * A doação espontânea não tem finalidade — e isso é o dado, não a falta
+ * A oferta espontânea não tem finalidade — e isso é o dado, não a falta
  * dele. Vazio aqui quer dizer "não quis dizer para quê", e obrigar a
  * paróquia a cadastrar uma finalidade chamada "sem finalidade" seria
  * burocracia no lugar de generosidade.
@@ -88,15 +88,16 @@ export type EditarFinalidadeInput = z.infer<typeof editarFinalidadeSchema>;
 export type LancarContribuicaoInput = z.infer<typeof lancarContribuicaoSchema>;
 
 /**
- * Como se chama a doação sem finalidade, num lugar só.
+ * Como se chama a oferta sem finalidade, num lugar só.
  *
- * A ausência de finalidade aparece em quatro telas — o histórico do fiel, o
- * código gerado, o lançamento da secretaria e o relatório. Escrever o nome
- * em cada uma faria as quatro divergirem no dia em que alguém mudasse a
- * palavra numa delas.
+ * A ausência de finalidade aparece em CINCO telas — o histórico do fiel, a
+ * escolha da finalidade, o código gerado, o lançamento da secretaria e o
+ * relatório. Escrever o nome em cada uma faria as cinco divergirem no dia
+ * em que alguém mudasse a palavra numa delas — que foi exatamente o que
+ * aconteceu: a tela de escolha trazia o texto na mão e ficou para trás.
  */
-export const DOACAO_ESPONTANEA = "Doação espontânea";
+export const OFERTA_ESPONTANEA = "Oferta espontânea";
 
 export function nomeDaFinalidade(finalidade: { nome: string } | null): string {
-  return finalidade?.nome ?? DOACAO_ESPONTANEA;
+  return finalidade?.nome ?? OFERTA_ESPONTANEA;
 }

@@ -32,7 +32,7 @@ const SHORTCUTS = [
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
   // Leva à aba Palavra: Bíblia, Evangelho do dia e as leituras.
   { href: "/oracao", icon: BookOpen, label: "Palavra" },
-  { href: "/doacao", icon: HandCoins, label: "Doação" },
+  { href: "/doacao", icon: HandCoins, label: "Ofertar" },
   { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;
 

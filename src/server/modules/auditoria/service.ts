@@ -81,12 +81,27 @@ export type LinhaDoRegistro = {
  * aparece como "conta removida" — o registro sobrevive à conta, que é o
  * ponto de existir um log.
  */
-export async function listar(parishId: string, limite = 100): Promise<LinhaDoRegistro[]> {
+export async function listar(
+  parishId: string,
+  filtro: { limite?: number; acao?: string; desde?: Date } = {},
+): Promise<LinhaDoRegistro[]> {
   return withTenantContext(parishId, async (tx) => {
+    /*
+     * O filtro vai ao BANCO, e não à lista já carregada.
+     *
+     * A consulta traz as cem últimas. Filtrar essas cem responderia "não
+     * houve troca de papel" quando houve, só porque a troca é a
+     * centésima-primeira — e num registro de auditoria essa resposta é pior
+     * do que resposta nenhuma.
+     */
     const linhas = await tx.auditLog.findMany({
-      where: { parishId },
+      where: {
+        parishId,
+        ...(filtro.acao ? { acao: filtro.acao } : {}),
+        ...(filtro.desde ? { createdAt: { gte: filtro.desde } } : {}),
+      },
       orderBy: { createdAt: "desc" },
-      take: limite,
+      take: filtro.limite ?? 100,
     });
 
     const ids = [...new Set(linhas.flatMap((l) => [l.atorId, l.alvoId].filter(Boolean) as string[]))];
@@ -104,5 +119,42 @@ export async function listar(parishId: string, limite = 100): Promise<LinhaDoReg
       detalhe: l.detalhe,
       createdAt: l.createdAt,
     }));
+  });
+}
+
+/**
+ * Quantas vezes cada ação aconteceu, no registro INTEIRO.
+ *
+ * Existe para as tarjas do filtro oferecerem só o que de fato há, e com o
+ * número ao lado. Sai de um `groupBy`, que é uma consulta de contagem — não
+ * carrega linha nenhuma, e por isso pode olhar o log todo sem custo.
+ */
+export function contarPorAcao(parishId: string): Promise<{ acao: string; quantos: number }[]> {
+  return withTenantContext(parishId, async (tx) => {
+    const grupos = await tx.auditLog.groupBy({
+      by: ["acao"],
+      where: { parishId },
+      _count: { _all: true },
+    });
+    return (
+      grupos
+        .map((g) => ({ acao: g.acao, quantos: g._count._all }))
+        /*
+         * Mais frequente primeiro, e o rótulo desempata.
+         *
+         * Sem o desempate a ordem vinha do agrupamento do banco, que não
+         * promete ordem nenhuma: duas ações com a mesma contagem trocariam
+         * de lugar entre um carregamento e outro, e uma barra de filtro que
+         * se mexe sozinha faz a pessoa reler tudo a cada visita.
+         */
+        .sort(
+          (a, b) =>
+            b.quantos - a.quantos ||
+            (ROTULO_DA_ACAO[a.acao as Acao] ?? a.acao).localeCompare(
+              ROTULO_DA_ACAO[b.acao as Acao] ?? b.acao,
+              "pt-BR",
+            ),
+        )
+    );
   });
 }

@@ -8,7 +8,15 @@ import {
   type PermissionCode,
   type RoleCode,
 } from "@/server/auth/rbac";
-import { listar, ROTULO_DA_ACAO, type Acao } from "@/server/modules/auditoria/service";
+import { contarPorAcao, listar, ROTULO_DA_ACAO, type Acao } from "@/server/modules/auditoria/service";
+import { LinkButton } from "@/components/ui/Button";
+import {
+  FiltroDoRegistro,
+  enderecoDoRegistro,
+  PERIODOS,
+  type FiltrosDoRegistro,
+  type PeriodoDoRegistro,
+} from "./_components/FiltroDoRegistro";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
@@ -26,11 +34,37 @@ export const metadata: Metadata = { title: "Histórico de acessos" };
  * Não há como editar nem apagar linha nenhuma, nem por aqui nem por lugar
  * nenhum no código. Um registro que pode ser alterado não registra nada.
  */
-export default async function AuditoriaPage() {
+export default async function AuditoriaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periodo?: string; acao?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);
   if (!session.membership) return null;
+  const parishId = session.membership.parishId;
 
-  const registros = await listar(session.membership.parishId);
+  const { periodo, acao } = await searchParams;
+  const escolhidoPeriodo: PeriodoDoRegistro = PERIODOS.some((p) => p.id === periodo)
+    ? (periodo as PeriodoDoRegistro)
+    : "30";
+
+  const acoes = await contarPorAcao(parishId);
+  const escolhidaAcao = acoes.some((a) => a.acao === acao) ? (acao as string) : null;
+
+  /*
+   * A janela conta para trás a partir de AGORA, e não do começo do dia.
+   *
+   * "Últimos 7 dias" num registro de auditoria quer dizer as últimas 168
+   * horas — quem investiga algo que aconteceu ontem à noite não deve
+   * depender de o dia ter virado.
+   */
+  const desde =
+    escolhidoPeriodo === "tudo"
+      ? undefined
+      : new Date(Date.now() - Number(escolhidoPeriodo) * 24 * 3_600_000);
+
+  const filtros: FiltrosDoRegistro = { periodo: escolhidoPeriodo, acao: escolhidaAcao };
+  const registros = await listar(parishId, { acao: escolhidaAcao ?? undefined, desde });
 
   /** Traduz o que está em `detalhe` para quem lê, sem expor código cru. */
   function descrever(detalhe: unknown): string | null {
@@ -55,11 +89,29 @@ export default async function AuditoriaPage() {
         description="Quem mudou papéis, permissões e senhas nesta paróquia."
       />
 
+      {acoes.length > 0 && <FiltroDoRegistro filtros={filtros} acoes={acoes} />}
+
       {registros.length === 0 ? (
         <EmptyState
           icon={ScrollText}
-          title="Nada registrado ainda"
-          description="Trocas de papel, permissões concedidas e links de nova senha aparecem aqui assim que acontecerem."
+          title={acoes.length === 0 ? "Nada registrado ainda" : "Nada neste recorte"}
+          description={
+            acoes.length === 0
+              ? "Trocas de papel, permissões concedidas e links de nova senha aparecem aqui assim que acontecerem."
+              : escolhidaAcao
+                ? `«${ROTULO_DA_ACAO[escolhidaAcao as Acao] ?? escolhidaAcao}» já aconteceu nesta paróquia, mas não neste período.`
+                : "Nada mudou no acesso de ninguém neste período."
+          }
+          action={
+            escolhidoPeriodo !== "tudo" ? (
+              <LinkButton
+                href={enderecoDoRegistro({ ...filtros, periodo: "tudo" })}
+                size="sm"
+              >
+                Procurar desde o começo
+              </LinkButton>
+            ) : undefined
+          }
         />
       ) : (
         <Card className="px-3.5 py-1.5">

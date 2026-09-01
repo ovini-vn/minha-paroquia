@@ -574,7 +574,7 @@ describe("gestão da turma", () => {
 
     // O registro é escrito ANTES do delete, com a contagem: depois não há a
     // quem perguntar quantos eram.
-    const trilha = await listar(parishId, 20);
+    const trilha = await listar(parishId, { limite: 20 });
     const linha = trilha.find(
       (l) => l.acao === "turma.apagada" && (l.detalhe as { nome?: string })?.nome === "Crisma 2027",
     );

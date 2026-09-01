@@ -28,6 +28,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
           description={event.description ?? ""}
           startsAtLocal={toLocalDatetimeInputValue(event.startsAt)}
           location={event.location ?? ""}
+          categoria={event.categoria}
         />
       </Card>
     </div>

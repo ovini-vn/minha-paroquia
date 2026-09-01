@@ -99,11 +99,13 @@ describe("fechamento de lacunas — Pertencimento + Minha Comunidade", () => {
       parishId,
       createdBy: adminId,
       title: "Festa Original",
+      categoria: "festa",
       startsAt: new Date(Date.now() + 86400000),
     });
 
     await updateEvent(parishId, event.id, {
       title: "Festa Atualizada",
+      categoria: "festa",
       startsAt: new Date(Date.now() + 172800000),
       description: undefined,
       location: undefined,

@@ -4,16 +4,20 @@ import { useActionState } from "react";
 import { createEventAction, type ActionState } from "@/server/actions/agenda-actions";
 import { Button } from "@/components/ui/Button";
 import { CampoDeImagem } from "@/components/ui/CampoDeImagem";
+import { CATEGORIAS, ORDEM_DA_LEGENDA } from "@/lib/agenda-categorias";
 
 const initialState: ActionState = {};
 
 export function CreateEventForm({
   podeEnviarArquivo = false,
   motivoIndisponivel = "",
+  categoria,
 }: {
   podeEnviarArquivo?: boolean;
   /** Só para quem administra: por que o envio não está disponível. */
   motivoIndisponivel?: string;
+  /** Preenchido ao editar; ao criar, o padrão do formulário decide. */
+  categoria?: string;
 }) {
   const [state, formAction, pending] = useActionState(createEventAction, initialState);
 
@@ -53,6 +57,29 @@ export function CreateEventForm({
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
+      <div className="flex w-full flex-col gap-1.5">
+        <label htmlFor="event-categoria" className="text-sm font-medium text-muted">
+          Tipo
+        </label>
+        <select
+          id="event-categoria"
+          name="categoria"
+          defaultValue={categoria ?? "comunidade"}
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+        >
+          {ORDEM_DA_LEGENDA.map((cat) => (
+            <option key={cat} value={cat}>
+              {CATEGORIAS[cat].rotulo} — {CATEGORIAS[cat].descricao}
+            </option>
+          ))}
+        </select>
+        {/* Dito aqui porque a consequência é fora desta tela: é o tipo que
+            dá a cor do evento na agenda e o deixa achável pelo filtro. */}
+        <p className="text-[12px] leading-relaxed text-muted">
+          Define a cor do evento na agenda e permite filtrá-lo por lá.
+        </p>
+      </div>
+
       <div className="flex w-full flex-col gap-1.5">
         <label htmlFor="event-description" className="text-sm font-medium text-muted">
           Descrição (opcional)

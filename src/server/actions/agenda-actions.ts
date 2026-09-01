@@ -34,6 +34,7 @@ export async function createCelebrationAction(_prev: ActionState, formData: Form
       type: formData.get("type") || "missa",
       title: formData.get("title") || undefined,
       startsAt: formData.get("startsAt"),
+      categoria: formData.get("categoria") || undefined,
       location: formData.get("location") || undefined,
       priestProfileId: priestProfileId ? priestProfileId : undefined,
     });
@@ -76,6 +77,7 @@ export async function createEventAction(_prev: ActionState, formData: FormData):
       title: formData.get("title"),
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
+      categoria: formData.get("categoria") || undefined,
       location: formData.get("location") || undefined,
       imageUrl: await resolverCartaz(session.membership.parishId, formData),
     });
@@ -104,6 +106,7 @@ export async function updateEventAction(_prev: ActionState, formData: FormData):
       title: formData.get("title"),
       description: formData.get("description") || undefined,
       startsAt: formData.get("startsAt"),
+      categoria: formData.get("categoria") || undefined,
       location: formData.get("location") || undefined,
       imageUrl: await resolverCartaz(session.membership.parishId, formData),
     });

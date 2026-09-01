@@ -8,6 +8,7 @@ export function createEvent(input: CreateEventInput & { parishId: string; create
       data: {
         parishId: input.parishId,
         title: input.title,
+        categoria: input.categoria,
         description: input.description || null,
         startsAt: input.startsAt,
         location: input.location || null,

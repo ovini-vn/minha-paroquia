@@ -28,6 +28,12 @@ import { Stat } from "@/components/ui/Stat";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { hojeEmBrasilia } from "@/lib/brasilia";
+import {
+  FiltroDeTurmas,
+  SITUACOES,
+  type SituacaoDeTurmas,
+} from "./_components/FiltroDeTurmas";
 import { formatDateOnly } from "@/lib/date";
 import { CreateGroupForm } from "./_components/CreateGroupForm";
 import { ParishPeoplePanel } from "./_components/ParishPeoplePanel";
@@ -45,7 +51,11 @@ import { ParishPeoplePanel } from "./_components/ParishPeoplePanel";
  */
 export const metadata: Metadata = { title: "Catequese" };
 
-export default async function CatequesePage() {
+export default async function CatequesePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ano?: string; situacao?: string }>;
+}) {
   const session = await requireSessionForPage();
   if (!session.membership) {
     return (
@@ -76,6 +86,33 @@ export default async function CatequesePage() {
     ]);
 
   const nadaParaMostrar = !coordena && !leciona && filhos.length === 0;
+
+  /*
+   * O recorte do quadro da coordenação.
+   *
+   * O ano padrão é o MAIS RECENTE QUE TEM TURMA, e não o ano corrente: uma
+   * paróquia que ainda não abriu as turmas de 2027 veria a tela vazia em
+   * janeiro, e concluiria que perdeu os dados.
+   */
+  const { ano: anoBruto, situacao: situacaoBruta } = await searchParams;
+  const anos = [...new Set(quadro.map((t) => t.ano))].sort((a, b) => b - a);
+  const anoPadrao = anos[0] ?? Number(hojeEmBrasilia().slice(0, 4));
+  const ano = anos.includes(Number(anoBruto)) ? Number(anoBruto) : anoPadrao;
+  const situacao: SituacaoDeTurmas = SITUACOES.some((v) => v.id === situacaoBruta)
+    ? (situacaoBruta as SituacaoDeTurmas)
+    : "todas";
+
+  const doAno = quadro.filter((t) => t.ano === ano);
+  const recorte: Record<SituacaoDeTurmas, (t: (typeof quadro)[number]) => boolean> = {
+    todas: () => true,
+    atrasadas: (t) => t.lancamento.atrasados > 0,
+    "sem-catequista": (t) => !t.catequista,
+    "sem-itinerario": (t) => !t.itinerario,
+  };
+  const turmas = doAno.filter(recorte[situacao]);
+  const quantosNoAno = Object.fromEntries(
+    SITUACOES.map((v) => [v.id, doAno.filter(recorte[v.id]).length]),
+  ) as Record<SituacaoDeTurmas, number>;
 
   return (
     <div className="flex flex-col">
@@ -165,11 +202,43 @@ export default async function CatequesePage() {
             <Eyebrow tone="accent" className="mb-3">
               Turmas
             </Eyebrow>
+            {/*
+              O filtro só entra com mais de uma turma: com uma, os botões
+              não escolheriam nada e ocupariam a tela mais importante do
+              módulo com enfeite.
+            */}
+            {quadro.length > 1 && (
+              <FiltroDeTurmas
+                filtros={{ ano, situacao }}
+                anos={anos}
+                anoPadrao={anoPadrao}
+                quantos={quantosNoAno}
+              />
+            )}
+
             {grupos.length === 0 ? (
               <EmptyState
                 icon={GraduationCap}
                 title="Nenhuma turma ainda"
                 description="Crie a primeira abaixo."
+              />
+            ) : turmas.length === 0 ? (
+              <EmptyState
+                icon={GraduationCap}
+                title={
+                  situacao === "atrasadas"
+                    ? "Nenhuma turma atrasada"
+                    : situacao === "sem-catequista"
+                      ? "Toda turma tem catequista"
+                      : situacao === "sem-itinerario"
+                        ? "Toda turma tem itinerário"
+                        : `Nenhuma turma em ${ano}`
+                }
+                description={
+                  situacao === "todas"
+                    ? "Escolha outro ano acima."
+                    : "Boa notícia: nada a resolver neste recorte."
+                }
               />
             ) : (
               /* Grade quando couber: a régua é o espaço do contêiner, não o
@@ -190,7 +259,7 @@ export default async function CatequesePage() {
                   (mais de uma semana); encontro de ontem sem lançamento não
                   acende nada, senão a coordenação aprende a ignorar a cor.
                 */}
-                {quadro.map((turma) => (
+                {turmas.map((turma) => (
                   <Link
                     key={turma.id}
                     href={`/catequese/turma/${turma.id}`}

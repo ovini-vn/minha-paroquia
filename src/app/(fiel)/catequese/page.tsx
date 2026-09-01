@@ -107,7 +107,17 @@ export default async function CatequesePage({
     todas: () => true,
     atrasadas: (t) => t.lancamento.atrasados > 0,
     "sem-catequista": (t) => !t.catequista,
-    "sem-itinerario": (t) => !t.itinerario,
+    /*
+     * "Sem itinerário" quer dizer NÃO DÁ PARA MEDIR O ANDAMENTO — e isso
+     * acontece de dois jeitos: turma sem itinerário nenhum, e turma com um
+     * itinerário que ainda não tem tema digitado.
+     *
+     * Achado conferindo em produção: o filtro dizia 0 enquanto o cartão
+     * dizia "Sem itinerário definido", porque um contava o vínculo e o outro
+     * contava os temas. Filtro e sinal discordando na mesma tela é pior do
+     * que qualquer um dos dois errado sozinho.
+     */
+    "sem-itinerario": (t) => !t.itinerario || t.previstos === 0,
   };
   const turmas = doAno.filter(recorte[situacao]);
   const quantosNoAno = Object.fromEntries(
@@ -285,6 +295,13 @@ export default async function CatequesePage({
                               {turma.dados}/{turma.previstos}
                             </span>{" "}
                             encontros dados
+                          </span>
+                        ) : turma.itinerario ? (
+                          /* Tem itinerário, faltam os temas: a ação é
+                             digitar o roteiro, não escolher outro. */
+                          <span className="text-muted">
+                            {turma.itinerario.nome} ·{" "}
+                            <span className="font-medium text-foreground">sem temas</span>
                           </span>
                         ) : (
                           <span className="text-muted">Sem itinerário definido</span>

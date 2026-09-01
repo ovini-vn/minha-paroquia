@@ -104,22 +104,3 @@ export function CalendarioDoMes({
     </div>
   );
 }
-
-/** A legenda: sem ela a cor é enfeite. */
-export function LegendaDaAgenda({ categorias }: { categorias: CategoriaDaAgenda[] }) {
-  if (categorias.length === 0) return null;
-  return (
-    <ul className="flex flex-wrap gap-x-3.5 gap-y-1.5">
-      {categorias.map((cat) => (
-        <li key={cat} className="flex items-center gap-1.5">
-          <span
-            className="h-[7px] w-[7px] shrink-0 rounded-full"
-            style={{ backgroundColor: `rgb(var(--cat-${CATEGORIAS[cat].token}))` }}
-            aria-hidden
-          />
-          <span className="text-[12px] text-muted">{CATEGORIAS[cat].rotulo}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}

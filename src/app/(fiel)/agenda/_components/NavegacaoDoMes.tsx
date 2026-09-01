@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight, List } from "lucide-react";
+import { enderecoDaAgenda, type EstadoDaAgenda } from "./endereco";
 
 const MESES = [
   "janeiro",
@@ -20,13 +21,6 @@ export function nomeDoMes(mes: number): string {
   return MESES[mes - 1] ?? "";
 }
 
-/** "2026-09" a partir de um mês que pode estourar para o ano vizinho. */
-function chaveDoMes(ano: number, mes: number): string {
-  const a = mes < 1 ? ano - 1 : mes > 12 ? ano + 1 : ano;
-  const m = mes < 1 ? 12 : mes > 12 ? 1 : mes;
-  return `${a}-${String(m).padStart(2, "0")}`;
-}
-
 /**
  * Mês anterior, mês seguinte, e a escolha entre lista e calendário.
  *
@@ -34,16 +28,8 @@ function chaveDoMes(ano: number, mes: number): string {
  * mandar "olha a agenda de outubro" para alguém, o botão de voltar do
  * telefone funciona, e a página continua sendo desenhada no servidor.
  */
-export function NavegacaoDoMes({
-  ano,
-  mes,
-  vista,
-}: {
-  ano: number;
-  mes: number;
-  vista: "lista" | "calendario";
-}) {
-  const endereco = (m: string, v: string) => `/agenda?mes=${m}&vista=${v}`;
+export function NavegacaoDoMes({ estado }: { estado: EstadoDaAgenda }) {
+  const { ano, mes, vista } = estado;
   const seta =
     "grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
@@ -51,7 +37,7 @@ export function NavegacaoDoMes({
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
         <Link
-          href={endereco(chaveDoMes(ano, mes - 1), vista)}
+          href={enderecoDaAgenda({ ...estado, mes: mes - 1 })}
           aria-label="Mês anterior"
           className={seta}
         >
@@ -63,7 +49,7 @@ export function NavegacaoDoMes({
         </p>
 
         <Link
-          href={endereco(chaveDoMes(ano, mes + 1), vista)}
+          href={enderecoDaAgenda({ ...estado, mes: mes + 1 })}
           aria-label="Mês seguinte"
           className={seta}
         >
@@ -89,7 +75,7 @@ export function NavegacaoDoMes({
         ).map(([id, rotulo, Icone]) => (
           <Link
             key={id}
-            href={endereco(chaveDoMes(ano, mes), id)}
+            href={enderecoDaAgenda({ ...estado, vista: id })}
             aria-current={vista === id ? "true" : undefined}
             className={
               vista === id

@@ -8,6 +8,7 @@ import { listEventsInMonth } from "@/server/modules/events/service";
 import { listPriests } from "@/server/modules/priests/service";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { Card } from "@/components/ui/Card";
+import { LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
@@ -15,14 +16,12 @@ import { CATEGORIAS, ORDEM_DA_LEGENDA, categoriaDaCelebracao } from "@/lib/agend
 import { hojeEmBrasilia, diaEmBrasilia } from "@/lib/brasilia";
 import { formatDateOnly, formatDateTime } from "@/lib/date";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
-import {
-  CalendarioDoMes,
-  LegendaDaAgenda,
-  type DiaDoCalendario,
-} from "@/components/domain/CalendarioDoMes";
+import { CalendarioDoMes, type DiaDoCalendario } from "@/components/domain/CalendarioDoMes";
 import { CreateCelebrationForm } from "@/app/(admin)/painel/CreateCelebrationForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 import { NavegacaoDoMes, nomeDoMes } from "./_components/NavegacaoDoMes";
+import { FiltroDeCategorias } from "./_components/FiltroDeCategorias";
+import { enderecoDaAgenda, type EstadoDaAgenda } from "./_components/endereco";
 
 export const metadata: Metadata = { title: "Agenda" };
 
@@ -68,7 +67,7 @@ function lerMes(bruto: string | undefined): { ano: number; mes: number } {
 export default async function AgendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; vista?: string }>;
+  searchParams: Promise<{ mes?: string; vista?: string; cats?: string }>;
 }) {
   const session = await getSessionContext();
   if (!session?.membership) {
@@ -81,9 +80,21 @@ export default async function AgendaPage({
     );
   }
 
-  const { mes: mesBruto, vista: vistaBruta } = await searchParams;
+  const { mes: mesBruto, vista: vistaBruta, cats: catsBrutas } = await searchParams;
   const { ano, mes } = lerMes(mesBruto);
   const vista = vistaBruta === "calendario" ? "calendario" : "lista";
+
+  /*
+   * Categoria desconhecida no endereço é IGNORADA, e não erro.
+   *
+   * O endereço da agenda é feito para ser compartilhado e guardado. Um
+   * endereço antigo com uma categoria que deixou de existir deve mostrar a
+   * agenda, e não uma tela de erro.
+   */
+  const escolhidas = (catsBrutas ?? "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter((c): c is CategoriaDaAgenda => c in CATEGORIAS);
 
   const parishId = session.membership.parishId;
   const podeLancar =
@@ -95,7 +106,7 @@ export default async function AgendaPage({
     podeLancar ? listPriests(parishId) : Promise.resolve([]),
   ]);
 
-  const itens: ItemDaAgenda[] = [
+  const todos: ItemDaAgenda[] = [
     ...celebracoes.map((c) => ({
       id: `celebration-${c.id}`,
       startsAt: c.startsAt,
@@ -113,6 +124,21 @@ export default async function AgendaPage({
       categoria: e.categoria,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+  /*
+   * A legenda é calculada sobre o mês INTEIRO, e a lista sobre o filtrado.
+   *
+   * Se "presentes" saísse do filtrado, a categoria que a pessoa desligasse
+   * sumiria da legenda — e não haveria como religá-la sem editar o endereço
+   * à mão.
+   */
+  const presentes = ORDEM_DA_LEGENDA.filter((cat) => todos.some((i) => i.categoria === cat));
+  const quantos = Object.fromEntries(
+    presentes.map((cat) => [cat, todos.filter((i) => i.categoria === cat).length]),
+  );
+  const estado: EstadoDaAgenda = { ano, mes, vista, categorias: escolhidas };
+  const itens =
+    escolhidas.length === 0 ? todos : todos.filter((i) => escolhidas.includes(i.categoria));
 
   /*
    * Agrupado por DIA, em horário de Brasília.
@@ -138,7 +164,6 @@ export default async function AgendaPage({
     quantos: doDia.length,
   }));
 
-  const presentes = ORDEM_DA_LEGENDA.filter((cat) => itens.some((i) => i.categoria === cat));
   const hoje = hojeEmBrasilia();
 
   return (
@@ -170,16 +195,31 @@ export default async function AgendaPage({
       )}
 
       <div className="mt-2 flex flex-col gap-4">
-        <NavegacaoDoMes ano={ano} mes={mes} vista={vista} />
-        <LegendaDaAgenda categorias={presentes} />
+        <NavegacaoDoMes estado={estado} />
+        <FiltroDeCategorias estado={estado} presentes={presentes} quantos={quantos} />
       </div>
 
       {itens.length === 0 ? (
         <div className="mt-5">
           <EmptyState
             icon={CalendarDays}
-            title={`Nada marcado em ${nomeDoMes(mes)}`}
-            description="Use as setas acima para ver outro mês."
+            title={
+              escolhidas.length > 0
+                ? `Nada disso em ${nomeDoMes(mes)}`
+                : `Nada marcado em ${nomeDoMes(mes)}`
+            }
+            description={
+              escolhidas.length > 0
+                ? "Há outros compromissos neste mês, de outros tipos."
+                : "Use as setas acima para ver outro mês."
+            }
+            action={
+              escolhidas.length > 0 ? (
+                <LinkButton href={enderecoDaAgenda({ ...estado, categorias: [] })} size="sm">
+                  Ver todas as categorias
+                </LinkButton>
+              ) : undefined
+            }
           />
         </div>
       ) : (

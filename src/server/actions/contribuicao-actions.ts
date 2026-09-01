@@ -6,6 +6,8 @@ import { ZodError } from "zod";
 import { podeAlcancar, requirePermission, requireSession } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
+  cancelarContribuicao,
+  confirmarRecebimentoDoPix,
   copiarFinalidadesDaDoacao,
   criarFinalidade,
   descartarPix,
@@ -18,6 +20,7 @@ import {
   editarFinalidadeSchema,
   gerarPixSchema,
   lancarContribuicaoSchema,
+  paraCentavos,
 } from "@/server/modules/contribuicao/schema";
 import { AppError, ForbiddenError } from "@/server/shared/errors";
 
@@ -162,4 +165,58 @@ export async function lancarContribuicaoAction(
 export async function podeVerFinanceiro(): Promise<boolean> {
   const session = await requireSession();
   return podeAlcancar(session, PERMISSIONS.FINANCEIRO_VER);
+}
+
+/**
+ * A secretaria confirma que um código caiu na conta.
+ *
+ * O valor só é lido quando o código foi gerado sem valor — nos outros casos
+ * o que vale é o que a pessoa viu na tela quando gerou, e aceitar um valor
+ * diferente aqui deixaria histórico e extrato discordando sem aviso.
+ */
+export async function confirmarRecebimentoAction(
+  _estado: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const { parishId, userId } = await exigirTesouraria();
+    const bruto = String(formData.get("valor") ?? "").trim();
+    const centavos = bruto ? paraCentavos(bruto) : null;
+    if (bruto && (centavos === null || centavos <= 0)) {
+      return { error: "Informe um valor como 50,00." };
+    }
+
+    const dia = String(formData.get("recebidaEm") ?? "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia)) return { error: "Informe o dia em que o valor entrou." };
+
+    await confirmarRecebimentoDoPix({
+      parishId,
+      pixId: String(formData.get("pixId") ?? ""),
+      centavos,
+      // Data sem hora entra como meia-noite UTC, como o resto do app guarda
+      // `@db.Date` — e é assim que o formatador a lê de volta.
+      recebidaEm: new Date(`${dia}T00:00:00.000Z`),
+      confirmadaPor: userId,
+    });
+    revalidatePath("/painel/financeiro");
+    revalidatePath("/contribuir");
+    return { ok: true };
+  } catch (erro) {
+    return comoErro(erro);
+  }
+}
+
+export async function cancelarContribuicaoAction(
+  _estado: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  try {
+    const { parishId } = await exigirTesouraria();
+    await cancelarContribuicao(parishId, String(formData.get("contribuicaoId") ?? ""));
+    revalidatePath("/painel/financeiro");
+    revalidatePath("/contribuir");
+    return { ok: true };
+  } catch (erro) {
+    return comoErro(erro);
+  }
 }

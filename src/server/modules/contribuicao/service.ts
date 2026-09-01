@@ -364,3 +364,161 @@ export function expirarPixAntigos(parishId: string) {
     }),
   );
 }
+
+/**
+ * O que a secretaria vê: códigos gerados que ainda não foram confirmados.
+ *
+ * É a lista de "olhe no aplicativo do banco e diga se caiu". Existe porque a
+ * conciliação por extrato ainda não existe — e vai continuar existindo
+ * depois dela, porque nem todo banco devolve o identificador e sempre
+ * sobrará o que conferir com o olho.
+ */
+export function listarPixAguardando(parishId: string) {
+  return withTenantContext(parishId, (tx) =>
+    tx.pixDeContribuicao.findMany({
+      where: { parishId, estado: { in: ["aguardando", "expirada"] } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        finalidade: { select: { nome: true } },
+        user: { select: { fullName: true } },
+      },
+    }),
+  );
+}
+
+/**
+ * A secretaria diz: este código caiu na conta.
+ *
+ * É conciliação manual sem arquivo nenhum — a pessoa olha o extrato no
+ * aplicativo do banco e confirma. O identificador dispensa adivinhação: ela
+ * não precisa decidir de quem é nem para quê, porque o código já sabe.
+ *
+ * O valor só é pedido quando o Pix foi gerado sem valor: aí quem sabe
+ * quanto entrou é o extrato, não o app.
+ */
+export function confirmarRecebimentoDoPix(input: {
+  parishId: string;
+  pixId: string;
+  /** Em centavos. Obrigatório só quando o código não trazia valor. */
+  centavos: number | null;
+  recebidaEm: Date;
+  confirmadaPor: string;
+}) {
+  return withTenantContext(input.parishId, async (tx) => {
+    const pix = await tx.pixDeContribuicao.findFirst({
+      where: { id: input.pixId, parishId: input.parishId },
+      select: {
+        id: true,
+        userId: true,
+        centavos: true,
+        estado: true,
+        finalidadeId: true,
+        finalidade: { select: { ehDizimo: true } },
+        contribuicao: { select: { id: true } },
+      },
+    });
+    if (!pix) throw new NotFoundError("Pix de contribuição");
+
+    /*
+     * Uma vez só. A restrição única em `pix_id` já barraria no banco, mas o
+     * erro de lá fala de constraint; aqui fala com quem está na tela.
+     */
+    if (pix.contribuicao) {
+      throw new ValidationError("Esta contribuição já foi confirmada.");
+    }
+    if (pix.estado === "descartada") {
+      throw new ValidationError("Este código foi descartado por quem o gerou.");
+    }
+
+    const centavos = pix.centavos ?? input.centavos;
+    if (!centavos || centavos <= 0) {
+      throw new ValidationError("Informe quanto entrou — este código foi gerado sem valor.");
+    }
+
+    const contribuicao = await tx.contribuicao.create({
+      data: {
+        parishId: input.parishId,
+        userId: pix.userId,
+        finalidadeId: pix.finalidadeId,
+        centavos,
+        recebidaEm: input.recebidaEm,
+        forma: "pix_identificado",
+        pixId: pix.id,
+        registradaPor: input.confirmadaPor,
+      },
+    });
+
+    await tx.pixDeContribuicao.update({
+      where: { id: pix.id },
+      data: { estado: "recebida" },
+    });
+
+    if (pix.finalidade?.ehDizimo && pix.userId) {
+      await marcarParticipacaoNoDizimo(tx, {
+        parishId: input.parishId,
+        userId: pix.userId,
+        quando: input.recebidaEm,
+        registradaPor: input.confirmadaPor,
+      });
+    }
+
+    return contribuicao;
+  });
+}
+
+/**
+ * Desfaz uma confirmação — sem apagar nada.
+ *
+ * Marca a contribuição como cancelada e devolve o código ao estado de
+ * espera. O registro fica: houve, e foi desfeito. Apagar a linha esconderia
+ * o próprio engano, que é justamente o que a tesouraria precisa enxergar.
+ *
+ * A participação no dízimo NÃO é desfeita: ela diz que a pessoa participou
+ * daquele mês, e um lançamento corrigido não apaga o gesto. Se a
+ * participação estiver errada, a Pastoral do Dízimo a desmarca na tela dela.
+ */
+export function cancelarContribuicao(parishId: string, contribuicaoId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const c = await tx.contribuicao.findFirst({
+      where: { id: contribuicaoId, parishId },
+      select: { id: true, pixId: true, cancelada: true },
+    });
+    if (!c) throw new NotFoundError("Contribuição");
+    if (c.cancelada) return c;
+
+    await tx.contribuicao.update({ where: { id: c.id }, data: { cancelada: true } });
+    if (c.pixId) {
+      await tx.pixDeContribuicao.update({
+        where: { id: c.pixId },
+        data: { estado: "aguardando" },
+      });
+    }
+    return c;
+  });
+}
+
+/** O que entrou, para a tesouraria conferir e para o relatório. */
+export function listarContribuicoes(
+  parishId: string,
+  filtro: { de?: Date; ate?: Date; finalidadeId?: string } = {},
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.contribuicao.findMany({
+      where: {
+        parishId,
+        cancelada: false,
+        ...(filtro.finalidadeId ? { finalidadeId: filtro.finalidadeId } : {}),
+        ...(filtro.de || filtro.ate
+          ? { recebidaEm: { ...(filtro.de ? { gte: filtro.de } : {}), ...(filtro.ate ? { lte: filtro.ate } : {}) } }
+          : {}),
+      },
+      orderBy: { recebidaEm: "desc" },
+      take: 300,
+      include: {
+        finalidade: { select: { nome: true } },
+        user: { select: { fullName: true } },
+      },
+    }),
+  );
+}

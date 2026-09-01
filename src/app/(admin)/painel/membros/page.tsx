@@ -7,7 +7,9 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Avatar } from "@/components/ui/Avatar";
+import { LinkButton } from "@/components/ui/Button";
 import { ChangeRoleForm } from "./ChangeRoleForm";
+import { FiltroDeMembros, type FiltrosDeMembros } from "./_components/FiltroDeMembros";
 
 /**
  * Quem é quem na paróquia, e o papel de cada um.
@@ -20,11 +22,49 @@ import { ChangeRoleForm } from "./ChangeRoleForm";
  */
 export const metadata: Metadata = { title: "Membros e papéis" };
 
-export default async function MembrosAdminPage() {
+export default async function MembrosAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ papel?: string; q?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.PERMISSION_OVERRIDES_MANAGE);
   if (!session.membership) return null;
 
-  const members = await listActiveMembers(session.membership.parishId);
+  const todos = await listActiveMembers(session.membership.parishId);
+
+  const { papel, q } = await searchParams;
+  const busca = (q ?? "").trim();
+
+  /*
+   * Comparação sem acento e sem caixa.
+   *
+   * Quem procura "jose" tem de achar "José", e quem procura "MARIA" tem de
+   * achar "Maria Aparecida". Exigir o acento certo faria a busca funcionar
+   * só para quem já sabe como o nome foi digitado — que é justamente quem
+   * não precisa procurar.
+   */
+  const solto = (t: string) =>
+    t
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+
+  const papeis = [...new Map(todos.map((m) => [m.role.code, m.role])).values()]
+    .map((r) => ({
+      code: r.code,
+      nome: r.name,
+      quantos: todos.filter((m) => m.role.code === r.code).length,
+    }))
+    .sort((a, b) => b.quantos - a.quantos || a.nome.localeCompare(b.nome, "pt-BR"));
+
+  const escolhido = papeis.some((p) => p.code === papel) ? (papel as string) : null;
+  const filtros: FiltrosDeMembros = { papel: escolhido, busca };
+
+  const members = todos.filter(
+    (m) =>
+      (!escolhido || m.role.code === escolhido) &&
+      (!busca || solto(m.user.fullName).includes(solto(busca))),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -38,11 +78,26 @@ export default async function MembrosAdminPage() {
         </p>
       </div>
 
+      <FiltroDeMembros filtros={filtros} papeis={papeis} />
+
       {members.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="Ninguém na comunidade ainda"
-          description="Crie um convite no painel para as primeiras pessoas entrarem."
+          title={todos.length === 0 ? "Ninguém na comunidade ainda" : "Ninguém neste recorte"}
+          description={
+            todos.length === 0
+              ? "Crie um convite no painel para as primeiras pessoas entrarem."
+              : busca
+                ? `Nenhum nome com "${busca}"${escolhido ? " neste papel" : ""}.`
+                : "Não há ninguém com este papel."
+          }
+          action={
+            todos.length > 0 ? (
+              <LinkButton href="/painel/membros" size="sm">
+                Ver todos os membros
+              </LinkButton>
+            ) : undefined
+          }
         />
       ) : (
         <Card className="px-3.5 py-1.5">

@@ -1,5 +1,5 @@
 import { withTenantContext } from "@/server/db/tenant-context";
-import { brasiliaWallClockToUtc } from "@/lib/brasilia";
+import { brasiliaWallClockToUtc, hojeEmBrasilia } from "@/lib/brasilia";
 import type { CreateEventInput, UpdateEventInput } from "./schema";
 
 export function createEvent(input: CreateEventInput & { parishId: string; createdBy: string }) {
@@ -30,9 +30,47 @@ export function listUpcomingEvents(parishId: string, limit = 10) {
 }
 
 /** Inclui arquivados — tela de gestão do painel, não a agenda pública. */
-export function listAllEvents(parishId: string) {
+export type PeriodoDeEventos = "proximos" | "mes" | "passados" | "todos";
+
+/**
+ * Os eventos do painel, por período.
+ *
+ * A ORDEM MUDA COM O PERÍODO, de propósito: "próximos" se lê para a frente,
+ * do mais perto ao mais distante; "passados" se lê para trás, do mais
+ * recente ao mais antigo. Uma ordem só para os dois deixaria um deles
+ * começando pelo item mais irrelevante.
+ *
+ * O padrão é "próximos". Antes a tela trazia os 196 em ordem decrescente, o
+ * que fazia a secretaria abrir em dezembro e caminhar para o passado para
+ * chegar ao que vem esta semana.
+ */
+export function listAllEvents(parishId: string, periodo: PeriodoDeEventos = "proximos") {
+  const agora = new Date();
+
+  const janelaDoMes = () => {
+    const hoje = hojeEmBrasilia();
+    const ano = Number(hoje.slice(0, 4));
+    const mes = Number(hoje.slice(5, 7));
+    return {
+      gte: brasiliaWallClockToUtc(ano, mes - 1, 1, 0),
+      lt: brasiliaWallClockToUtc(mes === 12 ? ano + 1 : ano, mes === 12 ? 0 : mes, 1, 0),
+    };
+  };
+
+  const where =
+    periodo === "proximos"
+      ? { parishId, startsAt: { gte: agora } }
+      : periodo === "passados"
+        ? { parishId, startsAt: { lt: agora } }
+        : periodo === "mes"
+          ? { parishId, startsAt: janelaDoMes() }
+          : { parishId };
+
   return withTenantContext(parishId, (tx) =>
-    tx.event.findMany({ where: { parishId }, orderBy: { startsAt: "desc" } }),
+    tx.event.findMany({
+      where,
+      orderBy: { startsAt: periodo === "proximos" || periodo === "mes" ? "asc" : "desc" },
+    }),
   );
 }
 

@@ -108,6 +108,8 @@ export default async function DoacaoAdminPage() {
                   <summary className="cursor-pointer text-[13px] text-primary">Editar</summary>
                   <div className="pt-3">
                     <FinalidadeForm
+                      finalidadeId={f.finalidadeId}
+                      finalidades={finalidadesDeContribuicao}
                       id={f.id}
                       title={f.title}
                       description={f.description}
@@ -122,7 +124,7 @@ export default async function DoacaoAdminPage() {
 
         <Card className="mt-2.5">
           <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova finalidade</p>
-          <FinalidadeForm />
+          <FinalidadeForm finalidades={finalidadesDeContribuicao} />
         </Card>
       </section>
 

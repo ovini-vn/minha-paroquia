@@ -1495,6 +1495,7 @@ model ContribuicaoFinalidade {
   pix           PixDeContribuicao[]
   contribuicoes Contribuicao[]
   iniciativas   DonationInitiative[]
+  cartoes       DonationPurpose[]
 
   @@index([parishId, ativa, ordem])
   @@map("contribuicao_finalidades")
@@ -1893,10 +1894,17 @@ model DonationPurpose {
   /// Chave do catálogo de ícones (ver src/lib/doacao.ts). Guardar o
   /// nome do componente deixaria a tela renderizar o que viesse do banco.
   icon        String  @default("igreja")
+  /// Para onde vai o que se contribuir a partir deste cartão.
+  ///
+  /// Mesma ideia da iniciativa: opcional, e vazio é legítimo. Este cartão
+  /// existe para explicar no que a paróquia aplica o que recebe; virar
+  /// caminho de contribuição é um acréscimo, não a razão de ele existir.
+  finalidadeId String? @map("finalidade_id")
   displayOrder Int    @default(0) @map("display_order")
   active      Boolean @default(true)
 
-  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  parish     Parish                  @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  finalidade ContribuicaoFinalidade? @relation(fields: [finalidadeId], references: [id], onDelete: SetNull)
 
   @@index([parishId, active, displayOrder])
   @@map("donation_purposes")

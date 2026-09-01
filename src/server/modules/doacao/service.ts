@@ -91,7 +91,7 @@ async function proximaOrdem(
 
 export function createPurpose(
   parishId: string,
-  dados: { title: string; description: string; icon: string },
+  dados: { title: string; description: string; icon: string; finalidadeId: string | null },
 ) {
   return withTenantContext(parishId, async (tx) =>
     tx.donationPurpose.create({
@@ -103,7 +103,7 @@ export function createPurpose(
 export function updatePurpose(
   parishId: string,
   id: string,
-  dados: { title: string; description: string; icon: string },
+  dados: { title: string; description: string; icon: string; finalidadeId: string | null },
 ) {
   // O parishId no where fecha a porta para editar item de outra paróquia
   // mandando um id de fora no formulário — mesmo antes da RLS entrar.

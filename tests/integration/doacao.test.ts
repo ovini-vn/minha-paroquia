@@ -80,9 +80,9 @@ describe("área de doação", () => {
   });
 
   it("cada nova finalidade entra no fim da fila", async () => {
-    await createPurpose(paroquiaA, { title: "Primeira", description: "d", icon: "igreja" });
-    await createPurpose(paroquiaA, { title: "Segunda", description: "d", icon: "caridade" });
-    await createPurpose(paroquiaA, { title: "Terceira", description: "d", icon: "obras" });
+    await createPurpose(paroquiaA, { title: "Primeira", description: "d", icon: "igreja", finalidadeId: null });
+    await createPurpose(paroquiaA, { title: "Segunda", description: "d", icon: "caridade", finalidadeId: null });
+    await createPurpose(paroquiaA, { title: "Terceira", description: "d", icon: "obras", finalidadeId: null });
 
     const lista = await listPurposesForAdmin(paroquiaA);
     expect(lista.map((p) => p.title)).toEqual(["Primeira", "Segunda", "Terceira"]);
@@ -126,6 +126,7 @@ describe("área de doação", () => {
       title: "INVADIDO",
       description: "x",
       icon: "igreja",
+      finalidadeId: null,
     });
 
     const depois = await listPurposesForAdmin(paroquiaA);
@@ -141,7 +142,7 @@ describe("área de doação", () => {
   });
 
   it("a lista de uma paróquia nunca traz item da outra", async () => {
-    await createPurpose(paroquiaB, { title: "Só da B", description: "d", icon: "igreja" });
+    await createPurpose(paroquiaB, { title: "Só da B", description: "d", icon: "igreja", finalidadeId: null });
 
     const daA = await listPurposesForAdmin(paroquiaA);
     const daB = await listPurposesForAdmin(paroquiaB);

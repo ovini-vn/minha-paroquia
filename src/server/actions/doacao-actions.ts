@@ -115,7 +115,13 @@ export async function salvarFinalidadeAction(
     if (title.length > 80) return { error: "O título ficou longo demais." };
     if (description.length > 400) return { error: "O texto ficou longo demais." };
 
-    const dados = { title, description, icon: iconeValido(texto(formData, "icon")) };
+    const dados = {
+      title,
+      description,
+      icon: iconeValido(texto(formData, "icon")),
+      // Vazio é o normal: o cartão que só explica não vira pedido.
+      finalidadeId: texto(formData, "finalidadeId") || null,
+    };
     const id = texto(formData, "id");
     if (id) await updatePurpose(parishId, id, dados);
     else await createPurpose(parishId, dados);

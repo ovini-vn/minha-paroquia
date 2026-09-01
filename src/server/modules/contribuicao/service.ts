@@ -115,19 +115,37 @@ export function copiarFinalidadesDaDoacao(parishId: string) {
     const cards = await tx.donationPurpose.findMany({
       where: { parishId, active: true },
       orderBy: { displayOrder: "asc" },
-      select: { title: true, description: true, icon: true },
+      select: { id: true, title: true, description: true, icon: true },
     });
     if (cards.length === 0) return { copiadas: 0 };
 
-    await tx.contribuicaoFinalidade.createMany({
-      data: cards.map((c, i) => ({
-        parishId,
-        nome: c.title.slice(0, 80),
-        descricao: c.description.slice(0, 400),
-        icone: c.icon,
-        ordem: i + 1,
-      })),
-    });
+    /*
+     * Cria uma a uma, e não em lote, para LIGAR cada cartão à finalidade que
+     * saiu dele.
+     *
+     * `createMany` seria mais rápido e não devolve os ids criados — a
+     * paróquia teria de refazer à mão um pareamento que este momento já
+     * conhece. São cinco linhas numa operação que roda uma vez na vida da
+     * paróquia; a rapidez aqui não vale o trabalho manual depois.
+     */
+    let ordem = 0;
+    for (const card of cards) {
+      ordem += 1;
+      const finalidade = await tx.contribuicaoFinalidade.create({
+        data: {
+          parishId,
+          nome: card.title.slice(0, 80),
+          descricao: card.description.slice(0, 400),
+          icone: card.icon,
+          ordem,
+        },
+        select: { id: true },
+      });
+      await tx.donationPurpose.update({
+        where: { id: card.id },
+        data: { finalidadeId: finalidade.id },
+      });
+    }
     return { copiadas: cards.length };
   });
 }

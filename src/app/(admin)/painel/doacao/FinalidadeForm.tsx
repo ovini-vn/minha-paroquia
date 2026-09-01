@@ -15,11 +15,16 @@ export function FinalidadeForm({
   title = "",
   description = "",
   icon = "igreja",
+  finalidadeId = "",
+  finalidades = [],
 }: {
   id?: string;
   title?: string;
   description?: string;
   icon?: string;
+  finalidadeId?: string | null;
+  /** As finalidades de contribuição, cadastradas em Financeiro. */
+  finalidades?: { id: string; nome: string }[];
 }) {
   const [state, formAction, pending] = useActionState(salvarFinalidadeAction, initialState);
 
@@ -71,6 +76,31 @@ export function FinalidadeForm({
           className={campo}
         />
       </div>
+
+      {finalidades.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`fin-para-${id}`} className="text-sm font-medium text-muted">
+            Caminho para contribuir (opcional)
+          </label>
+          <select
+            id={`fin-para-${id}`}
+            name="finalidadeId"
+            defaultValue={finalidadeId ?? ""}
+            className={campo}
+          >
+            <option value="">Nenhum — este cartão só explica</option>
+            {finalidades.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nome}
+              </option>
+            ))}
+          </select>
+          <p className="text-[12px] leading-relaxed text-muted">
+            Escolhendo uma finalidade, o cartão inteiro vira um caminho para contribuir. Em branco,
+            ele continua sendo só a explicação de onde a doação ajuda.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2">
         <Button type="submit" disabled={pending} className="self-start">

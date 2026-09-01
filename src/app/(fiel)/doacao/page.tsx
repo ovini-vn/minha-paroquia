@@ -101,11 +101,18 @@ export default async function DoacaoPage() {
           <div className="grade-finalidades grid grid-cols-3 gap-2 sm:gap-2.5">
             {finalidades.map((f) => {
               const Icone = iconeDeDoacao(f.icon);
-              return (
-                <Card
-                  key={f.id}
-                  className="card-finalidade flex flex-col items-center gap-2 px-2.5 py-4 text-center sm:px-4"
-                >
+
+              /*
+               * O conteúdo é montado uma vez e embrulhado conforme o caso.
+               *
+               * No celular o cartão tem cerca de 105px: um link escrito ao
+               * pé ficaria com duas letras por linha e um alvo de toque
+               * menor que o dedo. Quando há finalidade ligada, o CARTÃO
+               * INTEIRO é o caminho; sem ela, continua sendo o texto que
+               * sempre foi.
+               */
+              const conteudo = (
+                <>
                   <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-full bg-primary-tint text-primary">
                     <Icone className="h-[21px] w-[21px]" strokeWidth={1.5} aria-hidden />
                   </span>
@@ -119,7 +126,33 @@ export default async function DoacaoPage() {
                     <p className="text-[11px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
                       {f.description}
                     </p>
+                    {f.finalidadeId && (
+                      <span className="text-[11px] font-semibold text-primary sm:text-[12px]">
+                        Quero ajudar
+                      </span>
+                    )}
                   </div>
+                </>
+              );
+
+              const dentro =
+                "flex flex-col items-center gap-2 px-2.5 py-4 text-center sm:px-4";
+
+              return f.finalidadeId ? (
+                <Card
+                  key={f.id}
+                  className="card-finalidade p-0 transition-colors hover:border-primary focus-within:border-primary"
+                >
+                  <Link
+                    href={`/contribuir?para=${f.finalidadeId}`}
+                    className={`${dentro} rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                  >
+                    {conteudo}
+                  </Link>
+                </Card>
+              ) : (
+                <Card key={f.id} className={`card-finalidade ${dentro}`}>
+                  {conteudo}
                 </Card>
               );
             })}

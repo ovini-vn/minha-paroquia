@@ -50,6 +50,8 @@ export const PERMISSIONS = {
   CATEQUESE_TEACH: "catequese.teach",
   LITURGIA_MANAGE: "liturgia.manage",
   DIZIMO_MANAGE: "dizimo.manage",
+  FINANCEIRO_VER: "financeiro.ver",
+  FINANCEIRO_GERENCIAR: "financeiro.gerenciar",
   SACRAMENTS_VALIDATE: "sacraments.validate",
   AVISOS_MANAGE: "avisos.manage",
   PLANO_MANAGE: "plano.manage",
@@ -75,6 +77,8 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
   [PERMISSIONS.CATEQUESE_TEACH]: "Lecionar catequese",
   [PERMISSIONS.LITURGIA_MANAGE]: "Gerenciar liturgia",
   [PERMISSIONS.DIZIMO_MANAGE]: "Gerenciar dízimo",
+  [PERMISSIONS.FINANCEIRO_VER]: "Ver contribuições e valores",
+  [PERMISSIONS.FINANCEIRO_GERENCIAR]: "Lançar contribuições e conciliar o extrato",
   [PERMISSIONS.SACRAMENTS_VALIDATE]: "Validar sacramentos",
   [PERMISSIONS.AVISOS_MANAGE]: "Gerenciar avisos",
   [PERMISSIONS.PLANO_MANAGE]: "Escrever o plano pastoral",
@@ -109,6 +113,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
     PERMISSIONS.PLANO_MANAGE,
     PERMISSIONS.POSTS_MANAGE,
+    PERMISSIONS.FINANCEIRO_VER,
+    PERMISSIONS.FINANCEIRO_GERENCIAR,
   ],
   /**
    * Administra a paróquia sem ser clero.
@@ -139,6 +145,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
     PERMISSIONS.PLANO_MANAGE,
     PERMISSIONS.POSTS_MANAGE,
+    PERMISSIONS.FINANCEIRO_VER,
+    PERMISSIONS.FINANCEIRO_GERENCIAR,
   ],
   SECRETARIA: [
     PERMISSIONS.MEMBER_PASSWORD_RESET,
@@ -158,6 +166,8 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.AVISOS_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
     PERMISSIONS.PLANO_MANAGE,
+    PERMISSIONS.FINANCEIRO_VER,
+    PERMISSIONS.FINANCEIRO_GERENCIAR,
   ],
   SACERDOTE: [
     PERMISSIONS.MEMBERS_VIEW,

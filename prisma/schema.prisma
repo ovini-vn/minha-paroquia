@@ -137,6 +137,8 @@ model User {
   liturgicalSchedules           LiturgicalSchedule[]
   titheParticipations           TitheParticipation[]     @relation("TitheParticipationUser")
   titheParticipationsRegistered TitheParticipation[]     @relation("TitheParticipationRegisteredBy")
+  pixDeContribuicao             PixDeContribuicao[]
+  contribuicoes                 Contribuicao[]
   notifications                 Notification[]
   notificationPreferences       NotificationPreference[]
   prayerRequests                PrayerRequest[]
@@ -328,6 +330,11 @@ model Parish {
   catechismGroups         CatechismGroup[]
   itinerarios             Itinerario[]
   planosPastorais         PlanoPastoral[]
+  contribuicaoFinalidades ContribuicaoFinalidade[]
+  pixDeContribuicao       PixDeContribuicao[]
+  contribuicoes           Contribuicao[]
+  lancamentosDeExtrato    LancamentoDeExtrato[]
+  conciliacoesPix         ConciliacaoPix[]
   planoSecoes             PlanoSecao[]
   itinerarioTemas         ItinerarioTema[]
   catechismGroupRites     CatechismGroupRite[]
@@ -1421,6 +1428,222 @@ model PlanoSecao {
 
   @@index([parishId, planoId])
   @@map("plano_secoes")
+}
+
+/// Como o dinheiro chegou à paróquia.
+///
+/// Existe porque nem toda contribuição passa pelo Pix: o envelope da
+/// Pastoral do Dízimo e a coleta da missa são as formas mais antigas que
+/// existem, e uma ferramenta que só enxerga Pix diria que quem contribui há
+/// trinta anos não contribui.
+enum FormaDeRecebimento {
+  /// Pix gerado no app, com identificador — a finalidade é conhecida.
+  pix_identificado
+  /// Pix caiu na conta sem identificador nosso. Alguém precisa dizer de quem
+  /// é e para quê.
+  pix_avulso
+  dinheiro
+  envelope
+  transferencia
+  outro
+}
+
+/// O estado de um Pix de contribuição gerado pelo fiel.
+///
+/// Nada aqui é fatura: `aguardando` não é dívida, e `expirada` não é calote.
+/// É só um código que a pessoa gerou e ainda não usou.
+enum EstadoDoPix {
+  aguardando
+  recebida
+  expirada
+  descartada
+}
+
+/// O que se soube fazer com uma linha do extrato.
+enum EstadoDoLancamento {
+  sem_correspondencia
+  conciliado
+  conciliado_a_mao
+  ignorado
+}
+
+enum TipoDeConciliacao {
+  automatica
+  manual
+}
+
+/// Para onde a contribuição vai: dízimo, doação, coleta, catequese, festa.
+///
+/// Tabela, e não enum, porque a lista muda de paróquia para paróquia e ao
+/// longo do ano — "Reforma do telhado" existe enquanto o telhado está sendo
+/// reformado. Mesmo motivo pelo qual o itinerário da catequese é digitável.
+model ContribuicaoFinalidade {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  nome      String
+  descricao String?  @db.Text
+  /// Chave do catálogo de ícones (ver src/lib/icones-doacao.ts).
+  icone     String   @default("igreja")
+  /// A finalidade do dízimo é a única que conversa com a Pastoral do Dízimo:
+  /// uma contribuição confirmada nela marca a participação do período.
+  ehDizimo  Boolean  @default(false) @map("eh_dizimo")
+  ordem     Int      @default(0)
+  ativa     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish        Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  pix           PixDeContribuicao[]
+  contribuicoes Contribuicao[]
+
+  @@index([parishId, ativa, ordem])
+  @@map("contribuicao_finalidades")
+}
+
+/// O Pix que o fiel gerou para contribuir — com identificador, para a
+/// paróquia saber a que se refere quando o dinheiro cair.
+///
+/// NÃO é cobrança. Ninguém deve nada: é um código que a pessoa pediu, com a
+/// finalidade que ela escolheu e o valor que ela quis. Se nunca for usado,
+/// não aconteceu nada.
+///
+/// O valor é opcional porque o dízimo é assim — cada um dá o quanto pode, e
+/// um campo obrigatório transformaria isso noutra coisa.
+model PixDeContribuicao {
+  id            String      @id @default(uuid())
+  parishId      String      @map("parish_id")
+  /// Quem gerou. Opcional para o dia em que a secretaria gerar um código de
+  /// mesa para a festa da padroeira, sem dono.
+  userId        String?     @map("user_id")
+  finalidadeId  String      @map("finalidade_id")
+  /// Em CENTAVOS, ou nulo para o fiel escolher no aplicativo do banco.
+  /// Inteiro de propósito: dinheiro em ponto flutuante perde centavo.
+  centavos      Int?
+  /// O identificador que viaja no código e volta no extrato — quando o banco
+  /// o devolve. Ver docs/PIX.md sobre o que depende do banco.
+  identificador String      @unique
+  /// O BR Code montado, guardado como foi mostrado ao fiel. Se a chave da
+  /// paróquia mudar depois, o código antigo continua sendo o que a pessoa
+  /// copiou.
+  brcode        String      @db.Text
+  estado        EstadoDoPix @default(aguardando)
+  expiraEm      DateTime?   @map("expira_em")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  finalidade   ContribuicaoFinalidade @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
+  contribuicao Contribuicao?
+  conciliacoes ConciliacaoPix[]
+
+  @@index([parishId, estado, createdAt])
+  @@index([parishId, userId])
+  @@map("pix_de_contribuicao")
+}
+
+/// O dinheiro que de fato chegou.
+///
+/// Separado do Pix gerado porque as duas coisas não se implicam: um código
+/// pode nunca ser usado, e a maior parte do que entra numa paróquia — a
+/// coleta, o envelope — nunca teve código nenhum.
+///
+/// A FINALIDADE NUNCA É ADIVINHADA. Ou vem do Pix identificado, ou alguém
+/// digitou. Deduzir "R$ 150 deve ser dízimo" é o erro que faz a tesouraria
+/// desconfiar de tudo o que o sistema diz.
+model Contribuicao {
+  id            String             @id @default(uuid())
+  parishId      String             @map("parish_id")
+  /// De quem foi. Opcional: coleta da missa não tem nome, e Pix avulso pode
+  /// nunca ser identificado.
+  userId        String?            @map("user_id")
+  finalidadeId  String             @map("finalidade_id")
+  centavos      Int
+  /// O DIA em que entrou, como no extrato.
+  recebidaEm    DateTime           @map("recebida_em") @db.Date
+  forma         FormaDeRecebimento
+  /// Um Pix de contribuição só pode virar contribuição uma vez.
+  pixId         String?            @unique @map("pix_id")
+  /// Quem lançou. Nulo quando veio de conciliação automática.
+  registradaPor String?            @map("registrada_por")
+  observacao    String?            @db.Text
+  /// Cancelada não some: some o dinheiro do relatório, fica o registro de
+  /// que houve e de que foi desfeito.
+  cancelada     Boolean            @default(false)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  finalidade   ContribuicaoFinalidade @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
+  pix          PixDeContribuicao?     @relation(fields: [pixId], references: [id], onDelete: SetNull)
+  conciliacoes ConciliacaoPix[]
+
+  @@index([parishId, recebidaEm])
+  @@index([parishId, userId, recebidaEm])
+  @@index([parishId, finalidadeId, recebidaEm])
+  @@map("contribuicoes")
+}
+
+/// Uma linha do extrato importado.
+///
+/// Guarda o texto cru do banco junto com os campos normalizados: quando um
+/// formato novo aparecer, dá para reprocessar o que já entrou sem pedir o
+/// arquivo de volta.
+model LancamentoDeExtrato {
+  id            String             @id @default(uuid())
+  parishId      String             @map("parish_id")
+  ocorreuEm     DateTime           @map("ocorreu_em") @db.Date
+  centavos      Int
+  descricao     String             @db.Text
+  /// O identificador achado na descrição, quando o banco o devolve.
+  identificador String?
+  /// O identificador do próprio arranjo Pix, quando vem.
+  endToEndId    String?            @map("end_to_end_id")
+  pagador       String?
+  /// A linha como veio, para reprocessar depois sem o arquivo original.
+  bruto         String             @db.Text
+  /// A impressão digital da linha, para o mesmo lançamento não entrar duas
+  /// vezes quando a secretaria importar o arquivo de novo.
+  ///
+  /// Vem do CONTEÚDO (dia, valor, descrição, id do banco) e não da posição
+  /// no arquivo: um extrato reexportado com uma linha a mais no começo
+  /// empurra todas as outras, e a posição diria que são todas novas.
+  impressao     String
+  estado        EstadoDoLancamento @default(sem_correspondencia)
+  importadoPor  String             @map("importado_por")
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  parish       Parish           @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  conciliacoes ConciliacaoPix[]
+
+  @@unique([parishId, impressao])
+  @@index([parishId, estado, ocorreuEm])
+  @@map("lancamentos_de_extrato")
+}
+
+/// Quem ligou qual lançamento a qual contribuição, quando, e como soube.
+///
+/// Tabela própria em vez de colunas no lançamento porque a pergunta que a
+/// tesouraria faz é "quem disse que este dinheiro é da Maria?" — e a
+/// resposta precisa sobreviver a alguém desfazer a ligação.
+model ConciliacaoPix {
+  id             String            @id @default(uuid())
+  parishId       String            @map("parish_id")
+  lancamentoId   String            @unique @map("lancamento_id")
+  pixId          String?           @map("pix_id")
+  contribuicaoId String            @map("contribuicao_id")
+  tipo           TipoDeConciliacao
+  /// Nulo quando foi automática: não houve pessoa.
+  feitaPor       String?           @map("feita_por")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  parish       Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  lancamento   LancamentoDeExtrato @relation(fields: [lancamentoId], references: [id], onDelete: Cascade)
+  pix          PixDeContribuicao?  @relation(fields: [pixId], references: [id], onDelete: SetNull)
+  contribuicao Contribuicao        @relation(fields: [contribuicaoId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, createdAt])
+  @@map("conciliacoes_pix")
 }
 
 model LiturgicalAvailability {

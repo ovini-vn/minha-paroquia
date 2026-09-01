@@ -11,15 +11,55 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CreateAvisoForm } from "./CreateAvisoForm";
+import {
+  FiltroDeAvisos,
+  SITUACOES,
+  type FiltrosDeAvisos,
+  type SituacaoDeAvisos,
+} from "./_components/FiltroDeAvisos";
 import { Megaphone } from "lucide-react";
 
 export const metadata: Metadata = { title: "Avisos" };
 
-export default async function AvisosAdminPage() {
+export default async function AvisosAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ver?: string; q?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.AVISOS_MANAGE);
   if (!session.membership) return null;
 
-  const avisos = await listAllAvisos(session.membership.parishId);
+  const todos = await listAllAvisos(session.membership.parishId);
+
+  const { ver, q } = await searchParams;
+  const busca = (q ?? "").trim();
+  const situacao: SituacaoDeAvisos = SITUACOES.some((v) => v.id === ver)
+    ? (ver as SituacaoDeAvisos)
+    : "publicados";
+
+  // Sem acento e sem caixa: quem procura "quermesse" tem de achar o que foi
+  // escrito com maiúscula, e "reuniao" tem de achar "reunião".
+  const solto = (t: string) =>
+    t
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase();
+
+  const daSituacao: Record<SituacaoDeAvisos, (a: (typeof todos)[number]) => boolean> = {
+    publicados: (a) => a.status !== "archived",
+    arquivados: (a) => a.status === "archived",
+    todos: () => true,
+  };
+  const quantos = Object.fromEntries(
+    SITUACOES.map((v) => [v.id, todos.filter(daSituacao[v.id]).length]),
+  ) as Record<SituacaoDeAvisos, number>;
+
+  const filtros: FiltrosDeAvisos = { situacao, busca };
+  const avisos = todos.filter(
+    (a) =>
+      daSituacao[situacao](a) &&
+      (!busca || solto(`${a.title} ${a.body}`).includes(solto(busca))),
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -34,14 +74,32 @@ export default async function AvisosAdminPage() {
       </Card>
 
       <section>
+        {/* O título acompanha o recorte: dizer "Publicados" sobre uma lista
+            de arquivados seria a tela contradizendo a si mesma. */}
         <Eyebrow tone="accent" className="mb-3">
-          Publicados
+          {SITUACOES.find((v) => v.id === situacao)?.rotulo}
         </Eyebrow>
+
+        <FiltroDeAvisos filtros={filtros} quantos={quantos} />
+
         {avisos.length === 0 ? (
           <EmptyState
             icon={Megaphone}
-            title="Nenhum aviso publicado"
-            description="Crie o primeiro acima — ele aparece para toda a comunidade."
+            title={todos.length === 0 ? "Nenhum aviso publicado" : "Nada neste recorte"}
+            description={
+              todos.length === 0
+                ? "Crie o primeiro acima — ele aparece para toda a comunidade."
+                : busca
+                  ? `Nenhum aviso com "${busca}" entre os ${SITUACOES.find((v) => v.id === situacao)?.rotulo.toLowerCase()}.`
+                  : "Não há avisos nesta situação."
+            }
+            action={
+              todos.length > 0 ? (
+                <LinkButton href="/painel/avisos" size="sm">
+                  Ver os publicados
+                </LinkButton>
+              ) : undefined
+            }
           />
         ) : (
           <div className="flex flex-col gap-2.5">

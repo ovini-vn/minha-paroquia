@@ -498,17 +498,27 @@ export function cancelarContribuicao(parishId: string, contribuicaoId: string) {
   });
 }
 
-/** O que entrou, para a tesouraria conferir e para o relatório. */
+/**
+ * O que entrou, para a tesouraria conferir e para o relatório.
+ *
+ * `finalidade: "sem"` é a doação espontânea — a ausência de finalidade É o
+ * recorte, e não a falta dele. Sem esse caso, o único jeito de ver as
+ * espontâneas seria não filtrar nada.
+ */
 export function listarContribuicoes(
   parishId: string,
-  filtro: { de?: Date; ate?: Date; finalidadeId?: string } = {},
+  filtro: { de?: Date; ate?: Date; finalidade?: string } = {},
 ) {
   return withTenantContext(parishId, (tx) =>
     tx.contribuicao.findMany({
       where: {
         parishId,
         cancelada: false,
-        ...(filtro.finalidadeId ? { finalidadeId: filtro.finalidadeId } : {}),
+        ...(filtro.finalidade === "sem"
+          ? { finalidadeId: null }
+          : filtro.finalidade
+            ? { finalidadeId: filtro.finalidade }
+            : {}),
         ...(filtro.de || filtro.ate
           ? { recebidaEm: { ...(filtro.de ? { gte: filtro.de } : {}), ...(filtro.ate ? { lte: filtro.ate } : {}) } }
           : {}),

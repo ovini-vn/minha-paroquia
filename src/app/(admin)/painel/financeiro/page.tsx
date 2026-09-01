@@ -10,6 +10,13 @@ import {
 } from "@/server/modules/contribuicao/service";
 import { nomeDaFinalidade } from "@/server/modules/contribuicao/schema";
 import { hojeEmBrasilia } from "@/lib/brasilia";
+import { FiltroDeContribuicoes } from "./_components/FiltroDeContribuicoes";
+import {
+  janelaDoPeriodo,
+  PERIODOS,
+  type FiltrosDeContribuicoes,
+  type PeriodoDeContribuicoes,
+} from "./_components/filtros";
 import { formatDateOnly } from "@/lib/date";
 import {
   ConfirmarRecebimento,
@@ -47,20 +54,50 @@ const FORMAS: Record<string, string> = {
  * A conciliação do extrato entra aqui na próxima fatia. Esta tela já diz
  * isso, para quem abre não ficar procurando o que ainda não há.
  */
-export default async function FinanceiroPage() {
+export default async function FinanceiroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periodo?: string; para?: string }>;
+}) {
   const session = await requirePermissionForPage(PERMISSIONS.FINANCEIRO_VER);
   if (!session.membership) return null;
   const parishId = session.membership.parishId;
 
   await expirarPixAntigos(parishId);
 
-  const [finalidades, settings, cardsDeDoacao, aguardando, contribuicoes] = await Promise.all([
-    listarFinalidades(parishId, true),
-    getDonationSettings(parishId),
-    listPurposesForAdmin(parishId),
-    listarPixAguardando(parishId),
-    listarContribuicoes(parishId),
-  ]);
+  const { periodo, para } = await searchParams;
+  const escolhidoPeriodo = PERIODOS.some((p) => p.id === periodo)
+    ? (periodo as PeriodoDeContribuicoes)
+    : "mes";
+
+  const [finalidades, settings, cardsDeDoacao, aguardando, contribuicoes, todasAsContribuicoes] =
+    await Promise.all([
+      listarFinalidades(parishId, true),
+      getDonationSettings(parishId),
+      listPurposesForAdmin(parishId),
+      listarPixAguardando(parishId),
+      listarContribuicoes(parishId, {
+        ...janelaDoPeriodo(escolhidoPeriodo),
+        finalidade: para || undefined,
+      }),
+      /*
+       * O acervo inteiro, só para saber QUAIS finalidades oferecer no filtro.
+       *
+       * Sem ele, as opções sairiam da lista já filtrada: escolher "Dízimo"
+       * faria o filtro passar a oferecer só Dízimo, sem caminho de volta. É
+       * o mesmo cuidado do painel de missas.
+       */
+      listarContribuicoes(parishId),
+    ]);
+
+  const filtros: FiltrosDeContribuicoes = {
+    periodo: escolhidoPeriodo,
+    finalidade: para || null,
+  };
+  const finalidadesComEntrada = finalidades.filter((f) =>
+    todasAsContribuicoes.some((c) => c.finalidadeId === f.id),
+  );
+  const temEspontanea = todasAsContribuicoes.some((c) => c.finalidadeId === null);
 
   const hoje = hojeEmBrasilia();
   const emReais = (centavos: number) =>
@@ -208,18 +245,37 @@ export default async function FinanceiroPage() {
       <section>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <Eyebrow tone="accent">Contribuições recebidas</Eyebrow>
+          {/*
+            O total segue o filtro — é o que torna a pergunta respondível.
+            Um total fixo ao lado de uma lista recortada seria a pior
+            combinação numa tela de dinheiro: dois números verdadeiros
+            dizendo coisas diferentes, sem avisar.
+          */}
           {contribuicoes.length > 0 && (
             <p className="font-mono text-[15px] font-semibold text-foreground">
               {emReais(totalRecebido)}
+              <span className="ml-1.5 font-sans text-[12px] font-normal text-muted">
+                em {contribuicoes.length}{" "}
+                {contribuicoes.length === 1 ? "contribuição" : "contribuições"}
+              </span>
             </p>
           )}
+        </div>
+
+        <div className="mb-4">
+          <FiltroDeContribuicoes
+            filtros={filtros}
+            finalidades={finalidadesComEntrada.map((f) => ({ id: f.id, nome: f.nome }))}
+            temEspontanea={temEspontanea}
+          />
         </div>
 
         {contribuicoes.length === 0 ? (
           <Card className="bg-sunken">
             <p className="text-[13px] leading-relaxed text-muted">
-              Nada registrado ainda. O que entra por PIX aparece aqui depois de confirmado; o que
-              entra em dinheiro ou envelope, depois de lançado.
+              {todasAsContribuicoes.length > 0
+                ? "Nada neste recorte. Há contribuições registradas em outro período ou finalidade."
+                : "Nada registrado ainda. O que entra por PIX aparece aqui depois de confirmado; o que entra em dinheiro ou envelope, depois de lançado."}
             </p>
           </Card>
         ) : (

@@ -1482,7 +1482,7 @@ model ContribuicaoFinalidade {
   parishId  String   @map("parish_id")
   nome      String
   descricao String?  @db.Text
-  /// Chave do catálogo de ícones (ver src/lib/icones-doacao.ts).
+  /// Chave do catálogo de ícones (ver src/lib/doacao.ts).
   icone     String   @default("igreja")
   /// A finalidade do dízimo é a única que conversa com a Pastoral do Dízimo:
   /// uma contribuição confirmada nela marca a participação do período.
@@ -1882,7 +1882,7 @@ model DonationPurpose {
   parishId    String  @map("parish_id")
   title       String
   description String  @db.Text
-  /// Chave do catálogo de ícones (ver src/lib/icones-doacao.ts). Guardar o
+  /// Chave do catálogo de ícones (ver src/lib/doacao.ts). Guardar o
   /// nome do componente deixaria a tela renderizar o que viesse do banco.
   icon        String  @default("igreja")
   displayOrder Int    @default(0) @map("display_order")

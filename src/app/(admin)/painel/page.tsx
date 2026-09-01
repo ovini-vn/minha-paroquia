@@ -53,6 +53,7 @@ import {
   Settings,
   UserRound,
   Users,
+  Wallet,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -213,6 +214,14 @@ export default async function AdminDashboardPage() {
             title="Horários das missas"
             subtitle="O que se repete toda semana ou todo mês"
           />
+          {podeAlcancar(session, PERMISSIONS.FINANCEIRO_VER) && (
+            <RowLink
+              href="/painel/financeiro"
+              icon={Wallet}
+              title="Financeiro"
+              subtitle="Finalidades das contribuições e o PIX identificado"
+            />
+          )}
           <RowLink
             href="/painel/doacao"
             icon={HandCoins}

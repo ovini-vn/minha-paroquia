@@ -172,6 +172,32 @@ export default async function DoacaoPage() {
         </section>
       )}
 
+      {/*
+        A ponte para a contribuição identificada.
+        
+        Esta tela mostra UMA chave para tudo — serve para quem quer só doar.
+        Quem quer que a paróquia saiba a que se refere (dízimo, catequese,
+        festa) precisa de um código com identificador, e é ali que ele nasce.
+      */}
+      {chaveFormatada && (
+        <section className="pt-7">
+          <Card className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[14.5px] font-semibold text-foreground">
+                Quer que sua contribuição seja identificada?
+              </p>
+              <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                Gere um código por finalidade — dízimo, catequese, festa — e acompanhe seu
+                histórico.
+              </p>
+            </div>
+            <LinkButton href="/contribuir" size="sm">
+              Minha participação
+            </LinkButton>
+          </Card>
+        </section>
+      )}
+
       {chaveFormatada && (
         <section className="pt-7">
           <Eyebrow tone="accent" className="mb-1">

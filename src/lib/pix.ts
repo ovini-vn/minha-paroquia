@@ -1,10 +1,10 @@
 /**
  * A chave PIX que a paróquia divulga.
  *
- * Nada aqui movimenta dinheiro: não montamos o código de pagamento nem
- * falamos com banco. O que existe é conferência de formato — uma chave
- * digitada errada faz o fiel tentar doar e não conseguir, e ele não volta
- * uma segunda vez.
+ * Não falamos com banco nenhum aqui. O que existe é conferência de formato —
+ * uma chave digitada errada faz o fiel tentar doar e não conseguir, e ele
+ * não volta uma segunda vez — e, desde o Pix identificado, a forma canônica
+ * da chave para entrar no código de pagamento (ver `chaveParaPagamento`).
  */
 
 export const TIPOS_DE_CHAVE_PIX = [
@@ -123,4 +123,32 @@ export function formatarCnpj(cnpj: string): string {
 export function problemaNoCnpj(cnpj: string): string | null {
   if (!cnpj.trim()) return null;
   return cnpjValido(cnpj) ? null : "CNPJ inválido. Confira os números.";
+}
+
+/**
+ * A chave na forma que o BR Code exige.
+ *
+ * A paróquia digita "11.222.333/0001-81" porque é assim que se lê um CNPJ.
+ * O código de pagamento não aceita isso: chave de CPF e de CNPJ vai só com
+ * dígitos, e telefone vai com o "+55" na frente. Uma chave pontuada dentro
+ * do payload é um código que o banco recusa.
+ *
+ * Isto NÃO é normalização esperta — é a forma canônica de cada TIPO, e o
+ * tipo é o que a própria paróquia declarou ao cadastrar. E-mail e chave
+ * aleatória passam intactos, porque neles não há forma a impor: qualquer
+ * mudança seria adivinhação, e adivinhar na chave manda dinheiro para o
+ * lugar errado.
+ */
+export function chaveParaPagamento(chave: string, tipo: string | null): string {
+  const limpa = chave.trim();
+
+  if (tipo === "cpf" || tipo === "cnpj") return digitos(limpa);
+
+  if (tipo === "telefone") {
+    const n = digitos(limpa);
+    // Já com o código do país, ou sem ele: o Pix quer +55 e mais nada.
+    return n.startsWith("55") && n.length > 11 ? `+${n}` : `+55${n}`;
+  }
+
+  return limpa;
 }

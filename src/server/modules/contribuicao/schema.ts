@@ -29,8 +29,18 @@ const valorOpcional = z
     message: "Informe um valor entre R$ 0,01 e R$ 50.000,00 — ou deixe em branco.",
   });
 
+/**
+ * A doação espontânea não tem finalidade — e isso é o dado, não a falta
+ * dele. Vazio aqui quer dizer "não quis dizer para quê", e obrigar a
+ * paróquia a cadastrar uma finalidade chamada "sem finalidade" seria
+ * burocracia no lugar de generosidade.
+ */
 export const gerarPixSchema = z.object({
-  finalidadeId: z.string().uuid("Escolha a finalidade."),
+  finalidadeId: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   valor: valorOpcional,
 });
 
@@ -53,7 +63,11 @@ export const editarFinalidadeSchema = criarFinalidadeSchema.extend({
  * honesto, porque não há identificador nenhum a que recorrer.
  */
 export const lancarContribuicaoSchema = z.object({
-  finalidadeId: z.string().uuid("Escolha a finalidade."),
+  finalidadeId: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   /** Nulo quando é a coleta da missa, que não tem nome. */
   userId: z.string().uuid().optional().or(z.literal("").transform(() => undefined)),
   valor: z
@@ -72,3 +86,17 @@ export type GerarPixInput = z.infer<typeof gerarPixSchema>;
 export type CriarFinalidadeInput = z.infer<typeof criarFinalidadeSchema>;
 export type EditarFinalidadeInput = z.infer<typeof editarFinalidadeSchema>;
 export type LancarContribuicaoInput = z.infer<typeof lancarContribuicaoSchema>;
+
+/**
+ * Como se chama a doação sem finalidade, num lugar só.
+ *
+ * A ausência de finalidade aparece em quatro telas — o histórico do fiel, o
+ * código gerado, o lançamento da secretaria e o relatório. Escrever o nome
+ * em cada uma faria as quatro divergirem no dia em que alguém mudasse a
+ * palavra numa delas.
+ */
+export const DOACAO_ESPONTANEA = "Doação espontânea";
+
+export function nomeDaFinalidade(finalidade: { nome: string } | null): string {
+  return finalidade?.nome ?? DOACAO_ESPONTANEA;
+}

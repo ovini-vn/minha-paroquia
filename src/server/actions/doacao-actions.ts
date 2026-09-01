@@ -165,6 +165,8 @@ export async function salvarIniciativaAction(
       imageUrl: enviada ?? texto(formData, "imageUrl") ?? null,
       icon: iconeValido(texto(formData, "icon")),
       category,
+      // Vazio é o normal: a iniciativa que não pede dinheiro não vira pedido.
+      finalidadeId: texto(formData, "finalidadeId") || null,
       startsOn: data("startsOn"),
       endsOn: data("endsOn"),
     };

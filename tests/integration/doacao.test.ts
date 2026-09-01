@@ -157,6 +157,8 @@ describe("área de doação", () => {
       imageUrl: null,
       icon: "obras",
       category: "obras",
+      // Sem caminho para contribuir: a iniciativa que só informa é o normal.
+      finalidadeId: null,
       startsOn: new Date("2026-07-01T00:00:00.000Z"),
       endsOn: new Date("2026-12-20T00:00:00.000Z"),
     });

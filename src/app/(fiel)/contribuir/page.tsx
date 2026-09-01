@@ -7,6 +7,7 @@ import {
   listarMinhasContribuicoes,
   listarPixEmAberto,
 } from "@/server/modules/contribuicao/service";
+import { nomeDaFinalidade } from "@/server/modules/contribuicao/schema";
 import { getDonationSettings } from "@/server/modules/doacao/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -35,7 +36,13 @@ export function emReais(centavos: number): string {
  * a que se refere o dinheiro quando ele cair. O fiel não precisa saber disso,
  * e por isso ele não aparece com nome técnico em lugar nenhum.
  */
-export default async function ContribuirPage() {
+export default async function ContribuirPage({
+  searchParams,
+}: {
+  /** `?para=<finalidade>` — quem veio de uma iniciativa já chega com ela marcada. */
+  searchParams: Promise<{ para?: string }>;
+}) {
+  const { para } = await searchParams;
   const session = await requireSessionForPage();
   if (!session.membership) return null;
   const parishId = session.membership.parishId;
@@ -80,6 +87,7 @@ export default async function ContribuirPage() {
                 />
               ) : (
                 <EscolherFinalidade
+                  finalidadeInicial={para ?? null}
                   finalidades={finalidades.map((f) => ({
                     id: f.id,
                     nome: f.nome,
@@ -100,7 +108,7 @@ export default async function ContribuirPage() {
                     <Card key={c.id} className="flex items-center justify-between gap-3 py-3">
                       <div className="min-w-0">
                         <p className="text-[14.5px] font-medium text-foreground">
-                          {c.finalidade.nome}
+                          {nomeDaFinalidade(c.finalidade)}
                         </p>
                         <p className="text-[12.5px] text-muted">{formatDateOnly(c.recebidaEm)}</p>
                       </div>
@@ -137,7 +145,7 @@ export default async function ContribuirPage() {
                       size="sm"
                       className="!justify-start"
                     >
-                      {pix.finalidade.nome}
+                      {nomeDaFinalidade(pix.finalidade)}
                       {pix.centavos ? ` · ${emReais(pix.centavos)}` : ""}
                     </LinkButton>
                   ))}

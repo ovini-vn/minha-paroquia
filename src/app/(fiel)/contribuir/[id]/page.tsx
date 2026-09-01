@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { obterPix } from "@/server/modules/contribuicao/service";
+import { nomeDaFinalidade } from "@/server/modules/contribuicao/schema";
 import { AppError } from "@/server/shared/errors";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
@@ -48,7 +49,7 @@ export default async function PixDeContribuicaoPage({
       <Leitura className="flex flex-col gap-4">
         <Card>
           <Eyebrow tone="accent" className="mb-1">
-            {pix.finalidade.nome}
+            {nomeDaFinalidade(pix.finalidade)}
           </Eyebrow>
           <p className="font-serif text-[26px] font-semibold leading-tight text-foreground">
             {pix.centavos ? emReais(pix.centavos) : "Valor a sua escolha"}

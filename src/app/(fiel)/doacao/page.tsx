@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { HandCoins, HeartHandshake, Sparkles } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  HandCoins,
+  HeartHandshake,
+  Sparkles,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getParish } from "@/server/modules/parishes/service";
 import {
@@ -12,9 +18,8 @@ import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LinkButton } from "@/components/ui/Button";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
-import { BotaoCopiar } from "@/components/ui/BotaoCopiar";
 import { iconeDeDoacao, CATEGORIAS_DE_INICIATIVA, destinoDoDizimo } from "@/lib/doacao";
-import { formatarChavePix, formatarCnpj, ehTipoDeChavePix, TIPOS_DE_CHAVE_PIX } from "@/lib/pix";
+import { formatarChavePix, ehTipoDeChavePix } from "@/lib/pix";
 import { formatDateOnly } from "@/lib/date";
 
 /**
@@ -56,7 +61,6 @@ export default async function DoacaoPage() {
     settings?.pixKeyType && ehTipoDeChavePix(settings.pixKeyType) ? settings.pixKeyType : null;
   const chaveFormatada =
     settings?.pixKey && tipoDaChave ? formatarChavePix(tipoDaChave, settings.pixKey) : null;
-  const rotuloDoTipo = TIPOS_DE_CHAVE_PIX.find((t) => t.id === tipoDaChave)?.rotulo ?? null;
 
   const dizimo = settings?.dizimoAtivo
     ? destinoDoDizimo(settings.dizimoCtaTipo, settings.dizimoCtaValor, parish.name)
@@ -123,6 +127,70 @@ export default async function DoacaoPage() {
         </section>
       )}
 
+      {/*
+        A ordem diz o que a paróquia pensa sobre contribuir.
+
+        Primeiro o porquê — os cartões de "Sua doação ajuda". Depois o
+        caminho de quem já quer participar. Depois o dízimo, que é
+        pertencimento contínuo e não campanha. E só então as
+        iniciativas, que são o que está acontecendo agora.
+
+        Pedido pontual por último de propósito: campanha antes de
+        vínculo é a ordem de quem arrecada, não a de quem convida.
+      */}
+      {chaveFormatada && (
+        <section className="pt-7">
+          <Card className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[14.5px] font-semibold text-foreground">
+                Quer que sua contribuição seja identificada?
+              </p>
+              <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                Gere um código por finalidade — dízimo, catequese, festa — e acompanhe seu
+                histórico.
+              </p>
+            </div>
+            <LinkButton href="/contribuir" size="sm">
+              Minha participação
+            </LinkButton>
+          </Card>
+        </section>
+      )}
+
+      {settings?.dizimoAtivo && (
+        <section className="pt-7">
+          {/* Dízimo é outra coisa: compromisso contínuo, acompanhado pela
+              pastoral. Aparece como convite, com tratamento próprio. */}
+          <Card className="relative overflow-hidden before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
+            <div className="flex items-center gap-3">
+              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#7c5f16] dark:text-gold">
+                <Sparkles className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+              </span>
+              <p className="font-serif text-[18px] font-semibold leading-tight text-foreground">
+                {settings.dizimoTitulo || "Seja dizimista da nossa comunidade"}
+              </p>
+            </div>
+
+            <p className="mt-3 font-serif text-[16px] leading-relaxed text-foreground">
+              {settings.dizimoTexto ||
+                "O dízimo é uma expressão de gratidão a Deus e de compromisso com a missão da nossa comunidade. Ao se tornar dizimista, você ajuda nossa paróquia a continuar evangelizando, acolhendo e cuidando de quem precisa."}
+            </p>
+
+            {dizimo && (
+              <LinkButton
+                href={dizimo.href}
+                variant="gold"
+                className="mt-4 w-full"
+                {...(dizimo.externo ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                <HeartHandshake className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+                {settings.dizimoCtaLabel || "Quero ser dizimista"}
+              </LinkButton>
+            )}
+          </Card>
+        </section>
+      )}
+
       {iniciativas.length > 0 && (
         <section className="pt-7">
           <Eyebrow tone="accent" className="mb-1">
@@ -165,6 +233,25 @@ export default async function DoacaoPage() {
                       className="mt-2.5 w-full rounded-lg border border-border object-cover"
                     />
                   )}
+
+                  {/*
+                    Um LINK, e não um botão.
+                    
+                    A seção conta o que a paróquia está fazendo; o convite a
+                    ajudar é consequência de ter entendido, não um apelo
+                    competindo com o texto. Um botão em cada cartão
+                    transformaria a página numa sequência de pedidos, que é
+                    exatamente o que a ferramenta não deve ser.
+                  */}
+                  {i.finalidadeId && (
+                    <Link
+                      href={`/contribuir?para=${i.finalidadeId}`}
+                      className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      Quero ajudar nisto
+                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                    </Link>
+                  )}
                 </Card>
               );
             })}
@@ -179,115 +266,6 @@ export default async function DoacaoPage() {
         Quem quer que a paróquia saiba a que se refere (dízimo, catequese,
         festa) precisa de um código com identificador, e é ali que ele nasce.
       */}
-      {chaveFormatada && (
-        <section className="pt-7">
-          <Card className="flex flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[14.5px] font-semibold text-foreground">
-                Quer que sua contribuição seja identificada?
-              </p>
-              <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
-                Gere um código por finalidade — dízimo, catequese, festa — e acompanhe seu
-                histórico.
-              </p>
-            </div>
-            <LinkButton href="/contribuir" size="sm">
-              Minha participação
-            </LinkButton>
-          </Card>
-        </section>
-      )}
-
-      {chaveFormatada && (
-        <section className="pt-7">
-          <Eyebrow tone="accent" className="mb-1">
-            Faça sua doação
-          </Eyebrow>
-          <p className="mb-3 text-[13px] text-muted">
-            Sua contribuição faz parte da missão da nossa comunidade.
-          </p>
-
-          <Card>
-            <p className="font-serif text-[17px] font-semibold leading-tight text-foreground">
-              {parish.name}
-            </p>
-            {parish.cnpj && (
-              <p className="mt-0.5 text-[12.5px] text-muted">CNPJ {formatarCnpj(parish.cnpj)}</p>
-            )}
-
-            <div className="mt-4 border-t border-border pt-4">
-              <p className="text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
-                Chave PIX{rotuloDoTipo ? ` · ${rotuloDoTipo}` : ""}
-              </p>
-              <p className="mt-1 break-all font-mono text-[15px] text-foreground">
-                {chaveFormatada}
-              </p>
-              <BotaoCopiar
-                valor={settings!.pixKey!}
-                rotulo="Copiar chave PIX"
-                rotuloCopiado="Chave copiada!"
-                className="mt-3"
-              />
-            </div>
-
-            {settings?.pixPayload && (
-              <div className="mt-4 border-t border-border pt-4">
-                <p className="text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
-                  PIX Copia e Cola
-                </p>
-                <p className="mt-2 max-h-24 overflow-y-auto break-all rounded-lg border border-border bg-sunken p-3 font-mono text-[11.5px] leading-relaxed text-muted">
-                  {settings.pixPayload}
-                </p>
-                <BotaoCopiar
-                  valor={settings.pixPayload}
-                  rotulo="Copiar código PIX"
-                  rotuloCopiado="PIX copiado!"
-                  className="mt-3"
-                />
-              </div>
-            )}
-          </Card>
-
-          <p className="mt-2.5 text-[12px] leading-relaxed text-muted">
-            Confira os dados no aplicativo do seu banco antes de confirmar. A paróquia nunca pede
-            doação por mensagem particular.
-          </p>
-        </section>
-      )}
-
-      {settings?.dizimoAtivo && (
-        <section className="pt-7">
-          {/* Dízimo é outra coisa: compromisso contínuo, acompanhado pela
-              pastoral. Aparece como convite, com tratamento próprio. */}
-          <Card className="relative overflow-hidden before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
-            <div className="flex items-center gap-3">
-              <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#7c5f16] dark:text-gold">
-                <Sparkles className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-              </span>
-              <p className="font-serif text-[18px] font-semibold leading-tight text-foreground">
-                {settings.dizimoTitulo || "Seja dizimista da nossa comunidade"}
-              </p>
-            </div>
-
-            <p className="mt-3 font-serif text-[16px] leading-relaxed text-foreground">
-              {settings.dizimoTexto ||
-                "O dízimo é uma expressão de gratidão a Deus e de compromisso com a missão da nossa comunidade. Ao se tornar dizimista, você ajuda nossa paróquia a continuar evangelizando, acolhendo e cuidando de quem precisa."}
-            </p>
-
-            {dizimo && (
-              <LinkButton
-                href={dizimo.href}
-                variant="gold"
-                className="mt-4 w-full"
-                {...(dizimo.externo ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              >
-                <HeartHandshake className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
-                {settings.dizimoCtaLabel || "Quero ser dizimista"}
-              </LinkButton>
-            )}
-          </Card>
-        </section>
-      )}
 
       <div className="rule-gold my-7" />
     </div>

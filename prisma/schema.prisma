@@ -1494,6 +1494,7 @@ model ContribuicaoFinalidade {
   parish        Parish              @relation(fields: [parishId], references: [id], onDelete: Cascade)
   pix           PixDeContribuicao[]
   contribuicoes Contribuicao[]
+  iniciativas   DonationInitiative[]
 
   @@index([parishId, ativa, ordem])
   @@map("contribuicao_finalidades")
@@ -1514,7 +1515,13 @@ model PixDeContribuicao {
   /// Quem gerou. Opcional para o dia em que a secretaria gerar um código de
   /// mesa para a festa da padroeira, sem dono.
   userId        String?     @map("user_id")
-  finalidadeId  String      @map("finalidade_id")
+  /// Ausente É a doação espontânea.
+  ///
+  /// Não existe uma linha "Doação espontânea" a cadastrar: ela é o caso em
+  /// que a pessoa não quis dizer para quê, e obrigar a paróquia a criar uma
+  /// finalidade para representar a ausência de finalidade seria burocracia
+  /// no lugar de generosidade.
+  finalidadeId  String?     @map("finalidade_id")
   /// Em CENTAVOS, ou nulo para o fiel escolher no aplicativo do banco.
   /// Inteiro de propósito: dinheiro em ponto flutuante perde centavo.
   centavos      Int?
@@ -1532,7 +1539,7 @@ model PixDeContribuicao {
 
   parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
   user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
-  finalidade   ContribuicaoFinalidade @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
+  finalidade   ContribuicaoFinalidade? @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
   contribuicao Contribuicao?
   conciliacoes ConciliacaoPix[]
 
@@ -1556,7 +1563,8 @@ model Contribuicao {
   /// De quem foi. Opcional: coleta da missa não tem nome, e Pix avulso pode
   /// nunca ser identificado.
   userId        String?            @map("user_id")
-  finalidadeId  String             @map("finalidade_id")
+  /// Ausente é a doação espontânea — ver `PixDeContribuicao.finalidadeId`.
+  finalidadeId  String?            @map("finalidade_id")
   centavos      Int
   /// O DIA em que entrou, como no extrato.
   recebidaEm    DateTime           @map("recebida_em") @db.Date
@@ -1574,7 +1582,7 @@ model Contribuicao {
 
   parish       Parish                 @relation(fields: [parishId], references: [id], onDelete: Cascade)
   user         User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
-  finalidade   ContribuicaoFinalidade @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
+  finalidade   ContribuicaoFinalidade? @relation(fields: [finalidadeId], references: [id], onDelete: Restrict)
   pix          PixDeContribuicao?     @relation(fields: [pixId], references: [id], onDelete: SetNull)
   conciliacoes ConciliacaoPix[]
 
@@ -1903,13 +1911,20 @@ model DonationInitiative {
   imageUrl    String?          @map("image_url")
   icon        String           @default("obras")
   category    DonationCategory @default(outros)
+  /// Para onde vai o que se contribuir por causa desta iniciativa.
+  ///
+  /// Opcional, e continua opcional de propósito: nem toda iniciativa pede
+  /// dinheiro. "A missão nas periferias" é uma coisa que a paróquia FAZ, e
+  /// transformá-la automaticamente em pedido mudaria o que a seção é.
+  finalidadeId String?         @map("finalidade_id")
   startsOn    DateTime?        @map("starts_on") @db.Date
   endsOn      DateTime?        @map("ends_on") @db.Date
   displayOrder Int             @default(0) @map("display_order")
   active      Boolean          @default(true)
   createdAt   DateTime         @default(now()) @map("created_at")
 
-  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  parish     Parish                  @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  finalidade ContribuicaoFinalidade? @relation(fields: [finalidadeId], references: [id], onDelete: SetNull)
 
   @@index([parishId, active, displayOrder])
   @@map("donation_initiatives")

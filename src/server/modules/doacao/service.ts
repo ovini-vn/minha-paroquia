@@ -130,6 +130,14 @@ export type InitiativeInput = {
   imageUrl: string | null;
   icon: string;
   category: DonationCategory;
+  /**
+   * Para onde vai o que se contribuir por causa desta iniciativa.
+   *
+   * Nulo é o normal: nem toda iniciativa pede dinheiro. Preenchida, o
+   * cartão ganha um link discreto — não um botão — para quem, tendo lido o
+   * que a paróquia está fazendo, quiser ajudar naquilo.
+   */
+  finalidadeId: string | null;
   startsOn: Date | null;
   endsOn: Date | null;
 };

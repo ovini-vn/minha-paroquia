@@ -21,6 +21,8 @@ export function IniciativaForm({
   description = "",
   icon = "obras",
   category = "outros",
+  finalidadeId = "",
+  finalidades = [],
   imageUrl = "",
   startsOn = null,
   endsOn = null,
@@ -32,6 +34,9 @@ export function IniciativaForm({
   description?: string;
   icon?: string;
   category?: string;
+  finalidadeId?: string | null;
+  /** As finalidades cadastradas em Financeiro, para vincular a esta. */
+  finalidades?: { id: string; nome: string }[];
   imageUrl?: string;
   startsOn?: Date | null;
   endsOn?: Date | null;
@@ -74,6 +79,36 @@ export function IniciativaForm({
           className={campo}
         />
       </div>
+
+      {finalidades.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`ini-fim-${id}`} className="text-sm font-medium text-muted">
+            Caminho para contribuir (opcional)
+          </label>
+          <select
+            id={`ini-fim-${id}`}
+            name="finalidadeId"
+            defaultValue={finalidadeId ?? ""}
+            className={campo}
+          >
+            <option value="">Nenhum — esta iniciativa só informa</option>
+            {finalidades.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nome}
+              </option>
+            ))}
+          </select>
+          {/*
+            Dito aqui porque é uma decisão pastoral, não técnica: escolher
+            uma finalidade acrescenta ao cartão um convite a ajudar. Deixar
+            em branco mantém o cartão como notícia do que a paróquia faz.
+          */}
+          <p className="text-[12px] leading-relaxed text-muted">
+            Escolhendo uma finalidade, o cartão ganha um link discreto para quem quiser ajudar
+            nisto. Em branco, ele continua sendo só a notícia do que estamos realizando.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">

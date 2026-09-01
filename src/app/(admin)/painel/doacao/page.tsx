@@ -14,6 +14,7 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { DadosDeDoacaoForm } from "./DadosDeDoacaoForm";
 import { FinalidadeForm } from "./FinalidadeForm";
+import { listarFinalidades } from "@/server/modules/contribuicao/service";
 import { IniciativaForm } from "./IniciativaForm";
 import { AcoesDoItem, EtiquetaOculto } from "./ListaOrdenavel";
 
@@ -24,12 +25,21 @@ export default async function DoacaoAdminPage() {
   if (!session.membership) return null;
 
   const parishId = session.membership.parishId;
-  const [parish, settings, finalidades, iniciativas] = await Promise.all([
-    getParish(parishId),
-    getDonationSettings(parishId),
-    listPurposesForAdmin(parishId),
-    listInitiativesForAdmin(parishId),
-  ]);
+  /*
+   * Duas listas com nomes parecidos, e elas NÃO são a mesma coisa:
+   * `finalidades` são os cartões de "Sua doação ajuda", que contam uma
+   * história; `finalidadesDeContribuicao` são para onde o dinheiro vai, e
+   * vivem em Financeiro. Ligar a iniciativa à primeira apontaria o caminho
+   * de contribuir para um texto.
+   */
+  const [parish, settings, finalidades, iniciativas, finalidadesDeContribuicao] =
+    await Promise.all([
+      getParish(parishId),
+      getDonationSettings(parishId),
+      listPurposesForAdmin(parishId),
+      listInitiativesForAdmin(parishId),
+      listarFinalidades(parishId),
+    ]);
 
   const podeEnviarArquivo = isUploadConfigured();
   const motivoIndisponivel = diagnosticoDoUpload();
@@ -163,6 +173,8 @@ export default async function DoacaoAdminPage() {
                       icon={i.icon}
                       category={i.category}
                       imageUrl={i.imageUrl ?? ""}
+                      finalidadeId={i.finalidadeId}
+                      finalidades={finalidadesDeContribuicao}
                       startsOn={i.startsOn}
                       endsOn={i.endsOn}
                       podeEnviarArquivo={podeEnviarArquivo}
@@ -178,6 +190,7 @@ export default async function DoacaoAdminPage() {
         <Card className="mt-2.5">
           <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova iniciativa</p>
           <IniciativaForm
+            finalidades={finalidadesDeContribuicao}
             podeEnviarArquivo={podeEnviarArquivo}
             motivoIndisponivel={motivoIndisponivel}
           />

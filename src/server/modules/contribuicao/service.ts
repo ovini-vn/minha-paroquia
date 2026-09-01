@@ -143,11 +143,18 @@ export function gerarPixDeContribuicao(
   input: GerarPixInput & { parishId: string; userId: string | null },
 ) {
   return withTenantContext(input.parishId, async (tx) => {
-    const finalidade = await tx.contribuicaoFinalidade.findFirst({
-      where: { id: input.finalidadeId, parishId: input.parishId, ativa: true },
-      select: { id: true, nome: true },
-    });
-    if (!finalidade) throw new NotFoundError("Finalidade");
+    /*
+     * Sem finalidade é doação espontânea, e é um caminho válido — não um
+     * erro. Só se verifica o que foi escolhido; a ausência não precisa
+     * existir em lugar nenhum.
+     */
+    const finalidade = input.finalidadeId
+      ? await tx.contribuicaoFinalidade.findFirst({
+          where: { id: input.finalidadeId, parishId: input.parishId, ativa: true },
+          select: { id: true, nome: true },
+        })
+      : null;
+    if (input.finalidadeId && !finalidade) throw new NotFoundError("Finalidade");
 
     const [settings, parish] = await Promise.all([
       tx.donationSettings.findUnique({
@@ -184,7 +191,7 @@ export function gerarPixDeContribuicao(
       data: {
         parishId: input.parishId,
         userId: input.userId,
-        finalidadeId: finalidade.id,
+        finalidadeId: finalidade?.id ?? null,
         centavos: input.valor,
         identificador,
         brcode,
@@ -264,17 +271,19 @@ export function lancarContribuicao(
   input: LancarContribuicaoInput & { parishId: string; registradaPor: string },
 ) {
   return withTenantContext(input.parishId, async (tx) => {
-    const finalidade = await tx.contribuicaoFinalidade.findFirst({
-      where: { id: input.finalidadeId, parishId: input.parishId },
-      select: { id: true, ehDizimo: true },
-    });
-    if (!finalidade) throw new NotFoundError("Finalidade");
+    const finalidade = input.finalidadeId
+      ? await tx.contribuicaoFinalidade.findFirst({
+          where: { id: input.finalidadeId, parishId: input.parishId },
+          select: { id: true, ehDizimo: true },
+        })
+      : null;
+    if (input.finalidadeId && !finalidade) throw new NotFoundError("Finalidade");
 
     const contribuicao = await tx.contribuicao.create({
       data: {
         parishId: input.parishId,
         userId: input.userId ?? null,
-        finalidadeId: finalidade.id,
+        finalidadeId: finalidade?.id ?? null,
         centavos: input.valor!,
         recebidaEm: input.recebidaEm,
         forma: input.forma,
@@ -283,7 +292,7 @@ export function lancarContribuicao(
       },
     });
 
-    if (finalidade.ehDizimo && input.userId) {
+    if (finalidade?.ehDizimo && input.userId) {
       await marcarParticipacaoNoDizimo(tx, {
         parishId: input.parishId,
         userId: input.userId,

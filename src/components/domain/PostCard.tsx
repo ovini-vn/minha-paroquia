@@ -1,4 +1,5 @@
 import { Headphones, Video } from "lucide-react";
+import type { ReactNode } from "react";
 import { Card } from "@/components/ui/Card";
 import { Retrato } from "@/components/ui/Retrato";
 import { formatDateTime } from "@/lib/date";
@@ -21,7 +22,22 @@ const MEDIA: Record<string, { label: string; icon: typeof Headphones }> = {
   video: { label: "Assistir vídeo", icon: Video },
 };
 
-export function PostCard({ post, assinatura }: { post: Post; assinatura: Assinatura }) {
+export function PostCard({
+  post,
+  assinatura,
+  gestao,
+}: {
+  post: Post;
+  assinatura: Assinatura;
+  /**
+   * O que quem pode mexer vê no pé do cartão.
+   *
+   * Vem de fora porque o cartão não decide permissão: ele mostra a Palavra,
+   * e quem sabe se esta pessoa pode corrigir esta publicação é a página que
+   * tem a sessão na mão.
+   */
+  gestao?: ReactNode;
+}) {
   const media = MEDIA[post.mediaType];
 
   return (
@@ -59,6 +75,8 @@ export function PostCard({ post, assinatura }: { post: Post; assinatura: Assinat
           {media?.label ?? "Abrir"}
         </a>
       )}
+
+      {gestao}
     </Card>
   );
 }

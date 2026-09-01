@@ -43,6 +43,7 @@ export const PERMISSIONS = {
   DASHBOARD_PARISH_VIEW: "dashboard.parish.view",
   AGENDA_MANAGE: "agenda.manage",
   POSTS_CREATE: "posts.create",
+  POSTS_MANAGE: "posts.manage",
   AVAILABILITY_MANAGE: "availability.manage",
   OPPORTUNITIES_MANAGE: "opportunities.manage",
   CATEQUESE_MANAGE: "catequese.manage",
@@ -67,6 +68,7 @@ export const PERMISSION_NAMES: Record<PermissionCode, string> = {
   [PERMISSIONS.DASHBOARD_PARISH_VIEW]: "Ver painel da paróquia",
   [PERMISSIONS.AGENDA_MANAGE]: "Gerenciar agenda e eventos",
   [PERMISSIONS.POSTS_CREATE]: "Publicar Palavra do Padre",
+  [PERMISSIONS.POSTS_MANAGE]: "Corrigir ou apagar qualquer Palavra do Padre",
   [PERMISSIONS.AVAILABILITY_MANAGE]: "Gerenciar disponibilidade de atendimento",
   [PERMISSIONS.OPPORTUNITIES_MANAGE]: "Gerenciar oportunidades de servir",
   [PERMISSIONS.CATEQUESE_MANAGE]: "Gerenciar catequese",
@@ -106,6 +108,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
     PERMISSIONS.PLANO_MANAGE,
+    PERMISSIONS.POSTS_MANAGE,
   ],
   /**
    * Administra a paróquia sem ser clero.
@@ -135,6 +138,7 @@ export const ROLE_PERMISSIONS: Record<RoleCode, PermissionCode[]> = {
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
     PERMISSIONS.PRAYER_REQUESTS_MODERATE,
     PERMISSIONS.PLANO_MANAGE,
+    PERMISSIONS.POSTS_MANAGE,
   ],
   SECRETARIA: [
     PERMISSIONS.MEMBER_PASSWORD_RESET,

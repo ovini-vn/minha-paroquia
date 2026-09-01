@@ -754,6 +754,18 @@ model Post {
   mediaType       PostMediaType @default(texto)
   contentText     String?       @map("content_text")
   mediaUrl        String?       @map("media_url")
+  /// Quem publicou.
+  ///
+  /// Era o único modelo do app sem isto, e a falta aparecia na hora de
+  /// permitir a edição: sem autor registrado não há como dizer "só quem
+  /// escreveu pode mexer". Quando o autor é clero, `priestProfileId` já
+  /// respondia; quando é a secretaria publicando em nome do pároco, não
+  /// respondia ninguém.
+  ///
+  /// Opcional porque as publicações anteriores a esta coluna não têm
+  /// resposta — inclusive as que entraram pelo importador do calendário.
+  /// Nelas, só quem administra a paróquia pode mexer.
+  createdBy       String?       @map("created_by")
   publishedAt     DateTime      @default(now()) @map("published_at")
   createdAt       DateTime      @default(now()) @map("created_at")
 

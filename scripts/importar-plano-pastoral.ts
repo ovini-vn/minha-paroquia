@@ -100,7 +100,8 @@ function lerPalavraDosPadres(caminho: string): string {
     .map((m) => (m[1] ?? "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim())
     .filter(Boolean);
   if (paragrafos.length === 0) throw new Error("A palavra dos padres veio vazia.");
-  return paragrafos.join("\n\n");
+  // A assinatura termina em "e CPP", e o mural não tem glossário ao lado.
+  return porExtenso(paragrafos.join("\n\n"));
 }
 
 const DIAS: Record<string, number> = {

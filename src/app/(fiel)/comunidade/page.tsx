@@ -9,13 +9,15 @@ import {
   Users,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
+import { podeAlcancar } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listPriests, getParoco } from "@/server/modules/priests/service";
 import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { temPlanoPublicado } from "@/server/modules/plano/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
-import { listRecentPosts } from "@/server/modules/posts/service";
+import { listRecentPosts, podeMexerNaPalavra } from "@/server/modules/posts/service";
+import { GestaoDaPalavra } from "@/components/domain/GestaoDaPalavra";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
 import { getParish } from "@/server/modules/parishes/service";
 import { Card } from "@/components/ui/Card";
@@ -52,6 +54,15 @@ export default async function ComunidadePage() {
 
   const parishId = session.membership.parishId;
   const canPublish = session.permissions.includes(PERMISSIONS.POSTS_CREATE);
+
+  /*
+   * A mesma regra que a ação aplica no servidor, para a tela não oferecer o
+   * que a guarda vai recusar — nem esconder o que ela permitiria.
+   */
+  const quemMexe = {
+    userId: session.userId,
+    administraPalavra: podeAlcancar(session, PERMISSIONS.POSTS_MANAGE),
+  };
   const [parish, parocoRegistrado, priests, celebrations, events, posts, avisos, temPlano] =
     await Promise.all([
       getParish(parishId),
@@ -234,6 +245,16 @@ export default async function ComunidadePage() {
                 key={post.id}
                 post={post}
                 assinatura={assinaturaDoPost(post.priestProfile, paroco)}
+                gestao={
+                  podeMexerNaPalavra(post, quemMexe) ? (
+                    <GestaoDaPalavra
+                      postId={post.id}
+                      mediaType={post.mediaType}
+                      contentText={post.contentText}
+                      mediaUrl={post.mediaUrl}
+                    />
+                  ) : undefined
+                }
               />
             ))}
           </div>

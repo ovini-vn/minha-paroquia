@@ -93,7 +93,13 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
   });
 
   it("publicar uma palavra do padre notifica os membros ativos da paróquia", async () => {
-    await createPost({ parishId, priestProfileId, mediaType: "texto", contentText: "Mensagem de teste" });
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "texto",
+      contentText: "Mensagem de teste",
+    });
 
     const notifications = await listMyNotifications(parishId, fielId);
     expect(notifications.some((n) => n.title === "Nova Palavra do Padre")).toBe(true);
@@ -106,7 +112,13 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
     const pastoralBefore = before.filter((n) => n.category === "pastoral").length;
 
     await createSchedule(parishId, celebrationId, { roleType: "salmista", userId: fielId });
-    await createPost({ parishId, priestProfileId, mediaType: "texto", contentText: "Outra mensagem" });
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "texto",
+      contentText: "Outra mensagem",
+    });
 
     const after = await listMyNotifications(parishId, fielId);
     const pastoralAfter = after.filter((n) => n.category === "pastoral").length;

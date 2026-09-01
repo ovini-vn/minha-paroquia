@@ -10,7 +10,9 @@
  * mudança é pedida, mostrada linha por linha e só então aplicada.
  *
  * Toca em tudo que o fiel LÊ: título, local e descrição de celebração e
- * evento, nome e horário de pastoral, e o plano pastoral inteiro.
+ * evento, nome e horário de pastoral, o plano pastoral inteiro e a Palavra
+ * do Padre — esta última esquecida na primeira versão, e a assinatura da
+ * palavra dos padres do calendário terminava em "e CPP".
  *
  * Uso:
  *   npx tsx scripts/siglas-por-extenso.ts [--aplicar]
@@ -94,6 +96,16 @@ async function main() {
             ...(meetsWhere ? { meetsWhere } : {}),
           },
         });
+      }
+    }
+
+    const publicacoes = await tx.post.findMany({ select: { id: true, contentText: true } });
+    for (const post of publicacoes) {
+      const contentText = trocar(post.contentText);
+      if (!contentText) continue;
+      mudancas.push(`palavra     ${(post.contentText ?? "").slice(0, 60)}...`);
+      if (aplicar) {
+        await tx.post.update({ where: { id: post.id }, data: { contentText } });
       }
     }
 

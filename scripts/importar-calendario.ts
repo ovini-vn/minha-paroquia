@@ -39,6 +39,7 @@ import { getFeastOn } from "../src/lib/liturgical-feasts";
 import { brasiliaWallClockToUtc, hojeEmBrasilia } from "../src/lib/brasilia";
 import { occurrencesBetween, type RecurrenceRule } from "../src/lib/recurrence";
 import { porExtenso } from "../src/lib/siglas";
+import { categoriaDoCalendario } from "../src/lib/agenda-categorias";
 import type { CelebrationType } from "@prisma/client";
 
 export type Marcacao = { t: string; c: string; m?: string };
@@ -381,6 +382,8 @@ async function main() {
                   startsAt: quando,
                   location: local,
                   semHora: minutos === null,
+                  // Sem `categoria` aqui de propósito: a celebração já diz o
+                  // que é pelo `type`, e a cor da agenda sai dele.
                   createdBy: autor.userId,
                 },
               });
@@ -389,11 +392,15 @@ async function main() {
           } else {
             const existe = await tx.event.findFirst({
               where: { parishId: paroquia.id, startsAt: quando, title: marcacao.t },
-              select: { id: true, location: true },
+              select: { id: true, location: true, categoria: true },
             });
             if (existe) {
-              if (aplicar && existe.location !== local) {
-                await tx.event.update({ where: { id: existe.id }, data: { location: local } });
+              const categoria = categoriaDoCalendario(marcacao.c);
+              const arrumar: { location?: string | null; categoria?: typeof categoria } = {};
+              if (existe.location !== local) arrumar.location = local;
+              if (existe.categoria !== categoria) arrumar.categoria = categoria;
+              if (aplicar && Object.keys(arrumar).length > 0) {
+                await tx.event.update({ where: { id: existe.id }, data: arrumar });
                 corrigidos++;
               }
               jaExistiam++;

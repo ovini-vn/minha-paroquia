@@ -1,4 +1,5 @@
 import { withTenantContext } from "@/server/db/tenant-context";
+import { brasiliaWallClockToUtc } from "@/lib/brasilia";
 import type { CreateEventInput, UpdateEventInput } from "./schema";
 
 export function createEvent(input: CreateEventInput & { parishId: string; createdBy: string }) {
@@ -68,5 +69,18 @@ export function setEventStatus(parishId: string, id: string, status: "published"
 export function deleteEvent(parishId: string, id: string) {
   return withTenantContext(parishId, (tx) =>
     tx.event.deleteMany({ where: { id, parishId } }),
+  );
+}
+
+/** Os eventos de um mês inteiro. Ver `listCelebrationsInMonth` sobre o fuso. */
+export function listEventsInMonth(parishId: string, ano: number, mes: number) {
+  const de = brasiliaWallClockToUtc(ano, mes - 1, 1, 0);
+  const ate = brasiliaWallClockToUtc(mes === 12 ? ano + 1 : ano, mes === 12 ? 0 : mes, 1, 0);
+
+  return withTenantContext(parishId, (tx) =>
+    tx.event.findMany({
+      where: { parishId, startsAt: { gte: de, lt: ate }, status: "published" },
+      orderBy: { startsAt: "asc" },
+    }),
   );
 }

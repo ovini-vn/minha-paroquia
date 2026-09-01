@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { withTenantContext, withPlatformContext } from "@/server/db/tenant-context";
+import { brasiliaWallClockToUtc } from "@/lib/brasilia";
 import { occurrencesBetween, type RecurrenceRule } from "@/lib/recurrence";
 import { ValidationError } from "@/server/shared/errors";
 import type { CreateCelebrationInput, CreateCelebrationScheduleInput } from "./schema";
@@ -392,4 +393,28 @@ export async function generateAllUpcomingOccurrences(agora = new Date()): Promis
   }
 
   return { paroquias: parishIds.length, criadas };
+}
+
+/**
+ * As celebrações de um mês inteiro — inclusive as que já passaram.
+ *
+ * A agenda por mês olha para trás e para a frente: quem abre "setembro" no
+ * dia 20 quer o mês, e não os dez dias que sobraram. É a diferença entre um
+ * calendário e uma fila.
+ *
+ * A janela é em horário de Brasília e vai da meia-noite do dia 1 até a
+ * meia-noite do dia 1 do mês seguinte. Montá-la com `new Date(ano, mes)`
+ * usaria o fuso de quem executa — e em produção quem executa é UTC.
+ */
+export function listCelebrationsInMonth(parishId: string, ano: number, mes: number) {
+  const de = brasiliaWallClockToUtc(ano, mes - 1, 1, 0);
+  const ate = brasiliaWallClockToUtc(mes === 12 ? ano + 1 : ano, mes === 12 ? 0 : mes, 1, 0);
+
+  return withTenantContext(parishId, (tx) =>
+    tx.celebration.findMany({
+      where: { parishId, startsAt: { gte: de, lt: ate }, canceledAt: null },
+      orderBy: { startsAt: "asc" },
+      include: { priestProfile: { include: { user: { select: { fullName: true } } } } },
+    }),
+  );
 }

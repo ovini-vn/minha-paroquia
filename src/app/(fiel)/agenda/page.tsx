@@ -1,32 +1,75 @@
 import type { Metadata } from "next";
+import type { CategoriaDaAgenda } from "@prisma/client";
 import { CalendarDays, Church, PartyPopper } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
-import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
-import { listUpcomingEvents } from "@/server/modules/events/service";
+import { listCelebrationsInMonth } from "@/server/modules/celebrations/service";
+import { listEventsInMonth } from "@/server/modules/events/service";
 import { listPriests } from "@/server/modules/priests/service";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
+import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/Typography";
+import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { CATEGORIAS, ORDEM_DA_LEGENDA, categoriaDaCelebracao } from "@/lib/agenda-categorias";
+import { hojeEmBrasilia, diaEmBrasilia } from "@/lib/brasilia";
+import { formatDateOnly, formatDateTime } from "@/lib/date";
 import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
-import { ProximosEncontros, type Encontro } from "@/components/domain/ProximosEncontros";
+import {
+  CalendarioDoMes,
+  LegendaDaAgenda,
+  type DiaDoCalendario,
+} from "@/components/domain/CalendarioDoMes";
 import { CreateCelebrationForm } from "@/app/(admin)/painel/CreateCelebrationForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
+import { NavegacaoDoMes, nomeDoMes } from "./_components/NavegacaoDoMes";
 
-/**
- * A agenda da PARÓQUIA: o que vai acontecer, em ordem.
- *
- * Antes esta tela agrupava por dia e misturava os atendimentos pessoais de
- * quem estava olhando — o que fazia "Agenda" significar duas coisas ao mesmo
- * tempo. Atendimento é assunto pessoal e vive em Eu → Meus atendimentos.
- *
- * A lista é o mesmo componente da Comunidade, para as duas não divergirem
- * de novo: antes só a de lá mostrava o cartaz do evento.
- */
 export const metadata: Metadata = { title: "Agenda" };
 
-export default async function AgendaPage() {
+type ItemDaAgenda = {
+  id: string;
+  startsAt: Date;
+  label: string;
+  location: string | null;
+  semHora: boolean;
+  categoria: CategoriaDaAgenda;
+};
+
+/** "2026-09" -> {ano, mes}. Mês inválido cai no mês corrente, sem erro. */
+function lerMes(bruto: string | undefined): { ano: number; mes: number } {
+  const hoje = hojeEmBrasilia();
+  const achado = /^(\d{4})-(\d{2})$/.exec(bruto ?? "");
+  if (!achado) return { ano: Number(hoje.slice(0, 4)), mes: Number(hoje.slice(5, 7)) };
+  const ano = Number(achado[1]);
+  const mes = Number(achado[2]);
+  if (mes < 1 || mes > 12 || ano < 2000 || ano > 2100) {
+    return { ano: Number(hoje.slice(0, 4)), mes: Number(hoje.slice(5, 7)) };
+  }
+  return { ano, mes };
+}
+
+/**
+ * A agenda da PARÓQUIA, mês a mês.
+ *
+ * Era uma fila dos próximos trinta compromissos. Com o calendário pastoral
+ * do ano dentro do app são quatrocentos, e uma fila não responde à pergunta
+ * que se faz a um calendário: "como está novembro?".
+ *
+ * Por isso o mês é a unidade, e ele olha para trás também — quem abre
+ * setembro no dia 20 quer o mês, não os dez dias que sobraram.
+ *
+ * DUAS VISÕES da mesma coisa: a lista responde "o que vai acontecer", o
+ * calendário responde "como está o mês". Ambas por endereço, para poderem
+ * ser compartilhadas e para o botão de voltar funcionar.
+ *
+ * Atendimento pessoal continua fora daqui: é assunto de quem olha, e vive
+ * em Eu → Meus atendimentos.
+ */
+export default async function AgendaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mes?: string; vista?: string }>;
+}) {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
@@ -38,43 +81,69 @@ export default async function AgendaPage() {
     );
   }
 
+  const { mes: mesBruto, vista: vistaBruta } = await searchParams;
+  const { ano, mes } = lerMes(mesBruto);
+  const vista = vistaBruta === "calendario" ? "calendario" : "lista";
+
   const parishId = session.membership.parishId;
   const podeLancar =
     session.isPlatformAdmin || session.permissions.includes(PERMISSIONS.AGENDA_MANAGE);
 
-  const [celebrations, events, priests] = await Promise.all([
-    listUpcomingCelebrations(parishId, 30),
-    listUpcomingEvents(parishId, 30),
+  const [celebracoes, eventos, priests] = await Promise.all([
+    listCelebrationsInMonth(parishId, ano, mes),
+    listEventsInMonth(parishId, ano, mes),
     podeLancar ? listPriests(parishId) : Promise.resolve([]),
   ]);
 
-  const encontros: Encontro[] = [
-    ...celebrations.map((c) => ({
+  const itens: ItemDaAgenda[] = [
+    ...celebracoes.map((c) => ({
       id: `celebration-${c.id}`,
       startsAt: c.startsAt,
       label: c.title || CELEBRATION_TYPE_LABELS[c.type],
       location: c.location,
-      description: null,
-      imageUrl: null,
       semHora: c.semHora,
+      categoria: categoriaDaCelebracao(c.type),
     })),
-    ...events.map((e) => ({
+    ...eventos.map((e) => ({
       id: `event-${e.id}`,
       startsAt: e.startsAt,
       label: e.title,
       location: e.location,
-      description: e.description,
-      imageUrl: e.imageUrl,
       semHora: e.semHora,
+      categoria: e.categoria,
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
+  /*
+   * Agrupado por DIA, em horário de Brasília.
+   *
+   * `diaEmBrasilia` e não `toISOString()`: depois das 21h o dia em UTC já é
+   * o seguinte, e o compromisso da missa das 19h30 cairia no dia errado da
+   * grade. É o erro que já apareceu três vezes neste projeto.
+   */
+  const porDia = new Map<string, ItemDaAgenda[]>();
+  for (const item of itens) {
+    const chave = item.semHora
+      ? item.startsAt.toISOString().slice(0, 10)
+      : diaEmBrasilia(item.startsAt);
+    const lista = porDia.get(chave);
+    if (lista) lista.push(item);
+    else porDia.set(chave, [item]);
+  }
+
+  const diasDoCalendario: DiaDoCalendario[] = [...porDia.entries()].map(([chave, doDia]) => ({
+    chave,
+    dia: Number(chave.slice(8, 10)),
+    categorias: [...new Set(doDia.map((i) => i.categoria))],
+    quantos: doDia.length,
+  }));
+
+  const presentes = ORDEM_DA_LEGENDA.filter((cat) => itens.some((i) => i.categoria === cat));
+  const hoje = hojeEmBrasilia();
+
   return (
     <div className="flex flex-col">
-      <PageHeader
-        title="Agenda"
-        description="Os próximos encontros da sua comunidade."
-      />
+      <PageHeader title="Agenda" description="Os compromissos da sua comunidade, mês a mês." />
 
       {podeLancar && (
         <AcoesRapidas
@@ -100,7 +169,81 @@ export default async function AgendaPage() {
         />
       )}
 
-      <ProximosEncontros encontros={encontros} />
+      <div className="mt-2 flex flex-col gap-4">
+        <NavegacaoDoMes ano={ano} mes={mes} vista={vista} />
+        <LegendaDaAgenda categorias={presentes} />
+      </div>
+
+      {itens.length === 0 ? (
+        <div className="mt-5">
+          <EmptyState
+            icon={CalendarDays}
+            title={`Nada marcado em ${nomeDoMes(mes)}`}
+            description="Use as setas acima para ver outro mês."
+          />
+        </div>
+      ) : (
+        <>
+          {/*
+            Largura travada: numa tela de 1280px a grade esticada daria
+            células enormes com pontos minúsculos no meio — o oposto do que
+            uma grade de mês serve para fazer. Trinta e seis rem é a largura
+            em que o mês ainda se lê de um golpe.
+          */}
+          {vista === "calendario" && (
+            <Card className="mt-5 max-w-[36rem]">
+              <CalendarioDoMes ano={ano} mes={mes} dias={diasDoCalendario} />
+              <p className="mt-3 border-t border-border pt-3 text-[12px] leading-relaxed text-muted">
+                Toque num dia para ver o que está marcado nele.
+              </p>
+            </Card>
+          )}
+
+          <div className="mt-5 flex flex-col gap-5">
+            {[...porDia.entries()].map(([chave, doDia]) => (
+              <section key={chave} id={`dia-${chave}`} className="scroll-mt-24">
+                <Eyebrow
+                  tone={chave === hoje ? "accent" : "muted"}
+                  className="mb-2"
+                >
+                  {formatDateOnly(new Date(`${chave}T12:00:00.000Z`))}
+                  {chave === hoje ? " · hoje" : ""}
+                </Eyebrow>
+
+                <div className="flex flex-col gap-2">
+                  {doDia.map((item) => (
+                    <Card key={item.id} className="flex items-start gap-3 py-3">
+                      {/*
+                        A faixa de cor no lugar de um ícone: ela liga o item
+                        à legenda e à grade sem ocupar largura, que no
+                        celular é o que falta.
+                      */}
+                      <span
+                        className="mt-0.5 h-[38px] w-[3px] shrink-0 rounded-full"
+                        style={{
+                          backgroundColor: `rgb(var(--cat-${CATEGORIAS[item.categoria].token}))`,
+                        }}
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14.5px] font-medium leading-snug text-foreground">
+                          {item.label}
+                        </p>
+                        <p className="mt-0.5 text-[12.5px] text-muted">
+                          {item.semHora
+                            ? CATEGORIAS[item.categoria].rotulo
+                            : `${formatDateTime(item.startsAt).split(", ").pop()} · ${CATEGORIAS[item.categoria].rotulo}`}
+                          {item.location ? ` · ${item.location}` : ""}
+                        </p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="rule-gold my-7" />
     </div>

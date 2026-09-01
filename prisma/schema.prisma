@@ -675,6 +675,11 @@ model Event {
   /// "00:00" ou uma hora que ninguém marcou. As duas saídas são piores que
   /// dizer a verdade: é no dia 11, e a hora se confirma depois.
   semHora     Boolean     @default(false) @map("sem_hora")
+  /// Para dar cor na agenda. Ver `CategoriaDaAgenda`.
+  ///
+  /// Só no evento: a celebração já diz o que é pelo `type`, e duas fontes
+  /// para a mesma pergunta divergiriam no primeiro dia.
+  categoria   CategoriaDaAgenda @default(outro)
   location    String?
   // Cartaz do evento. URL, como logoUrl da paróquia e photoUrl do
   // sacerdote — o app não tem upload de arquivo em lugar nenhum.
@@ -1653,6 +1658,31 @@ model ConciliacaoPix {
 
   @@index([parishId, createdAt])
   @@map("conciliacoes_pix")
+}
+
+/// O tipo de compromisso, para quem lê a agenda.
+///
+/// Seis famílias, e não as doze categorias do calendário impresso: a lista
+/// existe para dar COR a uma grade de mês, e doze cores numa grade de
+/// telefone não se distinguem — viram enfeite.
+///
+/// O agrupamento é o do fiel, não o da secretaria: quem abre a agenda
+/// pergunta "é missa, é reunião, é festa?", e não em que gaveta do plano
+/// pastoral aquilo foi arquivado.
+enum CategoriaDaAgenda {
+  missa
+  /// Adoração, novena, tríduo, terço — o que se reza sem ser a missa.
+  oracao
+  /// Batizado, casamento, crisma, primeira eucaristia.
+  sacramento
+  /// Formação, curso, reunião de conselho, encontro de coordenação.
+  formacao
+  /// Pastorais, juventude, catequese, visita, grupo bíblico.
+  comunidade
+  /// Festa da padroeira, quermesse, gincana, promoção.
+  festa
+  /// O que não coube — fica na cor neutra, e não numa cor errada.
+  outro
 }
 
 model LiturgicalAvailability {

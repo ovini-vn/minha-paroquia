@@ -55,6 +55,30 @@
   --color-error: 158 59 51;
   --color-error-tint: 248 237 235;
 
+  /*
+   * As cores das categorias da agenda.
+   *
+   * Tokens PRÓPRIOS, e não os de estado do app: `error` é vermelho porque
+   * algo deu errado, e usar vermelho para "festa" ensinaria a interface a
+   * mentir.
+   *
+   * Também não seguem o tempo litúrgico. `--color-primary` muda no Advento
+   * e na Quaresma, e uma legenda que muda de cor conforme o mês deixa de ser
+   * legenda. Aqui a cor é estável o ano inteiro, de propósito.
+   *
+   * Todas medidas contra a superfície: a menor é 5,27:1 (festas), acima do
+   * 4,5:1 que texto pequeno exige. A primeira escolha de "festas" dava
+   * 4,29 e foi escurecida.
+   */
+  --cat-missa: 104 62 158;
+  --cat-oracao: 30 84 140;
+  --cat-sacramento: 21 104 92;
+  --cat-formacao: 140 90 20;
+  --cat-comunidade: 154 70 44;
+  --cat-festa: 134 102 18;
+  --cat-outro: 104 100 112;
+
+
   /* Sombras — extremamente suaves, nunca "card pesado" */
   --shadow-1: 0 1px 2px rgb(36 33 36 / 0.04);
   --shadow-2: 0 8px 24px -14px rgb(36 33 36 / 0.22);
@@ -155,6 +179,16 @@
   --color-warning-tint: 45 34 18;
   --color-error: 224 128 120;
   --color-error-tint: 48 26 24;
+
+  /* As mesmas famílias, claras o bastante para o fundo escuro. */
+  --cat-missa: 190 156 226;
+  --cat-oracao: 130 178 234;
+  --cat-sacramento: 110 200 184;
+  --cat-formacao: 226 176 96;
+  --cat-comunidade: 234 152 124;
+  --cat-festa: 226 196 112;
+  --cat-outro: 172 166 180;
+
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-2: 0 8px 24px -14px rgb(0 0 0 / 0.6);
   --shadow-3: 0 24px 60px -30px rgb(0 0 0 / 0.8);

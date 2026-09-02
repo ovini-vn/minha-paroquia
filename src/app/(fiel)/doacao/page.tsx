@@ -192,10 +192,22 @@ export default async function DoacaoPage() {
         dízimo, que vem logo abaixo em dourado, e a tela passaria a ter dois
         pedidos gritando ao mesmo tempo.
 
-        A pergunta do título é sobre o NOME, não sobre o valor. "Quer que
-        sua oferta seja identificada?" descrevia uma propriedade técnica do
-        Pix; "chegue com o seu nome" descreve o que a pessoa ganha — a
-        paróquia sabe quem ofertou e para quê.
+        O TÍTULO NÃO PERGUNTA MAIS SOBRE IDENTIFICAÇÃO, e a razão é que a
+        pergunta era falsa. Todo Pix gerado aqui nasce com identificador e
+        preso a quem o gerou — não existe o caminho anônimo que a pergunta
+        oferecia. Quem não escolhe finalidade não fica anônimo: fica como
+        oferta espontânea, que é uma escolha, e a paróquia aplica onde for
+        mais necessário. Oferecer uma opção que não existe é pior do que não
+        falar no assunto.
+
+        No lugar da pergunta técnica, PERTENCIMENTO. Quem abre esta tela não
+        quer contratar um serviço de identificação: quer fazer parte do que
+        a paróquia está construindo. É a mesma diferença entre "seu depósito
+        foi registrado" e "esta obra também é sua".
+
+        A frase do valor fica, e é a única que precisa continuar dizendo o
+        que NÃO acontece: o app não sugere quantia nenhuma. Numa tela sobre
+        pertencer, o silêncio sobre o valor seria lido como expectativa.
       */}
       {chaveFormatada && (
         <section className="pt-7">
@@ -205,17 +217,19 @@ export default async function DoacaoPage() {
                 <HandHeart className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
               </span>
               <p className="font-serif text-[18px] font-semibold leading-tight text-foreground">
-                Quer que sua oferta chegue com o seu nome?
+                Faça parte das obras da nossa paróquia
               </p>
             </div>
 
             <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
-              Gere um código por finalidade — dízimo, catequese, festa — e acompanhe o seu
-              histórico. O valor é sempre seu: o app não sugere quantia nenhuma.
+              Cada oferta entra no que a comunidade está construindo — a catequese que forma, a
+              igreja que se mantém de pé, a mão que chega a quem precisa. Escolha onde a sua vai
+              ajudar e acompanhe aqui o que você já ofertou. O valor é sempre seu: o app não
+              sugere quantia nenhuma.
             </p>
 
             <LinkButton href="/contribuir" className="mt-4 w-full">
-              Quero ofertar
+              Quero fazer parte
             </LinkButton>
           </Card>
         </section>
@@ -324,11 +338,13 @@ export default async function DoacaoPage() {
       )}
 
       {/*
-        A ponte para a contribuição identificada.
+        Não há chave PIX solta nesta tela, e é de propósito.
         
-        Esta tela mostra UMA chave para tudo — serve para quem quer só ofertar.
-        Quem quer que a paróquia saiba a que se refere (dízimo, catequese,
-        festa) precisa de um código com identificador, e é ali que ele nasce.
+        `chaveFormatada` só faz de porteiro: sem chave cadastrada não há como
+        ofertar, e o convite some. A chave em si nunca é exibida — copiá-la
+        daqui geraria um Pix sem identificador, que cairia na conta sem dizer
+        de quem é nem para quê, e alguém teria de adivinhar na conciliação.
+        Todo caminho desta tela passa por um código gerado com identificador.
       */}
 
       <div className="rule-gold my-7" />

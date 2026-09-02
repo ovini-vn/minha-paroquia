@@ -52,10 +52,78 @@ export async function notifyManyUsers(
   }
 }
 
-export function listMyNotifications(parishId: string, userId: string, limit = 30) {
+/**
+ * O recorte da lista: uma JANELA DE TEMPO, e não um número de linhas.
+ *
+ * Antes esta função cortava nas 30 mais recentes, sem janela e sem
+ * paginação. Medido em 02/09/2026 no banco de desenvolvimento: 93
+ * notificações por pessoa em 7 dias. A conta é curta — passados uns dias
+ * sem abrir o app, tudo o que ficou para trás da trigésima linha saía da
+ * tela para sempre, e não havia como voltar. O aviso da escala que a
+ * pessoa assumiu desaparecia junto.
+ *
+ * Um corte por contagem é sempre uma mentira sobre o tempo: "as 30 mais
+ * recentes" quer dizer dois dias para quem recebe muito e dois meses para
+ * quem recebe pouco, e ninguém consegue adivinhar qual é o seu caso. Uma
+ * janela de dias diz a mesma coisa para todo mundo.
+ */
+export type JanelaDeNotificacoes = {
+  /** Dias para trás a partir de agora. Ausente ou nulo = desde o começo. */
+  dias?: number | null;
+  apenasNaoLidas?: boolean;
+};
+
+/**
+ * Teto de segurança, e não recorte.
+ *
+ * "Desde o começo" numa conta antiga pode ser muita linha, e a tela precisa
+ * de um fim. Diferente do corte antigo, este AVISA quando morde: pedimos
+ * uma linha a mais do que mostramos, e quem chama sabe que sobrou coisa —
+ * mesmo padrão da busca da Bíblia (`buscar`, com `truncado`).
+ */
+export const TETO_DE_NOTIFICACOES = 300;
+
+export function listMyNotifications(
+  parishId: string,
+  userId: string,
+  janela: JanelaDeNotificacoes = {},
+) {
+  const desde = janela.dias ? new Date(Date.now() - janela.dias * 86_400_000) : undefined;
   return withTenantContext(parishId, (tx) =>
-    tx.notification.findMany({ where: { parishId, userId }, orderBy: { createdAt: "desc" }, take: limit }),
+    tx.notification.findMany({
+      where: {
+        parishId,
+        userId,
+        ...(desde ? { createdAt: { gte: desde } } : {}),
+        ...(janela.apenasNaoLidas ? { readAt: null } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+      take: TETO_DE_NOTIFICACOES + 1,
+    }),
   );
+}
+
+/**
+ * Quantas há dentro da janela, para as tarjas — e no banco, não na lista.
+ *
+ * Contar em memória sobre uma lista já cortada foi o defeito que este
+ * arquivo tinha: o botão "marcar as não lidas" lia o número da lista
+ * truncada e dizia 30 quando eram 458.
+ */
+export function contarNotificacoes(
+  parishId: string,
+  userId: string,
+  janela: JanelaDeNotificacoes = {},
+): Promise<{ todas: number; naoLidas: number }> {
+  const desde = janela.dias ? new Date(Date.now() - janela.dias * 86_400_000) : undefined;
+  const periodo = { parishId, userId, ...(desde ? { createdAt: { gte: desde } } : {}) };
+  return withTenantContext(parishId, async (tx) => {
+    const [todas, naoLidas] = await Promise.all([
+      tx.notification.count({ where: periodo }),
+      tx.notification.count({ where: { ...periodo, readAt: null } }),
+    ]);
+    return { todas, naoLidas };
+  });
 }
 
 export function countUnreadNotifications(parishId: string, userId: string) {

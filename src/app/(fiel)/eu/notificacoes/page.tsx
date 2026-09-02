@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
 import { Bell, BellRing, Check, CheckCheck, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
-import { listMyNotifications, listMyPreferences } from "@/server/modules/notifications/service";
+import {
+  contarNotificacoes,
+  countUnreadNotifications,
+  listMyNotifications,
+  listMyPreferences,
+  TETO_DE_NOTIFICACOES,
+} from "@/server/modules/notifications/service";
+import {
+  diasDoPeriodo,
+  enderecoDasNotificacoes,
+  FiltroDeNotificacoes,
+  PERIODOS,
+  type FiltrosDeNotificacoes,
+  type PeriodoDeNotificacoes,
+} from "./_components/FiltroDeNotificacoes";
+import { LinkButton } from "@/components/ui/Button";
 import {
   abrirNotificacaoAction,
   markNotificationReadAction,
@@ -32,7 +47,11 @@ function descreverAparelho(userAgent: string | null): string {
 
 export const metadata: Metadata = { title: "Notificações" };
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periodo?: string; ver?: string }>;
+}) {
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
@@ -44,13 +63,46 @@ export default async function NotificationsPage() {
     );
   }
 
-  const [notifications, preferences, aparelhos] = await Promise.all([
-    listMyNotifications(session.membership.parishId, session.userId),
+  const { periodo, ver } = await searchParams;
+  const escolhido: PeriodoDeNotificacoes = PERIODOS.some((p) => p.id === periodo)
+    ? (periodo as PeriodoDeNotificacoes)
+    : "7";
+  const filtros: FiltrosDeNotificacoes = {
+    periodo: escolhido,
+    apenasNaoLidas: ver === "nao-lidas",
+  };
+  const janela = { dias: diasDoPeriodo(escolhido) };
+
+  const parishId = session.membership.parishId;
+  const [encontradas, contagem, naoLidasNaConta, preferences, aparelhos] = await Promise.all([
+    listMyNotifications(parishId, session.userId, {
+      ...janela,
+      apenasNaoLidas: filtros.apenasNaoLidas,
+    }),
+    contarNotificacoes(parishId, session.userId, janela),
+    countUnreadNotifications(parishId, session.userId),
     listMyPreferences(session.userId),
     listOwnSubscriptions(session.userId),
   ]);
   const vapidPublicKey = getPublicVapidKey();
-  const unreadCount = notifications.filter((n) => !n.readAt).length;
+
+  /*
+   * O teto pediu uma linha a mais do que mostramos, e é ela que denuncia
+   * o corte. Assim a tela pode DIZER que cortou, em vez de cortar calada
+   * — que era o defeito de origem desta página.
+   */
+  const truncado = encontradas.length > TETO_DE_NOTIFICACOES;
+  const notifications = truncado ? encontradas.slice(0, TETO_DE_NOTIFICACOES) : encontradas;
+
+  /*
+   * A contagem do botão vem do BANCO, e da conta inteira.
+   *
+   * Ela saía de `notifications.filter(...)` sobre a lista já cortada: o
+   * botão dizia "marcar as 30 não lidas" e marcava 458, porque a ação
+   * sempre foi de conta inteira. Um botão que subestima o que faz é pior
+   * do que um botão sem número.
+   */
+  const unreadCount = naoLidasNaConta;
 
   return (
     <div className="flex flex-col">
@@ -109,11 +161,39 @@ export default async function NotificationsPage() {
         </form>
       )}
 
+      <FiltroDeNotificacoes
+        filtros={filtros}
+        todas={contagem.todas}
+        naoLidas={contagem.naoLidas}
+      />
+
       {notifications.length === 0 ? (
         <EmptyState
           icon={Bell}
-          title="Nenhuma notificação ainda"
-          description="Avisos, escalas e respostas da sua paróquia aparecem aqui."
+          title={
+            contagem.todas === 0 && escolhido === "tudo"
+              ? "Nenhuma notificação ainda"
+              : filtros.apenasNaoLidas
+                ? "Você está em dia"
+                : "Nada neste período"
+          }
+          description={
+            contagem.todas === 0 && escolhido === "tudo"
+              ? "Avisos, escalas e respostas da sua paróquia aparecem aqui."
+              : filtros.apenasNaoLidas
+                ? "Não sobrou nenhuma não lida neste período."
+                : "Sua paróquia não te avisou de nada nestes dias."
+          }
+          action={
+            escolhido !== "tudo" ? (
+              <LinkButton
+                href={enderecoDasNotificacoes({ ...filtros, periodo: "tudo" })}
+                size="sm"
+              >
+                Procurar desde o começo
+              </LinkButton>
+            ) : undefined
+          }
         />
       ) : (
         <Card className="px-3.5 py-1.5">
@@ -202,6 +282,20 @@ export default async function NotificationsPage() {
             );
           })}
         </Card>
+      )}
+
+      {/*
+        Cortou: a tela diz, em vez de sumir com o resto calada.
+
+        É o oposto exato do que esta página fazia. Um aviso curto vale mais
+        do que paginação aqui: quem chega a 300 numa janela quer estreitar
+        a janela, não caminhar de 30 em 30 até o fim.
+      */}
+      {truncado && (
+        <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+          Mostrando as {TETO_DE_NOTIFICACOES} mais recentes deste período — há mais atrás delas.
+          Escolha um período menor para ver tudo o que cabe nele.
+        </p>
       )}
 
       <section className="pt-7">

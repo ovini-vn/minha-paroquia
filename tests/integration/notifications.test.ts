@@ -5,7 +5,9 @@ import { registerUser } from "@/server/modules/users/service";
 import { withTenantContext } from "@/server/db/tenant-context";
 import { prisma } from "@/server/db/prisma";
 import {
+  contarNotificacoes,
   listMyNotifications,
+  TETO_DE_NOTIFICACOES,
   markNotificationRead,
   notifyUser,
   openNotification,
@@ -247,5 +249,138 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
 
     const doPadre = await listMyNotifications(parishId, priestUserId);
     expect(doPadre.find((n) => n.id === doOutro.id)?.readAt).toBeNull();
+  });
+
+  /*
+   * O recorte é de TEMPO, e não de contagem.
+   *
+   * A tela cortava nas 30 mais recentes, calada. Com 13 notificações por
+   * dia — medido no banco de desenvolvimento em 02/09/2026 — bastavam três
+   * dias fora para o resto sair da tela sem volta. Estes testes prendem o
+   * comportamento novo: a janela filtra por data no BANCO, o teto avisa
+   * quando morde, e a contagem das tarjas nunca vem da lista já cortada.
+   */
+  describe("janela de tempo, não corte cego", () => {
+    let recorteId: string;
+
+    beforeAll(async () => {
+      const dono = await registerUser({
+        fullName: "Fiel Janela",
+        email: `fiel-janela-${Date.now()}@test.comunidade.app`,
+        password: "SenhaForte123",
+      });
+      recorteId = dono.id;
+      userIds.push(dono.id);
+      const papelDono = await prisma.role.findUniqueOrThrow({ where: { code: "FIEL" } });
+      await withTenantContext(parishId, (tx) =>
+        tx.parishMembership.create({
+          data: { parishId, userId: dono.id, roleId: papelDono.id, status: "active" },
+        }),
+      );
+
+      const agora = Date.now();
+      const dia = 86_400_000;
+      await withTenantContext(parishId, (tx) =>
+        tx.notification.createMany({
+          data: [
+            { parishId, userId: dono.id, category: "pastoral", title: "de hoje", body: "x" },
+            {
+              parishId,
+              userId: dono.id,
+              category: "pastoral",
+              title: "de 3 dias",
+              body: "x",
+              createdAt: new Date(agora - 3 * dia),
+            },
+            {
+              parishId,
+              userId: dono.id,
+              category: "pastoral",
+              title: "de 20 dias",
+              body: "x",
+              createdAt: new Date(agora - 20 * dia),
+              readAt: new Date(agora - 19 * dia),
+            },
+            {
+              parishId,
+              userId: dono.id,
+              category: "pastoral",
+              title: "de 90 dias",
+              body: "x",
+              createdAt: new Date(agora - 90 * dia),
+            },
+          ],
+        }),
+      );
+    });
+
+    it("a janela de 7 dias deixa de fora o que é mais velho que ela", async () => {
+      const titulos = (await listMyNotifications(parishId, recorteId, { dias: 7 })).map(
+        (n) => n.title,
+      );
+      expect(titulos).toEqual(["de hoje", "de 3 dias"]);
+    });
+
+    it("a janela de 30 dias alcança o que a de 7 escondeu", async () => {
+      const titulos = (await listMyNotifications(parishId, recorteId, { dias: 30 })).map(
+        (n) => n.title,
+      );
+      expect(titulos).toEqual(["de hoje", "de 3 dias", "de 20 dias"]);
+    });
+
+    it("sem janela, nada fica para trás — é o caminho de volta ao antigo", async () => {
+      const titulos = (await listMyNotifications(parishId, recorteId, {})).map((n) => n.title);
+      expect(titulos).toEqual(["de hoje", "de 3 dias", "de 20 dias", "de 90 dias"]);
+    });
+
+    it("as não lidas respeitam a janela escolhida, e não a conta inteira", async () => {
+      const naJanela = await listMyNotifications(parishId, recorteId, {
+        dias: 30,
+        apenasNaoLidas: true,
+      });
+      // "de 20 dias" está lida e cai fora; "de 90 dias" está fora da janela.
+      expect(naJanela.map((n) => n.title)).toEqual(["de hoje", "de 3 dias"]);
+    });
+
+    it("a contagem das tarjas vem do banco e divide exatamente a janela", async () => {
+      const { todas, naoLidas } = await contarNotificacoes(parishId, recorteId, { dias: 30 });
+      expect(todas).toBe(3);
+      expect(naoLidas).toBe(2);
+
+      const lidas = todas - naoLidas;
+      expect(lidas).toBe(1);
+    });
+
+    it("o teto pede uma linha a mais do que a tela mostra, para saber que cortou", async () => {
+      const muitas = await registerUser({
+        fullName: "Fiel Teto",
+        email: `fiel-teto-${Date.now()}@test.comunidade.app`,
+        password: "SenhaForte123",
+      });
+      userIds.push(muitas.id);
+      const papelTeto = await prisma.role.findUniqueOrThrow({ where: { code: "FIEL" } });
+      await withTenantContext(parishId, (tx) =>
+        tx.parishMembership.create({
+          data: { parishId, userId: muitas.id, roleId: papelTeto.id, status: "active" },
+        }),
+      );
+
+      await withTenantContext(parishId, (tx) =>
+        tx.notification.createMany({
+          data: Array.from({ length: TETO_DE_NOTIFICACOES + 5 }, (_, i) => ({
+            parishId,
+            userId: muitas.id,
+            category: "pastoral" as const,
+            title: `n${i}`,
+            body: "x",
+          })),
+        }),
+      );
+
+      const achadas = await listMyNotifications(parishId, muitas.id, {});
+      // A linha extra é o sinal: a tela mostra TETO e diz que há mais atrás.
+      expect(achadas.length).toBe(TETO_DE_NOTIFICACOES + 1);
+      expect(achadas.length > TETO_DE_NOTIFICACOES).toBe(true);
+    });
   });
 });

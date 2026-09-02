@@ -16,6 +16,26 @@
  */
 import { PrismaClient } from "@prisma/client";
 
+/**
+ * O host ANTES da primeira consulta — sem a senha.
+ *
+ * Este script APAGA vínculo de paróquia, e a diferença entre o banco de
+ * desenvolvimento e o de produção é uma variável de ambiente. Descobrir
+ * onde se estava depois do estrago é tarde; e quando a consulta falha, a
+ * linha que responderia "onde eu estou" nunca chega a sair.
+ *
+ * Sem DATABASE_URL definida à mão, o Prisma lê o `.env` do projeto — que
+ * aponta para o banco de DESENVOLVIMENTO. É o padrão seguro, mas quem lê
+ * a linha abaixo confere em vez de supor.
+ */
+function ondeEstou() {
+  const url = process.env.DATABASE_URL ?? "";
+  const host = url.match(/@([^/:?]+)/)?.[1];
+  return host ?? "(DATABASE_URL não definida — o Prisma vai ler o .env)";
+}
+console.log(`banco: ${ondeEstou()}
+`);
+
 const [email, flag] = process.argv.slice(2);
 if (!email) {
   console.error("Uso: node scripts/resetar-onboarding.mjs <e-mail> [--confirmar]");

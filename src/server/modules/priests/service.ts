@@ -34,6 +34,27 @@ export async function listPriestsWithOpenings(parishId: string) {
   );
 }
 
+/**
+ * O que este sacerdote atende pelo aplicativo.
+ *
+ * Fica no perfil, e não deduzido das janelas cadastradas, porque as duas
+ * coisas respondem perguntas diferentes: janela diz QUANDO, isto diz SE.
+ * Um padre que confessa todo sábado mas ainda não abriu a agenda precisa
+ * aparecer como quem confessa — deduzir das janelas diria o contrário.
+ */
+export function definirOQueAtende(
+  parishId: string,
+  priestProfileId: string,
+  valores: { ofereceAtendimento: boolean; ofereceConfissao: boolean },
+) {
+  return withTenantContext(parishId, (tx) =>
+    tx.priestProfile.update({
+      where: { id: priestProfileId },
+      data: valores,
+    }),
+  );
+}
+
 export function getPriestProfile(parishId: string, id: string) {
   return withTenantContext(parishId, (tx) =>
     tx.priestProfile.findFirst({

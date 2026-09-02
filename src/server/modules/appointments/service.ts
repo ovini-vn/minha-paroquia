@@ -27,7 +27,24 @@ export async function getAvailableSlots(
   daysAhead = DEFAULT_DAYS_AHEAD,
 ): Promise<AvailableSlot[]> {
   return withTenantContext(parishId, async (tx) => {
-    const windows = await tx.priestAvailability.findMany({ where: { parishId, priestProfileId } });
+    /*
+     * O que o sacerdote atende filtra as janelas AQUI, e não em cada tela.
+     *
+     * Esta função é a origem das vagas para a lista de sacerdotes, para a
+     * tela de agendar e para a contagem do cartão. Filtrar aqui faz as três
+     * concordarem de graça; filtrar em cada uma é como elas começam a
+     * discordar — foi o defeito que a catequese teve.
+     */
+    const priest = await tx.priestProfile.findFirst({
+      where: { id: priestProfileId, parishId },
+      select: { ofereceAtendimento: true, ofereceConfissao: true },
+    });
+    if (!priest) return [];
+    const atende = (tipo: string) =>
+      tipo === "confissao" ? priest.ofereceConfissao : priest.ofereceAtendimento;
+
+    const todas = await tx.priestAvailability.findMany({ where: { parishId, priestProfileId } });
+    const windows = todas.filter((w) => atende(w.type));
     if (windows.length === 0) return [];
 
     const now = new Date();

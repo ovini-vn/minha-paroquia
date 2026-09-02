@@ -3,7 +3,10 @@ import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getOwnPriestProfile } from "@/server/modules/priests/service";
 import { listAvailability } from "@/server/modules/availability/service";
-import { deleteAvailabilityAction } from "@/server/actions/availability-actions";
+import {
+  definirOQueAtendeAction,
+  deleteAvailabilityAction,
+} from "@/server/actions/availability-actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -47,7 +50,49 @@ export default async function AvailabilityPage() {
         description="Janelas em que a comunidade pode pedir atendimento com você. O app divide cada janela em horários."
       />
 
+      {/*
+        O QUE vem antes do QUANDO, e é de propósito.
+        
+        Um padre que só confessa precisa dizer isso primeiro; se ele
+        cadastrar janelas antes, a comunidade passa a poder pedir conversa
+        com ele no intervalo entre uma coisa e outra. E quem desmarca as
+        duas some da agenda sem precisar apagar janela nenhuma.
+      */}
       <Card>
+        <Eyebrow className="mb-2">O que eu atendo</Eyebrow>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          Nem todo sacerdote atende o público em geral pelo aplicativo. O que estiver desmarcado
+          não aparece como motivo para o fiel escolher, e a paróquia continua marcando pelo
+          telefone.
+        </p>
+        <form action={definirOQueAtendeAction} className="flex flex-col gap-2.5">
+          <label className="flex items-center gap-2.5 text-[14px] text-foreground">
+            <input
+              type="checkbox"
+              name="ofereceAtendimento"
+              value="sim"
+              defaultChecked={priest.ofereceAtendimento}
+              className="h-4 w-4 accent-[rgb(var(--color-primary))]"
+            />
+            Conversa, direção espiritual e questões de família
+          </label>
+          <label className="flex items-center gap-2.5 text-[14px] text-foreground">
+            <input
+              type="checkbox"
+              name="ofereceConfissao"
+              value="sim"
+              defaultChecked={priest.ofereceConfissao}
+              className="h-4 w-4 accent-[rgb(var(--color-primary))]"
+            />
+            Confissão
+          </label>
+          <Button type="submit" size="sm" className="mt-1 self-start">
+            Salvar
+          </Button>
+        </form>
+      </Card>
+
+      <Card className="mt-4">
         <CreateAvailabilityForm />
       </Card>
 

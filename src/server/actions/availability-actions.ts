@@ -6,6 +6,7 @@ import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getOwnPriestProfile } from "@/server/modules/priests/service";
 import { createAvailability, deleteAvailability } from "@/server/modules/availability/service";
+import { definirOQueAtende } from "@/server/modules/priests/service";
 import { createAvailabilityInputSchema } from "@/server/modules/availability/schema";
 import { AppError } from "@/server/shared/errors";
 
@@ -37,6 +38,30 @@ export async function createAvailabilityAction(_prev: ActionState, formData: For
 
   revalidatePath("/eu/disponibilidade");
   return {};
+}
+
+/**
+ * Marca o que o sacerdote atende. Caixas de seleção, lidas por PRESENÇA.
+ *
+ * Uma caixa desmarcada simplesmente não é enviada pelo navegador — por isso
+ * a leitura é `=== "sim"` e não a comparação com "false". Já foi origem de
+ * defeito neste repositório, quando dois campos com o mesmo nome faziam o
+ * resultado depender da ordem de serialização.
+ */
+export async function definirOQueAtendeAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.AVAILABILITY_MANAGE);
+
+  const priest = await getOwnPriestProfile(session.membership.parishId, session.userId);
+  if (!priest) return;
+
+  await definirOQueAtende(session.membership.parishId, priest.id, {
+    ofereceAtendimento: formData.get("ofereceAtendimento") === "sim",
+    ofereceConfissao: formData.get("ofereceConfissao") === "sim",
+  });
+  revalidatePath("/eu/disponibilidade");
+  revalidatePath("/comunidade/sacerdotes");
 }
 
 export async function deleteAvailabilityAction(formData: FormData): Promise<void> {

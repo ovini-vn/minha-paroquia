@@ -18,6 +18,7 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
   if (!priest) notFound();
 
   const slots = await getAvailableSlots(session.membership.parishId, id);
+  const naoAtendePeloApp = !priest.ofereceAtendimento && !priest.ofereceConfissao;
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,10 +31,21 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
 
       {slots.length === 0 ? (
         <>
+          {/* Quem não atende pelo app não "está sem horário": ele não marca
+              por aqui, e dizer a mesma frase nos dois casos faz a pessoa
+              voltar amanhã para conferir uma agenda que nunca vai encher. */}
           <EmptyState
             icon={CalendarDays}
-            title="Nenhum horário disponível no momento"
-            description="Este sacerdote ainda não abriu horários por aqui, ou todos já foram reservados."
+            title={
+              naoAtendePeloApp
+                ? "Este sacerdote não marca pelo aplicativo"
+                : "Nenhum horário disponível no momento"
+            }
+            description={
+              naoAtendePeloApp
+                ? "O atendimento dele é combinado pela secretaria da paróquia."
+                : "Este sacerdote ainda não abriu horários por aqui, ou todos já foram reservados."
+            }
           />
           {/* "Tente novamente em breve" era tudo o que esta tela dizia — um
               beco. Não ter horário publicado no app não significa que não
@@ -57,7 +69,12 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
         </>
       ) : (
         <Card>
-          <AppointmentBookingForm priestProfileId={id} slots={slots} />
+          <AppointmentBookingForm
+            priestProfileId={id}
+            slots={slots}
+            ofereceAtendimento={priest.ofereceAtendimento}
+            ofereceConfissao={priest.ofereceConfissao}
+          />
         </Card>
       )}
     </div>

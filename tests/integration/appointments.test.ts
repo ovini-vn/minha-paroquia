@@ -5,7 +5,7 @@ import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { createAvailability } from "@/server/modules/availability/service";
 import { createAppointment, getAvailableSlots } from "@/server/modules/appointments/service";
-import { listPriestsWithOpenings } from "@/server/modules/priests/service";
+import { definirOQueAtende, listPriestsWithOpenings } from "@/server/modules/priests/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 describe("atendimento pastoral: geração de horários e agendamento", () => {
@@ -133,5 +133,97 @@ describe("atendimento pastoral: geração de horários e agendamento", () => {
     const comVagas = await listPriestsWithOpenings(parishId);
     expect(comVagas.map((p) => p.id)).toContain(perfil.id);
     expect(comVagas.find((p) => p.id === perfil.id)?.vagas).toBe(0);
+  });
+
+  /*
+   * O que o sacerdote atende, e por que filtra na origem.
+   *
+   * "Sem horários" dizia duas coisas ao mesmo tempo — "ainda não abriu" e
+   * "não faz isso" —, e quem procurava confissão desistia de um padre que
+   * confessa todo sábado. Estes testes prendem o comportamento novo, e o
+   * prendem em `getAvailableSlots`: é de lá que saem as vagas da lista, da
+   * tela de agendar e da contagem do cartão, então filtrar ali faz as três
+   * concordarem sem cada uma decidir por si.
+   */
+  describe("o que o sacerdote atende", () => {
+    it("por padrão atende tudo — quem já estava no ar não pode sumir da agenda", async () => {
+      const padre = await registerUser({
+        fullName: "Padre Padrão",
+        email: `padre-padrao-${Date.now()}@test.comunidade.app`,
+        password: "SenhaForte123",
+      });
+      userIds.push(padre.id);
+      const perfil = await withTenantContext(parishId, (tx) =>
+        tx.priestProfile.create({ data: { userId: padre.id, parishId, title: "Vigário" } }),
+      );
+
+      expect(perfil.ofereceAtendimento).toBe(true);
+      expect(perfil.ofereceConfissao).toBe(true);
+    });
+
+    it("desmarcar atendimento zera as vagas de janelas de atendimento", async () => {
+      const antes = await getAvailableSlots(parishId, priestProfileId, 3);
+      expect(antes.length).toBeGreaterThan(0);
+      expect(antes.every((s) => s.type === "atendimento")).toBe(true);
+
+      await definirOQueAtende(parishId, priestProfileId, {
+        ofereceAtendimento: false,
+        ofereceConfissao: true,
+      });
+
+      const depois = await getAvailableSlots(parishId, priestProfileId, 3);
+      expect(depois).toHaveLength(0);
+
+      // A janela NÃO foi apagada: desmarcar é reversível, e o padre não
+      // deve ter de recadastrar a agenda inteira ao voltar a atender.
+      await definirOQueAtende(parishId, priestProfileId, {
+        ofereceAtendimento: true,
+        ofereceConfissao: true,
+      });
+      expect((await getAvailableSlots(parishId, priestProfileId, 3)).length).toBe(antes.length);
+    });
+
+    it("quem só confessa continua com as vagas de confissão", async () => {
+      const padre = await registerUser({
+        fullName: "Padre Confessor",
+        email: `padre-confessor-${Date.now()}@test.comunidade.app`,
+        password: "SenhaForte123",
+      });
+      userIds.push(padre.id);
+      const perfil = await withTenantContext(parishId, (tx) =>
+        tx.priestProfile.create({ data: { userId: padre.id, parishId, title: "Vigário" } }),
+      );
+
+      for (let weekday = 0; weekday <= 6; weekday++) {
+        await createAvailability({
+          parishId,
+          priestProfileId: perfil.id,
+          weekday,
+          startTime: "08:00",
+          endTime: "09:00",
+          type: "confissao",
+          slotMinutes: 30,
+        });
+        await createAvailability({
+          parishId,
+          priestProfileId: perfil.id,
+          weekday,
+          startTime: "14:00",
+          endTime: "15:00",
+          type: "atendimento",
+          slotMinutes: 30,
+        });
+      }
+
+      await definirOQueAtende(parishId, perfil.id, {
+        ofereceAtendimento: false,
+        ofereceConfissao: true,
+      });
+
+      const slots = await getAvailableSlots(parishId, perfil.id, 3);
+      expect(slots.length).toBeGreaterThan(0);
+      // A parte de confissão sobrevive; a de conversa não é oferecida.
+      expect(slots.every((s) => s.type === "confissao")).toBe(true);
+    });
   });
 });

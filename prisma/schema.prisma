@@ -550,6 +550,22 @@ model PriestProfile {
   bio          String?
   photoUrl     String?  @map("photo_url")
   displayOrder Int      @default(0) @map("display_order")
+  /// O que este sacerdote atende pelo aplicativo.
+  ///
+  /// Nem todo padre atende o público em geral: há quem só ouça confissão,
+  /// e há quem não marque nada pelo app. Sem estes campos, o app só sabia
+  /// dizer "Sem horários" — que quer dizer "ainda não abriu" e também
+  /// "não faz isso", duas coisas diferentes lidas como uma. Quem procurava
+  /// confissão desistia de um padre que confessa todo sábado.
+  ///
+  /// Verdadeiro por padrão: o comportamento de antes era atender tudo, e
+  /// uma paróquia que atualiza o app não deve acordar com os sacerdotes
+  /// dela indisponíveis.
+  ///
+  /// `atendimento` aqui é o mesmo de `AvailabilityType` — conversa,
+  /// direção espiritual, questão familiar —, e não um terceiro sentido.
+  ofereceAtendimento Boolean @default(true) @map("oferece_atendimento")
+  ofereceConfissao   Boolean @default(true) @map("oferece_confissao")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

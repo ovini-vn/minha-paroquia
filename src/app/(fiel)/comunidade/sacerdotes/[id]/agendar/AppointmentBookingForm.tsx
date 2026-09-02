@@ -4,7 +4,11 @@ import { useActionState, useState } from "react";
 import { createAppointmentAction, type ActionState } from "@/server/actions/appointment-actions";
 import { Button } from "@/components/ui/Button";
 import { formatDateLabel, formatTimeLabel } from "@/lib/date";
-import { APPOINTMENT_CATEGORY_LABELS, AVAILABILITY_TYPE_LABELS } from "@/lib/pastoral-care-labels";
+import {
+  APPOINTMENT_CATEGORY_LABELS,
+  AVAILABILITY_TYPE_LABELS,
+  TIPO_DO_MOTIVO,
+} from "@/lib/pastoral-care-labels";
 import { cn } from "@/lib/cn";
 
 const initialState: ActionState = {};
@@ -22,11 +26,32 @@ function groupByDay(slots: Slot[]): Map<string, Slot[]> {
   return groups;
 }
 
-export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfileId: string; slots: Slot[] }) {
+export function AppointmentBookingForm({
+  priestProfileId,
+  slots,
+  ofereceAtendimento,
+  ofereceConfissao,
+}: {
+  priestProfileId: string;
+  slots: Slot[];
+  ofereceAtendimento: boolean;
+  ofereceConfissao: boolean;
+}) {
   const [state, formAction, pending] = useActionState(createAppointmentAction, initialState);
   const [selected, setSelected] = useState<Slot | null>(null);
 
   const groups = groupByDay(slots);
+
+  /*
+   * Só os motivos que este sacerdote atende.
+   *
+   * Oferecer "Conversa" a quem só confessa é convidar para um pedido que
+   * vai ser recusado — e o fiel não tem como saber disso antes de mandar.
+   * Recusar depois é pior do que não oferecer.
+   */
+  const motivos = Object.entries(APPOINTMENT_CATEGORY_LABELS).filter(([value]) =>
+    TIPO_DO_MOTIVO[value] === "confissao" ? ofereceConfissao : ofereceAtendimento,
+  );
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -43,7 +68,7 @@ export function AppointmentBookingForm({ priestProfileId, slots }: { priestProfi
           required
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         >
-          {Object.entries(APPOINTMENT_CATEGORY_LABELS).map(([value, label]) => (
+          {motivos.map(([value, label]) => (
             <option key={value} value={value}>
               {label}
             </option>

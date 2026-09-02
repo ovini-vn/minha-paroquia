@@ -17,6 +17,7 @@ import {
 import { updateAppointmentStatus, createAppointment } from "@/server/modules/appointments/service";
 import { createSchedule } from "@/server/modules/liturgia/service";
 import { createPost } from "@/server/modules/posts/service";
+import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 describe("notificações: preferência, escopo por usuário e gatilhos", () => {
@@ -105,6 +106,54 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
 
     const notifications = await listMyNotifications(parishId, fielId);
     expect(notifications.some((n) => n.title === "Nova Palavra do Padre")).toBe(true);
+  });
+
+  /*
+   * O aviso diz QUAL mensagem chegou.
+   *
+   * A frase era fixa em toda publicação. Numa paróquia que publica o
+   * Evangelho todo dia, isso empilhava avisos idênticos — nove seguidos na
+   * conta do pároco em produção — e nenhum dizia qual era.
+   */
+  it("o aviso da palavra traz o começo do texto, e não uma frase fixa", async () => {
+    const escrito =
+      "Queridos irmãos, nesta semana somos convidados a olhar para o Evangelho de Lucas " +
+      "com o coração aberto, e a deixar que ele nos incomode onde precisamos crescer.";
+
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "texto",
+      contentText: escrito,
+    });
+
+    const aviso = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.title === "Nova Palavra do Padre" && n.body.startsWith("Queridos irmãos"),
+    );
+    expect(aviso).toBeDefined();
+    expect(aviso!.body).not.toContain("confira na Comunidade");
+    // Cabe numa notificação: cortado, com reticência, sem a frase inteira.
+    expect(aviso!.body.length).toBeLessThanOrEqual(140);
+    expect(aviso!.body.endsWith("…")).toBe(true);
+  });
+
+  it("sem texto, o aviso diz o MEIO — é o mais honesto que os dados permitem", async () => {
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "video",
+      mediaUrl: "https://www.youtube.com/watch?v=exemplo",
+    });
+
+    const aviso = (await listMyNotifications(parishId, fielId)).find((n) =>
+      n.body.includes("vídeo"),
+    );
+    expect(aviso).toBeDefined();
+    expect(aviso!.title).toBe("Nova Palavra do Padre");
+    // Um vídeo e um áudio no mesmo dia continuam distinguíveis entre si.
+    expect(aviso!.body).not.toBe(POST_PREVIEW_LABEL.audio);
   });
 
   it("desativar uma categoria impede novas notificações dela, sem afetar outras", async () => {

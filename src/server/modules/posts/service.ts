@@ -2,6 +2,38 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { notifyManyUsers } from "@/server/modules/notifications/service";
 import { ForbiddenError, NotFoundError } from "@/server/shared/errors";
 import type { CreatePostInput, EditarPostInput } from "./schema";
+import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
+import { resumir } from "@/lib/resumo";
+
+/**
+ * O que o aviso da Palavra do Padre DIZ.
+ *
+ * Era uma frase fixa — "O pároco publicou uma nova mensagem — confira na
+ * Comunidade." — em toda publicação, todo dia. Numa paróquia que publica o
+ * Evangelho diariamente isso empilha avisos idênticos: em 02/09/2026 a
+ * conta do pároco em produção tinha nove seguidos, e nenhum deles dizia
+ * qual mensagem era. Parecia repetição de conteúdo, e era só repetição de
+ * carimbo — as mensagens embaixo eram cinco Evangelhos diferentes.
+ *
+ * É a regra que o módulo de avisos já seguia e este não: a notificação
+ * carrega o começo do conteúdo, e não um "confira no app". Um aviso que
+ * não diz o que chegou obriga a abrir para descobrir se importava.
+ *
+ * LIMITE HONESTO: quando a mensagem é só vídeo ou áudio, não temos título
+ * nem transcrição — a passagem aparece na imagem do vídeo, que é pixel e
+ * não dado nosso. Aí o melhor que dá é dizer o MEIO ("novo vídeo"), e o
+ * que distingue um dia do outro continua sendo a data, que a linha da
+ * notificação já mostra. Para diferenciar de verdade, a mensagem
+ * precisaria de um título — e isso é campo novo, não texto novo.
+ */
+function avisoDaPalavra(post: { mediaType: string; contentText: string | null }): string {
+  const texto = post.contentText?.trim();
+  if (texto) return resumir(texto);
+  return (
+    POST_PREVIEW_LABEL[post.mediaType] ??
+    "O pároco publicou uma nova mensagem — confira na Comunidade."
+  );
+}
 
 export function createPost(
   input: CreatePostInput & { parishId: string; priestProfileId: string | null; createdBy: string },
@@ -28,7 +60,7 @@ export function createPost(
       members.map((m) => m.userId),
       "espiritual",
       "Nova Palavra do Padre",
-      "O pároco publicou uma nova mensagem — confira na Comunidade.",
+      avisoDaPalavra(post),
       "/comunidade",
     );
 

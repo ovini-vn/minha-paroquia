@@ -3,12 +3,7 @@ import { notifyManyUsers } from "@/server/modules/notifications/service";
 import { sendToUsers } from "@/server/modules/push/service";
 import type { CreateAvisoInput, UpdateAvisoInput } from "./schema";
 import { registrar, ACOES } from "@/server/modules/auditoria/service";
-
-/** O aviso inteiro não cabe numa notificação; o começo dele, sim. */
-function resumir(texto: string, limite = 140): string {
-  const limpo = texto.replace(/\s+/g, " ").trim();
-  return limpo.length <= limite ? limpo : `${limpo.slice(0, limite - 1).trimEnd()}…`;
-}
+import { resumir } from "@/lib/resumo";
 
 /**
  * Publica um aviso e AVISA as pessoas.

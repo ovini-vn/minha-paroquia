@@ -250,6 +250,7 @@ export default async function ComunidadePage() {
                     <GestaoDaPalavra
                       postId={post.id}
                       mediaType={post.mediaType}
+                      titulo={post.titulo}
                       contentText={post.contentText}
                       mediaUrl={post.mediaUrl}
                     />

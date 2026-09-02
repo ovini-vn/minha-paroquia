@@ -25,6 +25,7 @@ export async function createPostAction(_prev: ActionState, formData: FormData): 
   try {
     const input = createPostInputSchema.parse({
       mediaType: formData.get("mediaType") || "texto",
+      titulo: formData.get("titulo") || undefined,
       contentText: formData.get("contentText") || undefined,
       mediaUrl: formData.get("mediaUrl") || undefined,
     });
@@ -70,6 +71,8 @@ export async function editarPostAction(
   try {
     const input = editarPostSchema.parse({
       postId: formData.get("postId"),
+      // String vazia CHEGA aqui de propósito: é assim que se apaga o título.
+      titulo: formData.get("titulo") ?? undefined,
       contentText: formData.get("contentText") || undefined,
       mediaUrl: formData.get("mediaUrl") || undefined,
     });

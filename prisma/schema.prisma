@@ -764,6 +764,18 @@ model Post {
   /// do pároco cadastrado na paróquia (ver parishes.paroco_nome).
   priestProfileId String?       @map("priest_profile_id")
   mediaType       PostMediaType @default(texto)
+  /// Como a mensagem se chama, quando quem publica quis dar um nome.
+  ///
+  /// OPCIONAL de propósito. A Palavra do Padre é escrita quase sempre do
+  /// celular, muitas vezes minutos antes da missa; exigir um título faria
+  /// alguém digitar "Mensagem" todo dia, que é pior do que não ter.
+  ///
+  /// Existe porque a NOTIFICAÇÃO precisa dizer qual mensagem chegou. Sem
+  /// isto, o aviso de um vídeo é sempre a mesma frase — a passagem aparece
+  /// só na imagem do vídeo, que é pixel e não dado nosso —, e a paróquia
+  /// que publica o Evangelho todo dia empilha avisos idênticos. Foi o que
+  /// aconteceu em produção: nove seguidos, nenhum dizendo qual era.
+  titulo          String?
   contentText     String?       @map("content_text")
   mediaUrl        String?       @map("media_url")
   /// Quem publicou.

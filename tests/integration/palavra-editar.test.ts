@@ -151,6 +151,54 @@ describe("editar e apagar a Palavra do Padre", () => {
     expect(depois).toHaveLength(antes.length - 1);
   });
 
+  /*
+   * O título é opcional dos dois lados: pode nascer sem e pode PERDER o que
+   * tinha. Sem isso, dar um nome errado à mensagem seria irreversível — e
+   * "Corrigir" que só troca, nunca desfaz, não corrige de verdade.
+   */
+  it("corrigir dá nome a uma publicação que nasceu sem título", async () => {
+    const post = await createPost({
+      parishId,
+      priestProfileId: padrePerfilId,
+      createdBy: padreId,
+      mediaType: "video",
+      mediaUrl: "https://www.youtube.com/watch?v=sem-titulo",
+    });
+    expect(post.titulo).toBeNull();
+
+    const comNome = await editarPost({
+      parishId,
+      postId: post.id,
+      titulo: "Lucas 4, 16-30",
+      mediaUrl: "https://www.youtube.com/watch?v=sem-titulo",
+      quem: administra(parocoId),
+    });
+    expect(comNome.titulo).toBe("Lucas 4, 16-30");
+  });
+
+  it("esvaziar o campo APAGA o título, em vez de manter o antigo", async () => {
+    const post = await createPost({
+      parishId,
+      priestProfileId: padrePerfilId,
+      createdBy: padreId,
+      mediaType: "texto",
+      titulo: "Nome que saiu errado",
+      contentText: "O corpo da mensagem continua igual.",
+    });
+    expect(post.titulo).toBe("Nome que saiu errado");
+
+    const semNome = await editarPost({
+      parishId,
+      postId: post.id,
+      titulo: "",
+      contentText: "O corpo da mensagem continua igual.",
+      quem: administra(parocoId),
+    });
+    expect(semNome.titulo).toBeNull();
+    // Apagar o título não pode levar o texto junto.
+    expect(semNome.contentText).toBe("O corpo da mensagem continua igual.");
+  });
+
   it("corrigir uma publicação que não existe não estoura de forma estranha", async () => {
     await expect(
       editarPost({

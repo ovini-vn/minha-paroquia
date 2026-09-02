@@ -31,6 +31,33 @@ export function PostForm() {
         </select>
       </div>
 
+      {/*
+        O título vem DEPOIS do tipo e ANTES do conteúdo, e é opcional na
+        etiqueta, não só no schema: quem publica precisa ver que pode pular.
+        A ajuda embaixo diz para que serve — sem ela, um campo opcional sem
+        explicação é só mais uma coisa para ignorar.
+      */}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="titulo" className="text-sm font-medium text-muted">
+          Título <span className="font-normal">(opcional)</span>
+        </label>
+        <input
+          id="titulo"
+          name="titulo"
+          type="text"
+          maxLength={80}
+          placeholder={
+            mediaType === "texto" ? "Ex.: A alegria de servir" : "Ex.: Lucas 4, 38-44"
+          }
+          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
+        />
+        <p className="text-xs text-muted">
+          É o que a comunidade lê no aviso do celular. Sem título, o aviso mostra o começo da
+          mensagem — e num {mediaType === "texto" ? "texto" : mediaType === "audio" ? "áudio" : "vídeo"}
+          {mediaType === "texto" ? " isso costuma bastar." : " ele só consegue dizer que chegou um novo."}
+        </p>
+      </div>
+
       {mediaType === "texto" ? (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="contentText" className="text-sm font-medium text-muted">

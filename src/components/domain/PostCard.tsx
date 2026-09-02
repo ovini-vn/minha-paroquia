@@ -8,6 +8,7 @@ import { VideoDoPost } from "@/components/domain/VideoDoPost";
 type Post = {
   id: string;
   mediaType: string;
+  titulo: string | null;
   contentText: string | null;
   mediaUrl: string | null;
   publishedAt: Date;
@@ -53,8 +54,22 @@ export function PostCard({
         </div>
       </div>
 
+      {/*
+        O título, quando existe, é a primeira coisa depois da assinatura —
+        e vale para os três tipos. Num vídeo ele é a ÚNICA pista textual do
+        que vem ali dentro; num texto, ele resume o que o parágrafo
+        desenvolve. Serifa como o corpo da mensagem, porque é a mesma voz.
+      */}
+      {post.titulo && (
+        <p className="mt-3 font-serif text-[19px] font-semibold leading-snug text-foreground">
+          {post.titulo}
+        </p>
+      )}
+
       {post.mediaType === "texto" && (
-        <p className="mt-3 whitespace-pre-wrap font-serif text-[17px] leading-[1.62] text-foreground">
+        <p
+          className={`${post.titulo ? "mt-2" : "mt-3"} whitespace-pre-wrap font-serif text-[17px] leading-[1.62] text-foreground`}
+        >
           {post.contentText}
         </p>
       )}

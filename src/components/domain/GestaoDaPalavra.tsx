@@ -26,11 +26,13 @@ const inicial: ActionState = {};
 export function GestaoDaPalavra({
   postId,
   mediaType,
+  titulo,
   contentText,
   mediaUrl,
 }: {
   postId: string;
   mediaType: string;
+  titulo: string | null;
   contentText: string | null;
   mediaUrl: string | null;
 }) {
@@ -58,6 +60,28 @@ export function GestaoDaPalavra({
     <div className="mt-3 flex flex-col gap-3 rounded-lg bg-sunken p-3.5">
       <form action={editar} className="flex flex-col gap-3">
         <input type="hidden" name="postId" value={postId} />
+
+        {/*
+          O título entra aqui também, e é o que dá nome às mensagens que já
+          estão no ar — elas nasceram antes do campo existir, e nenhuma
+          migration inventou título para elas. Esvaziar o campo APAGA o
+          título: corrigir precisa poder desfazer, não só trocar.
+        */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`titulo-${postId}`} className="text-sm font-medium text-muted">
+            Título <span className="font-normal">(opcional)</span>
+          </label>
+          <input
+            id={`titulo-${postId}`}
+            name="titulo"
+            type="text"
+            maxLength={80}
+            defaultValue={titulo ?? ""}
+            placeholder={mediaType === "texto" ? "Ex.: A alegria de servir" : "Ex.: Lucas 4, 38-44"}
+            className={INPUT_CLASSES}
+          />
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <label htmlFor={`palavra-${postId}`} className="text-sm font-medium text-muted">
             {ehTexto ? "Mensagem" : "Endereço da mídia"}

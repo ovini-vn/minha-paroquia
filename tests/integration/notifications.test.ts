@@ -138,6 +138,44 @@ describe("notificações: preferência, escopo por usuário e gatilhos", () => {
     expect(aviso!.body.endsWith("…")).toBe(true);
   });
 
+  it("o título, quando existe, vence o texto no aviso", async () => {
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "texto",
+      titulo: "A alegria de servir",
+      contentText:
+        "Um texto bem comprido que, sem título, seria o que apareceria no aviso do celular.",
+    });
+
+    const aviso = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.body === "A alegria de servir",
+    );
+    expect(aviso).toBeDefined();
+    // Título não passa por resumo: já nasce curto, e resumir seria admitir
+    // que ele não é um título.
+    expect(aviso!.body.endsWith("…")).toBe(false);
+    expect(aviso!.body).not.toContain("Um texto bem comprido");
+  });
+
+  it("o título resolve o vídeo diário, que era o caso sem saída", async () => {
+    await createPost({
+      parishId,
+      priestProfileId,
+      createdBy: priestUserId,
+      mediaType: "video",
+      titulo: "Lucas 4, 38-44",
+      mediaUrl: "https://www.youtube.com/watch?v=evangelho-do-dia",
+    });
+
+    const aviso = (await listMyNotifications(parishId, fielId)).find(
+      (n) => n.body === "Lucas 4, 38-44",
+    );
+    expect(aviso).toBeDefined();
+    expect(aviso!.body).not.toBe(POST_PREVIEW_LABEL.video);
+  });
+
   it("sem texto, o aviso diz o MEIO — é o mais honesto que os dados permitem", async () => {
     await createPost({
       parishId,

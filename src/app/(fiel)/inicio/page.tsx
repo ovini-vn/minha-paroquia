@@ -216,7 +216,17 @@ export default async function HomePage() {
                 <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
               </div>
             </div>
-            <p className="mt-3 font-serif text-[18px] leading-[1.62] text-foreground">
+            {/* O título manda na prévia do Início pelo mesmo motivo que
+                manda na notificação: foi escrito para nomear ESTA mensagem,
+                e o resto serve por tabela. */}
+            {latestPost.titulo && (
+              <p className="mt-3 font-serif text-[19px] font-semibold leading-snug text-foreground">
+                {latestPost.titulo}
+              </p>
+            )}
+            <p
+              className={`${latestPost.titulo ? "mt-1.5" : "mt-3"} font-serif text-[18px] leading-[1.62] text-foreground`}
+            >
               {latestPost.mediaType === "texto"
                 ? latestPost.contentText
                 : POST_PREVIEW_LABEL[latestPost.mediaType]}

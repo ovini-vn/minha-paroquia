@@ -19,14 +19,28 @@ import { resumir } from "@/lib/resumo";
  * carrega o começo do conteúdo, e não um "confira no app". Um aviso que
  * não diz o que chegou obriga a abrir para descobrir se importava.
  *
- * LIMITE HONESTO: quando a mensagem é só vídeo ou áudio, não temos título
- * nem transcrição — a passagem aparece na imagem do vídeo, que é pixel e
- * não dado nosso. Aí o melhor que dá é dizer o MEIO ("novo vídeo"), e o
- * que distingue um dia do outro continua sendo a data, que a linha da
- * notificação já mostra. Para diferenciar de verdade, a mensagem
- * precisaria de um título — e isso é campo novo, não texto novo.
+ * A ORDEM É TÍTULO, TEXTO, MEIO, e ela desce da coisa mais escolhida para
+ * a menos: o título foi escrito para nomear esta mensagem; o começo do
+ * texto foi escrito para outra finalidade e serve por tabela; o rótulo do
+ * meio não distingue nada e é o último recurso.
+ *
+ * O título não passa por `resumir` porque já nasce curto — 80 caracteres,
+ * limitados no schema. Resumir um título seria admitir que ele não é um.
+ *
+ * Sem título e sem texto — o vídeo diário —, continuamos no rótulo do
+ * meio, e o que separa um dia do outro é a data que a linha já mostra.
+ * É por isso que o título existe: é o único jeito de o aviso de um vídeo
+ * dizer "Lucas 4, 38-44", porque a passagem só aparece na IMAGEM do vídeo,
+ * que é pixel e não dado nosso.
  */
-function avisoDaPalavra(post: { mediaType: string; contentText: string | null }): string {
+function avisoDaPalavra(post: {
+  mediaType: string;
+  titulo: string | null;
+  contentText: string | null;
+}): string {
+  const titulo = post.titulo?.trim();
+  if (titulo) return titulo;
+
   const texto = post.contentText?.trim();
   if (texto) return resumir(texto);
   return (
@@ -45,6 +59,7 @@ export function createPost(
         priestProfileId: input.priestProfileId,
         createdBy: input.createdBy,
         mediaType: input.mediaType,
+        titulo: input.titulo ?? null,
         contentText: input.contentText ?? null,
         mediaUrl: input.mediaUrl ?? null,
       },
@@ -169,10 +184,13 @@ export function editarPost(
 
     return tx.post.update({
       where: { id: post.id },
-      data:
-        post.mediaType === "texto"
+      data: {
+        // Título vazio apaga; ausente também. Os dois querem dizer "sem nome".
+        titulo: input.titulo?.trim() || null,
+        ...(post.mediaType === "texto"
           ? { contentText: input.contentText ?? null }
-          : { mediaUrl: input.mediaUrl ?? null },
+          : { mediaUrl: input.mediaUrl ?? null }),
+      },
     });
   });
 }

@@ -15,7 +15,7 @@ import { LinkRede } from "./LinkRede";
  */
 function IconeInstagram({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" className={className} aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" className={className} aria-hidden>
       <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
       <circle cx="12" cy="12" r="4.2" />
       <circle cx="17.4" cy="6.6" r="1.05" fill="currentColor" stroke="none" />
@@ -25,7 +25,7 @@ function IconeInstagram({ className }: { className?: string }) {
 
 function IconeFacebook({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinejoin="round" className={className} aria-hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" className={className} aria-hidden>
       <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" />
       <path d="M15.2 8.1h-1.6c-.9 0-1.5.6-1.5 1.5v1.6h3l-.4 3h-2.6v6.3" />
       <path d="M9.3 11.2h2.8" />
@@ -190,25 +190,40 @@ export default async function ContatoPage() {
           <Eyebrow tone="accent" className="mb-3">
             Nas redes
           </Eyebrow>
+          {/*
+            O símbolo manda; o nome vira legenda.
+
+            Eram dois cartões deitados com um ícone de 20px ao lado de um
+            rótulo de 14px — o texto pesava mais que a marca, quando é a
+            marca que se reconhece de relance. Agora o ícone tem 36px e fica
+            em cima, e o nome desceu para 12px embaixo.
+
+            O nome FICA, menor. Ele é o que o leitor de tela anuncia (o
+            desenho é `aria-hidden`), e some justamente para quem mais
+            precisa dele se eu apagasse.
+
+            Alvo de toque bem acima dos 44px recomendados, o que importa
+            aqui: é um link que se toca com o polegar, na tela de contato.
+          */}
           <div className="flex gap-2.5">
             {parish.instagramUrl && (
               <LinkRede
                 href={parish.instagramUrl}
                 rede="instagram"
-                className="flex flex-1 items-center gap-2.5 rounded-lg border border-border bg-surface p-3.5 transition-colors hover:border-primary"
+                className="flex flex-1 flex-col items-center gap-2 rounded-lg border border-border bg-surface px-3 py-5 transition-colors hover:border-primary"
               >
-                <IconeInstagram className="h-5 w-5 shrink-0 text-[#C13584]" />
-                <span className="text-[14px] font-medium text-foreground">Instagram</span>
+                <IconeInstagram className="h-9 w-9 shrink-0 text-[#C13584]" />
+                <span className="text-[12px] font-medium text-muted">Instagram</span>
               </LinkRede>
             )}
             {parish.facebookUrl && (
               <LinkRede
                 href={parish.facebookUrl}
                 rede="facebook"
-                className="flex flex-1 items-center gap-2.5 rounded-lg border border-border bg-surface p-3.5 transition-colors hover:border-primary"
+                className="flex flex-1 flex-col items-center gap-2 rounded-lg border border-border bg-surface px-3 py-5 transition-colors hover:border-primary"
               >
-                <IconeFacebook className="h-5 w-5 shrink-0 text-[#1877F2]" />
-                <span className="text-[14px] font-medium text-foreground">Facebook</span>
+                <IconeFacebook className="h-9 w-9 shrink-0 text-[#1877F2]" />
+                <span className="text-[12px] font-medium text-muted">Facebook</span>
               </LinkRede>
             )}
           </div>

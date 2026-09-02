@@ -231,10 +231,30 @@ export async function getParoco(parishId: string) {
       where: { parishId, status: "active", role: { code: "PAROCO" } },
       select: { userId: true },
     });
-    if (!filiacao) return null;
 
-    return tx.priestProfile.findUnique({
-      where: { userId_parishId: { userId: filiacao.userId, parishId } },
+    if (filiacao) {
+      const comConta = await tx.priestProfile.findUnique({
+        where: { userId_parishId: { userId: filiacao.userId, parishId } },
+        include: { user: { select: { fullName: true, photoUrl: true } } },
+      });
+      if (comConta) return comConta;
+    }
+
+    /*
+     * Sem filiação de pároco, procura o perfil SEM CONTA cadastrado como
+     * tal.
+     *
+     * É o caso da paróquia cujo padre não usa o aplicativo: não existe
+     * filiação com papel de Pároco para encontrar, e antes disto a tela
+     * "Nosso Pároco" nunca conseguia ligar o nome exibido a uma agenda.
+     *
+     * O papel na filiação continua ganhando quando existe — é ele que a
+     * secretaria troca quando o pároco é transferido, e seguir o papel faz
+     * a tela acompanhar sozinha.
+     */
+    return tx.priestProfile.findFirst({
+      where: { parishId, userId: null, title: "Pároco" },
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
       include: { user: { select: { fullName: true, photoUrl: true } } },
     });
   });

@@ -6,8 +6,14 @@
  * digitado ganha do nome da conta — é a informação que alguém acabou de
  * afirmar de propósito.
  *
- * Só dá para pedir atendimento quando a pessoa exibida É a da conta: agenda
- * de quem não usa o aplicativo não existe, e o botão levaria a lugar nenhum.
+ * QUEM NÃO USA O APLICATIVO TAMBÉM TEM AGENDA desde 02/09/2026: a
+ * secretaria publica os horários por ele pelo painel. Antes disso, perfil
+ * sem conta era perfil sem agenda, e o botão levaria a lugar nenhum.
+ *
+ * O que continua valendo é a desconfiança com a CONTA: quem opera a
+ * ferramenta pode carregar o papel de Pároco por questão de acesso, sem
+ * ser o pároco — e aí mandar o fiel para a agenda dessa pessoa estaria
+ * errado. Por isso a conta só vira agenda quando o nome exibido é o dela.
  */
 
 export type Paroco = {
@@ -36,6 +42,7 @@ export function resolverParoco(
     title: string;
     nome: string | null;
     photoUrl: string | null;
+    userId?: string | null;
     user: { fullName: string; photoUrl: string | null } | null;
   } | null,
 ): Paroco | null {
@@ -52,7 +59,13 @@ export function resolverParoco(
     fotoUrl:
       parish.parocoFotoUrl?.trim() ||
       (daConta ? (registrado.photoUrl ?? registrado.user?.photoUrl ?? null) : null),
-    priestProfileId: daConta ? registrado.id : null,
+    /*
+     * Perfil SEM CONTA aponta para a agenda mesmo com nome digitado por
+     * cima: ele foi criado de propósito para representar este padre, e não
+     * carrega a ambiguidade de uma conta que alguém usa para administrar.
+     */
+    priestProfileId:
+      daConta || (registrado && registrado.userId === null) ? registrado!.id : null,
     contaId: registrado?.id ?? null,
   };
 }

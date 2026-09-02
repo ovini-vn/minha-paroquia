@@ -37,6 +37,16 @@ export default async function ParocoPage() {
   const [parish, registrado] = await Promise.all([getParish(parishId), getParoco(parishId)]);
   const paroco = parish ? resolverParoco(parish, registrado) : null;
 
+  /*
+   * Só oferece agendar quando ele atende ALGUMA coisa pelo aplicativo.
+   * Vem do perfil, e não da existência de horários: um padre que confessa
+   * todo sábado mas ainda não teve a agenda publicada continua sendo
+   * alguém a quem se pede atendimento.
+   */
+  const atendePeloApp = Boolean(
+    registrado && (registrado.ofereceAtendimento || registrado.ofereceConfissao),
+  );
+
   if (!paroco) {
     return (
       <div className="flex flex-col">
@@ -80,19 +90,36 @@ export default async function ParocoPage() {
         </p>
       )}
 
+      {/*
+        O caminho prático, e ele tem TRÊS casos, não dois.
+        
+        Antes eram dois: tem perfil, ou não tem. Faltava o do meio, que é o
+        mais comum numa paróquia — o padre existe no app, mas não marca
+        atendimento por ele. Esse caso caía no botão de agendar e levava a
+        uma tela de "nenhum horário", como se faltasse agenda.
+        
+        Agora quem não atende pelo aplicativo diz isso e manda para a
+        secretaria, que é onde o atendimento dele realmente se combina.
+      */}
       <div className="pt-7">
-        {paroco.priestProfileId ? (
-          <LinkButton href={`/comunidade/sacerdotes/${paroco.priestProfileId}/agendar`} className="w-full">
+        {paroco.priestProfileId && atendePeloApp ? (
+          <LinkButton
+            href={`/comunidade/sacerdotes/${paroco.priestProfileId}/agendar`}
+            className="w-full"
+          >
             <CalendarDays className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
-            Horários de atendimento
+            Solicitar atendimento
           </LinkButton>
         ) : (
-          // Sem conta no aplicativo não há agenda para consultar; quem marca
-          // atendimento com ele é a secretaria.
           <LinkButton href="/contato" className="w-full">
             <Phone className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
             Falar com a secretaria
           </LinkButton>
+        )}
+        {paroco.priestProfileId && !atendePeloApp && (
+          <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
+            O atendimento com {paroco.nome} é combinado pela secretaria.
+          </p>
         )}
       </div>
 

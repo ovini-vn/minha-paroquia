@@ -25,10 +25,36 @@ const semConta = {
   title: "Vigário",
   nome: "Pe. Bento Alves",
   photoUrl: null,
+  userId: null,
   user: null,
 };
 
 describe("quem a comunidade vê como pároco", () => {
+  it("perfil SEM CONTA aponta para a agenda MESMO com nome digitado por cima", () => {
+    /*
+     * Era o contrário até 02/09/2026: nome digitado apagava o caminho para
+     * a agenda, porque perfil sem conta não tinha agenda nenhuma. Agora a
+     * secretaria publica os horários dele, e o botão leva a algum lugar.
+     *
+     * O perfil sem conta foi criado de propósito para representar este
+     * padre — não carrega a ambiguidade de uma conta que alguém usa para
+     * administrar a ferramenta.
+     */
+    const p = resolverParoco({ ...vazio, parocoNome: "Pe. Bento A. Alves" }, semConta);
+    expect(p?.priestProfileId).toBe("perfil-2");
+  });
+
+  it("a CONTA continua só virando agenda quando o nome exibido é o dela", () => {
+    // Quem administra a ferramenta pode ter o papel de Pároco sem ser o
+    // pároco; mandar o fiel para a agenda dessa pessoa estaria errado.
+    const p = resolverParoco({ ...vazio, parocoNome: "Pe. Thiago Rodrigues" }, {
+      ...registrado,
+      userId: "conta-1",
+    });
+    expect(p?.nome).toBe("Pe. Thiago Rodrigues");
+    expect(p?.priestProfileId).toBeNull();
+  });
+
   it("perfil SEM CONTA se identifica pelo nome do próprio perfil", () => {
     const p = resolverParoco(vazio, semConta);
     expect(p?.nome).toBe("Pe. Bento Alves");

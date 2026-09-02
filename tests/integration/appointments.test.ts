@@ -11,6 +11,7 @@ import {
   cadastrarSacerdoteSemConta,
   criarHorarioDoSacerdote,
   definirOQueAtende,
+  getParoco,
   getPriestProfile,
   listPriests,
   listPriestsWithOpenings,
@@ -242,6 +243,39 @@ describe("atendimento pastoral: geração de horários e agendamento", () => {
       ).rejects.toThrow(/Minha disponibilidade/i);
       // A janela dele continua de pé.
       expect((await listAvailability(parishId, priestProfileId)).length).toBe(janelas.length);
+    });
+
+    it('sem filiação de Pároco, "Nosso Pároco" acha o perfil SEM CONTA', async () => {
+      /*
+       * É a paróquia real: o padre não usa o aplicativo, então não existe
+       * filiação com papel de Pároco para encontrar. Antes disto, a tela
+       * "Nosso Pároco" nunca conseguia ligar o nome exibido a uma agenda, e
+       * o botão de atendimento nunca aparecia.
+       */
+      const outra = await registerParish({ name: `Paróquia Sem Filiação ${Date.now()}` });
+      parishIds.push(outra.id);
+
+      expect(await getParoco(outra.id)).toBeNull();
+
+      const perfil = await cadastrarSacerdoteSemConta(outra.id, {
+        nome: "Pe. Sem Filiação",
+        title: "Pároco",
+      });
+
+      const achado = await getParoco(outra.id);
+      expect(achado?.id).toBe(perfil.id);
+      expect(achado?.userId).toBeNull();
+      expect(nomeDoSacerdote(achado!)).toBe("Pe. Sem Filiação");
+    });
+
+    it("um Vigário sem conta NÃO é confundido com o pároco", async () => {
+      const outra = await registerParish({ name: `Paróquia Só Vigário ${Date.now()}` });
+      parishIds.push(outra.id);
+
+      await cadastrarSacerdoteSemConta(outra.id, { nome: "Pe. Auxiliar", title: "Vigário" });
+      // Ele aparece em "Falar com um sacerdote", mas não vira o pároco.
+      expect((await listPriests(outra.id)).length).toBe(1);
+      expect(await getParoco(outra.id)).toBeNull();
     });
 
     it("apagar vale só para quem NÃO tem conta", async () => {

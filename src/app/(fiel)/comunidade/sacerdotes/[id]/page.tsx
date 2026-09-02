@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CalendarDays } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
-import { getPriestProfile } from "@/server/modules/priests/service";
+import { getPriestProfile, getParoco } from "@/server/modules/priests/service";
+import { getParish } from "@/server/modules/parishes/service";
+import { resolverParoco } from "@/server/modules/parishes/paroco";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
@@ -16,6 +18,25 @@ export default async function PriestProfilePage({ params }: { params: Promise<{ 
 
   const priest = await getPriestProfile(session.membership.parishId, id);
   if (!priest) notFound();
+
+  /*
+   * O pároco tem tela própria, e ela é melhor que esta.
+   *
+   * Esta ficha mostra nome, cargo e "Biografia em breve" — enquanto
+   * "Nosso Pároco" tem a foto dele, a história inteira que a paróquia
+   * escreveu e o tratamento dourado. Mandar quem toca no nome do pároco
+   * para a versão pobre é esconder o que a secretaria já cadastrou.
+   *
+   * O desvio fica AQUI, e não só no link da lista: assim vale para
+   * qualquer caminho que chegue nesta ficha — a lista de sacerdotes, o
+   * bloco da Comunidade, um endereço guardado nos favoritos.
+   */
+  const [parish, registrado] = await Promise.all([
+    getParish(session.membership.parishId),
+    getParoco(session.membership.parishId),
+  ]);
+  const paroco = parish ? resolverParoco(parish, registrado) : null;
+  if (paroco?.priestProfileId === priest.id) redirect("/paroco");
 
   return (
     <div className="flex flex-col gap-4">

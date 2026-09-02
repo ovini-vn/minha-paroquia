@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, UserRound, Phone } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
-import { listPriestsWithOpenings } from "@/server/modules/priests/service";
+import { getParoco, listPriestsWithOpenings } from "@/server/modules/priests/service";
+import { getParish } from "@/server/modules/parishes/service";
+import { resolverParoco } from "@/server/modules/parishes/paroco";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
@@ -30,8 +32,23 @@ export default async function SacerdotesPage() {
   const session = await getSessionContext();
   if (!session?.membership) return null;
 
-  const priests = await listPriestsWithOpenings(session.membership.parishId);
+  const [priests, parish, registrado] = await Promise.all([
+    listPriestsWithOpenings(session.membership.parishId),
+    getParish(session.membership.parishId),
+    getParoco(session.membership.parishId),
+  ]);
   const algumComVaga = priests.some((p) => p.vagas > 0);
+
+  /*
+   * O pároco aponta direto para "Nosso Pároco".
+   *
+   * A ficha genérica desvia para lá de qualquer forma, mas mandar o link
+   * certo desde aqui evita o pulo de tela e deixa o endereço honesto para
+   * quem copia o link.
+   */
+  const paroco = parish ? resolverParoco(parish, registrado) : null;
+  const enderecoDo = (id: string) =>
+    paroco?.priestProfileId === id ? "/paroco" : `/comunidade/sacerdotes/${id}`;
 
   return (
     <div className="flex flex-col">
@@ -51,7 +68,7 @@ export default async function SacerdotesPage() {
           {priests.map((priest) => (
             <Link
               key={priest.id}
-              href={`/comunidade/sacerdotes/${priest.id}`}
+              href={enderecoDo(priest.id)}
               className="flex items-center gap-3.5 border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint"
             >
               <Avatar name={nomeDoSacerdote(priest)} size="sm" />

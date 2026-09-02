@@ -26,7 +26,7 @@ import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { revokeInvitationAction } from "@/server/actions/invitation-actions";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { CreateInviteForm } from "./CreateInviteForm";
 import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
@@ -34,10 +34,7 @@ import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
 import { SacerdoteSemContaForm } from "./SacerdoteSemContaForm";
-import {
-  apagarSacerdoteAction,
-  definirOQueAtendeSemContaAction,
-} from "@/server/actions/sacerdote-actions";
+import { apagarSacerdoteAction } from "@/server/actions/sacerdote-actions";
 import {
   BookOpen,
   Cake,
@@ -491,47 +488,18 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 {/*
-                  O que ele atende, e por que a secretaria decide AQUI.
-
-                  Quem tem conta marca isso sozinho — configuração de alguém
-                  não se mexe por fora. Quem não tem não tem tela própria, e
-                  sem esta porta ficaria para sempre como "Sem horários", que
-                  é a ambiguidade que os dois campos existem para desfazer.
+                  A agenda dele tem tela própria, e o painel só aponta.
+                  Caixas e lista de janelas aqui dentro espremeriam as duas
+                  coisas numa linha que já carrega nome, cargo e tarja.
                 */}
                 {!priest.userId && (
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <form
-                      action={definirOQueAtendeSemContaAction}
-                      className="flex flex-wrap items-center gap-3"
-                    >
-                      <input type="hidden" name="id" value={priest.id} />
-                      <label className="flex items-center gap-1.5 text-[12.5px] text-muted">
-                        <input
-                          type="checkbox"
-                          name="ofereceAtendimento"
-                          value="sim"
-                          defaultChecked={priest.ofereceAtendimento}
-                          className="h-3.5 w-3.5 accent-[rgb(var(--color-primary))]"
-                        />
-                        Conversa
-                      </label>
-                      <label className="flex items-center gap-1.5 text-[12.5px] text-muted">
-                        <input
-                          type="checkbox"
-                          name="ofereceConfissao"
-                          value="sim"
-                          defaultChecked={priest.ofereceConfissao}
-                          className="h-3.5 w-3.5 accent-[rgb(var(--color-primary))]"
-                        />
-                        Confissão
-                      </label>
-                      <Button type="submit" variant="ghost" size="sm">
-                        Salvar
-                      </Button>
-                    </form>
-
-                    {/* Formulário separado do de cima: apagar por engano ao
-                        mirar em "Salvar" é o acidente que a separação evita. */}
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <LinkButton href={`/painel/sacerdotes/${priest.id}`} variant="ghost" size="sm">
+                      Horários e o que atende
+                    </LinkButton>
+                    {/* Formulário separado do link: apagar por engano ao
+                        mirar no botão ao lado é o acidente que a separação
+                        evita. */}
                     <form action={apagarSacerdoteAction}>
                       <input type="hidden" name="id" value={priest.id} />
                       <Button type="submit" variant="ghost" size="sm">

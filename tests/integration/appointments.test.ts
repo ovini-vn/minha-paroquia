@@ -3,11 +3,13 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
-import { createAvailability } from "@/server/modules/availability/service";
+import { createAvailability, listAvailability } from "@/server/modules/availability/service";
 import { createAppointment, getAvailableSlots } from "@/server/modules/appointments/service";
 import {
+  apagarHorarioDoSacerdote,
   apagarSacerdoteSemConta,
   cadastrarSacerdoteSemConta,
+  criarHorarioDoSacerdote,
   definirOQueAtende,
   getPriestProfile,
   listPriests,
@@ -191,6 +193,55 @@ describe("atendimento pastoral: geração de horários e agendamento", () => {
       await expect(
         cadastrarSacerdoteSemConta(parishId, { nome: "   ", title: "Vigário" }),
       ).rejects.toThrow(/nome/i);
+    });
+
+    it("a secretaria publica horário por ele, e o horário vira vaga de verdade", async () => {
+      const perfil = await cadastrarSacerdoteSemConta(parishId, {
+        nome: "Pe. Confessa Sábado",
+        title: "Vigário",
+      });
+      expect(await getAvailableSlots(parishId, perfil.id, 3)).toHaveLength(0);
+
+      for (let weekday = 0; weekday <= 6; weekday++) {
+        await criarHorarioDoSacerdote(parishId, perfil.id, {
+          weekday,
+          startTime: "16:00",
+          endTime: "18:00",
+          type: "confissao",
+          slotMinutes: 30,
+        });
+      }
+
+      const vagas = await getAvailableSlots(parishId, perfil.id, 3);
+      expect(vagas.length).toBeGreaterThan(0);
+      expect(vagas.every((v) => v.type === "confissao")).toBe(true);
+
+      // E a lista de sacerdotes passa a dizer que ele tem horário.
+      const naLista = (await listPriestsWithOpenings(parishId)).find((p) => p.id === perfil.id);
+      expect(naLista?.vagas).toBeGreaterThan(0);
+    });
+
+    it("a secretaria NÃO mexe na agenda de quem usa o aplicativo", async () => {
+      /*
+       * A regra mora no serviço, e não na tela: uma tela pode ser burlada
+       * por endereço digitado à mão, o serviço não.
+       */
+      await expect(
+        criarHorarioDoSacerdote(parishId, priestProfileId, {
+          weekday: 1,
+          startTime: "10:00",
+          endTime: "11:00",
+          type: "atendimento",
+          slotMinutes: 30,
+        }),
+      ).rejects.toThrow(/Minha disponibilidade/i);
+
+      const janelas = await listAvailability(parishId, priestProfileId);
+      await expect(
+        apagarHorarioDoSacerdote(parishId, priestProfileId, janelas[0]!.id),
+      ).rejects.toThrow(/Minha disponibilidade/i);
+      // A janela dele continua de pé.
+      expect((await listAvailability(parishId, priestProfileId)).length).toBe(janelas.length);
     });
 
     it("apagar vale só para quem NÃO tem conta", async () => {

@@ -77,14 +77,87 @@ export function cadastrarSacerdoteSemConta(
  */
 export function apagarSacerdoteSemConta(parishId: string, id: string) {
   return withTenantContext(parishId, async (tx) => {
-    const perfil = await tx.priestProfile.findFirst({ where: { id, parishId } });
-    if (!perfil) throw new NotFoundError("Sacerdote");
-    if (perfil.userId) {
-      throw new ValidationError(
-        "Este sacerdote tem conta no aplicativo. Mude o papel dele em Membros e papéis.",
-      );
-    }
+    const perfil = await exigirSemConta(
+      tx,
+      parishId,
+      id,
+      "sai da lista mudando o papel dele em Membros e papéis",
+    );
     return tx.priestProfile.delete({ where: { id: perfil.id } });
+  });
+}
+
+type Tx = Parameters<Parameters<typeof withTenantContext>[1]>[0];
+
+/**
+ * A porta única para a secretaria mexer na vida de um sacerdote.
+ *
+ * Recusa quem TEM conta, e é a regra que se repete em tudo o que a
+ * secretaria faz por ele: o que atende, os horários, apagar o perfil.
+ * Quem usa o aplicativo cuida da própria agenda — configuração de alguém
+ * não se mexe por fora, e duas mãos no mesmo calendário é como um padre
+ * descobre que foi marcado num horário que ele tinha fechado.
+ *
+ * Escrita uma vez porque três chamadas dependem dela: se a regra morasse
+ * em cada uma, bastaria esquecer numa para abrir a porta inteira.
+ */
+async function exigirSemConta(
+  tx: Tx,
+  parishId: string,
+  priestProfileId: string,
+  /*
+   * A REGRA é uma; a SAÍDA muda com o que se tentou fazer.
+   *
+   * Quem tentou mexer na agenda precisa saber que o próprio padre faz
+   * isso; quem tentou apagar precisa saber que o caminho é o papel na
+   * filiação. Uma frase só para os dois casos manda metade das pessoas
+   * para o lugar errado — e é justamente quando alguém está confuso que a
+   * mensagem tem de acertar.
+   */
+  saida = "cuida da própria agenda em Minha disponibilidade",
+) {
+  const perfil = await tx.priestProfile.findFirst({ where: { id: priestProfileId, parishId } });
+  if (!perfil) throw new NotFoundError("Sacerdote");
+  if (perfil.userId) {
+    throw new ValidationError(`Este sacerdote usa o aplicativo e ${saida}.`);
+  }
+  return perfil;
+}
+
+/**
+ * A secretaria publica um horário POR um sacerdote que não usa o app.
+ *
+ * Sem isto, "não atende pelo app" era o único destino honesto para quem
+ * não tem conta: ele aparecia na lista e nunca podia ter agenda. Um padre
+ * que confessa todo sábado às 16h merece que a comunidade veja isso.
+ */
+export function criarHorarioDoSacerdote(
+  parishId: string,
+  priestProfileId: string,
+  janela: {
+    weekday: number;
+    startTime: string;
+    endTime: string;
+    type: "atendimento" | "confissao";
+    slotMinutes: number;
+  },
+) {
+  return withTenantContext(parishId, async (tx) => {
+    await exigirSemConta(tx, parishId, priestProfileId);
+    return tx.priestAvailability.create({ data: { parishId, priestProfileId, ...janela } });
+  });
+}
+
+export function apagarHorarioDoSacerdote(
+  parishId: string,
+  priestProfileId: string,
+  janelaId: string,
+) {
+  return withTenantContext(parishId, async (tx) => {
+    await exigirSemConta(tx, parishId, priestProfileId);
+    // Escopado ao sacerdote: apagar por id solto deixaria a secretaria
+    // limpar a agenda de outro por engano de digitação.
+    return tx.priestAvailability.deleteMany({ where: { id: janelaId, priestProfileId } });
   });
 }
 
@@ -103,13 +176,7 @@ export function definirOQueAtendeSemConta(
   valores: { ofereceAtendimento: boolean; ofereceConfissao: boolean },
 ) {
   return withTenantContext(parishId, async (tx) => {
-    const perfil = await tx.priestProfile.findFirst({ where: { id: priestProfileId, parishId } });
-    if (!perfil) throw new NotFoundError("Sacerdote");
-    if (perfil.userId) {
-      throw new ValidationError(
-        "Este sacerdote usa o aplicativo e define isso em Minha disponibilidade.",
-      );
-    }
+    const perfil = await exigirSemConta(tx, parishId, priestProfileId);
     return tx.priestProfile.update({ where: { id: perfil.id }, data: valores });
   });
 }

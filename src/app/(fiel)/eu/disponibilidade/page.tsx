@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { WEEKDAY_LABELS, AVAILABILITY_TYPE_LABELS } from "@/lib/pastoral-care-labels";
-import { CreateAvailabilityForm } from "./CreateAvailabilityForm";
+import { FormularioDeHorario } from "@/components/domain/FormularioDeHorario";
 import { CalendarDays } from "lucide-react";
 
 export const metadata: Metadata = { title: "Minha disponibilidade" };
@@ -93,7 +93,7 @@ export default async function AvailabilityPage() {
       </Card>
 
       <Card className="mt-4">
-        <CreateAvailabilityForm />
+        <FormularioDeHorario />
       </Card>
 
       <section className="pt-7">

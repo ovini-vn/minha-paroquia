@@ -4,11 +4,15 @@ import { revalidatePath } from "next/cache";
 import { requireSession, requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import {
+  apagarHorarioDoSacerdote,
   apagarSacerdoteSemConta,
   cadastrarSacerdoteSemConta,
+  criarHorarioDoSacerdote,
   definirOQueAtendeSemConta,
 } from "@/server/modules/priests/service";
+import { createAvailabilityInputSchema } from "@/server/modules/availability/schema";
 import { AppError } from "@/server/shared/errors";
+import { ZodError } from "zod";
 
 export type ActionState = { error?: string; ok?: string };
 
@@ -22,6 +26,7 @@ export type ActionState = { error?: string; ok?: string };
  */
 function telasQueMudam() {
   revalidatePath("/painel");
+  revalidatePath("/painel/sacerdotes", "layout");
   revalidatePath("/comunidade");
   revalidatePath("/comunidade/sacerdotes");
 }
@@ -70,6 +75,64 @@ export async function definirOQueAtendeSemContaAction(formData: FormData): Promi
         ofereceAtendimento: formData.get("ofereceAtendimento") === "sim",
         ofereceConfissao: formData.get("ofereceConfissao") === "sim",
       },
+    );
+  } catch {
+    return;
+  }
+
+  telasQueMudam();
+}
+
+/**
+ * A secretaria publica um horário POR um sacerdote sem conta.
+ *
+ * Reusa o schema de "Minha disponibilidade" — o mesmo formulário nas duas
+ * mãos precisa aceitar exatamente os mesmos valores, senão a secretaria
+ * consegue gravar uma janela que o padre não conseguiria.
+ *
+ * Quem confere que ele realmente não tem conta é o serviço, e não esta
+ * função: a regra tem de morar onde o dado é escrito.
+ */
+export async function criarHorarioDoSacerdoteAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você precisa pertencer a uma paróquia." };
+  requirePermission(session, PERMISSIONS.INVITATIONS_CREATE);
+
+  const priestProfileId = String(formData.get("priestProfileId") ?? "");
+  if (!priestProfileId) return { error: "Sacerdote não informado." };
+
+  try {
+    const janela = createAvailabilityInputSchema.parse({
+      weekday: formData.get("weekday"),
+      startTime: formData.get("startTime"),
+      endTime: formData.get("endTime"),
+      type: formData.get("type") ?? "atendimento",
+      slotMinutes: formData.get("slotMinutes") ?? 30,
+    });
+    await criarHorarioDoSacerdote(session.membership.parishId, priestProfileId, janela);
+  } catch (error) {
+    if (error instanceof ZodError) return { error: error.issues[0]?.message ?? "Dados inválidos." };
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
+
+  telasQueMudam();
+  return {};
+}
+
+export async function apagarHorarioDoSacerdoteAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.INVITATIONS_CREATE);
+
+  try {
+    await apagarHorarioDoSacerdote(
+      session.membership.parishId,
+      String(formData.get("priestProfileId") ?? ""),
+      String(formData.get("id") ?? ""),
     );
   } catch {
     return;

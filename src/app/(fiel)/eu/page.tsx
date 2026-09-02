@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
-import { UserPen, Sparkles, CalendarDays, Users, HandCoins, Clock, LogOut } from "lucide-react";
+import {
+  UserPen,
+  Sparkles,
+  CalendarDays,
+  Users,
+  HandCoins,
+  HandHeart,
+  Clock,
+  LogOut,
+} from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { findUserById } from "@/server/modules/users/repository";
@@ -65,6 +74,28 @@ export default async function ProfilePage() {
             icon={Users}
             title="Minha família"
             subtitle="Dependentes e responsáveis"
+          />
+          {/*
+            A oferta antes do dízimo, e as duas juntas.
+
+            Até aqui o único caminho para "Minha oferta" era passar por
+            Ofertar — quem só queria conferir o que já ofertou tinha de
+            atravessar a tela de convite para chegar ao próprio histórico.
+
+            A oferta vem primeiro porque é a que se FAZ: leva a gerar um
+            código hoje. O dízimo abaixo é registro do que a Pastoral já
+            anotou, e não tem ação nenhuma para quem abre.
+
+            Sem porteiro, ao contrário do convite em Ofertar. Nesta tela as
+            linhas são um índice do que é meu, e nenhuma delas se esconde
+            por estar vazia — "Meus atendimentos" também aparece para quem
+            nunca agendou. Cada destino explica o próprio vazio.
+          */}
+          <RowLink
+            href="/contribuir"
+            icon={HandHeart}
+            title="Minha oferta"
+            subtitle="Fazer uma oferta e ver as anteriores"
           />
           <RowLink
             href="/eu/dizimo"

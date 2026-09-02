@@ -32,6 +32,12 @@ import { CreateCelebrationForm } from "./CreateCelebrationForm";
 import { CreateEventForm } from "./CreateEventForm";
 import { ParishProfileForm } from "./ParishProfileForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
+import { SacerdoteSemContaForm } from "./SacerdoteSemContaForm";
+import {
+  apagarSacerdoteAction,
+  definirOQueAtendeSemContaAction,
+} from "@/server/actions/sacerdote-actions";
 import {
   BookOpen,
   Cake,
@@ -137,7 +143,7 @@ export default async function AdminDashboardPage() {
       startsAt: c.startsAt,
       label: c.title || CELEBRATION_TYPE_LABELS[c.type],
       location: c.location,
-      priestName: c.priestProfile?.user.fullName ?? null,
+      priestName: c.priestProfile ? nomeDoSacerdote(c.priestProfile) : null,
       semHora: c.semHora,
     })),
     ...events.map((e) => ({
@@ -461,17 +467,84 @@ export default async function AdminDashboardPage() {
         <p className="mb-3 font-serif text-lg font-semibold text-foreground">Sacerdotes</p>
         {priests.length === 0 ? (
           <p className="text-sm text-muted">
-            Nenhum sacerdote cadastrado ainda — crie um convite acima com vínculo &ldquo;Sacerdote&rdquo;.
+            Nenhum sacerdote cadastrado ainda — crie um convite acima com vínculo
+            &ldquo;Sacerdote&rdquo;, ou cadastre abaixo quem não usa o aplicativo.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
             {priests.map((priest) => (
-              <li key={priest.id} className="flex items-center gap-2 text-sm text-foreground">
-                {priest.user.fullName} <Badge>{priest.title}</Badge>
+              <li key={priest.id} className="border-b border-border pb-3 last:border-b-0">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
+                  {nomeDoSacerdote(priest)} <Badge>{priest.title}</Badge>
+                  {/*
+                    Quem NÃO usa o app se reconhece na lista, e é a informação
+                    que muda o que a secretaria faz: a agenda dele não vai
+                    aparecer sozinha, alguém tem de marcar por telefone.
+                  */}
+                  {priest.userId ? (
+                    <span className="text-xs text-muted">
+                      Define a própria agenda em &ldquo;Minha disponibilidade&rdquo;
+                    </span>
+                  ) : (
+                    <Badge tone="muted">Não usa o app</Badge>
+                  )}
+                </div>
+
+                {/*
+                  O que ele atende, e por que a secretaria decide AQUI.
+
+                  Quem tem conta marca isso sozinho — configuração de alguém
+                  não se mexe por fora. Quem não tem não tem tela própria, e
+                  sem esta porta ficaria para sempre como "Sem horários", que
+                  é a ambiguidade que os dois campos existem para desfazer.
+                */}
+                {!priest.userId && (
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <form
+                      action={definirOQueAtendeSemContaAction}
+                      className="flex flex-wrap items-center gap-3"
+                    >
+                      <input type="hidden" name="id" value={priest.id} />
+                      <label className="flex items-center gap-1.5 text-[12.5px] text-muted">
+                        <input
+                          type="checkbox"
+                          name="ofereceAtendimento"
+                          value="sim"
+                          defaultChecked={priest.ofereceAtendimento}
+                          className="h-3.5 w-3.5 accent-[rgb(var(--color-primary))]"
+                        />
+                        Conversa
+                      </label>
+                      <label className="flex items-center gap-1.5 text-[12.5px] text-muted">
+                        <input
+                          type="checkbox"
+                          name="ofereceConfissao"
+                          value="sim"
+                          defaultChecked={priest.ofereceConfissao}
+                          className="h-3.5 w-3.5 accent-[rgb(var(--color-primary))]"
+                        />
+                        Confissão
+                      </label>
+                      <Button type="submit" variant="ghost" size="sm">
+                        Salvar
+                      </Button>
+                    </form>
+
+                    {/* Formulário separado do de cima: apagar por engano ao
+                        mirar em "Salvar" é o acidente que a separação evita. */}
+                    <form action={apagarSacerdoteAction}>
+                      <input type="hidden" name="id" value={priest.id} />
+                      <Button type="submit" variant="ghost" size="sm">
+                        Remover
+                      </Button>
+                    </form>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
         )}
+        <SacerdoteSemContaForm />
       </Card>
 
       <Card>

@@ -11,11 +11,38 @@ const vazio = {
 const registrado = {
   id: "perfil-1",
   title: "Pároco",
+  nome: null,
   photoUrl: "https://exemplo.org/conta.jpg",
-  user: { fullName: "Pe. Antônio Silva", photoUrl: null },
+  user: { fullName: "Pe. Antônio Silva", photoUrl: null } as {
+    fullName: string;
+    photoUrl: string | null;
+  } | null,
+};
+
+/** O padre que não usa o aplicativo: perfil sem conta, nome no perfil. */
+const semConta = {
+  id: "perfil-2",
+  title: "Vigário",
+  nome: "Pe. Bento Alves",
+  photoUrl: null,
+  user: null,
 };
 
 describe("quem a comunidade vê como pároco", () => {
+  it("perfil SEM CONTA se identifica pelo nome do próprio perfil", () => {
+    const p = resolverParoco(vazio, semConta);
+    expect(p?.nome).toBe("Pe. Bento Alves");
+    expect(p?.titulo).toBe("Vigário");
+    // Sem conta continua sendo alguém a quem se pode pedir atendimento:
+    // quem cuida da agenda dele é a secretaria, mas o perfil é real.
+    expect(p?.priestProfileId).toBe("perfil-2");
+  });
+
+  it("o nome digitado na paróquia ainda ganha do nome do perfil sem conta", () => {
+    const p = resolverParoco({ ...vazio, parocoNome: "Pe. Bento A. Alves" }, semConta);
+    expect(p?.nome).toBe("Pe. Bento A. Alves");
+  });
+
   it("sem conta e sem nome digitado, não há o que mostrar", () => {
     expect(resolverParoco(vazio, null)).toBeNull();
   });
@@ -82,7 +109,7 @@ describe("quem assina a Palavra do Padre", () => {
     // diria ao fiel que outra pessoa escreveu.
     const paroco = resolverParoco(
       { parocoNome: "Pe. Sandro", parocoTitulo: null, parocoHistoria: null, parocoFotoUrl: null },
-      { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
+      { id: "perfil-1", title: "Pároco", nome: null, photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
     );
     expect(assinaturaDoPost(autor, paroco)).toEqual({
       nome: "Pe. Sandro",
@@ -94,10 +121,20 @@ describe("quem assina a Palavra do Padre", () => {
   it("não mexe no post de outro sacerdote", () => {
     const paroco = resolverParoco(
       { parocoNome: "Pe. Sandro", parocoTitulo: null, parocoHistoria: null, parocoFotoUrl: null },
-      { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
+      { id: "perfil-1", title: "Pároco", nome: null, photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
     );
     expect(assinaturaDoPost(outroSacerdote, paroco)).toEqual({
       nome: "Pe. Marcos",
+      titulo: "Vigário",
+      fotoUrl: null,
+    });
+  });
+
+  it("sacerdote SEM CONTA assina com o nome do próprio perfil", () => {
+    // É o único nome que ele tem, e é o que a paróquia digitou de propósito.
+    const semConta = { id: "perfil-3", title: "Vigário", nome: "Pe. Bento Alves", user: null };
+    expect(assinaturaDoPost(semConta, null)).toEqual({
+      nome: "Pe. Bento Alves",
       titulo: "Vigário",
       fotoUrl: null,
     });
@@ -114,7 +151,7 @@ describe("quem assina a Palavra do Padre", () => {
   it("o título também vem do cadastro da paróquia", () => {
     const paroco = resolverParoco(
       { parocoNome: "Pe. Sandro", parocoTitulo: "Administrador paroquial", parocoHistoria: null, parocoFotoUrl: null },
-      { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
+      { id: "perfil-1", title: "Pároco", nome: null, photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
     );
     expect(assinaturaDoPost(autor, paroco).titulo).toBe("Administrador paroquial");
   });
@@ -162,7 +199,7 @@ describe("o rosto que assina", () => {
         parocoHistoria: null,
         parocoFotoUrl: "https://exemplo.org/o-padre.jpg",
       },
-      { id: "perfil-1", title: "Pároco", photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
+      { id: "perfil-1", title: "Pároco", nome: null, photoUrl: null, user: { fullName: "Vinicius Almeida", photoUrl: null } },
     );
 
     expect(assinaturaDoPost(contaDoAdmin, paroco).fotoUrl).toBe("https://exemplo.org/o-padre.jpg");

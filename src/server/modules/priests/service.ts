@@ -1,5 +1,6 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { getAvailableSlots } from "@/server/modules/appointments/service";
+import { NotFoundError, ValidationError } from "@/server/shared/errors";
 
 export { ensurePriestProfile, isPriestRole } from "./ensure-priest-profile";
 
@@ -32,6 +33,85 @@ export async function listPriestsWithOpenings(parishId: string) {
       vagas: (await getAvailableSlots(parishId, priest.id)).length,
     })),
   );
+}
+
+/**
+ * Cadastra um sacerdote que NÃO usa o aplicativo.
+ *
+ * O caminho de quem usa continua sendo o papel na filiação — convite ou
+ * troca em Membros e papéis —, e é ele que cria o perfil com conta. Este
+ * aqui é para o padre que não vai entrar: o pároco desta paróquia é um
+ * deles, e a comunidade precisava vê-lo em "Falar com um sacerdote".
+ *
+ * O nome é obrigatório porque é a única identificação que sobra. O banco
+ * também exige, por CHECK: conta OU nome, nunca nenhum dos dois.
+ */
+export function cadastrarSacerdoteSemConta(
+  parishId: string,
+  input: { nome: string; title: string },
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const nome = input.nome.trim();
+    if (!nome) throw new ValidationError("Escreva o nome do sacerdote.");
+
+    const quantos = await tx.priestProfile.count({ where: { parishId } });
+    return tx.priestProfile.create({
+      data: {
+        parishId,
+        userId: null,
+        nome,
+        title: input.title.trim() || "Sacerdote",
+        displayOrder: quantos + 1,
+      },
+    });
+  });
+}
+
+/**
+ * Apaga um perfil de sacerdote SEM CONTA.
+ *
+ * Só os sem conta: quem tem conta ganhou o perfil pelo papel na filiação,
+ * e apagar aqui deixaria a pessoa com papel de sacerdote e sem perfil —
+ * um estado que nenhuma tela sabe mostrar. Para esses, o caminho é trocar
+ * o papel em Membros e papéis.
+ */
+export function apagarSacerdoteSemConta(parishId: string, id: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const perfil = await tx.priestProfile.findFirst({ where: { id, parishId } });
+    if (!perfil) throw new NotFoundError("Sacerdote");
+    if (perfil.userId) {
+      throw new ValidationError(
+        "Este sacerdote tem conta no aplicativo. Mude o papel dele em Membros e papéis.",
+      );
+    }
+    return tx.priestProfile.delete({ where: { id: perfil.id } });
+  });
+}
+
+/**
+ * A secretaria define o que um sacerdote SEM CONTA atende.
+ *
+ * Quem tem conta faz isso sozinho em "Minha disponibilidade", e continua
+ * sendo o único a poder — configuração de alguém não se mexe por fora.
+ * Mas um padre sem conta não tem tela própria: sem esta porta, ele ficaria
+ * para sempre como "Sem horários", que é exatamente a ambiguidade que os
+ * dois campos existem para desfazer.
+ */
+export function definirOQueAtendeSemConta(
+  parishId: string,
+  priestProfileId: string,
+  valores: { ofereceAtendimento: boolean; ofereceConfissao: boolean },
+) {
+  return withTenantContext(parishId, async (tx) => {
+    const perfil = await tx.priestProfile.findFirst({ where: { id: priestProfileId, parishId } });
+    if (!perfil) throw new NotFoundError("Sacerdote");
+    if (perfil.userId) {
+      throw new ValidationError(
+        "Este sacerdote usa o aplicativo e define isso em Minha disponibilidade.",
+      );
+    }
+    return tx.priestProfile.update({ where: { id: perfil.id }, data: valores });
+  });
 }
 
 /**

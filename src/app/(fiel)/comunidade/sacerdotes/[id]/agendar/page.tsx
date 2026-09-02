@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { AppointmentBookingForm } from "./AppointmentBookingForm";
 import { CalendarDays, Phone } from "lucide-react";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export default async function BookAppointmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,7 +26,7 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
       <div className="mb-1">
         <Eyebrow tone="accent">Solicitar atendimento com</Eyebrow>
         <h1 className="mt-1 font-serif text-[29px] font-semibold leading-tight text-foreground">
-          {priest.user.fullName}
+          {nomeDoSacerdote(priest)}
         </h1>
       </div>
 

@@ -5,6 +5,7 @@ import { notifyUser, registrarEnvio } from "@/server/modules/notifications/servi
 import { sendToUser } from "@/server/modules/push/service";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { diaEmBrasilia } from "@/lib/brasilia";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 /**
  * Lembretes dos compromissos assumidos — o que a pessoa se comprometeu a
@@ -117,7 +118,7 @@ async function commitmentsForParish(
       when,
       at: a.scheduledAt,
       title: `Seu atendimento é ${quando}`,
-      body: `${a.priestProfile.user.fullName} · ${HORA.format(a.scheduledAt)}`,
+      body: `${nomeDoSacerdote(a.priestProfile)} · ${HORA.format(a.scheduledAt)}`,
       url: "/eu/atendimentos",
       tag: `atendimento-${a.id}`,
     }));

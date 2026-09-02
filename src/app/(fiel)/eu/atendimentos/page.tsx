@@ -16,6 +16,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/date";
 import { APPOINTMENT_CATEGORY_LABELS, APPOINTMENT_STATUS_LABELS } from "@/lib/pastoral-care-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 /** Tom do badge por situação — cor reforça o texto, nunca o substitui. */
 const STATUS_TONE: Record<string, "warning" | "success" | "muted" | "error"> = {
@@ -71,13 +72,13 @@ export default async function AppointmentsPage() {
                 key={appointment.id}
                 className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
               >
-                <Avatar name={appointment.priestProfile.user.fullName} size="sm" />
+                <Avatar name={nomeDoSacerdote(appointment.priestProfile)} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="text-[14.5px] font-medium text-foreground">
                     {APPOINTMENT_CATEGORY_LABELS[appointment.category]}
                   </p>
                   <p className="mt-0.5 text-[12.5px] text-muted">
-                    {appointment.priestProfile.user.fullName} ·{" "}
+                    {nomeDoSacerdote(appointment.priestProfile)} ·{" "}
                     {formatDateTime(appointment.scheduledAt)}
                   </p>
                 </div>

@@ -12,10 +12,11 @@ import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { WEEKDAY_LABELS, WEEK_OF_MONTH_LABELS } from "@/lib/recurrence";
 import { parseMinutes, formatMinutes } from "@/lib/brasilia";
 import { hojeEmBrasilia } from "@/lib/brasilia";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 const initialState: ScheduleActionState = {};
 
-type Priest = { id: string; user: { fullName: string } };
+type Priest = { id: string; nome: string | null; user: { fullName: string } | null };
 
 /** Uma repetição já cadastrada, quando o formulário está corrigindo. */
 export type ScheduleParaEditar = {
@@ -201,7 +202,7 @@ export function CreateScheduleForm({
               <option value="">—</option>
               {priests.map((priest) => (
                 <option key={priest.id} value={priest.id}>
-                  {priest.user.fullName}
+                  {nomeDoSacerdote(priest)}
                 </option>
               ))}
             </select>

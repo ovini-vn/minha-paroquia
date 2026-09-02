@@ -4,10 +4,11 @@ import { useActionState } from "react";
 import { createCelebrationAction, type ActionState } from "@/server/actions/agenda-actions";
 import { Button } from "@/components/ui/Button";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 const initialState: ActionState = {};
 
-type Priest = { id: string; title: string; user: { fullName: string } };
+type Priest = { id: string; title: string; nome: string | null; user: { fullName: string } | null };
 
 export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
   const [state, formAction, pending] = useActionState(createCelebrationAction, initialState);
@@ -77,7 +78,7 @@ export function CreateCelebrationForm({ priests }: { priests: Priest[] }) {
             <option value="">—</option>
             {priests.map((priest) => (
               <option key={priest.id} value={priest.id}>
-                {priest.user.fullName}
+                {nomeDoSacerdote(priest)}
               </option>
             ))}
           </select>

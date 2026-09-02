@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Eyebrow } from "@/components/ui/Typography";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export default async function PriestProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,9 +20,9 @@ export default async function PriestProfilePage({ params }: { params: Promise<{ 
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col items-center gap-2 py-6 text-center">
-        <Avatar name={priest.user.fullName} size="lg" />
+        <Avatar name={nomeDoSacerdote(priest)} size="lg" />
         <p className="mt-1 font-serif text-2xl font-semibold text-foreground">
-          {priest.user.fullName}
+          {nomeDoSacerdote(priest)}
         </p>
         <Badge>{priest.title}</Badge>
       </Card>

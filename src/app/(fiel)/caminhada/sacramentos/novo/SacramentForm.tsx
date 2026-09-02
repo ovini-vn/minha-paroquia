@@ -5,10 +5,11 @@ import { registerSacramentAction, type ActionState } from "@/server/actions/cami
 import { Button } from "@/components/ui/Button";
 import { SACRAMENT_TYPE_LABELS } from "@/lib/caminhada-labels";
 import { hojeEmBrasilia } from "@/lib/brasilia";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 const initialState: ActionState = {};
 
-type Priest = { id: string; user: { fullName: string } };
+type Priest = { id: string; nome: string | null; user: { fullName: string } | null };
 
 export function SacramentForm({ priests }: { priests: Priest[] }) {
   const [state, formAction, pending] = useActionState(registerSacramentAction, initialState);
@@ -70,7 +71,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
             <option value="">—</option>
             {priests.map((priest) => (
               <option key={priest.id} value={priest.id}>
-                {priest.user.fullName}
+                {nomeDoSacerdote(priest)}
               </option>
             ))}
           </select>

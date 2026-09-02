@@ -5,7 +5,15 @@ import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { createAvailability } from "@/server/modules/availability/service";
 import { createAppointment, getAvailableSlots } from "@/server/modules/appointments/service";
-import { definirOQueAtende, listPriestsWithOpenings } from "@/server/modules/priests/service";
+import {
+  apagarSacerdoteSemConta,
+  cadastrarSacerdoteSemConta,
+  definirOQueAtende,
+  getPriestProfile,
+  listPriests,
+  listPriestsWithOpenings,
+} from "@/server/modules/priests/service";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 describe("atendimento pastoral: geração de horários e agendamento", () => {
@@ -133,6 +141,76 @@ describe("atendimento pastoral: geração de horários e agendamento", () => {
     const comVagas = await listPriestsWithOpenings(parishId);
     expect(comVagas.map((p) => p.id)).toContain(perfil.id);
     expect(comVagas.find((p) => p.id === perfil.id)?.vagas).toBe(0);
+  });
+
+  /*
+   * Sacerdote que não usa o aplicativo.
+   *
+   * Muitos padres não usam — o pároco desta paróquia é um deles —, e a
+   * comunidade continua precisando vê-lo em "Falar com um sacerdote". Até
+   * aqui a única saída era criar uma conta que ninguém abriria.
+   */
+  describe("sacerdote sem conta", () => {
+    it("aparece na lista pelo nome do perfil, sem conta nenhuma", async () => {
+      const perfil = await cadastrarSacerdoteSemConta(parishId, {
+        nome: "Pe. Bento Alves",
+        title: "Vigário",
+      });
+
+      expect(perfil.userId).toBeNull();
+      expect(perfil.nome).toBe("Pe. Bento Alves");
+      /*
+       * `nomeDoSacerdote` NÃO aceita a linha crua do create, e é de
+       * propósito: ela exige a relação `user` carregada. Assim um `include`
+       * esquecido vira erro de compilação em vez de um nome que some da
+       * tela para quem tem conta.
+       */
+
+      const lista = await listPriests(parishId);
+      const achado = lista.find((p) => p.id === perfil.id);
+      expect(achado).toBeDefined();
+      expect(nomeDoSacerdote(achado!)).toBe("Pe. Bento Alves");
+      expect(achado!.user).toBeNull();
+
+      // E dá para abrir a ficha dele como a de qualquer outro.
+      const ficha = await getPriestProfile(parishId, perfil.id);
+      expect(nomeDoSacerdote(ficha!)).toBe("Pe. Bento Alves");
+    });
+
+    it("vários sem conta convivem — a única com NULO não os impede", async () => {
+      const a = await cadastrarSacerdoteSemConta(parishId, { nome: "Pe. Um", title: "Vigário" });
+      const b = await cadastrarSacerdoteSemConta(parishId, { nome: "Pe. Dois", title: "Vigário" });
+      expect(a.id).not.toBe(b.id);
+
+      const nomes = (await listPriests(parishId)).map(nomeDoSacerdote);
+      expect(nomes).toContain("Pe. Um");
+      expect(nomes).toContain("Pe. Dois");
+    });
+
+    it("recusa nome em branco — sem conta e sem nome ninguém sabe de quem é", async () => {
+      await expect(
+        cadastrarSacerdoteSemConta(parishId, { nome: "   ", title: "Vigário" }),
+      ).rejects.toThrow(/nome/i);
+    });
+
+    it("apagar vale só para quem NÃO tem conta", async () => {
+      const semConta = await cadastrarSacerdoteSemConta(parishId, {
+        nome: "Pe. Some",
+        title: "Vigário",
+      });
+      await apagarSacerdoteSemConta(parishId, semConta.id);
+      expect((await listPriests(parishId)).some((p) => p.id === semConta.id)).toBe(false);
+
+      /*
+       * Quem tem conta ganhou o perfil pelo papel na filiação. Apagar aqui
+       * deixaria a pessoa com papel de sacerdote e sem perfil — estado que
+       * nenhuma tela sabe mostrar.
+       */
+      await expect(apagarSacerdoteSemConta(parishId, priestProfileId)).rejects.toThrow(
+        /Membros e papéis/i,
+      );
+      expect((await listPriests(parishId)).some((p) => p.id === priestProfileId)).toBe(true);
+    });
   });
 
   /*

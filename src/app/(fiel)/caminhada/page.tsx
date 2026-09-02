@@ -18,6 +18,7 @@ import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-
 import { formatDateOnly } from "@/lib/date";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { hojeEmBrasilia } from "@/lib/brasilia";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export const metadata: Metadata = { title: "Minha Caminhada" };
 
@@ -76,7 +77,7 @@ export default async function CaminhadaPage() {
                       <p className="mt-0.5 text-[12.5px] text-muted">
                         {formatDateOnly(s.date)}
                         {s.location ? ` · ${s.location}` : ""}
-                        {s.priestProfile ? ` · ${s.priestProfile.user.fullName}` : ""}
+                        {s.priestProfile ? ` · ${nomeDoSacerdote(s.priestProfile)}` : ""}
                       </p>
                     </div>
                     <Badge tone={s.status === "validated" ? "success" : "muted"}>

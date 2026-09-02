@@ -544,7 +544,19 @@ model OAuthAccount {
 // correspondente; é 1:1 por (userId, parishId).
 model PriestProfile {
   id           String   @id @default(uuid())
-  userId       String   @map("user_id")
+  /// NULO quando o sacerdote não usa o aplicativo.
+  ///
+  /// Muitos padres não usam — o pároco desta paróquia é um deles, e a
+  /// comunidade continua precisando vê-lo em "Falar com um sacerdote". Sem
+  /// isto, a única saída era criar uma conta que ninguém abriria, só para
+  /// o app ter onde pendurar o nome.
+  ///
+  /// Mesmo caminho que a catequese já usa para catequista sem conta (ver
+  /// `CatechismGroup.catechistName`). Quem tem conta continua com ela: é o
+  /// que permite publicar a Palavra do Padre e gerir a própria agenda.
+  userId       String?  @map("user_id")
+  /// O nome de quem não tem conta. Quem tem, o nome vem da conta.
+  nome         String?
   parishId     String   @map("parish_id")
   title        String
   bio          String?
@@ -569,7 +581,7 @@ model PriestProfile {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User?                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   parish               Parish                @relation(fields: [parishId], references: [id], onDelete: Cascade)
   celebrations         Celebration[]
   celebrationSchedules CelebrationSchedule[]
@@ -578,6 +590,9 @@ model PriestProfile {
   appointments         Appointment[]
   sacraments           Sacrament[]
 
+  /// Postgres trata NULOs como distintos, então esta única continua
+  /// impedindo dois perfis para a MESMA conta na mesma paróquia e deixa
+  /// vários sem conta conviverem — que é exatamente o que se quer.
   @@unique([userId, parishId])
   @@index([parishId])
   @@map("priest_profiles")

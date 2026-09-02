@@ -128,12 +128,21 @@ export async function getLatestPost(parishId: string) {
  * estreita de propósito: um sacerdote não edita o que o outro disse.
  */
 export function podeMexerNaPalavra(
-  post: { createdBy: string | null; priestProfile: { userId: string } | null },
+  post: { createdBy: string | null; priestProfile: { userId: string | null } | null },
   quem: { userId: string; administraPalavra: boolean },
 ): boolean {
   if (quem.administraPalavra) return true;
   if (post.createdBy && post.createdBy === quem.userId) return true;
-  return post.priestProfile?.userId === quem.userId;
+  /*
+   * `userId` nulo é sacerdote sem conta, e a comparação tem de FALHAR.
+   *
+   * Ele não entra no app — não há de quem exigir senha —, então nunca é o
+   * "quem" desta pergunta. Sem o teste explícito, um dia em que `quem`
+   * chegasse com nulo por engano, `null === null` daria acesso à Palavra
+   * de outra pessoa.
+   */
+  if (post.priestProfile?.userId == null) return false;
+  return post.priestProfile.userId === quem.userId;
 }
 
 type Tx = Parameters<Parameters<typeof withTenantContext>[1]>[0];

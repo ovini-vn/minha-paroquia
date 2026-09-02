@@ -29,7 +29,7 @@ export default async function ParocoAdminPage() {
           titulo={parish?.parocoTitulo ?? ""}
           historia={parish?.parocoHistoria ?? ""}
           fotoUrl={parish?.parocoFotoUrl ?? ""}
-          nomeDaConta={registrado?.user.fullName ?? null}
+          nomeDaConta={registrado?.user?.fullName ?? null}
           podeEnviarArquivo={isUploadConfigured()}
           motivoIndisponivel={diagnosticoDoUpload()}
         />

@@ -37,6 +37,7 @@ import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export const metadata: Metadata = { title: "Minha Comunidade" };
 
@@ -291,9 +292,9 @@ export default async function ComunidadePage() {
                 href={`/comunidade/sacerdotes/${priest.id}`}
                 className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
               >
-                <Avatar name={priest.user.fullName} size="sm" />
+                <Avatar name={nomeDoSacerdote(priest)} size="sm" />
                 <div className="min-w-0">
-                  <p className="text-[14.5px] font-medium text-foreground">{priest.user.fullName}</p>
+                  <p className="text-[14.5px] font-medium text-foreground">{nomeDoSacerdote(priest)}</p>
                   <p className="mt-0.5 text-[12.5px] text-muted">{priest.title}</p>
                 </div>
               </Link>

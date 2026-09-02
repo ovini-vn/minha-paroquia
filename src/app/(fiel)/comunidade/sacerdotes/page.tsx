@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { Avatar } from "@/components/ui/Avatar";
 import { oQueAtende } from "@/lib/pastoral-care-labels";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 /**
  * Quem atende, e quem tem horário aberto agora.
@@ -53,10 +54,10 @@ export default async function SacerdotesPage() {
               href={`/comunidade/sacerdotes/${priest.id}`}
               className="flex items-center gap-3.5 border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint"
             >
-              <Avatar name={priest.user.fullName} size="sm" />
+              <Avatar name={nomeDoSacerdote(priest)} size="sm" />
               <span className="min-w-0 flex-1">
                 <span className="block text-[14.5px] font-medium text-foreground">
-                  {priest.user.fullName}
+                  {nomeDoSacerdote(priest)}
                 </span>
                 {/* O que ele atende vem junto do cargo, e não numa
                     tarja à parte: é a mesma pergunta — "quem é este e o

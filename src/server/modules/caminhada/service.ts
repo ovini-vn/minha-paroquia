@@ -3,6 +3,7 @@ import { notifyUser } from "@/server/modules/notifications/service";
 import { SACRAMENT_TYPE_LABELS } from "@/lib/caminhada-labels";
 import { formatDateOnly } from "@/lib/date";
 import type { RegisterMassParticipationInput, RegisterSacramentInput, RegisterConfessionInput } from "./schema";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 // ---- Missas e reflexão ------------------------------------------------
 
@@ -229,8 +230,8 @@ export function obterDadosDaCertidao(parishId: string, sacramentId: string) {
       nascimento: sacramento.user?.birthDate ?? sacramento.familyMember?.birthDate ?? null,
       paroquia,
       // Quem celebrou, quando registrado; senão o pároco atual assina.
-      celebrante: sacramento.priestProfile?.user.fullName ?? null,
-      paroco: paroco ? { nome: paroco.user.fullName, titulo: paroco.title } : null,
+      celebrante: sacramento.priestProfile ? nomeDoSacerdote(sacramento.priestProfile) : null,
+      paroco: paroco ? { nome: nomeDoSacerdote(paroco), titulo: paroco.title } : null,
       livro: sacramento.note?.trim() || null,
     };
   });

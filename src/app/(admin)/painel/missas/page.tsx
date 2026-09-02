@@ -20,6 +20,7 @@ import { describeRule } from "@/lib/recurrence";
 import { CreateScheduleForm } from "./CreateScheduleForm";
 import { DeactivateScheduleButton } from "./DeactivateScheduleButton";
 import { Repeat, CalendarDays } from "lucide-react";
+import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export const metadata: Metadata = { title: "Horários das missas" };
 
@@ -116,7 +117,7 @@ export default async function MissasAdminPage({
                   <p className="mt-0.5 text-[12.5px] text-muted">
                     {[
                       schedule.location,
-                      schedule.priestProfile?.user.fullName,
+                      schedule.priestProfile && nomeDoSacerdote(schedule.priestProfile),
                       schedule.endsOn ? `até ${formatDateTime(schedule.endsOn).slice(0, 10)}` : null,
                     ]
                       .filter(Boolean)

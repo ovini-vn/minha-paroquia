@@ -34,12 +34,13 @@ export function resolverParoco(
   registrado: {
     id: string;
     title: string;
+    nome: string | null;
     photoUrl: string | null;
-    user: { fullName: string; photoUrl: string | null };
+    user: { fullName: string; photoUrl: string | null } | null;
   } | null,
 ): Paroco | null {
   const digitado = parish.parocoNome?.trim() || null;
-  const nome = digitado ?? registrado?.user.fullName ?? null;
+  const nome = digitado ?? registrado?.nome?.trim() ?? registrado?.user?.fullName ?? null;
   if (!nome) return null;
 
   const daConta = !digitado && registrado !== null;
@@ -50,7 +51,7 @@ export function resolverParoco(
     historia: parish.parocoHistoria?.trim() || null,
     fotoUrl:
       parish.parocoFotoUrl?.trim() ||
-      (daConta ? (registrado.photoUrl ?? registrado.user.photoUrl) : null),
+      (daConta ? (registrado.photoUrl ?? registrado.user?.photoUrl ?? null) : null),
     priestProfileId: daConta ? registrado.id : null,
     contaId: registrado?.id ?? null,
   };
@@ -73,8 +74,9 @@ export function assinaturaDoPost(
   autor: {
     id: string;
     title: string;
+    nome?: string | null;
     photoUrl?: string | null;
-    user: { fullName: string; photoUrl?: string | null };
+    user?: { fullName: string; photoUrl?: string | null } | null;
   } | null,
   paroco: Paroco | null,
 ): Assinatura {
@@ -91,8 +93,10 @@ export function assinaturaDoPost(
     return { nome: paroco.nome, titulo: paroco.titulo, fotoUrl: paroco.fotoUrl };
   }
   return {
-    nome: autor.user.fullName,
+    // Sacerdote sem conta assina com o nome do perfil — é o único que ele
+    // tem, e é o que a paróquia digitou de propósito.
+    nome: autor.nome?.trim() || autor.user?.fullName || "Sacerdote",
     titulo: autor.title,
-    fotoUrl: autor.photoUrl ?? autor.user.photoUrl ?? null,
+    fotoUrl: autor.photoUrl ?? autor.user?.photoUrl ?? null,
   };
 }

@@ -98,7 +98,13 @@ const TELAS = [
   { arquivo: "caminhada", url: "/caminhada" },
   { arquivo: "contato", url: "/contato" },
   { arquivo: "servir", url: "/servir" },
-  { arquivo: "doacao", url: "/doacao" },
+  // "Ofertar" era "Doação" até 02/09/2026 — o arquivo acompanha o nome da
+  // tela, senão daqui a um ano ninguém sabe o que o print mostra.
+  // Rola até o convite: o cartão "Faça parte das obras" e o botão cheio são
+  // o coração da tela, e o topo sozinho mostra só a grade de finalidades.
+  { arquivo: "ofertar", url: "/doacao", rolarAte: "text=Faça parte das obras" },
+  { arquivo: "minha-oferta", url: "/contribuir" },
+  { arquivo: "plano", url: "/plano" },
   { arquivo: "comunidade-sacerdotes", url: "/comunidade/sacerdotes" },
   // No celular o painel também é usado de pé, no fundo da igreja.
   { arquivo: "painel", url: "/painel", rolarAte: "text=Membros e papéis" },

@@ -22,6 +22,7 @@
     "apresentacao:dados": "tsx docs/apresentacao/preparar-dados.ts",
     "test:e2e": "playwright test",
     "contraste": "node scripts/contraste.mjs",
+    "onboarding:resetar": "tsx scripts/resetar-onboarding.ts",
     "passo:dados": "tsx docs/passo-a-passo/preparar-dados.ts",
     "passo:prints": "node docs/passo-a-passo/capturar.mjs",
     "passo:montar": "node docs/passo-a-passo/montar.mjs"

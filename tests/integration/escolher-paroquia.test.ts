@@ -9,6 +9,7 @@ import {
   getParishDashboardCounts,
 } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
+import { cadastrarSacerdoteSemConta } from "@/server/modules/priests/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 /**
@@ -75,6 +76,24 @@ describe("escolher a paróquia sem convite", () => {
 
     const counts = await getParishDashboardCounts(paroquiaAId);
     expect(counts.fielCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it("a contagem de sacerdotes enxerga quem não tem conta", async () => {
+    /*
+     * Contava filiação com papel de sacerdote, e um padre sem conta não tem
+     * filiação. O painel dizia "0 Sacerdotes" enquanto listava um logo
+     * abaixo, e "Falar com um sacerdote" mostrava o mesmo padre ao fiel —
+     * visto em produção em 03/09/2026.
+     */
+    const antes = (await getParishDashboardCounts(paroquiaAId)).sacerdoteCount;
+
+    await cadastrarSacerdoteSemConta(paroquiaAId, {
+      nome: "Pe. Sem Conta",
+      title: "Vigário",
+    });
+
+    const depois = (await getParishDashboardCounts(paroquiaAId)).sacerdoteCount;
+    expect(depois).toBe(antes + 1);
   });
 
   it("escolher de novo a mesma paróquia não duplica vínculo", async () => {

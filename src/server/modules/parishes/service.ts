@@ -63,7 +63,6 @@ export function updateOwnParishProfile(parishId: string, input: UpdateParishProf
   });
 }
 
-const PRIEST_ROLE_CODES = ["SACERDOTE", "PAROCO"] as const;
 
 /**
  * Os números do painel.
@@ -81,9 +80,19 @@ export async function getParishDashboardCounts(parishId: string) {
   return withTenantContext(parishId, async (tx) => {
     const [fielCount, sacerdoteCount, sairam] = await Promise.all([
       tx.parishMembership.count({ where: { parishId, status: "active" } }),
-      tx.parishMembership.count({
-        where: { parishId, status: "active", role: { code: { in: [...PRIEST_ROLE_CODES] } } },
-      }),
+      /*
+       * Sacerdote se conta pelo PERFIL, não pela filiação.
+       *
+       * Contava filiação com papel de sacerdote — e desde que existe padre
+       * sem conta no aplicativo (02/09/2026) isso deixou de bater com a
+       * realidade: quem não tem conta não tem filiação. O painel dizia
+       * "0 Sacerdotes" enquanto listava um três dedos abaixo, e "Falar com
+       * um sacerdote" mostrava o mesmo padre ao fiel. Visto em produção.
+       *
+       * O perfil é o que TODA tela usa para exibir sacerdote, então é o
+       * número honesto: se aparece para o fiel, conta aqui.
+       */
+      tx.priestProfile.count({ where: { parishId } }),
       // Vínculo inativo nesta paróquia é quem escolheu outra depois: quando
       // alguém troca, o vínculo antigo é desativado, não apagado.
       tx.parishMembership.count({ where: { parishId, status: "inactive" } }),

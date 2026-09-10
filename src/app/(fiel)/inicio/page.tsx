@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { BookOpen, Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -8,6 +9,8 @@ import { getParish } from "@/server/modules/parishes/service";
 import { getParoco } from "@/server/modules/priests/service";
 import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
+import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
+import { PalavraDoDiaCard } from "@/components/domain/PalavraDoDiaCard";
 import { listarAniversariosDaComunidade } from "@/server/modules/aniversarios/service";
 import { NOME_DO_ANIVERSARIO } from "@/lib/aniversarios";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
@@ -26,7 +29,7 @@ import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
-import { horaEmBrasilia } from "@/lib/brasilia";
+import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
@@ -53,6 +56,28 @@ function greeting(): string {
   if (hour < 12) return "Bom dia";
   if (hour < 18) return "Boa tarde";
   return "Boa noite";
+}
+
+/**
+ * O Evangelho do dia, que chega DEPOIS do resto da tela.
+ *
+ * `getPalavraDoDia` busca um feed do Vatican News — servidor de outra
+ * gente, com até 6 segundos de espera. Posto junto das outras consultas,
+ * ele segurava o Início inteiro: a tela mais aberta do app ficava em
+ * "Carregando…" esperando um terceiro responder. Visto na tela.
+ *
+ * Atrás de `Suspense` com fallback nulo, a página pinta na hora e o cartão
+ * entra quando (e se) o feed responder. Feed fora do ar deixa de ser um
+ * problema do app e volta a ser o que sempre foi: um cartão a menos.
+ */
+async function EvangelhoDeHoje() {
+  const palavra = await getPalavraDoDia();
+  if (!palavra) return null;
+  return (
+    <section className="pt-[26px]">
+      <PalavraDoDiaCard palavra={palavra} variante="compacto" />
+    </section>
+  );
 }
 
 export const metadata: Metadata = { title: "Início" };
@@ -82,6 +107,18 @@ export default async function HomePage() {
       // vira calendário e o convite a rezar perde a urgência.
       listarAniversariosDaComunidade(session.membership.parishId, new Date(), 7),
     ]);
+
+  /*
+   * A mensagem é de HOJE?
+   *
+   * Comparada em Brasília, não em UTC: o servidor da Vercel roda em UTC, e
+   * às 21h de Brasília já é o dia seguinte lá. Sem isso, o app diria "a
+   * última mensagem" para um vídeo publicado à noite — justo no horário em
+   * que mais gente abre.
+   */
+  const palavraEhDeHoje = latestPost
+    ? diaEmBrasilia(latestPost.publishedAt) === hojeEmBrasilia()
+    : false;
   const latestAviso = latestAvisos[0] ?? null;
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
   const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
@@ -205,12 +242,40 @@ export default async function HomePage() {
        */}
       <div className="lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8">
       <div className="flex flex-col">
+      {/*
+        O Evangelho do dia, em áudio — o gancho diário.
+
+        O cartão compacto já existia, escrito para esta tela ("é o gancho
+        diário; a versão completa mora na aba Palavra"), e nunca tinha sido
+        colocado aqui: vivia só na aba Palavra, a um toque de distância de
+        quem abre o app às seis da manhã.
+
+        Vem ANTES da Palavra do Padre de propósito. É o que existe todo dia
+        sem depender de ninguém publicar nada — se o padre não postar, esta
+        seção ainda dá motivo para abrir amanhã.
+      */}
+      <Suspense fallback={null}>
+        <EvangelhoDeHoje />
+      </Suspense>
+
       {/* Palavra do Padre — tratamento editorial, não "mais um card". */}
       {latestPost && assinatura && (
         <section className="pt-[30px]">
+          {/*
+            O título segue o DIA, e não uma suposição sobre a frequência.
+
+            Dizia "Uma mensagem para esta semana" — e o pároco publica todo
+            dia: nove vídeos em nove dias, medido em produção. Quem abriu
+            ontem era informado de que só haveria novidade na semana que
+            vem, com o vídeo de hoje logo abaixo. O app tinha o hábito do
+            padre nas mãos e o descrevia como semanal.
+
+            Continua honesto se ele parar: sem publicação de hoje, o título
+            volta a falar da última.
+          */}
           <SectionTitle
             eyebrow="Palavra do Padre"
-            title="Uma mensagem para esta semana"
+            title={palavraEhDeHoje ? "A mensagem de hoje" : "A última mensagem"}
             actionLabel="Ver todas"
             actionHref="/comunidade"
           />

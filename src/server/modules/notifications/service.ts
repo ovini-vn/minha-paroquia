@@ -220,20 +220,34 @@ export function setPreference(userId: string, category: NotificationCategory, en
 }
 
 /**
- * Os caminhos das dicas da trilha que esta pessoa ainda não abriu.
+ * Os caminhos com novidade que esta pessoa ainda não abriu.
  *
  * Alimenta a bolinha da barra de navegação: cada caminho vira um ponto no
  * destino que leva até ele, e o ponto some quando ela chega lá — porque
  * abrir a tela dá a notificação por lida (`markNotificationsReadByPath`).
  *
- * SÓ a categoria `descoberta`, e é o ponto todo. Acender a barra para
- * qualquer aviso não lido encheria os cinco destinos de pontos e o sinal
- * perderia o sentido; o sino no cabeçalho já conta o não lido em geral.
+ * DUAS categorias, e só duas:
+ *
+ * - `descoberta` — a trilha que ensina o app, uma dica por vez.
+ * - `espiritual` — a Palavra do Padre, que nesta paróquia sai TODO DIA.
+ *   É a única coisa diária que o app tem, e a barra não dava sinal nenhum
+ *   de que havia algo novo: quem abriu ontem não tinha como saber.
+ *
+ * As outras ficam de fora de propósito. Aviso urgente e escala já chegam
+ * por notificação e são sobre um compromisso, não sobre uma tela a
+ * visitar; acender os cinco destinos apagaria o sinal dos dois que
+ * importam. O sino do cabeçalho continua contando o não lido em geral.
  */
-export function caminhosDeDicasNaoLidas(parishId: string, userId: string): Promise<string[]> {
+export function caminhosComNovidade(parishId: string, userId: string): Promise<string[]> {
   return withTenantContext(parishId, async (tx) => {
     const linhas = await tx.notification.findMany({
-      where: { parishId, userId, category: "descoberta", readAt: null, linkPath: { not: null } },
+      where: {
+        parishId,
+        userId,
+        category: { in: ["descoberta", "espiritual"] },
+        readAt: null,
+        linkPath: { not: null },
+      },
       select: { linkPath: true },
       distinct: ["linkPath"],
     });

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import {
-  caminhosDeDicasNaoLidas,
+  caminhosComNovidade,
   countUnreadNotifications,
 } from "@/server/modules/notifications/service";
 import { destinoDoCaminho } from "@/components/layout/nav-items";
@@ -30,7 +30,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
       : Promise.resolve(0),
     session.membership ? getParish(session.membership.parishId) : Promise.resolve(null),
     session.membership
-      ? caminhosDeDicasNaoLidas(session.membership.parishId, session.userId)
+      ? caminhosComNovidade(session.membership.parishId, session.userId)
       : Promise.resolve([] as string[]),
   ]);
 

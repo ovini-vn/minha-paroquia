@@ -76,7 +76,19 @@ export function createPost(
       "espiritual",
       "Nova Palavra do Padre",
       avisoDaPalavra(post),
-      "/comunidade",
+      /*
+       * A aba PALAVRA, e não /comunidade.
+       *
+       * As duas telas mostram a mensagem, mas "Palavra" é o destino que a
+       * barra de navegação anuncia — é lá que a bolinha acende, e mandar a
+       * notificação para outra tela faria o ponto ficar aceso num lugar e
+       * a mensagem abrir noutro. /comunidade é o mural da paróquia; a aba
+       * Palavra é onde o fiel vai ler.
+       *
+       * Vale só para as PRÓXIMAS: as notificações já no aparelho de alguém
+       * guardam o destino antigo e continuam funcionando.
+       */
+      "/oracao",
     );
 
     return post;

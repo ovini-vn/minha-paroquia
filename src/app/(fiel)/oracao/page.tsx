@@ -18,6 +18,7 @@ import { getParoco } from "@/server/modules/priests/service";
 import { getLatestPost } from "@/server/modules/posts/service";
 import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
+import { diaEmBrasilia, hojeEmBrasilia } from "@/lib/brasilia";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { Retrato } from "@/components/ui/Retrato";
@@ -62,6 +63,10 @@ export default async function OracaoPage() {
 
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
   const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
+  // Comparado em Brasília: às 21h daqui o servidor da Vercel já virou o dia.
+  const palavraEhDeHoje = latestPost
+    ? diaEmBrasilia(latestPost.publishedAt) === hojeEmBrasilia()
+    : false;
 
   return (
     <div className="flex flex-col">
@@ -124,7 +129,7 @@ export default async function OracaoPage() {
         <section className="pt-[26px]">
           <SectionTitle
             eyebrow="Palavra do Padre"
-            title="Uma mensagem para esta semana"
+            title={palavraEhDeHoje ? "A mensagem de hoje" : "A última mensagem"}
             actionLabel="Ver todas"
             actionHref="/comunidade"
           />

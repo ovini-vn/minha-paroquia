@@ -123,6 +123,81 @@ export default async function HomePage() {
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
   const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
 
+  /*
+   * As duas seções que disputam o alto da tela, montadas antes para
+   * poderem trocar de lugar. A ordem sai logo abaixo, no JSX.
+   */
+  const palavraDoPadre =
+    latestPost && assinatura ? (
+      <section key="palavra" className="pt-[30px]">
+        {/*
+          O título segue o DIA, e não uma suposição sobre a frequência.
+
+          Dizia "Uma mensagem para esta semana" — e o pároco publica todo
+          dia: nove vídeos em nove dias, medido em produção. Quem abriu
+          ontem era informado de que só haveria novidade na semana que
+          vem, com o vídeo de hoje logo abaixo. O app tinha o hábito do
+          padre nas mãos e o descrevia como semanal.
+
+          Continua honesto se ele parar: sem publicação de hoje, o título
+          volta a falar da última.
+        */}
+        <SectionTitle
+          eyebrow="Palavra do Padre"
+          title={palavraEhDeHoje ? "A mensagem de hoje" : "A última mensagem"}
+          actionLabel="Ver todas"
+          actionHref="/comunidade"
+        />
+        <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
+          <div className="flex items-center gap-3">
+            <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
+            <div>
+              <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
+              <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
+            </div>
+          </div>
+          {/* O título manda na prévia do Início pelo mesmo motivo que
+              manda na notificação: foi escrito para nomear ESTA mensagem,
+              e o resto serve por tabela. */}
+          {latestPost.titulo && (
+            <p className="mt-3 font-serif text-[19px] font-semibold leading-snug text-foreground">
+              {latestPost.titulo}
+            </p>
+          )}
+          <p
+            className={`${latestPost.titulo ? "mt-1.5" : "mt-3"} font-serif text-[18px] leading-[1.62] text-foreground`}
+          >
+            {latestPost.mediaType === "texto"
+              ? latestPost.contentText
+              : POST_PREVIEW_LABEL[latestPost.mediaType]}
+          </p>
+
+          {/* A capa É o botão: tocar nela abre o vídeo aqui mesmo. Continua
+              sem falar com o YouTube antes do toque — o que carrega é a
+              capa, e o player só depois que alguém pede. */}
+          {latestPost.mediaType === "video" && latestPost.mediaUrl && (
+            <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
+          )}
+
+          {/* Post de vídeo não precisa do botão: assistir é a ação, e ela
+              está na própria capa. "Ver todas" no título leva às anteriores. */}
+          {latestPost.mediaType !== "video" && (
+            <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
+              <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+              Ler mensagem
+            </LinkButton>
+          )}
+        </article>
+      </section>
+    ) : null;
+
+  const evangelhoDoDia = (
+    <Suspense key="evangelho" fallback={null}>
+      <EvangelhoDeHoje />
+    </Suspense>
+  );
+
+
   const season = getLiturgicalSeason(new Date());
 
   return (
@@ -243,84 +318,23 @@ export default async function HomePage() {
       <div className="lg:grid lg:grid-cols-[1.7fr_1fr] lg:items-start lg:gap-8">
       <div className="flex flex-col">
       {/*
-        O Evangelho do dia, em áudio — o gancho diário.
+        A ordem de quem fala primeiro, decidida pelo dia.
 
-        O cartão compacto já existia, escrito para esta tela ("é o gancho
-        diário; a versão completa mora na aba Palavra"), e nunca tinha sido
-        colocado aqui: vivia só na aba Palavra, a um toque de distância de
-        quem abre o app às seis da manhã.
+        Tinha o Evangelho do dia fixo no alto, e a razão era ruim: pus a
+        fonte automática acima do pároco para garantir novidade diária num
+        dia em que ele não publicasse. Só que ele publica — nove vídeos em
+        nove dias, medido em produção —, e a garantia teórica custava caro:
+        um feed do Vatican News falando antes do pároco, na tela de entrada
+        da comunidade dele. Os dois costumam ser o MESMO Evangelho, e o
+        vídeo é o comentário dele sobre aquele texto.
 
-        Vem ANTES da Palavra do Padre de propósito. É o que existe todo dia
-        sem depender de ninguém publicar nada — se o padre não postar, esta
-        seção ainda dá motivo para abrir amanhã.
+        Então a voz da casa vem primeiro quando existe hoje. Sem publicação
+        de hoje, o Evangelho sobe e ocupa o lugar — que era o caso que eu
+        queria cobrir, e agora é o único em que ele manda.
       */}
-      <Suspense fallback={null}>
-        <EvangelhoDeHoje />
-      </Suspense>
-
-      {/* Palavra do Padre — tratamento editorial, não "mais um card". */}
-      {latestPost && assinatura && (
-        <section className="pt-[30px]">
-          {/*
-            O título segue o DIA, e não uma suposição sobre a frequência.
-
-            Dizia "Uma mensagem para esta semana" — e o pároco publica todo
-            dia: nove vídeos em nove dias, medido em produção. Quem abriu
-            ontem era informado de que só haveria novidade na semana que
-            vem, com o vídeo de hoje logo abaixo. O app tinha o hábito do
-            padre nas mãos e o descrevia como semanal.
-
-            Continua honesto se ele parar: sem publicação de hoje, o título
-            volta a falar da última.
-          */}
-          <SectionTitle
-            eyebrow="Palavra do Padre"
-            title={palavraEhDeHoje ? "A mensagem de hoje" : "A última mensagem"}
-            actionLabel="Ver todas"
-            actionHref="/comunidade"
-          />
-          <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
-            <div className="flex items-center gap-3">
-              <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
-              <div>
-                <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
-                <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
-              </div>
-            </div>
-            {/* O título manda na prévia do Início pelo mesmo motivo que
-                manda na notificação: foi escrito para nomear ESTA mensagem,
-                e o resto serve por tabela. */}
-            {latestPost.titulo && (
-              <p className="mt-3 font-serif text-[19px] font-semibold leading-snug text-foreground">
-                {latestPost.titulo}
-              </p>
-            )}
-            <p
-              className={`${latestPost.titulo ? "mt-1.5" : "mt-3"} font-serif text-[18px] leading-[1.62] text-foreground`}
-            >
-              {latestPost.mediaType === "texto"
-                ? latestPost.contentText
-                : POST_PREVIEW_LABEL[latestPost.mediaType]}
-            </p>
-
-            {/* A capa É o botão: tocar nela abre o vídeo aqui mesmo. Continua
-                sem falar com o YouTube antes do toque — o que carrega é a
-                capa, e o player só depois que alguém pede. */}
-            {latestPost.mediaType === "video" && latestPost.mediaUrl && (
-              <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
-            )}
-
-            {/* Post de vídeo não precisa do botão: assistir é a ação, e ela
-                está na própria capa. "Ver todas" no título leva às anteriores. */}
-            {latestPost.mediaType !== "video" && (
-              <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
-                <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                Ler mensagem
-              </LinkButton>
-            )}
-          </article>
-        </section>
-      )}
+      {(palavraEhDeHoje
+        ? [palavraDoPadre, evangelhoDoDia]
+        : [evangelhoDoDia, palavraDoPadre])}
 
       {/* Hoje — o princípio "quero dar uma olhadinha". */}
       <section className="pt-[30px]">

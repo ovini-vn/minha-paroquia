@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Atkinson_Hyperlegible_Next, Cormorant_Garamond, Inter, Lexend } from "next/font/google";
+import {
+  Atkinson_Hyperlegible_Next,
+  Cormorant_Garamond,
+  Instrument_Sans,
+  Instrument_Serif,
+  Inter,
+  Lexend,
+} from "next/font/google";
 import { getSessionContext } from "@/server/auth/session";
 import { RegistrarServiceWorker } from "@/components/layout/RegistrarServiceWorker";
 import "./globals.css";
@@ -37,6 +44,18 @@ const atkinson = Atkinson_Hyperlegible_Next({
   adjustFontFallback: false,
 });
 const lexend = Lexend({ subsets: ["latin"], variable: "--fonte-lexend", preload: false });
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  variable: "--fonte-instrument-sans",
+  preload: false,
+});
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--fonte-instrument-serif",
+  preload: false,
+});
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -159,6 +178,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // A família da letra, mesmo raciocínio: quem não escolheu — e quem não
   // está autenticado — recebe a Inter, que é a letra da identidade.
   const fontFamily = session?.fontFamily ?? "inter";
+  /*
+   * A atmosfera, no <html> junto do claro/escuro.
+   *
+   * Aqui e não no layout do fiel porque ela pinta o fundo da página
+   * INTEIRA — inclusive a faixa que aparece ao arrastar além do fim da
+   * rolagem, que fica fora de qualquer div do app. O tempo em si continua
+   * saindo de `atributoDoTempo`, no layout que já o calcula.
+   */
+  const atmosfera = session?.themePreference ?? "default";
 
   return (
     <html
@@ -166,9 +194,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       data-color-scheme={colorScheme}
       data-font-scale={fontScale}
       data-font-family={fontFamily}
+      data-atmosfera={atmosfera}
       // Faz os controles nativos (scrollbar, campos de data) acompanharem.
-      style={{ colorScheme }}
-      className={`${inter.variable} ${atkinson.variable} ${lexend.variable} ${cormorant.variable}`}
+      // A Vitral é escura por definição: sem fundo escuro não há halo.
+      style={{ colorScheme: atmosfera === "vitral" ? "dark" : colorScheme }}
+      className={`${inter.variable} ${atkinson.variable} ${lexend.variable} ${cormorant.variable} ${instrumentSans.variable} ${instrumentSerif.variable}`}
     >
       <body className="font-sans antialiased">
         {/*

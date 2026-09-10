@@ -94,6 +94,91 @@
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* ---------- "Luz de Vitral": a atmosfera como LUZ ---------- */
+/*
+ * Terceiro valor de ThemePreference, e o único que muda a SUPERFÍCIE.
+ *
+ * A tese da direção: hoje o tempo litúrgico troca a cor de um botão que
+ * ninguém repara. Aqui ele vira o ambiente — fundo de carvão quente e a
+ * cor do tempo entrando como halo, do jeito que a luz atravessa um
+ * vitral. É a coisa mais própria que este app tem, finalmente visível.
+ *
+ * ESCURECE MESMO COM `colorScheme = light`, e isso é deliberado: sem
+ * fundo escuro não há halo, e a direção inteira deixa de existir. A tela
+ * de aparência avisa, em vez de deixar o interruptor de claro/escuro
+ * parecer quebrado.
+ *
+ * Carvão QUENTE (24 21 19) e não o azulado do tema escuro (24 21 29): o
+ * vitral é luz sobre pedra, e pedra não é azul. As duas paletas escuras
+ * convivem porque nunca se aplicam juntas — esta ganha por vir depois e
+ * por especificidade de atributo no <html>.
+ */
+:root[data-atmosfera="vitral"] {
+  --color-foreground: 244 239 230;
+  --color-muted: 172 163 150;
+  --color-background: 24 21 19;
+  --color-surface: 32 28 25;
+  --color-sunken: 18 16 15;
+  --color-inverse: 244 239 230;
+  --color-border: 56 50 44;
+  --color-border-strong: 124 113 99;
+
+  /* O ouro precisa de mais luz para brilhar sobre carvão. */
+  --color-gold: 216 182 106;
+  --color-gold-soft: 240 224 180;
+
+  /* Estados, com o mesmo cuidado de contraste do tema escuro. */
+  --color-success: 138 186 156;
+  --color-success-tint: 26 38 31;
+  --color-warning: 214 170 104;
+  --color-warning-tint: 44 34 20;
+  --color-error: 224 128 120;
+  --color-error-tint: 48 26 24;
+}
+
+/*
+ * O halo por tempo. Claro o bastante para ser LUZ sobre o carvão, e é por
+ * isso que estes valores não são os do tema escuro: lá a cor é tinta num
+ * botão, aqui ela é a fonte de luz da tela.
+ */
+:root[data-atmosfera="vitral"] [data-season="tempo_comum"] {
+  --color-primary: 143 192 163;
+  --color-primary-hover: 170 210 186;
+  --color-primary-light: 63 107 82;
+  --color-primary-tint: 22 33 27;
+  --wash: radial-gradient(120% 100% at 20% 0%, #2c4e3b 0%, #16211b 62%, #12100f 100%);
+}
+:root[data-atmosfera="vitral"] [data-season="advento"],
+:root[data-atmosfera="vitral"] [data-season="quaresma"] {
+  --color-primary: 183 154 224;
+  --color-primary-hover: 202 180 235;
+  --color-primary-light: 91 40 144;
+  --color-primary-tint: 32 24 46;
+  --wash: radial-gradient(120% 100% at 20% 0%, #46216f 0%, #1f1730 62%, #12100f 100%);
+}
+:root[data-atmosfera="vitral"] [data-season="natal"],
+:root[data-atmosfera="vitral"] [data-season="pascoa"] {
+  --color-primary: 240 224 180;
+  --color-primary-hover: 247 236 208;
+  --color-primary-light: 138 107 36;
+  --color-primary-tint: 42 34 20;
+  --wash: radial-gradient(120% 100% at 20% 0%, #7a5c1c 0%, #2a2114 62%, #12100f 100%);
+}
+:root[data-atmosfera="vitral"] [data-season="triduo_pascal"] {
+  --color-primary: 176 168 184;
+  --color-primary-hover: 198 191 205;
+  --color-primary-light: 59 53 64;
+  --color-primary-tint: 32 29 35;
+  --wash: radial-gradient(120% 100% at 20% 0%, #3b3540 0%, #1d1a20 62%, #12100f 100%);
+}
+:root[data-atmosfera="vitral"] [data-season="pentecostes"] {
+  --color-primary: 220 146 138;
+  --color-primary-hover: 232 172 165;
+  --color-primary-light: 138 43 43;
+  --color-primary-tint: 44 26 24;
+  --wash: radial-gradient(120% 100% at 20% 0%, #6e2b2b 0%, #2a1a19 62%, #12100f 100%);
+}
+
 /* ---------- Atmosfera por tempo litúrgico ---------- */
 [data-season="tempo_comum"] {
   --color-primary: 63 107 82;
@@ -337,6 +422,21 @@ body {
 :root[data-font-family="inter"] {
   --font-sans: var(--fonte-inter);
   --font-serif: var(--fonte-cormorant);
+}
+/*
+ * A tipografia da direção "Luz de Vitral", disponível sozinha.
+ *
+ * Não vem amarrada ao tema de propósito: família de letra é eixo de
+ * LEGIBILIDADE neste app, e quem escolheu Atkinson pediu para enxergar
+ * melhor. Um tema que trocasse a fonte por baixo desfaria essa escolha
+ * sem avisar. Quem quiser a direção inteira escolhe as duas coisas.
+ *
+ * Sem `font-size-adjust` aqui: a altura-x da Instrument Sans é próxima da
+ * Inter, e igualar à força deixaria a letra maior que a de referência.
+ */
+:root[data-font-family="instrument"] {
+  --font-sans: var(--fonte-instrument-sans);
+  --font-serif: var(--fonte-instrument-serif);
 }
 :root[data-font-family="atkinson"] {
   --font-sans: var(--fonte-atkinson);

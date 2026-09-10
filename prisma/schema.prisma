@@ -102,6 +102,20 @@ model User {
   isPlatformAdmin Boolean         @default(false) @map("is_platform_admin")
   // Redesign visual: "Tema padrão" vs. "Usar cor do Tempo Litúrgico" — ver
   // src/lib/liturgical-season.ts (fonte única do cálculo) e /eu/aparencia.
+  /// Deixa a comunidade ver as suas datas — nascimento e sacramentos.
+  ///
+  /// FALSO por padrão, e isso não é timidez de programador: a política de
+  /// privacidade publicada promete que "um fiel comum não tem acesso à
+  /// lista de membros nem aos dados de outros fiéis". Ligar isso para
+  /// todos quebraria uma promessa já feita a quem se cadastrou.
+  ///
+  /// Quem diz sim aparece em "Esta semana na comunidade" com o dia da sua
+  /// data. Quem não responde continua invisível, e nada muda para ele.
+  ///
+  /// Vale só para as datas DELE. Sacramento de dependente — a criança da
+  /// catequese — nunca entra, mesmo com o responsável tendo consentido:
+  /// consentir pela própria data é uma coisa, expor a de um filho é outra.
+  compartilhaDatas Boolean        @default(false) @map("compartilha_datas")
   themePreference ThemePreference @default(default) @map("theme_preference")
   colorScheme     ColorScheme     @default(light) @map("color_scheme")
   fontScale       FontScale       @default(p) @map("font_scale")

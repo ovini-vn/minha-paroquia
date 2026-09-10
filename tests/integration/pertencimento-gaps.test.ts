@@ -85,6 +85,9 @@ describe("fechamento de lacunas — Pertencimento + Minha Comunidade", () => {
       phone: "(11) 98888-0000",
       birthDate: new Date("1990-05-20"),
       photoUrl: "https://example.com/foto.jpg",
+      // Obrigatório de propósito: é campo de privacidade, e o compilador
+      // faz cada chamador decidir em vez de herdar um padrão silencioso.
+      compartilhaDatas: false,
     });
 
     const user = await findUserById(fielId);

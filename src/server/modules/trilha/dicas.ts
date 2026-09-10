@@ -67,7 +67,7 @@ export const DICAS: Dica[] = [
     id: "sacramentos",
     titulo: "As datas da sua vida na igreja",
     corpo:
-      "Batismo, crisma, casamento — registre as suas datas e a comunidade passa a lembrar delas com você.",
+      "Batismo, crisma, casamento — registre as suas datas na Caminhada. Elas ficam guardadas com você.",
     linkPath: "/caminhada",
     publico: "todos",
     jaUsou: (tx, { parishId, userId }) =>
@@ -76,13 +76,44 @@ export const DICAS: Dica[] = [
   {
     id: "aniversario",
     titulo: "Sua data de nascimento",
-    corpo:
-      "Coloque seu aniversário no perfil e ele aparece para a comunidade rezar por você na semana certa.",
+    corpo: "Preencha seu aniversário no perfil — a paróquia passa a saber quando é o seu dia.",
     linkPath: "/eu/perfil",
     publico: "todos",
     jaUsou: (tx, { userId }) =>
       tx.user.findUnique({ where: { id: userId }, select: { birthDate: true } })
         .then((u) => u?.birthDate != null),
+  },
+  {
+    /*
+     * A dica que PEDE PERMISSÃO, e ensina no mesmo gesto.
+     *
+     * "A comunidade reza por você no seu dia" era a promessa da mensagem
+     * original — e era falsa: a política publicada garante que um fiel não
+     * alcança dados de outro, então ninguém via a data de ninguém. Em vez
+     * de reescrever a promessa para menos, o app passou a poder cumpri-la —
+     * desde que a pessoa escolha.
+     *
+     * Vem DEPOIS na prática, mesmo com o sorteio: sem data preenchida a
+     * opção não tem o que mostrar, e por isso `jaUsou` responde "já feito"
+     * para quem ainda não tem nascimento nem sacramento. Assim a trilha
+     * gasta a vez com a dica útil primeiro.
+     */
+    id: "compartilhar-datas",
+    titulo: "Deixar a comunidade rezar por você",
+    corpo:
+      "No seu perfil dá para escolher que o seu aniversário apareça para a comunidade na semana em que cai. Sua idade não aparece, e você desmarca quando quiser.",
+    linkPath: "/eu/perfil",
+    publico: "todos",
+    jaUsou: async (tx, { parishId, userId }) => {
+      const eu = await tx.user.findUnique({
+        where: { id: userId },
+        select: { birthDate: true, compartilhaDatas: true },
+      });
+      if (eu?.compartilhaDatas) return true;
+      // Sem data nenhuma, o convite não teria o que revelar.
+      const sacramentos = await tx.sacrament.count({ where: { parishId, userId } });
+      return eu?.birthDate == null && sacramentos === 0;
+    },
   },
   {
     id: "pedido-de-oracao",

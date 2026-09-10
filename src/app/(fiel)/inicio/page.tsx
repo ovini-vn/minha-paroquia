@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
+import { BookOpen, Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -8,6 +8,8 @@ import { getParish } from "@/server/modules/parishes/service";
 import { getParoco } from "@/server/modules/priests/service";
 import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paroco";
 import { listPublishedAvisos } from "@/server/modules/avisos/service";
+import { listarAniversariosDaComunidade } from "@/server/modules/aniversarios/service";
+import { NOME_DO_ANIVERSARIO } from "@/lib/aniversarios";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -69,13 +71,17 @@ export default async function HomePage() {
     );
   }
 
-  const [parish, parocoRegistrado, nextCelebration, latestPost, latestAvisos] = await Promise.all([
-    getParish(session.membership.parishId),
-    getParoco(session.membership.parishId),
-    getNextCelebration(session.membership.parishId),
-    getLatestPost(session.membership.parishId),
-    listPublishedAvisos(session.membership.parishId, 1),
-  ]);
+  const [parish, parocoRegistrado, nextCelebration, latestPost, latestAvisos, daComunidade] =
+    await Promise.all([
+      getParish(session.membership.parishId),
+      getParoco(session.membership.parishId),
+      getNextCelebration(session.membership.parishId),
+      getLatestPost(session.membership.parishId),
+      listPublishedAvisos(session.membership.parishId, 1),
+      // Sete dias: "esta semana" precisa caber numa semana, senão a lista
+      // vira calendário e o convite a rezar perde a urgência.
+      listarAniversariosDaComunidade(session.membership.parishId, new Date(), 7),
+    ]);
   const latestAviso = latestAvisos[0] ?? null;
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
   const assinatura = latestPost ? assinaturaDoPost(latestPost.priestProfile, paroco) : null;
@@ -281,6 +287,52 @@ export default async function HomePage() {
 
       {/* Coluna da direita no desktop. */}
       <div className="flex flex-col lg:sticky lg:top-24">
+      {/*
+        Esta semana na comunidade — quem tem data para celebrar.
+
+        Só aparece quando alguém consentiu (`compartilhaDatas`), e some
+        inteira quando não há ninguém: uma seção vazia dizendo "ninguém faz
+        aniversário" é ruído, e faz parecer que a comunidade está deserta.
+
+        A IDADE não sai no aniversário; nos sacramentos, os anos completados
+        saem — "10 anos de casamento" é a comemoração, "42 anos" é uma
+        informação que ninguém pediu para publicar.
+      */}
+      {daComunidade.length > 0 && (
+        <section className="pt-[30px]">
+          <SectionTitle eyebrow="Esta semana" title="Na nossa comunidade" />
+          <Card className="px-3.5 py-1.5">
+            {daComunidade.map((a) => (
+              <div
+                key={`${a.pessoaId}-${a.tipo}-${a.quando.toISOString()}`}
+                className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
+              >
+                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full bg-primary-tint text-primary">
+                  <Cake className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[14.5px] font-medium leading-tight text-foreground">
+                    {a.nome}
+                  </p>
+                  <p className="mt-0.5 text-[12.5px] text-muted">
+                    {NOME_DO_ANIVERSARIO[a.tipo]}
+                    {a.tipo !== "nascimento" && a.anos ? ` · ${a.anos} anos` : ""} ·{" "}
+                    {a.faltam === 0 ? "hoje" : formatDateOnly(a.quando)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </Card>
+          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+            Rezemos por eles. Para aparecer aqui no seu dia, marque a opção no{" "}
+            <Link href="/eu/perfil" className="font-medium text-primary underline">
+              seu perfil
+            </Link>
+            .
+          </p>
+        </section>
+      )}
+
       {/* Calendário da Igreja — o que vem por aí. */}
       <section className="pt-[30px]">
         <SectionTitle eyebrow="Calendário da Igreja" title="Próximas celebrações" />

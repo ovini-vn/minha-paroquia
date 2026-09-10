@@ -18,5 +18,7 @@ export const updateProfileInputSchema = z.object({
   phone: z.string().trim().max(30).optional(),
   birthDate: z.coerce.date().optional(),
   photoUrl: z.string().trim().url("Informe uma URL válida.").optional(),
+  /* Caixa: chega "sim" quando marcada, e não chega quando desmarcada. */
+  compartilhaDatas: z.boolean().default(false),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileInputSchema>;

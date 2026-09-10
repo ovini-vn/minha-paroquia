@@ -11,6 +11,7 @@ import {
   listMyNotifications,
   setPreference,
 } from "@/server/modules/notifications/service";
+import { listarAniversariosDaComunidade } from "@/server/modules/aniversarios/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 /**
@@ -176,6 +177,70 @@ describe("trilha de descoberta", () => {
       }),
     );
     expect(sobraram.map((s) => s.chave)).toEqual([`trilha:${fielId}:veterana`]);
+  });
+
+  it("a comunidade só vê a data de quem consentiu — e nunca a de dependente", async () => {
+    /*
+     * A política publicada promete que "um fiel comum não tem acesso à
+     * lista de membros nem aos dados de outros fiéis". Esta lista é a
+     * ÚNICA exceção, e ela existe porque a pessoa escolheu. Dependente
+     * nunca entra: consentir pela própria data não é consentir pela do
+     * filho (LGPD art. 14, já citado na política).
+     */
+    const hoje = new Date();
+    const daquiADois = new Date(
+      Date.UTC(1990, hoje.getUTCMonth(), hoje.getUTCDate() + 2),
+    );
+
+    const consentiu = await registerUser({
+      fullName: "Fiel Que Consentiu",
+      email: `consentiu-${Date.now()}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    const calou = await registerUser({
+      fullName: "Fiel Que Nao Quis",
+      email: `calou-${Date.now()}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    userIds.push(consentiu.id, calou.id);
+
+    const papelFiel = await prisma.role.findUniqueOrThrow({ where: { code: "FIEL" } });
+    await withTenantContext(parishId, (tx) =>
+      tx.parishMembership.createMany({
+        data: [consentiu.id, calou.id].map((userId) => ({
+          userId,
+          parishId,
+          roleId: papelFiel.id,
+          status: "active" as const,
+        })),
+      }),
+    );
+
+    await prisma.user.update({
+      where: { id: consentiu.id },
+      data: { birthDate: daquiADois, compartilhaDatas: true },
+    });
+    await prisma.user.update({
+      where: { id: calou.id },
+      data: { birthDate: daquiADois, compartilhaDatas: false },
+    });
+
+    // Um dependente do fiel que CONSENTIU, com sacramento na mesma semana.
+    await withTenantContext(parishId, async (tx) => {
+      const filho = await tx.familyMember.create({
+        data: { parishId, fullName: "Criança da Catequese", responsibleUserId: consentiu.id },
+      });
+      await tx.sacrament.create({
+        data: { parishId, familyMemberId: filho.id, type: "batismo", date: daquiADois },
+      });
+    });
+
+    const lista = await listarAniversariosDaComunidade(parishId, new Date(), 7);
+    const nomes = lista.map((a) => a.nome);
+
+    expect(nomes).toContain("Fiel Que Consentiu");
+    expect(nomes).not.toContain("Fiel Que Nao Quis");
+    expect(nomes).not.toContain("Criança da Catequese");
   });
 
   it("dica de catequista não vai para quem não é catequista", async () => {

@@ -154,6 +154,9 @@ export async function updateProfileAction(_prev: ActionState, formData: FormData
       phone: formData.get("phone") || undefined,
       birthDate: formData.get("birthDate") || undefined,
       photoUrl: formData.get("photoUrl") || undefined,
+      // Caixa lida por PRESENÇA: desmarcada não é enviada pelo navegador,
+      // e comparar com "false" nunca acertaria.
+      compartilhaDatas: formData.get("compartilhaDatas") === "sim",
     });
 
     await updateOwnProfile(session.userId, input);

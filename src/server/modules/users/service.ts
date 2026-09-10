@@ -92,6 +92,7 @@ export function updateOwnProfile(userId: string, input: UpdateProfileInput) {
     phone: input.phone || null,
     birthDate: input.birthDate || null,
     photoUrl: input.photoUrl || null,
+    compartilhaDatas: input.compartilhaDatas,
   });
 }
 

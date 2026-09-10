@@ -234,6 +234,20 @@ export default function PrivacidadePage() {
           ]}
         />
         <p>
+          <strong className="font-semibold text-foreground">Uma exceção, e só com a sua escolha.</strong> Em &ldquo;Editar perfil&rdquo; existe
+          a opção <em>Deixar a comunidade rezar por mim nas minhas datas</em>. Ela vem desmarcada.
+          Se você marcar, o seu nome e o dia do seu aniversário e dos sacramentos que você registrou
+          passam a aparecer para os outros fiéis da sua paróquia, na tela inicial, na semana em que
+          caem.
+        </p>
+        <Lista
+          itens={[
+            "a sua IDADE não aparece; nos sacramentos aparecem os anos completados (“10 anos de casamento”)",
+            "datas de dependentes — crianças da catequese, por exemplo — nunca entram, mesmo que o responsável tenha marcado a opção para si",
+            "desmarcar tira você da lista imediatamente, sem apagar as suas datas",
+          ]}
+        />
+        <p>
           Essa separação é aplicada pelo próprio banco de dados, e não apenas pelo código do
           aplicativo. Cada consulta carrega a identificação da paróquia, e o banco recusa devolver
           linhas de outra — uma falha de programação não é suficiente para vazar dados entre

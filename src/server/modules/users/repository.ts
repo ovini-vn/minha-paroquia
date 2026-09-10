@@ -19,7 +19,13 @@ export function createUser(data: { email: string; passwordHash: string; fullName
 
 export function updateUserProfile(
   id: string,
-  data: { fullName: string; phone: string | null; birthDate: Date | null; photoUrl: string | null },
+  data: {
+    fullName: string;
+    phone: string | null;
+    birthDate: Date | null;
+    photoUrl: string | null;
+    compartilhaDatas: boolean;
+  },
 ) {
   return prisma.user.update({ where: { id }, data });
 }

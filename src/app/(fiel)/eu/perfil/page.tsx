@@ -24,6 +24,7 @@ export default async function ProfileEditPage() {
           phone={user.phone ?? ""}
           birthDate={user.birthDate ? user.birthDate.toISOString().slice(0, 10) : ""}
           photoUrl={user.photoUrl ?? ""}
+          compartilhaDatas={user.compartilhaDatas}
         />
       </Card>
     </div>

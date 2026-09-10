@@ -12,9 +12,16 @@ type ProfileFormProps = {
   phone: string;
   birthDate: string;
   photoUrl: string;
+  compartilhaDatas: boolean;
 };
 
-export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFormProps) {
+export function ProfileForm({
+  fullName,
+  phone,
+  birthDate,
+  photoUrl,
+  compartilhaDatas,
+}: ProfileFormProps) {
   const [state, formAction, pending] = useActionState(updateProfileAction, initialState);
 
   return (
@@ -67,6 +74,39 @@ export function ProfileForm({ fullName, phone, birthDate, photoUrl }: ProfileFor
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
       </div>
+      {/*
+        O consentimento fica JUNTO das datas, e não numa tela de privacidade.
+
+        É aqui que a pessoa acabou de digitar o nascimento — é aqui que a
+        pergunta "quem pode ver isto?" tem sentido. Numa aba separada de
+        ajustes, ela seria respondida por quem já esqueceu o que preencheu.
+
+        Desmarcado por padrão: a política publicada promete que um fiel não
+        alcança dados de outro, e essa promessa foi feita a quem já entrou.
+      */}
+      <div className="mt-1 rounded-lg border border-border bg-sunken p-3.5">
+        <label className="flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            name="compartilhaDatas"
+            value="sim"
+            defaultChecked={compartilhaDatas}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[rgb(var(--color-primary))]"
+          />
+          <span>
+            <span className="block text-[14px] font-medium text-foreground">
+              Deixar a comunidade rezar por mim nas minhas datas
+            </span>
+            <span className="mt-1 block text-[12.5px] leading-relaxed text-muted">
+              Seu nome e o dia aparecem em &ldquo;Esta semana na comunidade&rdquo;. Nos sacramentos
+              a comunidade vê quantos anos completa — &ldquo;10 anos de casamento&rdquo;; no
+              aniversário, a sua IDADE não aparece. Datas de dependentes nunca entram, e você pode
+              desmarcar quando quiser.
+            </span>
+          </span>
+        </label>
+      </div>
+
       <Button type="submit" disabled={pending}>
         {pending ? "Salvando..." : "Salvar"}
       </Button>

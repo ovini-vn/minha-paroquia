@@ -16,9 +16,10 @@ function duracaoCurta(duracao: string | null): string | null {
 /**
  * Evangelho do dia em áudio, do Vatican News.
  *
- * Só título, áudio e link — o texto das leituras NÃO é copiado para cá:
- * é conteúdo do Dicastério para a Comunicação e não temos os direitos.
- * O crédito é explícito, e os links levam à fonte.
+ * Título, áudio, as leituras e a reflexão do dia. O conteúdo é do
+ * Dicastério para a Comunicação e vem de um feed público — exibi-lo é
+ * decisão de risco do dono do app, tomada com consciência disso. O crédito
+ * é explícito em todo lugar onde o texto aparece, e o link leva à fonte.
  *
  * O áudio pesa mais que o texto para quem tem dificuldade de leitura, que
  * é boa parte de quem frequenta a paróquia.
@@ -56,7 +57,7 @@ export function PalavraDoDiaCard({
         >
           Seu navegador não reproduz áudio.
         </audio>
-        <LeiturasDoDia leituras={palavra.leituras} />
+        <LeiturasDoDia blocos={palavra.blocos} />
 
         {/* O crédito acompanha o conteúdo em qualquer lugar onde ele apareça. */}
         <p className="mt-2 text-[11px] text-muted">Vatican News · Dicastério para a Comunicação</p>
@@ -94,7 +95,7 @@ export function PalavraDoDiaCard({
             Seu navegador não reproduz áudio.
           </audio>
 
-          <LeiturasDoDia leituras={palavra.leituras} />
+          <LeiturasDoDia blocos={palavra.blocos} />
 
           <a
             href={palavra.link}

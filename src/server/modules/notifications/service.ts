@@ -1,8 +1,14 @@
 import type { NotificationCategory, Prisma } from "@prisma/client";
-import { withTenantContext } from "@/server/db/tenant-context";
+import { withPlatformContext, withTenantContext } from "@/server/db/tenant-context";
 import { prisma } from "@/server/db/prisma";
 
-export const NOTIFICATION_CATEGORIES: NotificationCategory[] = ["urgente", "pessoal", "pastoral", "espiritual"];
+export const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
+  "urgente",
+  "pessoal",
+  "pastoral",
+  "espiritual",
+  "descoberta",
+];
 
 type NotifyInput = {
   parishId: string;
@@ -214,6 +220,28 @@ export function setPreference(userId: string, category: NotificationCategory, en
 }
 
 /**
+ * Os caminhos das dicas da trilha que esta pessoa ainda não abriu.
+ *
+ * Alimenta a bolinha da barra de navegação: cada caminho vira um ponto no
+ * destino que leva até ele, e o ponto some quando ela chega lá — porque
+ * abrir a tela dá a notificação por lida (`markNotificationsReadByPath`).
+ *
+ * SÓ a categoria `descoberta`, e é o ponto todo. Acender a barra para
+ * qualquer aviso não lido encheria os cinco destinos de pontos e o sinal
+ * perderia o sentido; o sino no cabeçalho já conta o não lido em geral.
+ */
+export function caminhosDeDicasNaoLidas(parishId: string, userId: string): Promise<string[]> {
+  return withTenantContext(parishId, async (tx) => {
+    const linhas = await tx.notification.findMany({
+      where: { parishId, userId, category: "descoberta", readAt: null, linkPath: { not: null } },
+      select: { linkPath: true },
+      distinct: ["linkPath"],
+    });
+    return linhas.map((l) => l.linkPath!).filter(Boolean);
+  });
+}
+
+/**
  * Dá por lidas as notificações cujo assunto vive na tela que a pessoa
  * acabou de abrir.
  *
@@ -254,16 +282,35 @@ export async function registrarEnvio(
 }
 
 /**
- * Apaga registros de envio velhos.
+ * Apaga registros de envio velhos — MENOS os da trilha.
  *
- * A tabela só existe para responder "isto já saiu?", e essa pergunta nunca
- * é feita sobre semana passada. Sem a poda, ela cresceria para sempre
+ * Para resumo e lembrete, a pergunta é "isto já saiu HOJE?", e ela nunca é
+ * feita sobre semana passada: sem poda a tabela cresceria para sempre
  * guardando respostas que ninguém vai pedir.
+ *
+ * A trilha é o oposto: o carimbo dela responde "esta pessoa já viu esta
+ * dica ALGUMA VEZ?", e vale para sempre. Podá-lo faria a trilha recomeçar
+ * do zero a cada mês e remandar dicas que a pessoa já leu — justamente o
+ * que ela existe para não fazer.
  */
 export async function limparEnviosAntigos(agora: Date, dias = 30): Promise<number> {
   const limite = new Date(agora.getTime() - dias * 24 * 3_600_000);
-  const { count } = await prisma.notificationDispatch.deleteMany({
-    where: { createdAt: { lt: limite } },
+  /*
+   * `withPlatformContext`, e não o cliente cru.
+   *
+   * `notification_dispatches` tem RLS FORÇADO. Sem contexto, a política não
+   * enxerga linha nenhuma e o `deleteMany` apaga zero — calado, devolvendo
+   * sucesso. Foi assim desde 26/08/2026: a faxina rodava todo dia no robô,
+   * relatava que tinha limpado, e a tabela crescia. Achado por um teste que
+   * conferiu o que sobrou em vez de confiar no retorno.
+   *
+   * É contexto de PLATAFORMA porque a poda atravessa paróquias: o robô
+   * limpa o registro inteiro de uma vez, não um por vez.
+   */
+  return withPlatformContext(async (tx) => {
+    const { count } = await tx.notificationDispatch.deleteMany({
+      where: { createdAt: { lt: limite }, chave: { not: { startsWith: "trilha:" } } },
+    });
+    return count;
   });
-  return count;
 }

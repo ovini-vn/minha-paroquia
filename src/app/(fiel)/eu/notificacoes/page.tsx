@@ -29,7 +29,10 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
-import { NOTIFICATION_CATEGORY_LABELS } from "@/lib/notification-labels";
+import {
+  NOTIFICATION_CATEGORY_HINTS,
+  NOTIFICATION_CATEGORY_LABELS,
+} from "@/lib/notification-labels";
 import { PushToggle } from "@/components/domain/PushToggle";
 import { getPublicVapidKey, listOwnSubscriptions } from "@/server/modules/push/service";
 import { unsubscribeFromPushAction } from "@/server/actions/push-actions";
@@ -312,6 +315,13 @@ export default async function NotificationsPage({
                 <p className="text-[14.5px] text-foreground">
                   {NOTIFICATION_CATEGORY_LABELS[preference.category]}
                 </p>
+                {/* Desligar sem saber o que se perde faz a pessoa desligar
+                    tudo ou nada. A frase diz o que cala. */}
+                {NOTIFICATION_CATEGORY_HINTS[preference.category] && (
+                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                    {NOTIFICATION_CATEGORY_HINTS[preference.category]}
+                  </p>
+                )}
               </div>
               <div className="flex shrink-0 items-center gap-2">
                 <Badge tone={preference.enabled ? "success" : "muted"}>

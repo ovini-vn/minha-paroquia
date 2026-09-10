@@ -31,3 +31,24 @@ export function isNavItemActive(pathname: string, item: NavItem): boolean {
   const matches = [item.href, ...(item.alsoMatches ?? [])];
   return matches.some((base) => pathname === base || pathname.startsWith(`${base}/`));
 }
+
+/**
+ * Sob qual destino da barra mora este caminho — para a bolinha da trilha.
+ *
+ * Quando uma dica chega, a barra ganha um ponto no destino que leva até a
+ * funcionalidade. Ele existe para transformar a dica em CAMINHO: sem isso,
+ * a pessoa lê "dá para registrar seu batismo", concorda, e não faz ideia de
+ * onde fica.
+ *
+ * Reusa `isNavItemActive` de propósito. A pergunta "esta rota vive sob este
+ * destino?" é a mesma que a barra já responde para se acender, e duas
+ * respostas diferentes para a mesma pergunta é como o ponto apareceria num
+ * destino e a tela abriria noutro.
+ *
+ * O padrão é o Início porque é lá que moram os atalhos de Ofertar, Contato
+ * e Plano — telas que não vivem sob nenhum dos cinco destinos. Mandar para
+ * o Início é verdade: é de lá que se chega a elas.
+ */
+export function destinoDoCaminho(linkPath: string): string {
+  return NAV_ITEMS.find((item) => isNavItemActive(linkPath, item))?.href ?? "/inicio";
+}

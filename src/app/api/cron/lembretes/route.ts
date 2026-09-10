@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sendCommitmentReminders } from "@/server/modules/reminders/service";
 import { generateAllUpcomingOccurrences } from "@/server/modules/celebrations/service";
 import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/service";
+import { enviarDicasDaTrilha, ehDiaDaTrilha } from "@/server/modules/trilha/service";
 import { limparEnviosAntigos } from "@/server/modules/notifications/service";
 import { limparJanelasVencidas } from "@/server/auth/rate-limit";
 
@@ -13,7 +14,9 @@ import { limparJanelasVencidas } from "@/server/auth/rate-limit";
  *
  *   1. repõe o horizonte das missas que se repetem;
  *   2. avisa quem tem compromisso hoje ou amanhã;
- *   3. aos sábados, manda o resumo da semana para TODA a comunidade.
+ *   3. aos sábados, manda o resumo da semana para TODA a comunidade;
+ *   4. às terças e sextas, manda a dica da trilha a quem ainda tem o que
+ *      descobrir no aplicativo.
  *
  * O resumo entra aqui, e não num cron próprio, porque o plano Hobby da
  * Vercel permite pouquíssimos agendamentos — e "é sábado?" é uma linha.
@@ -73,6 +76,26 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  /*
+   * A trilha que ensina o aplicativo — terças e sextas.
+   *
+   * DEPOIS do resumo e isolada como ele, pela mesma razão: dica é a coisa
+   * menos urgente que este robô faz, e uma falha aqui não pode calar o
+   * lembrete de quem assumiu compromisso.
+   *
+   * Nunca cai no sábado do resumo, então ninguém recebe as duas coisas no
+   * mesmo dia.
+   */
+  let trilha: unknown = "não é o dia";
+  if (ehDiaDaTrilha(agora)) {
+    try {
+      trilha = await enviarDicasDaTrilha();
+    } catch (error) {
+      console.error("Falha na trilha de descoberta:", error);
+      trilha = { erro: error instanceof Error ? error.message : "desconhecido" };
+    }
+  }
+
   // Poda do registro de envios. Por último e engolindo o erro: é faxina,
   // não pode derrubar um job que já entregou o que importava.
   try {
@@ -85,7 +108,7 @@ export async function GET(request: NextRequest) {
     console.error("Falha na limpeza diária:", error);
   }
 
-  console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo }));
+  console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo, trilha }));
 
-  return NextResponse.json({ ok: true, ocorrencias, resumo, ...lembretes });
+  return NextResponse.json({ ok: true, ocorrencias, resumo, trilha, ...lembretes });
 }

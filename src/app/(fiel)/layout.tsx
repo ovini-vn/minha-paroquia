@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
-import { countUnreadNotifications } from "@/server/modules/notifications/service";
+import {
+  caminhosDeDicasNaoLidas,
+  countUnreadNotifications,
+} from "@/server/modules/notifications/service";
+import { destinoDoCaminho } from "@/components/layout/nav-items";
 import { getParish } from "@/server/modules/parishes/service";
 import { atributoDoTempo, getLiturgicalSeason } from "@/lib/liturgical-season";
 import { SiteHeader } from "@/components/layout/SiteHeader";
@@ -20,12 +24,24 @@ export default async function FielLayout({ children }: { children: React.ReactNo
   // onde o convite entrega as pessoas; /bem-vindo mora fora dele, senão
   // este redirecionamento se chamaria em laço.
   if (session.membership && !session.onboardedAt) redirect("/bem-vindo");
-  const [unreadCount, parish] = await Promise.all([
+  const [unreadCount, parish, caminhosComDica] = await Promise.all([
     session.membership
       ? countUnreadNotifications(session.membership.parishId, session.userId)
       : Promise.resolve(0),
     session.membership ? getParish(session.membership.parishId) : Promise.resolve(null),
+    session.membership
+      ? caminhosDeDicasNaoLidas(session.membership.parishId, session.userId)
+      : Promise.resolve([] as string[]),
   ]);
+
+  /*
+   * Os destinos que ganham bolinha — calculados AQUI, no servidor.
+   *
+   * A barra é um componente de cliente e não pode consultar o banco. Passar
+   * a lista pronta evita que ela precise conhecer o formato de uma
+   * notificação para desenhar um ponto.
+   */
+  const destinosComDica = [...new Set(caminhosComDica.map(destinoDoCaminho))];
 
   const season = getLiturgicalSeason(new Date());
   // "Usar cor do Tempo Litúrgico" (/eu/aparencia): o atributo troca a paleta
@@ -62,6 +78,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
         seasonName={season.name}
         unreadCount={unreadCount}
         managementHref={managementHref}
+        destinosComDica={destinosComDica}
       />
 
       <div className="flex flex-1 justify-center lg:block">
@@ -76,7 +93,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
         address={parish?.address}
         phone={parish?.phone}
       />
-      <TabBar />
+      <TabBar destinosComDica={destinosComDica} />
     </div>
   );
 }

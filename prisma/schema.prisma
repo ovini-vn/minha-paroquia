@@ -1796,6 +1796,14 @@ enum NotificationCategory {
   pessoal
   pastoral
   espiritual
+  /// A trilha que ensina o aplicativo — ver src/server/modules/trilha.
+  ///
+  /// Categoria PRÓPRIA, e não "pastoral", porque é a única que a pessoa
+  /// pode querer desligar sem perder nada da vida da paróquia. Dica é
+  /// sobre a ferramenta; missa, aviso e escala são sobre a comunidade.
+  /// Misturar as duas obrigaria a escolher entre calar o app e calar a
+  /// paróquia.
+  descoberta
 }
 
 // P1 é só canal in-app (docs/ARQUITETURA.md, seção 0 ambiguidade #9: web

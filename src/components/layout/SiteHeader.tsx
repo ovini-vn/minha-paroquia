@@ -22,10 +22,13 @@ export function SiteHeader({
   seasonName,
   unreadCount = 0,
   managementHref,
+  destinosComDica = [],
 }: {
   parishName: string;
   seasonName: string;
   unreadCount?: number;
+  /** Destinos com dica da trilha ainda não aberta — ver TabBar. */
+  destinosComDica?: string[];
   /**
    * Para onde vai o atalho de gestão, ou null para quem não administra nada.
    * O destino é decidido no servidor (ver getManagementAccess): quem tem o
@@ -77,10 +80,19 @@ export function SiteHeader({
           </p>
         </div>
 
-        {/* Navegação horizontal — só no desktop; no celular é a TabBar. */}
-        <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navegação principal">
+        {/*
+          Navegação horizontal — só no desktop; no celular é a TabBar.
+
+          O RÓTULO é diferente do da TabBar de propósito. As duas convivem no
+          DOM (uma escondida por CSS), e dois "Navegação principal" fazem o
+          leitor de tela anunciar dois menus iguais — e enganaram a mim
+          também, num teste que consultou a errada.
+        */}
+        <nav className="hidden flex-1 items-center gap-1 lg:flex" aria-label="Navegação do site">
           {NAV_ITEMS.map((item) => {
             const active = isNavItemActive(pathname, item);
+            // Mesma regra da TabBar: o ponto some no destino em que já se está.
+            const temDica = !active && destinosComDica.includes(item.href);
             return (
               <Link
                 key={item.href}
@@ -92,6 +104,15 @@ export function SiteHeader({
                 )}
               >
                 {item.label}
+                {temDica && (
+                  <>
+                    <span
+                      className="absolute right-1.5 top-1.5 h-[7px] w-[7px] rounded-full bg-error"
+                      aria-hidden
+                    />
+                    <span className="sr-only"> — há uma dica nova aqui</span>
+                  </>
+                )}
               </Link>
             );
           })}

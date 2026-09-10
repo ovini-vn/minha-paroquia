@@ -11,24 +11,13 @@ import {
 import type { ThemePreference, ColorScheme, FontScale, FontFamily } from "@prisma/client";
 
 /** As três letras oferecidas. Fora desta lista, a ação não faz nada. */
-const FAMILIAS: FontFamily[] = ["inter", "atkinson", "lexend", "instrument"];
-
-/*
- * Os temas aceitos, em LISTA e não numa cadeia de `!==`.
- *
- * A cadeia antiga (`value !== "default" && value !== "liturgical"`)
- * rejeitava em silêncio qualquer valor novo: quem escolhesse "Luz de
- * Vitral" via a tela recarregar sem nada ter mudado, sem erro em lugar
- * nenhum. Lista é o formato que erra alto — esquecer de incluir um valor
- * novo vira problema visível na primeira tentativa.
- */
-const TEMAS: ThemePreference[] = ["default", "liturgical", "vitral"];
+const FAMILIAS: FontFamily[] = ["inter", "atkinson", "lexend"];
 
 export async function setThemePreferenceAction(formData: FormData): Promise<void> {
   const session = await requireSession();
 
   const value = formData.get("themePreference");
-  if (typeof value !== "string" || !TEMAS.includes(value as ThemePreference)) return;
+  if (value !== "default" && value !== "liturgical") return;
 
   await updateOwnThemePreference(session.userId, value as ThemePreference);
   revalidatePath("/", "layout");

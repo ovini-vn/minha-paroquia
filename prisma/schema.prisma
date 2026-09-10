@@ -21,15 +21,6 @@ datasource db {
 enum ThemePreference {
   default
   liturgical
-  /// "Luz de Vitral": a cor do tempo litúrgico entra como LUZ sobre fundo
-  /// escuro, em vez de tingir botões sobre marfim.
-  ///
-  /// É atmosfera, não um terceiro claro/escuro: escolher vitral escurece o
-  /// app mesmo com `colorScheme = light`, porque a direção inteira depende
-  /// do fundo escuro — sem ele o halo do tempo não existe. A tela de
-  /// aparência diz isso em vez de deixar o interruptor de claro/escuro
-  /// parecer quebrado.
-  vitral
 }
 
 // Claro vs. escuro. Eixo SEPARADO de ThemePreference (que é sobre o tempo
@@ -72,13 +63,6 @@ enum FontFamily {
   inter
   atkinson
   lexend
-  /// Instrument Serif + Instrument Sans — a tipografia da direção "Luz de
-  /// Vitral", disponível SOZINHA e não amarrada ao tema.
-  ///
-  /// Separada de propósito: a família da letra é eixo de LEGIBILIDADE, e
-  /// quem escolheu Atkinson pediu para enxergar melhor. Um tema que
-  /// trocasse a fonte por baixo desfaria essa escolha sem avisar.
-  instrument
 }
 
 // Inscrição de um NAVEGADOR/dispositivo para receber notificação fora do

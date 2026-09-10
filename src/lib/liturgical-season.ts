@@ -151,15 +151,5 @@ export function atributoDoTempo(
   preferencia: string | null | undefined,
   agora: Date = new Date(),
 ): string | undefined {
-  /*
-   * "vitral" também segue o calendário — é o ponto dela.
-   *
-   * As duas escolhas pedem a cor do tempo; o que muda é COMO ela aparece.
-   * Em `liturgical` a cor tinge botões sobre marfim; em `vitral` ela é o
-   * halo sobre carvão. Quem decide a aparência é o CSS, por
-   * `[data-atmosfera]`; aqui só se responde QUAL tempo é hoje.
-   */
-  return preferencia === "liturgical" || preferencia === "vitral"
-    ? getLiturgicalSeason(agora).season
-    : undefined;
+  return preferencia === "liturgical" ? getLiturgicalSeason(agora).season : undefined;
 }

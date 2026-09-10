@@ -118,11 +118,6 @@ export default async function AppearancePage() {
               { value: "inter", label: "Padrão", classe: "font-[family-name:var(--fonte-inter)]" },
               { value: "atkinson", label: "Legível", classe: "font-[family-name:var(--fonte-atkinson)]" },
               { value: "lexend", label: "Espaçada", classe: "font-[family-name:var(--fonte-lexend)]" },
-              {
-                value: "instrument",
-                label: "Editorial",
-                classe: "font-[family-name:var(--fonte-instrument-sans)]",
-              },
             ] as const
           ).map((option) => {
             const atual = session.fontFamily === option.value;
@@ -194,7 +189,7 @@ export default async function AppearancePage() {
               type="radio"
               name="themePreference"
               value="default"
-              defaultChecked={session.themePreference === "default"}
+              defaultChecked={!usingLiturgical}
               className="mt-1 accent-[rgb(var(--color-primary))]"
             />
             <span>
@@ -214,29 +209,6 @@ export default async function AppearancePage() {
               <span className="font-medium">Usar cor do Tempo Litúrgico</span>
               <span className="block text-xs text-muted">
                 A atmosfera do app acompanha o calendário da Igreja — hoje seria {season.name}.
-              </span>
-            </span>
-          </label>
-          {/*
-            A Vitral é o único tema que mexe na SUPERFÍCIE, e por isso é o
-            único que precisa avisar o que faz com o interruptor de cima.
-            Deixar a pessoa marcar "Claro" e receber tela escura sem
-            explicação é o tipo de coisa que faz alguém achar que o app
-            está com defeito.
-          */}
-          <label className="flex items-start gap-3 text-sm text-foreground">
-            <input
-              type="radio"
-              name="themePreference"
-              value="vitral"
-              defaultChecked={session.themePreference === "vitral"}
-              className="mt-1 accent-[rgb(var(--color-primary))]"
-            />
-            <span>
-              <span className="font-medium">Luz de Vitral</span>
-              <span className="block text-xs text-muted">
-                A cor do Tempo Litúrgico vira luz sobre fundo escuro, como um vitral ao entardecer.
-                Escurece o app mesmo com &ldquo;Claro&rdquo; escolhido acima — sem o escuro não há luz.
               </span>
             </span>
           </label>

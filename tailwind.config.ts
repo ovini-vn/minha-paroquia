@@ -17,19 +17,7 @@ const config: Config = {
    * tiveram esse problema (vêm de custom properties sob
    * `[data-color-scheme]`); só os utilitários `dark:` divergiam.
    */
-  /*
-   * DUAS portas para o mesmo conjunto de variantes `dark:`.
-   *
-   * "Luz de Vitral" é um TEMA, não um valor de claro/escuro — mas pinta
-   * sobre fundo escuro, então precisa das mesmas correções que o app já
-   * aprendeu para o escuro. São 17 `dark:bg-primary-light` (o
-   * preenchimento que não pode usar a cor de TEXTO sobre escuro) e 19
-   * `dark:text-gold`: sem esta linha, nenhuma delas dispararia na Vitral e
-   * os atalhos sairiam verde-claro com letra branca por cima.
-   *
-   * Visto na tela antes de existir esta vírgula.
-   */
-  darkMode: ["selector", '[data-color-scheme="dark"], [data-atmosfera="vitral"]'],
+  darkMode: ["selector", '[data-color-scheme="dark"]'],
   theme: {
     extend: {
       colors: {

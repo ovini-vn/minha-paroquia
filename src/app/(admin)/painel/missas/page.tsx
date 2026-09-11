@@ -88,6 +88,17 @@ export default async function MissasAdminPage({
         <Eyebrow tone="accent" className="mb-3">
           Repetições cadastradas
         </Eyebrow>
+        {/*
+          Duas colunas no computador.
+
+          Medido na paróquia real: as duas listas desta tela somavam
+          4.012px — 6,7 telas — com cada linha ocupando 844px de largura
+          para mostrar um dia, uma hora e um lugar. Em duas colunas a
+          tela passou a 2.545px, 4,2 telas.
+
+          `items-start` para o editor de uma repetição, quando aberto,
+          esticar só a própria coluna.
+        */}
         {ativas.length === 0 ? (
           <EmptyState
             icon={Repeat}
@@ -95,7 +106,7 @@ export default async function MissasAdminPage({
             description="Cadastre os horários fixos no formulário ao fim da página — depois é só lançar as missas extras avulsas."
           />
         ) : (
-          <Card className="px-3.5 py-1.5">
+          <Card className="px-3.5 py-1.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
             {ativas.map((schedule) => (
               <div key={schedule.id} className="border-b border-border py-3.5 last:border-b-0">
                 <div className="flex items-start gap-3">
@@ -146,6 +157,7 @@ export default async function MissasAdminPage({
           Se numa data específica não houver missa, cancele só ela — a repetição continua valendo
           para as outras.
         </p>
+        {/* Duas colunas, pelo mesmo motivo da lista acima. */}
         {celebrations.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
@@ -161,7 +173,7 @@ export default async function MissasAdminPage({
             }
           />
         ) : (
-          <Card className="px-3.5 py-1.5">
+          <Card className="px-3.5 py-1.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
             {celebrations.map((celebration) => {
               const cancelada = Boolean(celebration.canceledAt);
               return (

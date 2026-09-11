@@ -110,7 +110,16 @@ export default async function EventsAdminPage({
             }
           />
         ) : (
-          <div className="flex flex-col gap-2.5">
+          /*
+            Dois por linha no computador.
+
+            Medido: 54 eventos, cada cartão com 844px de largura e 142px de
+            altura, empilhados — 8.589px, 14,3 telas. É a tela mais alta do
+            app inteiro, e o cartão usava menos da metade da largura que
+            ocupava. Numa tela de 1366 (a do usuário) sobra espaço parado à
+            direita de cada cartão enquanto a lista desce sem fim.
+          */
+          <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-4">
             {events.map((event) => {
               const archived = event.status === "archived";
               return (

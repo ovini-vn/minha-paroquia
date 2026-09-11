@@ -70,3 +70,43 @@ export function PageHeader({ title, description }: { title: string; description?
     </div>
   );
 }
+
+/**
+ * Título de seção com um atalho para o formulário que fica no fim da tela.
+ *
+ * As telas de trabalho passaram a abrir pela lista, com o formulário de
+ * cadastro embaixo — cadastrar é ocasional, consultar é o que traz alguém
+ * ali. No computador isso custa pouco. No CELULAR custa: em Horários das
+ * missas o formulário ficou a 3.919px do topo, cinco telas de rolagem, e
+ * "ao fim da página" virou longe de verdade. Medido em 375px.
+ *
+ * O atalho resolve sem desfazer a ordem: quem veio consultar continua
+ * recebendo a lista primeiro, e quem veio cadastrar chega em um toque.
+ *
+ * É âncora de verdade (`#id`), não rolagem por script: funciona sem
+ * JavaScript, o endereço fica compartilhável, e o teclado chega nela na
+ * ordem natural. O alvo precisa de `scroll-mt-24` — o cabeçalho do painel
+ * é fixo e cobriria o topo do formulário.
+ */
+export function EyebrowComAtalho({
+  titulo,
+  alvo,
+  rotulo,
+}: {
+  titulo: string;
+  /** O `id` do elemento de destino, que deve carregar `scroll-mt-24`. */
+  alvo: string;
+  rotulo: string;
+}) {
+  return (
+    <div className="mb-3 flex items-center justify-between gap-3">
+      <Eyebrow tone="accent">{titulo}</Eyebrow>
+      <a
+        href={`#${alvo}`}
+        className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        {rotulo}
+      </a>
+    </div>
+  );
+}

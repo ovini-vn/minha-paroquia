@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Eyebrow } from "@/components/ui/Typography";
+import { Eyebrow, EyebrowComAtalho } from "@/components/ui/Typography";
 import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { FiltroDeCelebracoes } from "./_components/FiltroDeCelebracoes";
@@ -86,9 +86,11 @@ export default async function MissasAdminPage({
       <FiltroDeCelebracoes atual={escolhido} presentes={presentes} />
 
       <section>
-        <Eyebrow tone="accent" className="mb-3">
-          Repetições cadastradas
-        </Eyebrow>
+        <EyebrowComAtalho
+          titulo="Repetições cadastradas"
+          alvo="nova-repeticao"
+          rotulo="Nova repetição"
+        />
         {/*
           Duas colunas no computador.
 
@@ -151,9 +153,11 @@ export default async function MissasAdminPage({
       </section>
 
       <section>
-        <Eyebrow tone="accent" className="mb-3">
-          Próximas datas
-        </Eyebrow>
+        <EyebrowComAtalho
+          titulo="Próximas datas"
+          alvo="celebracao-avulsa"
+          rotulo="Celebração avulsa"
+        />
         <p className="mb-3 text-[13px] leading-relaxed text-muted">
           Se numa data específica não houver missa, cancele só ela — a repetição continua valendo
           para as outras.
@@ -225,7 +229,7 @@ export default async function MissasAdminPage({
         horários é de toda semana. O formulário ocupava o topo da tela e
         empurrava para baixo justamente o que se vem ver.
       */}
-      <Card>
+      <Card id="nova-repeticao" className="scroll-mt-24">
         <Eyebrow tone="accent" className="mb-3">
           Nova repetição
         </Eyebrow>
@@ -239,7 +243,7 @@ export default async function MissasAdminPage({
         não é repetição, mas é a mesma pergunta: "quando tem missa?". Ficava
         numa seção "Agenda" do índice, longe da tela que responde isso.
       */}
-      <Card>
+      <Card id="celebracao-avulsa" className="scroll-mt-24">
         <Eyebrow tone="accent" className="mb-3">
           Celebração avulsa
         </Eyebrow>

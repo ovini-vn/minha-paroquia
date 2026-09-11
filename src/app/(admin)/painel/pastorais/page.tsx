@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { PageHeader, Eyebrow, EyebrowComAtalho } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { CreatePastoralGroupForm } from "./CreatePastoralGroupForm";
 import {
@@ -71,9 +71,11 @@ export default async function PainelPastoraisPage({
       />
 
       <section>
-        <Eyebrow tone="accent" className="mb-3">
-          Pastorais cadastradas
-        </Eyebrow>
+        <EyebrowComAtalho
+          titulo="Pastorais cadastradas"
+          alvo="nova-pastoral"
+          rotulo="Nova pastoral"
+        />
         <div className="mb-4">
           <FiltroDePastorais atual={visao} quantos={quantos} />
         </div>
@@ -176,7 +178,7 @@ export default async function PainelPastoraisPage({
       </p>
       {/* Cadastrar pastoral é raro; consultar a lista é o que traz
           alguém aqui. O formulário desceu para depois dela. */}
-      <Card>
+      <Card id="nova-pastoral" className="scroll-mt-24">
         <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova pastoral</p>
         <CreatePastoralGroupForm />
       </Card>

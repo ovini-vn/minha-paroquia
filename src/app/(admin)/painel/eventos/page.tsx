@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { PageHeader, Eyebrow, EyebrowComAtalho } from "@/components/ui/Typography";
 import { CreateEventForm } from "../CreateEventForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { formatDateTime, formatDateOnly } from "@/lib/date";
@@ -70,9 +70,7 @@ export default async function EventsAdminPage({
       </div>
 
       <section>
-        <Eyebrow tone="accent" className="mb-3">
-          Cadastrados
-        </Eyebrow>
+        <EyebrowComAtalho titulo="Cadastrados" alvo="novo-evento" rotulo="Novo evento" />
 
         <div className="mb-4">
           <FiltroDeTipos filtros={filtros} presentes={presentes} />
@@ -179,7 +177,7 @@ export default async function EventsAdminPage({
         Vem no fim pela mesma regra das outras telas: cadastrar é ocasional,
         consultar a lista é o que traz alguém aqui.
       */}
-      <Card>
+      <Card id="novo-evento" className="scroll-mt-24">
         <Eyebrow tone="accent" className="mb-3">
           Novo evento
         </Eyebrow>

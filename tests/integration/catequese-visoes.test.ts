@@ -21,6 +21,8 @@ import {
   requireSessionAccess,
   requireRiteAccess,
   listAttendanceForSession,
+  listarQuemPodeLecionar,
+  definirCatequista,
 } from "@/server/modules/catequese/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
@@ -92,6 +94,44 @@ describe("catequese: as três visões", () => {
 
   afterAll(async () => {
     await cleanupTenantData({ userIds, parishIds });
+  });
+
+  it("quem coordena a catequese também pode ser designado catequista", async () => {
+    /*
+     * A lista saía de "quem tem o papel CATEQUISTA", e coordenadora ficava
+     * de fora — mesmo o papel dela concedendo CATEQUESE_TEACH. Visto em
+     * produção: a coordenadora não aparecia na lista de uma turma que leva
+     * o nome dela. Numa paróquia pequena, quem coordena também dá aula.
+     */
+    const coordena = await registerUser({
+      fullName: "Marta Coordenadora",
+      email: `coord-cv-${stamp}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    userIds.push(coordena.id);
+    const convite = await createInvitation({
+      parishId,
+      createdBy: parocoId,
+      type: "link",
+      role: "COORDENADOR_CATEQUESE",
+    });
+    await acceptInvitation({ code: convite.code, userId: coordena.id });
+
+    const podem = await listarQuemPodeLecionar(parishId);
+    const eu = podem.find((p) => p.id === coordena.id);
+    expect(eu, "coordenadora de catequese precisa poder ser designada").toBeTruthy();
+    // O papel acompanha quem não é catequista, para a lista misturada não confundir.
+    expect(eu!.papel).toBe("Coordenador de Catequese");
+    expect(podem.find((p) => p.id === catequistaId)?.papel).toBeNull();
+
+    // E a designação tem de VALER: lista que oferece e gravação que recusa
+    // seria pior do que não oferecer.
+    await definirCatequista(parishId, outraTurmaId, { userId: coordena.id });
+    const turma = await getGroup(parishId, outraTurmaId);
+    expect(turma!.catechistUserId).toBe(coordena.id);
+
+    // Devolve a turma a quem era, para os outros testes não mudarem de chão.
+    await definirCatequista(parishId, outraTurmaId, { userId: outroCatequistaId });
   });
 
   it("coordenação: números da catequese inteira", async () => {

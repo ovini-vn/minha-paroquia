@@ -14,7 +14,7 @@ import { Eyebrow } from "@/components/ui/Typography";
 
 const initialState: ActionState = {};
 
-type Catequista = { id: string; fullName: string };
+type Catequista = { id: string; fullName: string; papel: string | null };
 
 /**
  * Editar a turma, trocar a catequista e — no fim, separado — excluir.
@@ -35,7 +35,7 @@ export function GestaoDaTurma({
   groupId: string;
   nome: string;
   ano: number;
-  /** Membros da paróquia com o papel de catequista. */
+  /** Quem pode lecionar: catequistas E a coordenação da catequese. */
   catequistas: Catequista[];
   catechistUserId: string | null;
   catechistName: string | null;
@@ -149,9 +149,13 @@ export function GestaoDaTurma({
                 className={INPUT_CLASSES}
               >
                 <option value="">Sem catequista</option>
+                {/* O papel acompanha quem NÃO é catequista: a lista mistura
+                    as duas categorias, e sem isso "Marcela" ali no meio
+                    parece escolha errada. */}
                 {catequistas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.fullName}
+                    {c.papel ? ` · ${c.papel}` : ""}
                   </option>
                 ))}
               </select>

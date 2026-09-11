@@ -19,8 +19,8 @@ import {
   listEnrollmentsForCatechist,
   listMyChildrenEnrollments,
   getCatequeseOverview,
+  listarQuemPodeLecionar,
 } from "@/server/modules/catequese/service";
-import { listMembersByRole } from "@/server/modules/parishes/service";
 import { listUnlinkedParishPeople } from "@/server/modules/family/service";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -77,7 +77,7 @@ export default async function CatequesePage({
     await Promise.all([
       coordena ? getCatequeseOverview(parishId) : null,
       coordena ? listGroups(parishId) : [],
-      coordena ? listMembersByRole(parishId, "CATEQUISTA") : [],
+      coordena ? listarQuemPodeLecionar(parishId) : [],
       coordena ? listUnlinkedParishPeople(parishId) : [],
       leciona ? listGroupsForCatechist(parishId, session.userId) : [],
       leciona ? listEnrollmentsForCatechist(parishId, session.userId) : [],
@@ -175,7 +175,17 @@ export default async function CatequesePage({
                 {overview.turmasSemCatequista === 1
                   ? "Uma turma está sem catequista designado."
                   : `${overview.turmasSemCatequista} turmas estão sem catequista designado.`}{" "}
-                Defina em Membros e papéis quem é catequista, e depois edite a turma.
+                {/*
+                  O caminho certo, e não "edite a turma".
+                
+                  A frase mandava para Membros e papéis e depois para "editar
+                  a turma" — só que editar a turma muda nome e ano, e não a
+                  catequista. Quem seguiu a instrução não achou o que ela
+                  prometia. Quem designa mora DENTRO da turma.
+                */}
+                Abra a turma e escolha em <strong className="text-foreground">Catequista</strong>.
+                Quem aparece na lista é quem pode lecionar — catequistas e a coordenação da
+                catequese.
               </p>
             )}
           </section>

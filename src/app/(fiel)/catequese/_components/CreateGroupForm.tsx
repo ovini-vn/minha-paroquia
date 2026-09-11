@@ -7,7 +7,7 @@ import { hojeEmBrasilia } from "@/lib/brasilia";
 
 const initialState: ActionState = {};
 
-type Catechist = { user: { id: string; fullName: string } };
+type Catechist = { id: string; fullName: string; papel: string | null };
 
 export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
   const [state, formAction, pending] = useActionState(createGroupAction, initialState);
@@ -51,8 +51,9 @@ export function CreateGroupForm({ catechists }: { catechists: Catechist[] }) {
           >
             <option value="">—</option>
             {catechists.map((c) => (
-              <option key={c.user.id} value={c.user.id}>
-                {c.user.fullName}
+              <option key={c.id} value={c.id}>
+                {c.fullName}
+                {c.papel ? ` · ${c.papel}` : ""}
               </option>
             ))}
           </select>

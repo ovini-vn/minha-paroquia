@@ -13,6 +13,7 @@ import {
   listarItinerarios,
   listarRitosDaTurma,
   listRitesForEnrollment,
+  listarQuemPodeLecionar,
 } from "@/server/modules/catequese/service";
 import { listAllFamilyMembers } from "@/server/modules/family/service";
 import { completeRiteAction } from "@/server/actions/catequese-actions";
@@ -30,7 +31,6 @@ import { CreateRiteForm } from "../../_components/CreateRiteForm";
 import { CriarRitoDaTurmaForm } from "../../_components/CriarRitoDaTurmaForm";
 import { GestaoDaTurma } from "../../_components/GestaoDaTurma";
 import { EditarEncontroForm } from "../../_components/EditarEncontroForm";
-import { listMembersByRole } from "@/server/modules/parishes/service";
 
 /**
  * A turma, vista por quem coordena e/ou por quem dá aula.
@@ -63,7 +63,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
     obterAndamentoDaTurma(parishId, id, new Date()),
     coordena ? listarItinerarios(parishId) : [],
     listarRitosDaTurma(parishId, id),
-    coordena ? listMembersByRole(parishId, "CATEQUISTA") : [],
+    coordena ? listarQuemPodeLecionar(parishId) : [],
   ]);
 
   const ritesByEnrollment = await Promise.all(
@@ -125,7 +125,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
               groupId={id}
               nome={group.name}
               ano={group.year}
-              catequistas={catequistas.map((c) => ({ id: c.user.id, fullName: c.user.fullName }))}
+              catequistas={catequistas}
               catechistUserId={group.catechistUserId}
               catechistName={group.catechistName}
             />

@@ -4,6 +4,7 @@ import { resumirLancamento } from "@/lib/lancamento-de-conteudo";
 import { montarCaminhada, proximoRito } from "@/lib/caminhada-da-catequese";
 import type { SacramentType } from "@prisma/client";
 import { registrar, ACOES } from "@/server/modules/auditoria/service";
+import { PERMISSIONS } from "@/server/auth/rbac";
 import type {
   CreateGroupInput,
   CreateSessionInput,
@@ -11,6 +12,50 @@ import type {
   CriarItinerarioInput,
   CriarTemaInput,
 } from "./schema";
+
+/**
+ * Quem pode ser designado catequista de uma turma.
+ *
+ * A pergunta é "quem LECIONA", e não "quem tem o papel Catequista". Eram
+ * tratadas como a mesma coisa, e não são: o papel Coordenador de Catequese
+ * também concede `CATEQUESE_TEACH` — quem coordena lança chamada e dá
+ * encontro como qualquer outra. Visto em produção: a coordenadora da
+ * catequese não aparecia na lista de uma turma que leva o nome dela.
+ *
+ * Coordenadora que também leciona é o caso comum numa paróquia pequena,
+ * não a exceção. Por isso a lista sai da PERMISSÃO, que é o que de fato
+ * autoriza dar aula, e não de um código de papel escolhido à mão — assim um
+ * papel novo que possa lecionar entra aqui sozinho, sem ninguém lembrar.
+ *
+ * Devolve o papel junto: com as duas categorias na mesma lista, saber que
+ * "Marcela" está ali como coordenadora evita a dúvida de estar escolhendo a
+ * pessoa errada.
+ */
+export async function listarQuemPodeLecionar(parishId: string) {
+  const membros = await withTenantContext(parishId, (tx) =>
+    tx.parishMembership.findMany({
+      where: {
+        parishId,
+        status: "active",
+        role: {
+          rolePermissions: { some: { permission: { code: PERMISSIONS.CATEQUESE_TEACH } } },
+        },
+      },
+      select: {
+        user: { select: { id: true, fullName: true } },
+        role: { select: { name: true, code: true } },
+      },
+      orderBy: { user: { fullName: "asc" } },
+    }),
+  );
+
+  return membros.map((m) => ({
+    id: m.user.id,
+    fullName: m.user.fullName,
+    /** Só aparece na tela quando NÃO é catequista — ver o comentário acima. */
+    papel: m.role.code === "CATEQUISTA" ? null : m.role.name,
+  }));
+}
 
 // ---- Turmas -------------------------------------------------------------
 

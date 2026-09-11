@@ -109,13 +109,19 @@ describe("catequese: as três visões", () => {
       password: "SenhaForte123",
     });
     userIds.push(coordena.id);
+    /*
+     * Entra como FIEL e sobe de papel, em vez de ser convidada direto.
+     * O convite não oferece COORDENADOR_CATEQUESE — coordenação se dá a
+     * quem já está na paróquia, e é assim que a secretaria faz na tela.
+     */
     const convite = await createInvitation({
       parishId,
       createdBy: parocoId,
       type: "link",
-      role: "COORDENADOR_CATEQUESE",
+      role: "FIEL",
     });
     await acceptInvitation({ code: convite.code, userId: coordena.id });
+    await changeMemberRole(parishId, coordena.id, "COORDENADOR_CATEQUESE", parocoId);
 
     const podem = await listarQuemPodeLecionar(parishId);
     const eu = podem.find((p) => p.id === coordena.id);

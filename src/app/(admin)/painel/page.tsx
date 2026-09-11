@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requirePermissionForPage, podeAlcancar } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
+import { ITENS_DO_PAINEL, GRUPOS_DO_PAINEL } from "@/components/layout/painel-items";
 import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
 import { listAllAvisos } from "@/server/modules/avisos/service";
 import { countPendingPrayerRequests } from "@/server/modules/prayer-requests/service";
@@ -36,27 +37,11 @@ import { nomeDoSacerdote } from "@/lib/sacerdote";
 import { SacerdoteSemContaForm } from "./SacerdoteSemContaForm";
 import { apagarSacerdoteAction } from "@/server/actions/sacerdote-actions";
 import {
-  BookOpen,
-  Cake,
   Church,
-  Clock,
-  Compass,
   Crown,
   Flag,
-  HandCoins,
-  HandHeart,
-  HeartHandshake,
-  KeyRound,
   Landmark,
-  Megaphone,
-  Music,
-  PartyPopper,
-  Repeat,
-  ScrollText,
   Settings,
-  UserRound,
-  Users,
-  Wallet,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -153,6 +138,46 @@ export default async function AdminDashboardPage() {
     })),
   ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
+  const itensDoPainel = ITENS_DO_PAINEL.filter(
+    (item) => !item.permissao || podeAlcancar(session, item.permissao),
+  );
+
+  /*
+   * O que cada destino tem a dizer HOJE.
+   *
+   * Fica aqui, e não na lista compartilhada, porque quase toda legenda é
+   * uma contagem: quantos pedidos esperam, quantas turmas existem. Levar
+   * isso para um arquivo de navegação puxaria meia dúzia de consultas para
+   * dentro dele — e a barra lateral, que não mostra legenda nenhuma,
+   * pagaria por todas elas em cada tela do painel.
+   */
+  const LEGENDAS: Record<string, string> = {
+    "/painel/acesso": "Gerar um link de nova senha para um membro",
+    "/painel/oracao":
+      pedidosPendentes > 0
+        ? `${pedidosPendentes} aguardando aprovação para o mural`
+        : "Aprovar o que vai ao mural da comunidade",
+    "/painel/sacramentos": `${pendingSacramentCount} aguardando validação`,
+    "/painel/financeiro": "Finalidades das contribuições e o PIX identificado",
+    "/painel/dizimo": `${titheContributionCount} ${titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em ${formatPeriodLabel(currentPeriod())}`,
+    "/painel/doacao": "Chave PIX, finalidades e o que a paróquia realiza",
+    "/painel/avisos": `${publishedAvisoCount} ${publishedAvisoCount === 1 ? "publicado" : "publicados"}`,
+    "/painel/eventos": `${events.length} ${events.length === 1 ? "futuro" : "futuros"}`,
+    "/painel/aniversarios": "Nascimento e sacramentos dos próximos 30 dias",
+    "/painel/pastorais": `${pastoralGroupCount} ${pastoralGroupCount === 1 ? "pastoral cadastrada" : "pastorais cadastradas"}`,
+    "/painel/servir": `${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`,
+    "/catequese": `${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`,
+    "/painel/liturgia": `${liturgicalAvailabilityCount} ${liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}`,
+    "/painel/missas": "O que se repete toda semana ou todo mês",
+    "/painel/paroco": "A apresentação do pároco e a foto dele",
+    "/painel/historia": "O memorial da paróquia e a foto da igreja",
+    "/painel/expediente": "Aparece em Contato, com o aviso de aberta ou fechada",
+    "/painel/plano": "O objetivo do ano, as prioridades e os eixos",
+    "/painel/membros": "Quem é catequista, coordenador, secretaria",
+    "/painel/permissoes": "Conceda ou revogue permissões por pessoa",
+    "/painel/auditoria": "Quem mudou papéis, permissões e senhas",
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -183,181 +208,54 @@ export default async function AdminDashboardPage() {
         />
       </Card>
 
-      {/* Áreas de gestão — uma lista só, em vez de oito cards iguais
-          empilhados, cada um com seu próprio botão "Gerenciar". */}
-      <section>
-        <Eyebrow tone="accent" className="mb-3">
-          Áreas da paróquia
-        </Eyebrow>
-        {/* Grade quando couber — ver `.lista-adaptavel` em globals.css. */}
-        <div className="lista-adaptavel">
-        <Card className="card-adaptavel px-3.5 py-1.5">
-          {/*
-            PRIMEIRO da lista, e não no meio.
-            É a única tarefa aqui que chega com alguém esperando do outro
-            lado do balcão — quem não consegue entrar liga ou aparece, e a
-            secretaria precisa achar isto em segundos. Estava na posição 15
-            de 18, a 2.300px do topo: existia e não era encontrado.
+      {/*
+        As áreas, saindo da MESMA lista da barra lateral.
 
-            O rótulo é do ponto de vista de QUEM OPERA. "Esqueci minha
-            senha" está escrito para o fiel; quem abre esta tela não esqueceu
-            senha nenhuma — está ajudando quem esqueceu.
-          */}
-          {podeAlcancar(session, PERMISSIONS.MEMBER_PASSWORD_RESET) && (
-            <RowLink
-              href="/painel/acesso"
-              icon={KeyRound}
-              title="Ajudar quem não consegue entrar"
-              subtitle="Gerar um link de nova senha para um membro"
-            />
-          )}
-          <RowLink
-            href="/painel/missas"
-            icon={Repeat}
-            title="Horários das missas"
-            subtitle="O que se repete toda semana ou todo mês"
-          />
-          {podeAlcancar(session, PERMISSIONS.FINANCEIRO_VER) && (
-            <RowLink
-              href="/painel/financeiro"
-              icon={Wallet}
-              title="Financeiro"
-              subtitle="Finalidades das contribuições e o PIX identificado"
-            />
-          )}
-          <RowLink
-            href="/painel/doacao"
-            icon={HandCoins}
-            title="Ofertar"
-            subtitle="Chave PIX, finalidades e o que a paróquia realiza"
-          />
-          <RowLink
-            href="/painel/paroco"
-            icon={UserRound}
-            title="Nosso Pároco"
-            subtitle="A apresentação do pároco e a foto dele"
-          />
-          <RowLink
-            href="/painel/historia"
-            icon={Landmark}
-            title="Nossa História"
-            subtitle="O memorial da paróquia e a foto da igreja"
-          />
-          <RowLink
-            href="/painel/expediente"
-            icon={Clock}
-            title="Horário da secretaria"
-            subtitle="Aparece em Contato, com o aviso de aberta ou fechada"
-          />
-          <RowLink
-            href="/painel/oracao"
-            icon={HandHeart}
-            title="Pedidos de oração"
-            subtitle={
-              pedidosPendentes > 0
-                ? `${pedidosPendentes} aguardando aprovação para o mural`
-                : "Aprovar o que vai ao mural da comunidade"
-            }
-          />
-          <RowLink
-            href="/painel/aniversarios"
-            icon={Cake}
-            title="Aniversários"
-            subtitle="Nascimento e sacramentos dos próximos 30 dias"
-          />
-          <RowLink
-            href="/painel/avisos"
-            icon={Megaphone}
-            title="Avisos"
-            subtitle={`${publishedAvisoCount} ${publishedAvisoCount === 1 ? "publicado" : "publicados"}`}
-          />
-          <RowLink
-            href="/painel/eventos"
-            icon={PartyPopper}
-            title="Eventos"
-            subtitle={`${events.length} ${events.length === 1 ? "futuro" : "futuros"}`}
-          />
-          {/* "Leituras do dia" saiu daqui: a tela do fiel que mostrava
-              essas leituras foi removida, porque repetia a Palavra do Padre
-              e exigia digitação DIÁRIA para não parecer abandonada. A rota
-              /painel/liturgia-do-dia e o que já foi publicado continuam
-              existindo — só não há mais como chegar nela por engano e
-              trabalhar para ninguém ver. */}
-          <RowLink
-            href="/painel/servir"
-            icon={HeartHandshake}
-            title="Servir"
-            subtitle={`${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`}
-          />
-          {podeAlcancar(session, PERMISSIONS.PLANO_MANAGE) && (
-            <RowLink
-              href="/painel/plano"
-              icon={Compass}
-              title="Plano pastoral"
-              subtitle="O objetivo do ano, as prioridades e os eixos"
-            />
-          )}
-          <RowLink
-            href="/painel/pastorais"
-            icon={Users}
-            title="Grupos e pastorais"
-            subtitle={`${pastoralGroupCount} ${pastoralGroupCount === 1 ? "pastoral cadastrada" : "pastorais cadastradas"}`}
-          />
-          {/* Uma entrada só: a tela mostra coordenação, minhas turmas e
-              meus filhos conforme o papel de quem abre. Antes eram
-              "Catequese" e "Minha catequese" lado a lado, sem que a
-              diferença ficasse clara. */}
-          <RowLink
-            href="/catequese"
-            icon={BookOpen}
-            title="Catequese"
-            subtitle={`${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`}
-          />
-          <RowLink
-            href="/painel/liturgia"
-            icon={Music}
-            title="Liturgia"
-            subtitle={`${liturgicalAvailabilityCount} ${liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}`}
-          />
-          <RowLink
-            href="/painel/dizimo"
-            icon={HandCoins}
-            title="Dízimo"
-            subtitle={`${titheContributionCount} ${titheContributionCount === 1 ? "contribuição registrada" : "contribuições registradas"} em ${formatPeriodLabel(currentPeriod())}`}
-          />
-          <RowLink
-            href="/painel/sacramentos"
-            icon={ScrollText}
-            title="Sacramentos"
-            subtitle={`${pendingSacramentCount} ${pendingSacramentCount === 1 ? "aguardando validação" : "aguardando validação"}`}
-          />
-          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
-            <RowLink
-              href="/painel/membros"
-              icon={Users}
-              title="Membros e papéis"
-              subtitle="Quem é catequista, coordenador, secretaria"
-            />
-          )}
-          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
-            <RowLink
-              href="/painel/auditoria"
-              icon={ScrollText}
-              title="Histórico de acessos"
-              subtitle="Quem mudou papéis, permissões e senhas"
-            />
-          )}
-          {podeAlcancar(session, PERMISSIONS.PERMISSION_OVERRIDES_MANAGE) && (
-            <RowLink
-              href="/painel/permissoes"
-              icon={KeyRound}
-              title="Delegar permissões"
-              subtitle="Conceda ou revogue permissões por pessoa"
-            />
-          )}
-        </Card>
-        </div>
-      </section>
+        Eram duas listas escritas à mão — esta e a do computador — e duas
+        listas da mesma coisa divergem: um destino novo entra numa e falta
+        na outra. Agora o que existe está em `painel-items.ts`, e aqui fica
+        só o que esta página sabe e a barra não: as contagens.
+      */}
+      {/*
+        Os grupos LADO A LADO no computador.
+
+        Agrupar sozinho piorou: o índice foi de 5.248px para 5.624px,
+        porque seis títulos entraram numa coluna só. Empilhar grupos numa
+        fita estreita é justamente o que sobra de espaço para fazer no
+        celular — no computador há 844px de largura parados.
+
+        Duas colunas, e não três: com três, a legenda "Nascimento e
+        sacramentos dos próximos 30 dias" quebraria em três linhas, e o
+        índice ficaria mais curto às custas de ficar mais difícil de ler.
+
+        `items-start` para cada grupo ter a altura do próprio conteúdo —
+        sem isso, os dois grupos de uma linha esticam até o mais alto e
+        sobra um vão dentro do cartão menor.
+      */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6 lg:gap-y-7">
+        {GRUPOS_DO_PAINEL.map((grupo) => {
+          const doGrupo = itensDoPainel.filter((item) => item.grupo === grupo);
+          if (doGrupo.length === 0) return null;
+          return (
+            <section key={grupo}>
+              <Eyebrow tone="accent" className="mb-3">
+                {grupo}
+              </Eyebrow>
+              <Card className="px-3.5 py-1.5">
+                {doGrupo.map((item) => (
+                  <RowLink
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    title={item.label}
+                    subtitle={LEGENDAS[item.href] ?? ""}
+                  />
+                ))}
+              </Card>
+            </section>
+          );
+        })}
+      </div>
 
       {(acesso.national || acesso.provinces || acesso.dioceses || acesso.platform) && (
         <section>

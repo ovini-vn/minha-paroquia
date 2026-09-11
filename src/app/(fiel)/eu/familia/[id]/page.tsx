@@ -21,7 +21,7 @@ export default async function FamilyMemberDetailPage({ params }: { params: Promi
   const guardians = await listGuardians(session.membership.parishId, id);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col lg:max-w-[46rem] gap-6">
       <div>
         <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{member.fullName}</h1>
         <p className="mt-1 text-sm text-muted">

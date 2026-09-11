@@ -211,38 +211,42 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
         {encontros.length === 0 ? (
           <p className="text-sm text-muted">Nenhum encontro lançado ainda.</p>
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {encontros.map((encontro) => {
-              const futuro = encontro.date > hoje;
-              const presente = presencaPorSessao.get(encontro.id);
-              return (
-                <div
-                  key={encontro.id}
-                  className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14.5px] font-medium text-foreground">
-                      {encontro.tema?.titulo || encontro.topic || "Encontro"}
-                    </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">{formatDateOnly(encontro.date)}</p>
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {encontros.map((encontro) => {
+                const futuro = encontro.date > hoje;
+                const presente = presencaPorSessao.get(encontro.id);
+                return (
+                  <div
+                    key={encontro.id}
+                    className="flex items-center gap-3 border-b border-border py-3 last:border-b-0"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14.5px] font-medium text-foreground">
+                        {encontro.tema?.titulo || encontro.topic || "Encontro"}
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">{formatDateOnly(encontro.date)}</p>
+                    </div>
+                    {futuro ? (
+                      <Badge tone="muted">A realizar</Badge>
+                    ) : presente === true ? (
+                      <Badge tone="success">
+                        <Check className="h-3 w-3" strokeWidth={2} aria-hidden /> Presente
+                      </Badge>
+                    ) : presente === false ? (
+                      <Badge tone="error">
+                        <X className="h-3 w-3" strokeWidth={2} aria-hidden /> Faltou
+                      </Badge>
+                    ) : (
+                      <Badge tone="muted">Sem chamada</Badge>
+                    )}
                   </div>
-                  {futuro ? (
-                    <Badge tone="muted">A realizar</Badge>
-                  ) : presente === true ? (
-                    <Badge tone="success">
-                      <Check className="h-3 w-3" strokeWidth={2} aria-hidden /> Presente
-                    </Badge>
-                  ) : presente === false ? (
-                    <Badge tone="error">
-                      <X className="h-3 w-3" strokeWidth={2} aria-hidden /> Faltou
-                    </Badge>
-                  ) : (
-                    <Badge tone="muted">Sem chamada</Badge>
-                  )}
-                </div>
-              );
-            })}
-          </Card>
+                );
+              })}
+            </Card>
+          </div>
         )}
       </section>
 
@@ -264,21 +268,25 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
         {missas.length === 0 ? (
           <p className="text-sm text-muted">Nenhuma presença em missa registrada ainda.</p>
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {missas.map((missa) => (
-              <div
-                key={missa.id}
-                className="flex items-center gap-3.5 border-b border-border py-3 last:border-b-0"
-              >
-                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                  <Church className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
-                </span>
-                <p className="min-w-0 flex-1 text-[14.5px] text-foreground">
-                  {formatDateOnly(missa.attendedOn)}
-                </p>
-              </div>
-            ))}
-          </Card>
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {missas.map((missa) => (
+                <div
+                  key={missa.id}
+                  className="flex items-center gap-3.5 border-b border-border py-3 last:border-b-0"
+                >
+                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                    <Church className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <p className="min-w-0 flex-1 text-[14.5px] text-foreground">
+                    {formatDateOnly(missa.attendedOn)}
+                  </p>
+                </div>
+              ))}
+            </Card>
+          </div>
         )}
       </section>
 
@@ -289,27 +297,31 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
         {ritos.length === 0 ? (
           <p className="text-sm text-muted">Nenhum rito registrado ainda.</p>
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {ritos.map((rito) => (
-              <div
-                key={rito.id}
-                className="flex items-center gap-3.5 border-b border-border py-3 last:border-b-0"
-              >
-                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
-                  <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[14.5px] font-medium text-foreground">{rito.name}</p>
-                  {rito.scheduledAt && (
-                    <p className="mt-0.5 text-[12.5px] text-muted">
-                      {formatDateOnly(rito.scheduledAt)}
-                    </p>
-                  )}
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {ritos.map((rito) => (
+                <div
+                  key={rito.id}
+                  className="flex items-center gap-3.5 border-b border-border py-3 last:border-b-0"
+                >
+                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
+                    <Sparkles className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14.5px] font-medium text-foreground">{rito.name}</p>
+                    {rito.scheduledAt && (
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {formatDateOnly(rito.scheduledAt)}
+                      </p>
+                    )}
+                  </div>
+                  {rito.completedAt ? <Badge tone="success">Realizado</Badge> : <Badge>Previsto</Badge>}
                 </div>
-                {rito.completedAt ? <Badge tone="success">Realizado</Badge> : <Badge>Previsto</Badge>}
-              </div>
-            ))}
-          </Card>
+              ))}
+            </Card>
+          </div>
         )}
       </section>
 

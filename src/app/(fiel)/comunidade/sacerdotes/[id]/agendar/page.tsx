@@ -22,7 +22,7 @@ export default async function BookAppointmentPage({ params }: { params: Promise<
   const naoAtendePeloApp = !priest.ofereceAtendimento && !priest.ofereceConfissao;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col lg:max-w-[42rem] gap-4">
       <div className="mb-1">
         <Eyebrow tone="accent">Solicitar atendimento com</Eyebrow>
         <h1 className="mt-1 font-serif text-[29px] font-semibold leading-tight text-foreground">

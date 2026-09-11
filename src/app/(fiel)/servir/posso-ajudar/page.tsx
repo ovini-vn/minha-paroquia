@@ -24,7 +24,7 @@ export default async function VolunteerProfilePage() {
   const existing = await getOwnVolunteerProfile(session.membership.parishId, session.userId);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Eu posso ajudar"
         description="Conte pra sua comunidade como você pode contribuir. Não é um compromisso — é só um ponto de partida."

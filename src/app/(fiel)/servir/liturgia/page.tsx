@@ -87,39 +87,43 @@ export default async function LiturgiaPage() {
             description="Quando o coordenador de liturgia escalar você para uma celebração, ela aparece aqui."
           />
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {schedule.map((s) => (
-              <div
-                key={s.id}
-                className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
-              >
-                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                  <Music className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[14.5px] font-medium text-foreground">
-                    {LITURGICAL_ROLE_LABELS[s.roleType]}
-                  </p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
-                    {formatDateTime(s.celebration.startsAt)}
-                  </p>
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {schedule.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+                >
+                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                    <Music className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14.5px] font-medium text-foreground">
+                      {LITURGICAL_ROLE_LABELS[s.roleType]}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {formatDateTime(s.celebration.startsAt)}
+                    </p>
+                  </div>
+                  {s.confirmed ? (
+                    <Badge tone="success">
+                      <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                      Confirmado
+                    </Badge>
+                  ) : (
+                    <form action={confirmScheduleAction} className="shrink-0">
+                      <input type="hidden" name="id" value={s.id} />
+                      <Button type="submit" size="sm">
+                        Confirmar
+                      </Button>
+                    </form>
+                  )}
                 </div>
-                {s.confirmed ? (
-                  <Badge tone="success">
-                    <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-                    Confirmado
-                  </Badge>
-                ) : (
-                  <form action={confirmScheduleAction} className="shrink-0">
-                    <input type="hidden" name="id" value={s.id} />
-                    <Button type="submit" size="sm">
-                      Confirmar
-                    </Button>
-                  </form>
-                )}
-              </div>
-            ))}
-          </Card>
+              ))}
+            </Card>
+          </div>
         )}
       </section>
 

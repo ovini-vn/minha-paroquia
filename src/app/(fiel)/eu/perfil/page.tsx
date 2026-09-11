@@ -13,7 +13,7 @@ export default async function ProfileEditPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Editar perfil"
         description="Como a comunidade vê você. Só seu nome aparece para os outros."

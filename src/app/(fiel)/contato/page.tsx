@@ -122,61 +122,65 @@ export default async function ContatoPage() {
         <Eyebrow tone="accent" className="mb-3">
           Falar com a paróquia
         </Eyebrow>
-        <Card className="px-3.5 py-1.5">
-          {parish.phone && (
-            // tel: abre o discador com o número pronto — no celular é um
-            // toque, sem copiar e colar.
-            <a href={`tel:${parish.phone.replace(/\s/g, "")}`} className={linha}>
-              <span className={`${icone} bg-primary-tint text-primary`}>
-                <Phone className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-foreground">Ligar</span>
-                <span className="mt-0.5 block text-[12.5px] text-muted">{parish.phone}</span>
-              </span>
-            </a>
-          )}
-
-          {parish.whatsapp && (
-            // A mensagem já vai escrita e assinada: quem recebe sabe quem é
-            // e de onde veio, sem precisar perguntar.
-            <a
-              href={`https://wa.me/${paraWhatsapp(parish.whatsapp)}?text=${mensagem}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linha}
-            >
-              <span className={`${icone} bg-[#25D366]/15 text-[#1a8f47] dark:text-[#4ade80]`}>
-                <MessageCircle className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-foreground">
-                  Enviar mensagem
+        <div className="lista-adaptavel">
+          {/* Vira grade de dois quando o contêiner tem largura —
+              ver `.lista-adaptavel` em globals.css. */}
+          <Card className="card-adaptavel px-3.5 py-1.5">
+            {parish.phone && (
+              // tel: abre o discador com o número pronto — no celular é um
+              // toque, sem copiar e colar.
+              <a href={`tel:${parish.phone.replace(/\s/g, "")}`} className={linha}>
+                <span className={`${icone} bg-primary-tint text-primary`}>
+                  <Phone className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-muted">{parish.whatsapp}</span>
-              </span>
-            </a>
-          )}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium text-foreground">Ligar</span>
+                  <span className="mt-0.5 block text-[12.5px] text-muted">{parish.phone}</span>
+                </span>
+              </a>
+            )}
 
-          {endereco && (
-            // maps: é o esquema que o próprio aparelho resolve — abre no app
-            // de navegação que a pessoa usa, não força um específico.
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={linha}
-            >
-              <span className={`${icone} bg-primary-tint text-primary`}>
-                <MapPin className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-foreground">Como chegar</span>
-                <span className="mt-0.5 block text-[12.5px] text-muted">{endereco}</span>
-              </span>
-            </a>
-          )}
-        </Card>
+            {parish.whatsapp && (
+              // A mensagem já vai escrita e assinada: quem recebe sabe quem é
+              // e de onde veio, sem precisar perguntar.
+              <a
+                href={`https://wa.me/${paraWhatsapp(parish.whatsapp)}?text=${mensagem}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linha}
+              >
+                <span className={`${icone} bg-[#25D366]/15 text-[#1a8f47] dark:text-[#4ade80]`}>
+                  <MessageCircle className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium text-foreground">
+                    Enviar mensagem
+                  </span>
+                  <span className="mt-0.5 block text-[12.5px] text-muted">{parish.whatsapp}</span>
+                </span>
+              </a>
+            )}
+
+            {endereco && (
+              // maps: é o esquema que o próprio aparelho resolve — abre no app
+              // de navegação que a pessoa usa, não força um específico.
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linha}
+              >
+                <span className={`${icone} bg-primary-tint text-primary`}>
+                  <MapPin className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium text-foreground">Como chegar</span>
+                  <span className="mt-0.5 block text-[12.5px] text-muted">{endereco}</span>
+                </span>
+              </a>
+            )}
+          </Card>
+        </div>
 
         {!parish.phone && !parish.whatsapp && !endereco && (
           <p className="mt-3 text-[13px] leading-relaxed text-muted">

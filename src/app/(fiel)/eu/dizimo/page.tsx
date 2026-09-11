@@ -25,7 +25,7 @@ export default async function MyTithePage() {
   const contributions = await listMyContributions(session.membership.parishId, session.userId);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[46rem]">
       <PageHeader
         title="Dízimo"
         description="Registro de participação por período, sem valores. Quem registra é a secretaria da paróquia."

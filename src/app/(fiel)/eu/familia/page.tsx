@@ -50,26 +50,31 @@ export default async function FamilyPage() {
             description="Adicione acima quem faz parte da sua família na paróquia."
           />
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {members.map((member) => (
-              <Link
-                key={member.id}
-                href={`/eu/familia/${member.id}`}
-                className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
-              >
-                <Avatar name={member.fullName} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[14.5px] font-medium text-foreground">{member.fullName}</p>
-                  {member.birthDate && (
-                    <p className="mt-0.5 text-[12.5px] text-muted">
-                      {formatDateOnly(member.birthDate)}
-                    </p>
-                  )}
-                </div>
-                <Badge>{describeRelationship(member.relationship)}</Badge>
-              </Link>
-            ))}
-          </Card>
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. No celular continua
+                sendo uma lista só. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {members.map((member) => (
+                <Link
+                  key={member.id}
+                  href={`/eu/familia/${member.id}`}
+                  className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
+                >
+                  <Avatar name={member.fullName} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14.5px] font-medium text-foreground">{member.fullName}</p>
+                    {member.birthDate && (
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {formatDateOnly(member.birthDate)}
+                      </p>
+                    )}
+                  </div>
+                  <Badge>{describeRelationship(member.relationship)}</Badge>
+                </Link>
+              ))}
+            </Card>
+          </div>
         )}
       </section>
 

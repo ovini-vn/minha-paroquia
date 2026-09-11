@@ -44,7 +44,7 @@ export default async function AvailabilityPage() {
   const windows = await listAvailability(session.membership.parishId, priest.id);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Minha disponibilidade"
         description="Janelas em que a comunidade pode pedir atendimento com você. O app divide cada janela em horários."

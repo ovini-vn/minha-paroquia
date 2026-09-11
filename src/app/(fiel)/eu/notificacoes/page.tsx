@@ -199,92 +199,97 @@ export default async function NotificationsPage({
           }
         />
       ) : (
-        <Card className="px-3.5 py-1.5">
-          {notifications.map((notification) => {
-            const lida = Boolean(notification.readAt);
+        <div className="lista-adaptavel">
+          {/* Vira grade de dois quando o contêiner tem largura —
+              ver `.lista-adaptavel` em globals.css. No celular continua
+              sendo uma lista só. */}
+          <Card className="card-adaptavel px-3.5 py-1.5">
+            {notifications.map((notification) => {
+              const lida = Boolean(notification.readAt);
 
-            const conteudo = (
-              <>
-                <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                  <Bell className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2 text-[14.5px] font-medium text-foreground">
-                    {notification.title}
-                    {/* Ponto dourado no lugar de texto: o não lido se vê de relance. */}
-                    {!lida && (
-                      <span
-                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold"
-                        aria-label="Não lida"
-                      />
-                    )}
+              const conteudo = (
+                <>
+                  <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                    <Bell className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
                   </span>
-                  <span className="mt-0.5 block text-[12.5px] leading-relaxed text-muted">
-                    {notification.body}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2 text-[14.5px] font-medium text-foreground">
+                      {notification.title}
+                      {/* Ponto dourado no lugar de texto: o não lido se vê de relance. */}
+                      {!lida && (
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold"
+                          aria-label="Não lida"
+                        />
+                      )}
+                    </span>
+                    <span className="mt-0.5 block text-[12.5px] leading-relaxed text-muted">
+                      {notification.body}
+                    </span>
+                    <span className="mt-1.5 block text-[11px] uppercase tracking-[0.04em] text-muted">
+                      {NOTIFICATION_CATEGORY_LABELS[notification.category]} ·{" "}
+                      {formatDateTime(notification.createdAt)}
+                    </span>
                   </span>
-                  <span className="mt-1.5 block text-[11px] uppercase tracking-[0.04em] text-muted">
-                    {NOTIFICATION_CATEGORY_LABELS[notification.category]} ·{" "}
-                    {formatDateTime(notification.createdAt)}
-                  </span>
-                </span>
-              </>
-            );
+                </>
+              );
 
-            return (
-              <div
-                key={notification.id}
-                className={cn(
-                  "flex items-center gap-1 border-b border-border last:border-b-0",
-                  lida && "opacity-60",
-                )}
-              >
-                {/*
-                  TODA notificação abre, e antes só abria a que tivesse
-                  destino gravado. As outras viravam linha morta: a pessoa
-                  lia, tocava e nada acontecia — em produção, três das seis
-                  do usuário estavam assim. Quem não gravou destino agora
-                  cai no padrão da categoria (ver `destinoPadraoDaCategoria`).
+              return (
+                <div
+                  key={notification.id}
+                  className={cn(
+                    "flex items-center gap-1 border-b border-border last:border-b-0",
+                    lida && "opacity-60",
+                  )}
+                >
+                  {/*
+                    TODA notificação abre, e antes só abria a que tivesse
+                    destino gravado. As outras viravam linha morta: a pessoa
+                    lia, tocava e nada acontecia — em produção, três das seis
+                    do usuário estavam assim. Quem não gravou destino agora
+                    cai no padrão da categoria (ver `destinoPadraoDaCategoria`).
 
-                  Um formulário, e não um link: abrir precisa marcar como
-                  lida no servidor antes de navegar. O formulário de
-                  "marcar lida" fica FORA deste — form dentro de form é
-                  inválido em HTML e o navegador desmonta o de dentro.
-                */}
-                <form action={abrirNotificacaoAction} className="min-w-0 flex-1">
-                  <input type="hidden" name="id" value={notification.id} />
-                  <button
-                    type="submit"
-                    className="flex w-full items-center gap-3.5 py-3.5 text-left transition-colors hover:bg-primary-tint"
-                  >
-                    {conteudo}
-                    <ChevronRight
-                      className="h-4 w-4 shrink-0 text-border-strong"
-                      strokeWidth={1.5}
-                      aria-hidden
-                    />
-                  </button>
-                </form>
-
-                {/* Continua sendo possível dispensar sem abrir — nem tudo
-                    que se lê na lista precisa de uma visita. */}
-                {!lida && (
-                  <form action={markNotificationReadAction} className="shrink-0 self-center">
+                    Um formulário, e não um link: abrir precisa marcar como
+                    lida no servidor antes de navegar. O formulário de
+                    "marcar lida" fica FORA deste — form dentro de form é
+                    inválido em HTML e o navegador desmonta o de dentro.
+                  */}
+                  <form action={abrirNotificacaoAction} className="min-w-0 flex-1">
                     <input type="hidden" name="id" value={notification.id} />
-                    <Button
+                    <button
                       type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className="px-2.5"
-                      aria-label="Marcar como lida sem abrir"
+                      className="flex w-full items-center gap-3.5 py-3.5 text-left transition-colors hover:bg-primary-tint"
                     >
-                      <Check className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                    </Button>
+                      {conteudo}
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 text-border-strong"
+                        strokeWidth={1.5}
+                        aria-hidden
+                      />
+                    </button>
                   </form>
-                )}
-              </div>
-            );
-          })}
-        </Card>
+
+                  {/* Continua sendo possível dispensar sem abrir — nem tudo
+                      que se lê na lista precisa de uma visita. */}
+                  {!lida && (
+                    <form action={markNotificationReadAction} className="shrink-0 self-center">
+                      <input type="hidden" name="id" value={notification.id} />
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        size="sm"
+                        className="px-2.5"
+                        aria-label="Marcar como lida sem abrir"
+                      >
+                        <Check className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              );
+            })}
+          </Card>
+        </div>
       )}
 
       {/*
@@ -305,39 +310,44 @@ export default async function NotificationsPage({
         <Eyebrow tone="accent" className="mb-3">
           O que quero receber
         </Eyebrow>
-        <Card className="px-3.5 py-1.5">
-          {preferences.map((preference) => (
-            <div
-              key={preference.category}
-              className="flex items-center justify-between gap-3 border-b border-border py-3 last:border-b-0"
-            >
-              <div className="min-w-0">
-                <p className="text-[14.5px] text-foreground">
-                  {NOTIFICATION_CATEGORY_LABELS[preference.category]}
-                </p>
-                {/* Desligar sem saber o que se perde faz a pessoa desligar
-                    tudo ou nada. A frase diz o que cala. */}
-                {NOTIFICATION_CATEGORY_HINTS[preference.category] && (
-                  <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
-                    {NOTIFICATION_CATEGORY_HINTS[preference.category]}
+        <div className="lista-adaptavel">
+          {/* Vira grade de dois quando o contêiner tem largura —
+              ver `.lista-adaptavel` em globals.css. No celular continua
+              sendo uma lista só. */}
+          <Card className="card-adaptavel px-3.5 py-1.5">
+            {preferences.map((preference) => (
+              <div
+                key={preference.category}
+                className="flex items-center justify-between gap-3 border-b border-border py-3 last:border-b-0"
+              >
+                <div className="min-w-0">
+                  <p className="text-[14.5px] text-foreground">
+                    {NOTIFICATION_CATEGORY_LABELS[preference.category]}
                   </p>
-                )}
+                  {/* Desligar sem saber o que se perde faz a pessoa desligar
+                      tudo ou nada. A frase diz o que cala. */}
+                  {NOTIFICATION_CATEGORY_HINTS[preference.category] && (
+                    <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                      {NOTIFICATION_CATEGORY_HINTS[preference.category]}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Badge tone={preference.enabled ? "success" : "muted"}>
+                    {preference.enabled ? "Ativada" : "Desativada"}
+                  </Badge>
+                  <form action={setPreferenceAction}>
+                    <input type="hidden" name="category" value={preference.category} />
+                    <input type="hidden" name="enabled" value={preference.enabled ? "false" : "true"} />
+                    <Button type="submit" variant="ghost" size="sm">
+                      {preference.enabled ? "Desativar" : "Ativar"}
+                    </Button>
+                  </form>
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Badge tone={preference.enabled ? "success" : "muted"}>
-                  {preference.enabled ? "Ativada" : "Desativada"}
-                </Badge>
-                <form action={setPreferenceAction}>
-                  <input type="hidden" name="category" value={preference.category} />
-                  <input type="hidden" name="enabled" value={preference.enabled ? "false" : "true"} />
-                  <Button type="submit" variant="ghost" size="sm">
-                    {preference.enabled ? "Desativar" : "Ativar"}
-                  </Button>
-                </form>
-              </div>
-            </div>
-          ))}
-        </Card>
+            ))}
+          </Card>
+        </div>
       </section>
 
       <div className="rule-gold my-7" />

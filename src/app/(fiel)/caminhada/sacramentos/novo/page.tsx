@@ -24,7 +24,7 @@ export default async function NewSacramentPage() {
   const priests = await listPriests(session.membership.parishId);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Registrar sacramento"
         description="Registre um marco da sua vida de fé. A paróquia pode depois validar com o registro oficial."

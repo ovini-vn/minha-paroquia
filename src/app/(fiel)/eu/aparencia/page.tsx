@@ -21,7 +21,7 @@ export default async function AppearancePage() {
   const usingLiturgical = session.themePreference === "liturgical";
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col lg:max-w-[42rem] gap-4">
       <PageHeader
         title="Aparência"
         description="Tamanho da letra, cor da marca ou do Tempo Litúrgico, e tema claro ou escuro."

@@ -62,7 +62,7 @@ export default async function ParocoPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[46rem]">
       <PageHeader title="Nosso Pároco" description={session.membership.parishName} />
 
       <div className="flex flex-col items-center gap-2.5 pb-6 text-center">

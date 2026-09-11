@@ -66,38 +66,43 @@ export default async function AppointmentsPage() {
             </LinkButton>
           </>
         ) : (
-          <Card className="px-3.5 py-1.5">
-            {myAppointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
-              >
-                <Avatar name={nomeDoSacerdote(appointment.priestProfile)} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[14.5px] font-medium text-foreground">
-                    {APPOINTMENT_CATEGORY_LABELS[appointment.category]}
-                  </p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
-                    {nomeDoSacerdote(appointment.priestProfile)} ·{" "}
-                    {formatDateTime(appointment.scheduledAt)}
-                  </p>
+          <div className="lista-adaptavel">
+            {/* Vira grade de dois quando o contêiner tem largura —
+                ver `.lista-adaptavel` em globals.css. No celular continua
+                sendo uma lista só. */}
+            <Card className="card-adaptavel px-3.5 py-1.5">
+              {myAppointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+                >
+                  <Avatar name={nomeDoSacerdote(appointment.priestProfile)} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14.5px] font-medium text-foreground">
+                      {APPOINTMENT_CATEGORY_LABELS[appointment.category]}
+                    </p>
+                    <p className="mt-0.5 text-[12.5px] text-muted">
+                      {nomeDoSacerdote(appointment.priestProfile)} ·{" "}
+                      {formatDateTime(appointment.scheduledAt)}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
+                      {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                    </Badge>
+                    {appointment.status === "solicitado" && (
+                      <form action={cancelOwnAppointmentAction}>
+                        <input type="hidden" name="id" value={appointment.id} />
+                        <Button type="submit" variant="ghost" size="sm">
+                          Cancelar
+                        </Button>
+                      </form>
+                    )}
+                  </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
-                    {APPOINTMENT_STATUS_LABELS[appointment.status]}
-                  </Badge>
-                  {appointment.status === "solicitado" && (
-                    <form action={cancelOwnAppointmentAction}>
-                      <input type="hidden" name="id" value={appointment.id} />
-                      <Button type="submit" variant="ghost" size="sm">
-                        Cancelar
-                      </Button>
-                    </form>
-                  )}
-                </div>
-              </div>
-            ))}
-          </Card>
+              ))}
+            </Card>
+          </div>
         )}
       </section>
 
@@ -113,57 +118,62 @@ export default async function AppointmentsPage() {
               description="Quando alguém da comunidade pedir um atendimento com você, ele aparece aqui."
             />
           ) : (
-            <Card className="px-3.5 py-1.5">
-              {received.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
-                >
-                  <Avatar name={appointment.fiel.fullName} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14.5px] font-medium text-foreground">
-                      {appointment.fiel.fullName}
-                    </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
-                      {APPOINTMENT_CATEGORY_LABELS[appointment.category]} ·{" "}
-                      {formatDateTime(appointment.scheduledAt)}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap items-center gap-2">
-                    <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
-                      {APPOINTMENT_STATUS_LABELS[appointment.status]}
-                    </Badge>
-                    {appointment.status === "solicitado" && (
-                      <>
+            <div className="lista-adaptavel">
+              {/* Vira grade de dois quando o contêiner tem largura —
+                  ver `.lista-adaptavel` em globals.css. No celular continua
+                  sendo uma lista só. */}
+              <Card className="card-adaptavel px-3.5 py-1.5">
+                {received.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    className="flex flex-wrap items-center gap-3 border-b border-border py-3.5 last:border-b-0"
+                  >
+                    <Avatar name={appointment.fiel.fullName} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14.5px] font-medium text-foreground">
+                        {appointment.fiel.fullName}
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {APPOINTMENT_CATEGORY_LABELS[appointment.category]} ·{" "}
+                        {formatDateTime(appointment.scheduledAt)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <Badge tone={STATUS_TONE[appointment.status] ?? "muted"}>
+                        {APPOINTMENT_STATUS_LABELS[appointment.status]}
+                      </Badge>
+                      {appointment.status === "solicitado" && (
+                        <>
+                          <form action={updateAppointmentStatusAction}>
+                            <input type="hidden" name="id" value={appointment.id} />
+                            <input type="hidden" name="status" value="confirmado" />
+                            <Button type="submit" size="sm">
+                              Confirmar
+                            </Button>
+                          </form>
+                          <form action={updateAppointmentStatusAction}>
+                            <input type="hidden" name="id" value={appointment.id} />
+                            <input type="hidden" name="status" value="cancelado" />
+                            <Button type="submit" variant="ghost" size="sm">
+                              Recusar
+                            </Button>
+                          </form>
+                        </>
+                      )}
+                      {appointment.status === "confirmado" && (
                         <form action={updateAppointmentStatusAction}>
                           <input type="hidden" name="id" value={appointment.id} />
-                          <input type="hidden" name="status" value="confirmado" />
-                          <Button type="submit" size="sm">
-                            Confirmar
-                          </Button>
-                        </form>
-                        <form action={updateAppointmentStatusAction}>
-                          <input type="hidden" name="id" value={appointment.id} />
-                          <input type="hidden" name="status" value="cancelado" />
+                          <input type="hidden" name="status" value="concluido" />
                           <Button type="submit" variant="ghost" size="sm">
-                            Recusar
+                            Concluir
                           </Button>
                         </form>
-                      </>
-                    )}
-                    {appointment.status === "confirmado" && (
-                      <form action={updateAppointmentStatusAction}>
-                        <input type="hidden" name="id" value={appointment.id} />
-                        <input type="hidden" name="status" value="concluido" />
-                        <Button type="submit" variant="ghost" size="sm">
-                          Concluir
-                        </Button>
-                      </form>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </Card>
+                ))}
+              </Card>
+            </div>
           )}
         </section>
       )}

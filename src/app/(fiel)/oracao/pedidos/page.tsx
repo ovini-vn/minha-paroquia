@@ -59,7 +59,7 @@ export default async function PrayerRequestsPage() {
               description="Pedidos enviados diretamente ao sacerdote aparecem aqui, e só para ele."
             />
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-5">
               {privateRequests.map((request) => (
                 <Card key={request.id}>
                   <p className="font-serif text-[17px] leading-relaxed text-foreground">
@@ -84,7 +84,7 @@ export default async function PrayerRequestsPage() {
             description="Quando alguém compartilhar um pedido com a comunidade, ele aparece aqui."
           />
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-5">
             {communityRequests.map((request) => (
               <Card key={request.id}>
                 <p className="font-serif text-[17px] leading-relaxed text-foreground">
@@ -108,7 +108,7 @@ export default async function PrayerRequestsPage() {
             description="Use o formulário acima para pedir oração."
           />
         ) : (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-5">
             {myRequests.map((request) => (
               <Card key={request.id}>
                 <p className="font-serif text-[17px] leading-relaxed text-foreground">

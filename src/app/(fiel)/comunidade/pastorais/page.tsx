@@ -47,7 +47,7 @@ export default async function PastoraisPage() {
           description="Assim que a paróquia cadastrar suas pastorais, elas aparecem aqui."
         />
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-5">
           {groups.map((group) => {
             const jaTemInteresse = interested.has(group.id);
             const detalhes = [

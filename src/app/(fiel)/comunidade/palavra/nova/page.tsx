@@ -23,7 +23,7 @@ export default async function NewPostPage() {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Palavra do Padre"
         description="Uma mensagem para a comunidade. Aparece no Início e em Comunidade."

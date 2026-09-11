@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Registrar missa" };
 
 export default function NewMassParticipationPage() {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Registrar missa"
         description="Guarde a data e, se quiser, o que essa celebração deixou em você. Só você lê o que escreve."

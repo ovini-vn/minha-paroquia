@@ -39,7 +39,7 @@ export default async function PriestProfilePage({ params }: { params: Promise<{ 
   if (paroco?.priestProfileId === priest.id) redirect("/paroco");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col lg:max-w-[46rem] gap-4">
       <Card className="flex flex-col items-center gap-2 py-6 text-center">
         <Avatar name={nomeDoSacerdote(priest)} size="lg" />
         <p className="mt-1 font-serif text-2xl font-semibold text-foreground">

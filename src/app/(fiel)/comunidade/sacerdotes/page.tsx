@@ -64,53 +64,58 @@ export default async function SacerdotesPage() {
           description="Os sacerdotes da paróquia aparecem aqui assim que forem vinculados. Enquanto isso, a secretaria atende pelo telefone."
         />
       ) : (
-        <Card className="px-3.5 py-1.5">
-          {priests.map((priest) => (
-            <Link
-              key={priest.id}
-              href={enderecoDo(priest.id)}
-              className="flex items-center gap-3.5 border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint"
-            >
-              <Avatar name={nomeDoSacerdote(priest)} size="sm" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[14.5px] font-medium text-foreground">
-                  {nomeDoSacerdote(priest)}
-                </span>
-                {/* O que ele atende vem junto do cargo, e não numa
-                    tarja à parte: é a mesma pergunta — "quem é este e o
-                    que dá para pedir a ele?". */}
-                <span className="mt-0.5 block text-[12.5px] text-muted">
-                  {priest.title}
-                  {oQueAtende(priest) ? ` · ${oQueAtende(priest)}` : ""}
-                </span>
-              </span>
-              {/* O número exato não ajuda a decidir e envelhece rápido; o
-                  que importa é se vale tocar. */}
-              {/*
-                "Sem horários" dizia duas coisas ao mesmo tempo: "ainda não
-                abriu" e "não faz isso". Quem procurava confissão desistia
-                de um padre que confessa todo sábado. Agora quem não atende
-                nada pelo app diz isso, e não finge que faltou agenda.
-              */}
-              <Badge
-                tone={
-                  !priest.ofereceAtendimento && !priest.ofereceConfissao
-                    ? "muted"
-                    : priest.vagas > 0
-                      ? "success"
-                      : "muted"
-                }
+        <div className="lista-adaptavel">
+          {/* Vira grade de dois quando o contêiner tem largura —
+              ver `.lista-adaptavel` em globals.css. No celular continua
+              sendo uma lista só. */}
+          <Card className="card-adaptavel px-3.5 py-1.5">
+            {priests.map((priest) => (
+              <Link
+                key={priest.id}
+                href={enderecoDo(priest.id)}
+                className="flex items-center gap-3.5 border-b border-border px-1 py-[15px] transition-colors last:border-b-0 hover:bg-primary-tint"
               >
-                {!priest.ofereceAtendimento && !priest.ofereceConfissao
-                  ? "Pela secretaria"
-                  : priest.vagas > 0
-                    ? "Com horários"
-                    : "Sem horários"}
-              </Badge>
-              <ChevronRight className="h-4 w-4 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
-            </Link>
-          ))}
-        </Card>
+                <Avatar name={nomeDoSacerdote(priest)} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium text-foreground">
+                    {nomeDoSacerdote(priest)}
+                  </span>
+                  {/* O que ele atende vem junto do cargo, e não numa
+                      tarja à parte: é a mesma pergunta — "quem é este e o
+                      que dá para pedir a ele?". */}
+                  <span className="mt-0.5 block text-[12.5px] text-muted">
+                    {priest.title}
+                    {oQueAtende(priest) ? ` · ${oQueAtende(priest)}` : ""}
+                  </span>
+                </span>
+                {/* O número exato não ajuda a decidir e envelhece rápido; o
+                    que importa é se vale tocar. */}
+                {/*
+                  "Sem horários" dizia duas coisas ao mesmo tempo: "ainda não
+                  abriu" e "não faz isso". Quem procurava confissão desistia
+                  de um padre que confessa todo sábado. Agora quem não atende
+                  nada pelo app diz isso, e não finge que faltou agenda.
+                */}
+                <Badge
+                  tone={
+                    !priest.ofereceAtendimento && !priest.ofereceConfissao
+                      ? "muted"
+                      : priest.vagas > 0
+                        ? "success"
+                        : "muted"
+                  }
+                >
+                  {!priest.ofereceAtendimento && !priest.ofereceConfissao
+                    ? "Pela secretaria"
+                    : priest.vagas > 0
+                      ? "Com horários"
+                      : "Sem horários"}
+                </Badge>
+                <ChevronRight className="h-4 w-4 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
+              </Link>
+            ))}
+          </Card>
+        </div>
       )}
 
       {/* A saída para quem não achou horário. Sem isto, a tela é um beco:

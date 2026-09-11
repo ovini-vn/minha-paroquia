@@ -80,7 +80,7 @@ export default async function DoacaoPage() {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <PageHeader
         title="Ofertar"
         description="Sua oferta mantém nossa comunidade viva e leva esperança a quem precisa."

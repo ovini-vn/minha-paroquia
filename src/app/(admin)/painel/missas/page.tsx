@@ -77,13 +77,6 @@ export default async function MissasAdminPage({
         </p>
       </div>
 
-      <Card>
-        <Eyebrow tone="accent" className="mb-3">
-          Nova repetição
-        </Eyebrow>
-        <CreateScheduleForm priests={priests} />
-      </Card>
-
       {/*
         O filtro fica ANTES das duas seções porque vale para as duas:
         procurar "Adoração" e ver a repetição dela sem as datas, ou o
@@ -99,7 +92,7 @@ export default async function MissasAdminPage({
           <EmptyState
             icon={Repeat}
             title="Nenhuma repetição ainda"
-            description="Cadastre acima os horários fixos — depois é só lançar as missas extras avulsas."
+            description="Cadastre os horários fixos no formulário ao fim da página — depois é só lançar as missas extras avulsas."
           />
         ) : (
           <Card className="px-3.5 py-1.5">
@@ -164,7 +157,7 @@ export default async function MissasAdminPage({
             description={
               escolhido
                 ? "Há celebrações de outros tipos marcadas."
-                : "Crie uma repetição acima, ou lance uma celebração avulsa pelo painel."
+                : "Crie uma repetição no formulário ao fim da página, ou lance uma celebração avulsa pelo painel."
             }
           />
         ) : (
@@ -212,6 +205,20 @@ export default async function MissasAdminPage({
           </Card>
         )}
       </section>
+      {/*
+        O cadastro vem DEPOIS do que já existe.
+
+        Cadastrar uma repetição é ato de começo de ano; conferir os
+        horários é de toda semana. O formulário ocupava o topo da tela e
+        empurrava para baixo justamente o que se vem ver.
+      */}
+      <Card>
+        <Eyebrow tone="accent" className="mb-3">
+          Nova repetição
+        </Eyebrow>
+        <CreateScheduleForm priests={priests} />
+      </Card>
+
     </div>
   );
 }

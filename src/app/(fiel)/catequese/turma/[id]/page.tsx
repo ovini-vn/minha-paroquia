@@ -94,81 +94,18 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
         </p>
       </div>
 
-      {coordena && (
-        <section className="pt-5">
-          <Eyebrow tone="accent" className="mb-3">
-            Matricular
-          </Eyebrow>
-          <Card>
-            {disponiveis.length === 0 ? (
-              <p className="text-sm text-muted">
-                Todos os catequizandos cadastrados já estão nesta turma. Cadastre outros em{" "}
-                <Link href="/catequese" className="text-primary underline">
-                  Catequese
-                </Link>
-                .
-              </p>
-            ) : (
-              <EnrollForm groupId={id} familyMembers={disponiveis} />
-            )}
-          </Card>
-        </section>
-      )}
+      {/*
+        A ORDEM SEGUE A FREQUÊNCIA, e não a hierarquia.
 
-      {coordena && (
-        <section className="pt-7">
-          <Eyebrow tone="accent" className="mb-3">
-            Gestão da turma
-          </Eyebrow>
-          <Card className="mb-3">
-            <GestaoDaTurma
-              groupId={id}
-              nome={group.name}
-              ano={group.year}
-              catequistas={catequistas}
-              catechistUserId={group.catechistUserId}
-              catechistName={group.catechistName}
-            />
-          </Card>
+        Estava ao contrário: "Gestão da turma" — nome, ano, catequista,
+        itinerário, excluir — ocupava 730px ACIMA de Encontros e
+        Catequizandos. Quem abre esta tela para lançar a chamada, que é ato
+        semanal, rolava por quase mil pixels de coisas que se mexem uma vez
+        por ano. Medido: a página tem 4,6 telas de altura.
 
-          <Card>
-            <Eyebrow className="mb-3">Itinerário da turma</Eyebrow>
-            {/* Quem coordena define o plano; o catequista segue e lança. */}
-            <form action={definirItinerarioDaTurmaAction} className="flex flex-wrap items-end gap-3">
-              <input type="hidden" name="groupId" value={id} />
-              <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
-                <label htmlFor="itinerarioId" className="text-sm font-medium text-muted">
-                  Plano que esta turma segue
-                </label>
-                <select
-                  id="itinerarioId"
-                  name="itinerarioId"
-                  defaultValue={group.itinerarioId ?? ""}
-                  className={INPUT_CLASSES}
-                >
-                  <option value="">Sem itinerário</option>
-                  {itinerarios.map((it) => (
-                    <option key={it.id} value={it.id}>
-                      {it.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Button type="submit">Salvar</Button>
-            </form>
-            {itinerarios.length === 0 && (
-              <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
-                Nenhum itinerário cadastrado ainda. Crie o primeiro em{" "}
-                <Link href="/catequese/itinerarios" className="font-medium text-primary hover:underline">
-                  Itinerários
-                </Link>
-                .
-              </p>
-            )}
-          </Card>
-        </section>
-      )}
-
+        Agora vem o que se repete: a chamada, depois a lista da turma, e só
+        então matricular (começo de ano) e a configuração (uma vez).
+      */}
       {/*
         Encontros: quem leciona E quem coordena.
         
@@ -296,7 +233,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           <EmptyState
             icon={Users}
             title="Ninguém matriculado ainda"
-            description={coordena ? "Use o formulário acima." : "Fale com a coordenação."}
+            description={coordena ? "Use o formulário de matrícula, logo abaixo." : "Fale com a coordenação."}
           />
         ) : (
           <div className="flex flex-col gap-3">
@@ -416,6 +353,81 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
           title="Sem acesso a esta turma"
           description="Esta área é da coordenação e dos catequistas."
         />
+      )}
+
+      {coordena && (
+        <section className="pt-5">
+          <Eyebrow tone="accent" className="mb-3">
+            Matricular
+          </Eyebrow>
+          <Card>
+            {disponiveis.length === 0 ? (
+              <p className="text-sm text-muted">
+                Todos os catequizandos cadastrados já estão nesta turma. Cadastre outros em{" "}
+                <Link href="/catequese" className="text-primary underline">
+                  Catequese
+                </Link>
+                .
+              </p>
+            ) : (
+              <EnrollForm groupId={id} familyMembers={disponiveis} />
+            )}
+          </Card>
+        </section>
+      )}
+
+      {coordena && (
+        <section className="pt-7">
+          <Eyebrow tone="accent" className="mb-3">
+            Gestão da turma
+          </Eyebrow>
+          <Card className="mb-3">
+            <GestaoDaTurma
+              groupId={id}
+              nome={group.name}
+              ano={group.year}
+              catequistas={catequistas}
+              catechistUserId={group.catechistUserId}
+              catechistName={group.catechistName}
+            />
+          </Card>
+
+          <Card>
+            <Eyebrow className="mb-3">Itinerário da turma</Eyebrow>
+            {/* Quem coordena define o plano; o catequista segue e lança. */}
+            <form action={definirItinerarioDaTurmaAction} className="flex flex-wrap items-end gap-3">
+              <input type="hidden" name="groupId" value={id} />
+              <div className="flex min-w-[220px] flex-1 flex-col gap-1.5">
+                <label htmlFor="itinerarioId" className="text-sm font-medium text-muted">
+                  Plano que esta turma segue
+                </label>
+                <select
+                  id="itinerarioId"
+                  name="itinerarioId"
+                  defaultValue={group.itinerarioId ?? ""}
+                  className={INPUT_CLASSES}
+                >
+                  <option value="">Sem itinerário</option>
+                  {itinerarios.map((it) => (
+                    <option key={it.id} value={it.id}>
+                      {it.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button type="submit">Salvar</Button>
+            </form>
+            {itinerarios.length === 0 && (
+              <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+                Nenhum itinerário cadastrado ainda. Crie o primeiro em{" "}
+                <Link href="/catequese/itinerarios" className="font-medium text-primary hover:underline">
+                  Itinerários
+                </Link>
+                .
+              </p>
+            )}
+          </Card>
+        </section>
       )}
 
       <div className="rule-gold my-7" />

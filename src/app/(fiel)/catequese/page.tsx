@@ -139,10 +139,85 @@ export default async function CatequesePage({
         />
       )}
 
+      {/*
+        Quem DÁ AULA vê as próprias turmas primeiro.
+
+        Ficavam por último, depois de visão geral, ritos, turmas, nova
+        turma e catequizandos. Para quem só leciona não havia problema —
+        nada daquilo aparece. O problema é de quem coordena E leciona, que
+        numa paróquia pequena é a regra: lançar a chamada é semanal, e a
+        visão de coordenação é periódica, mas a semanal estava embaixo de
+        toda a periódica.
+      */}
+      {/* ---------------- Catequista ---------------- */}
+      {leciona && (
+        <section>
+          <Eyebrow tone="accent" className="mb-3">
+            {coordena ? "As turmas que eu mesmo acompanho" : "Minhas turmas"}
+          </Eyebrow>
+          {minhasTurmas.length === 0 ? (
+            <EmptyState
+              icon={BookOpen}
+              title="Nenhuma turma sob sua responsabilidade"
+              description="Quando a coordenação designar você como catequista de uma turma, ela aparece aqui."
+            />
+          ) : (
+            <>
+              <Card className="px-3.5 py-1.5">
+                {minhasTurmas.map((turma) => {
+                  const alunos = meusAlunos.filter((a) => a.group.id === turma.id).length;
+                  return (
+                    <RowLink
+                      key={turma.id}
+                      href={`/catequese/turma/${turma.id}`}
+                      icon={BookOpen}
+                      title={`${turma.name} · ${turma.year}`}
+                      subtitle={`${alunos} ${alunos === 1 ? "catequizando" : "catequizandos"}`}
+                    />
+                  );
+                })}
+              </Card>
+
+              {meusAlunos.length > 0 && (
+                <div className="pt-5">
+                  <Eyebrow className="mb-3">Meus catequizandos</Eyebrow>
+                  <Card className="px-3.5 py-1.5">
+                    {meusAlunos.map((aluno) => (
+                      <Link
+                        key={aluno.id}
+                        href={`/catequese/aluno/${aluno.id}`}
+                        className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
+                      >
+                        <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
+                          <Users className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[14.5px] font-medium text-foreground">
+                            {aluno.familyMember.fullName}
+                          </p>
+                          <p className="mt-0.5 text-[12.5px] text-muted">
+                            {aluno.group.name}
+                            {/* O contato do responsável fora do app é o que
+                                o catequista precisa quando o aluno falta. */}
+                            {aluno.familyMember.guardianPhone
+                              ? ` · ${aluno.familyMember.guardianName ?? "Responsável"} · ${aluno.familyMember.guardianPhone}`
+                              : ""}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </Card>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      )}
+
       {/* ---------------- Coordenação ---------------- */}
       {coordena && overview && (
         <>
-          <section>
+          <section className={leciona ? "pt-9" : ""}>
             <Eyebrow tone="accent" className="mb-3">
               Visão geral
             </Eyebrow>
@@ -363,71 +438,6 @@ export default async function CatequesePage({
             </Card>
           </section>
         </>
-      )}
-
-      {/* ---------------- Catequista ---------------- */}
-      {leciona && (
-        <section className={coordena ? "pt-9" : ""}>
-          <Eyebrow tone="accent" className="mb-3">
-            {coordena ? "As turmas que eu mesmo acompanho" : "Minhas turmas"}
-          </Eyebrow>
-          {minhasTurmas.length === 0 ? (
-            <EmptyState
-              icon={BookOpen}
-              title="Nenhuma turma sob sua responsabilidade"
-              description="Quando a coordenação designar você como catequista de uma turma, ela aparece aqui."
-            />
-          ) : (
-            <>
-              <Card className="px-3.5 py-1.5">
-                {minhasTurmas.map((turma) => {
-                  const alunos = meusAlunos.filter((a) => a.group.id === turma.id).length;
-                  return (
-                    <RowLink
-                      key={turma.id}
-                      href={`/catequese/turma/${turma.id}`}
-                      icon={BookOpen}
-                      title={`${turma.name} · ${turma.year}`}
-                      subtitle={`${alunos} ${alunos === 1 ? "catequizando" : "catequizandos"}`}
-                    />
-                  );
-                })}
-              </Card>
-
-              {meusAlunos.length > 0 && (
-                <div className="pt-5">
-                  <Eyebrow className="mb-3">Meus catequizandos</Eyebrow>
-                  <Card className="px-3.5 py-1.5">
-                    {meusAlunos.map((aluno) => (
-                      <Link
-                        key={aluno.id}
-                        href={`/catequese/aluno/${aluno.id}`}
-                        className="flex items-center gap-3.5 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-primary-tint"
-                      >
-                        <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
-                          <Users className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-[14.5px] font-medium text-foreground">
-                            {aluno.familyMember.fullName}
-                          </p>
-                          <p className="mt-0.5 text-[12.5px] text-muted">
-                            {aluno.group.name}
-                            {/* O contato do responsável fora do app é o que
-                                o catequista precisa quando o aluno falta. */}
-                            {aluno.familyMember.guardianPhone
-                              ? ` · ${aluno.familyMember.guardianName ?? "Responsável"} · ${aluno.familyMember.guardianPhone}`
-                              : ""}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </Card>
-                </div>
-              )}
-            </>
-          )}
-        </section>
       )}
 
       {/* ---------------- Família ---------------- */}

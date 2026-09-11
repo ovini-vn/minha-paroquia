@@ -70,11 +70,6 @@ export default async function PainelPastoraisPage({
         description="Cadastre as pastorais da paróquia e veja quem se ofereceu para servir em cada uma."
       />
 
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova pastoral</p>
-        <CreatePastoralGroupForm />
-      </Card>
-
       <section>
         <Eyebrow tone="accent" className="mb-3">
           Pastorais cadastradas
@@ -99,7 +94,7 @@ export default async function PainelPastoraisPage({
             }
             description={
               todas.length === 0
-                ? "Cadastre acima as pastorais e grupos que existem na sua paróquia."
+                ? "Use o formulário ao fim da página para cadastrar as pastorais e grupos que existem na sua paróquia."
                 : visao === "sem-coordenador" || visao === "sem-horario"
                   ? "O cadastro está completo — nada a preencher por aqui."
                   : visao === "interessados"
@@ -179,6 +174,13 @@ export default async function PainelPastoraisPage({
         Manifestar interesse não inscreve ninguém: o contato com cada pessoa continua sendo uma
         conversa do coordenador.
       </p>
+      {/* Cadastrar pastoral é raro; consultar a lista é o que traz
+          alguém aqui. O formulário desceu para depois dela. */}
+      <Card>
+        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova pastoral</p>
+        <CreatePastoralGroupForm />
+      </Card>
+
     </div>
   );
 }

@@ -239,7 +239,19 @@ export default async function AgendaPage({
             </Card>
           )}
 
-          <div className="mt-5 flex flex-col gap-5">
+          {/*
+            Os DIAS em duas colunas no computador, e não os itens de um dia.
+
+            Setembro tem 55 compromissos nesta paróquia. Empilhados numa
+            coluna só, cada cartão ocupa 1.072px de largura para mostrar um
+            título e uma palavra — a tela fica altíssima e a largura fica
+            parada. Quebrar dentro do dia separaria a missa das 7h da missa
+            das 19h30 em colunas diferentes, que é justamente o que não se
+            quer ler assim; o dia é a unidade.
+
+            `items-start` para um dia cheio não esticar o dia vazio ao lado.
+          */}
+          <div className="mt-5 flex flex-col gap-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-7">
             {[...porDia.entries()].map(([chave, doDia]) => (
               <section key={chave} id={`dia-${chave}`} className="scroll-mt-24">
                 <Eyebrow

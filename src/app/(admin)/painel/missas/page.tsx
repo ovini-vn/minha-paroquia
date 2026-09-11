@@ -18,6 +18,7 @@ import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { FiltroDeCelebracoes } from "./_components/FiltroDeCelebracoes";
 import { describeRule } from "@/lib/recurrence";
 import { CreateScheduleForm } from "./CreateScheduleForm";
+import { CreateCelebrationForm } from "../CreateCelebrationForm";
 import { DeactivateScheduleButton } from "./DeactivateScheduleButton";
 import { Repeat, CalendarDays } from "lucide-react";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
@@ -169,7 +170,7 @@ export default async function MissasAdminPage({
             description={
               escolhido
                 ? "Há celebrações de outros tipos marcadas."
-                : "Crie uma repetição no formulário ao fim da página, ou lance uma celebração avulsa pelo painel."
+                : "Crie uma repetição ou uma celebração avulsa nos formulários ao fim da página."
             }
           />
         ) : (
@@ -229,6 +230,23 @@ export default async function MissasAdminPage({
           Nova repetição
         </Eyebrow>
         <CreateScheduleForm priests={priests} />
+      </Card>
+
+      {/*
+        A celebração AVULSA, que morava no índice do painel.
+
+        Uma missa que acontece uma vez só — a do padroeiro, um enterro —
+        não é repetição, mas é a mesma pergunta: "quando tem missa?". Ficava
+        numa seção "Agenda" do índice, longe da tela que responde isso.
+      */}
+      <Card>
+        <Eyebrow tone="accent" className="mb-3">
+          Celebração avulsa
+        </Eyebrow>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          Para o que acontece uma vez só e não se repete toda semana.
+        </p>
+        <CreateCelebrationForm priests={priests} />
       </Card>
 
     </div>

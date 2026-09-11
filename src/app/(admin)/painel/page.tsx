@@ -3,12 +3,9 @@ import { requirePermissionForPage, podeAlcancar } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { ITENS_DO_PAINEL, GRUPOS_DO_PAINEL } from "@/components/layout/painel-items";
-import { getParishDashboardCounts, getParish } from "@/server/modules/parishes/service";
+import { getParishDashboardCounts } from "@/server/modules/parishes/service";
 import { listAllAvisos } from "@/server/modules/avisos/service";
 import { countPendingPrayerRequests } from "@/server/modules/prayer-requests/service";
-import { getParishInvitations } from "@/server/modules/invitations/service";
-import { listPriests } from "@/server/modules/priests/service";
-import { listUpcomingCelebrations } from "@/server/modules/celebrations/service";
 import { listUpcomingEvents } from "@/server/modules/events/service";
 import { countVolunteerProfiles } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities } from "@/server/modules/opportunities/service";
@@ -17,25 +14,12 @@ import { listGroups } from "@/server/modules/catequese/service";
 import { listAllAvailability } from "@/server/modules/liturgia/service";
 import { listContributionsForPeriod } from "@/server/modules/dizimo/service";
 import { listAllGroups } from "@/server/modules/pastorais/service";
-import { currentPeriod, formatPeriodLabel, formatDateOnly } from "@/lib/date";
+import { currentPeriod, formatPeriodLabel } from "@/lib/date";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Stat } from "@/components/ui/Stat";
 import { RowLink } from "@/components/ui/RowLink";
 import { Eyebrow } from "@/components/ui/Typography";
-import { formatDateTime } from "@/lib/date";
-import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
-import { revokeInvitationAction } from "@/server/actions/invitation-actions";
-import { Button, LinkButton } from "@/components/ui/Button";
-import { CreateInviteForm } from "./CreateInviteForm";
-import { CreateCelebrationForm } from "./CreateCelebrationForm";
-import { CreateEventForm } from "./CreateEventForm";
-import { ParishProfileForm } from "./ParishProfileForm";
-import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import { nomeDoSacerdote } from "@/lib/sacerdote";
-import { SacerdoteSemContaForm } from "./SacerdoteSemContaForm";
-import { apagarSacerdoteAction } from "@/server/actions/sacerdote-actions";
 import {
   Church,
   Crown,
@@ -44,19 +28,6 @@ import {
   Settings,
 } from "lucide-react";
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Pendente",
-  used: "Utilizado",
-  expired: "Expirado",
-  revoked: "Cancelado",
-};
-
-const STATUS_TONE: Record<string, "success" | "muted" | "warning" | "error"> = {
-  pending: "warning",
-  used: "success",
-  expired: "muted",
-  revoked: "error",
-};
 
 export const metadata: Metadata = { title: "Painel da paróquia" };
 
@@ -78,11 +49,7 @@ export default async function AdminDashboardPage() {
   }
 
   const [
-    parish,
     counts,
-    invitations,
-    priests,
-    celebrations,
     events,
     volunteerCount,
     openOpportunities,
@@ -95,11 +62,7 @@ export default async function AdminDashboardPage() {
     pastoralGroups,
     pedidosPendentes,
   ] = await Promise.all([
-    getParish(session.membership.parishId),
     getParishDashboardCounts(session.membership.parishId),
-    getParishInvitations(session.membership.parishId),
-    listPriests(session.membership.parishId),
-    listUpcomingCelebrations(session.membership.parishId, 10),
     listUpcomingEvents(session.membership.parishId, 10),
     countVolunteerProfiles(session.membership.parishId),
     listOpenOpportunities(session.membership.parishId),
@@ -119,24 +82,6 @@ export default async function AdminDashboardPage() {
   const pendingSacramentCount = sacraments.filter((s) => s.status === "self_reported").length;
   const publishedAvisoCount = avisos.filter((a) => a.status === "published").length;
 
-  const agendaItems = [
-    ...celebrations.map((c) => ({
-      id: `celebration-${c.id}`,
-      startsAt: c.startsAt,
-      label: c.title || CELEBRATION_TYPE_LABELS[c.type],
-      location: c.location,
-      priestName: c.priestProfile ? nomeDoSacerdote(c.priestProfile) : null,
-      semHora: c.semHora,
-    })),
-    ...events.map((e) => ({
-      id: `event-${e.id}`,
-      startsAt: e.startsAt,
-      label: e.title,
-      location: e.location,
-      priestName: null as string | null,
-      semHora: e.semHora,
-    })),
-  ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
   const itensDoPainel = ITENS_DO_PAINEL.filter(
     (item) => !item.permissao || podeAlcancar(session, item.permissao),
@@ -169,10 +114,13 @@ export default async function AdminDashboardPage() {
     "/catequese": `${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`,
     "/painel/liturgia": `${liturgicalAvailabilityCount} ${liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}`,
     "/painel/missas": "O que se repete toda semana ou todo mês",
+    "/painel/paroquia": "Endereço, contato e redes — o que o fiel vê",
     "/painel/paroco": "A apresentação do pároco e a foto dele",
+    "/painel/sacerdotes": "Quem celebra e atende nesta paróquia",
     "/painel/historia": "O memorial da paróquia e a foto da igreja",
     "/painel/expediente": "Aparece em Contato, com o aviso de aberta ou fechada",
     "/painel/plano": "O objetivo do ano, as prioridades e os eixos",
+    "/painel/convites": "Links e códigos para alguém entrar na paróquia",
     "/painel/membros": "Quem é catequista, coordenador, secretaria",
     "/painel/permissoes": "Conceda ou revogue permissões por pessoa",
     "/painel/auditoria": "Quem mudou papéis, permissões e senhas",
@@ -190,24 +138,26 @@ export default async function AdminDashboardPage() {
         <Stat label="Foram para outra" value={counts.sairam} />
       </div>
 
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Perfil da paróquia</p>
-        <p className="mb-3 text-sm text-muted">
-          Essas informações aparecem para o fiel em Minha Comunidade e na tela de Contato.
-        </p>
-        <ParishProfileForm
-          city={parish?.city ?? ""}
-          state={parish?.state ?? ""}
-          address={parish?.address ?? ""}
-          phone={parish?.phone ?? ""}
-          description={parish?.description ?? ""}
-          logoUrl={parish?.logoUrl ?? ""}
-          whatsapp={parish?.whatsapp ?? ""}
-          facebookUrl={parish?.facebookUrl ?? ""}
-          instagramUrl={parish?.instagramUrl ?? ""}
-        />
-      </Card>
 
+      {/*
+        O QUE SAIU DAQUI.
+
+        Perfil da paróquia, Convites, Sacerdotes e os dois formulários da
+        Agenda moravam nesta tela. Somavam 146 linhas de formulário e
+        tabela no caminho de quem vinha fazer outra coisa — e o índice é
+        por onde toda tarefa passava.
+
+        Cada um foi para onde pertence: /painel/paroquia, /painel/convites,
+        /painel/sacerdotes, e os de agenda para as telas do que criam —
+        evento em /painel/eventos, celebração avulsa em /painel/missas. A
+        lista combinada de "próximos compromissos" que ficava aqui foi
+        embora sem substituto: as duas telas de destino já mostram cada
+        uma a sua, e manter uma terceira cópia era mais um lugar para
+        divergir.
+
+        O que FICA: o nome da paróquia, os três números e o indicador da
+        Caminhada. Índice é para olhar e seguir, não para preencher.
+      */}
       {/*
         As áreas, saindo da MESMA lista da barra lateral.
 
@@ -311,137 +261,8 @@ export default async function AdminDashboardPage() {
         </section>
       )}
 
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Convites</p>
-        <CreateInviteForm />
 
-        {invitations.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">Nenhum convite criado ainda.</p>
-        ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-border text-muted">
-                  <th className="py-2 pr-4">Código</th>
-                  <th className="py-2 pr-4">Tipo</th>
-                  <th className="py-2 pr-4">Status</th>
-                  <th className="py-2 pr-4">Usado por</th>
-                  <th className="py-2 pr-4" />
-                </tr>
-              </thead>
-              <tbody>
-                {invitations.map((invitation) => (
-                  <tr key={invitation.id} className="border-b border-border">
-                    <td className="py-2 pr-4 font-mono">/convite/{invitation.code}</td>
-                    <td className="py-2 pr-4">{invitation.type}</td>
-                    <td className="py-2 pr-4">
-                      <Badge tone={STATUS_TONE[invitation.status] ?? "muted"}>
-                        {STATUS_LABEL[invitation.status] ?? invitation.status}
-                      </Badge>
-                    </td>
-                    <td className="py-2 pr-4">{invitation.usedByUser?.fullName ?? "—"}</td>
-                    <td className="py-2 pr-4">
-                      {invitation.status === "pending" && (
-                        <form action={revokeInvitationAction}>
-                          <input type="hidden" name="id" value={invitation.id} />
-                          <Button type="submit" variant="ghost">
-                            Revogar
-                          </Button>
-                        </form>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
 
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Sacerdotes</p>
-        {priests.length === 0 ? (
-          <p className="text-sm text-muted">
-            Nenhum sacerdote cadastrado ainda — crie um convite acima com vínculo
-            &ldquo;Sacerdote&rdquo;, ou cadastre abaixo quem não usa o aplicativo.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {priests.map((priest) => (
-              <li key={priest.id} className="border-b border-border pb-3 last:border-b-0">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-foreground">
-                  {nomeDoSacerdote(priest)} <Badge>{priest.title}</Badge>
-                  {/*
-                    Quem NÃO usa o app se reconhece na lista, e é a informação
-                    que muda o que a secretaria faz: a agenda dele não vai
-                    aparecer sozinha, alguém tem de marcar por telefone.
-                  */}
-                  {priest.userId ? (
-                    <span className="text-xs text-muted">
-                      Define a própria agenda em &ldquo;Minha disponibilidade&rdquo;
-                    </span>
-                  ) : (
-                    <Badge tone="muted">Não usa o app</Badge>
-                  )}
-                </div>
-
-                {/*
-                  A agenda dele tem tela própria, e o painel só aponta.
-                  Caixas e lista de janelas aqui dentro espremeriam as duas
-                  coisas numa linha que já carrega nome, cargo e tarja.
-                */}
-                {!priest.userId && (
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <LinkButton href={`/painel/sacerdotes/${priest.id}`} variant="ghost" size="sm">
-                      Horários e o que atende
-                    </LinkButton>
-                    {/* Formulário separado do link: apagar por engano ao
-                        mirar no botão ao lado é o acidente que a separação
-                        evita. */}
-                    <form action={apagarSacerdoteAction}>
-                      <input type="hidden" name="id" value={priest.id} />
-                      <Button type="submit" variant="ghost" size="sm">
-                        Remover
-                      </Button>
-                    </form>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-        <SacerdoteSemContaForm />
-      </Card>
-
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Agenda</p>
-        <div className="flex flex-col gap-4">
-          <CreateCelebrationForm priests={priests} />
-          <CreateEventForm
-              podeEnviarArquivo={isUploadConfigured()}
-              motivoIndisponivel={diagnosticoDoUpload()}
-            />
-        </div>
-
-        {agendaItems.length === 0 ? (
-          <p className="mt-4 text-sm text-muted">Nenhum compromisso futuro cadastrado.</p>
-        ) : (
-          <ul className="mt-4 flex flex-col gap-2">
-            {agendaItems.map((item) => (
-              <li key={item.id} className="flex items-center justify-between border-b border-border py-2 text-sm">
-                <div>
-                  <p className="text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted">
-                    {item.semHora ? formatDateOnly(item.startsAt) : formatDateTime(item.startsAt)}
-                    {item.location ? ` · ${item.location}` : ""}
-                    {item.priestName ? ` · ${item.priestName}` : ""}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
 
       <Card>
         <p className="font-serif text-lg font-semibold text-foreground">Minha Caminhada</p>

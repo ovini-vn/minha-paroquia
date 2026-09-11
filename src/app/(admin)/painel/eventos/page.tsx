@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { CreateEventForm } from "../CreateEventForm";
+import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { PartyPopper } from "lucide-react";
 import type { CategoriaDaAgenda } from "@prisma/client";
@@ -65,9 +67,6 @@ export default async function EventsAdminPage({
           title="Eventos"
           description="Festas, encontros e celebrações especiais da paróquia."
         />
-        <LinkButton href="/painel" variant="ghost" size="sm">
-          Criar evento
-        </LinkButton>
       </div>
 
       <section>
@@ -96,7 +95,7 @@ export default async function EventsAdminPage({
             description={
               filtrando
                 ? "Há eventos cadastrados fora deste recorte."
-                : "Novos eventos são criados no painel principal, na seção Agenda."
+                : "Crie o primeiro no formulário ao fim da página."
             }
             action={
               filtrando ? (
@@ -170,6 +169,26 @@ export default async function EventsAdminPage({
           </div>
         )}
       </section>
+      {/*
+        O formulário de criar evento, que morava no índice do painel.
+
+        O botão "Criar evento" daqui levava para /painel — a pessoa saía da
+        lista de eventos para criar um evento, e voltava para conferir. A
+        ida e volta acabou: o formulário está na tela do que ele cria.
+
+        Vem no fim pela mesma regra das outras telas: cadastrar é ocasional,
+        consultar a lista é o que traz alguém aqui.
+      */}
+      <Card>
+        <Eyebrow tone="accent" className="mb-3">
+          Novo evento
+        </Eyebrow>
+        <CreateEventForm
+          podeEnviarArquivo={isUploadConfigured()}
+          motivoIndisponivel={diagnosticoDoUpload()}
+        />
+      </Card>
+
     </div>
   );
 }

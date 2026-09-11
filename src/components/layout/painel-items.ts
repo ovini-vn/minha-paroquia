@@ -1,6 +1,7 @@
 import {
   BookOpen,
   Cake,
+  Church,
   Clock,
   Compass,
   HandCoins,
@@ -13,8 +14,10 @@ import {
   PartyPopper,
   Repeat,
   ScrollText,
+  Ticket,
   UserRound,
   Users,
+  UsersRound,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -122,7 +125,22 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
   { href: "/painel/liturgia", label: "Liturgia", icon: Music, grupo: "Formação e liturgia" },
   { href: "/painel/missas", label: "Horários das missas", icon: Repeat, grupo: "Formação e liturgia" },
 
+  {
+    href: "/painel/paroquia",
+    label: "Dados da paróquia",
+    icon: Church,
+    grupo: "A paróquia",
+  },
   { href: "/painel/paroco", label: "Nosso Pároco", icon: UserRound, grupo: "A paróquia" },
+  {
+    href: "/painel/sacerdotes",
+    label: "Sacerdotes",
+    // Ícone próprio: "Grupos e pastorais" já usa `Users`, e dois destinos
+    // idênticos na mesma barra desfazem o que a barra existe para fazer.
+    icon: UsersRound,
+    grupo: "A paróquia",
+    permissao: PERMISSIONS.INVITATIONS_CREATE,
+  },
   { href: "/painel/historia", label: "Nossa História", icon: Landmark, grupo: "A paróquia" },
   { href: "/painel/expediente", label: "Horário da secretaria", icon: Clock, grupo: "A paróquia" },
   {
@@ -133,6 +151,13 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
     permissao: PERMISSIONS.PLANO_MANAGE,
   },
 
+  {
+    href: "/painel/convites",
+    label: "Convites",
+    icon: Ticket,
+    grupo: "Acessos",
+    permissao: PERMISSIONS.INVITATIONS_CREATE,
+  },
   {
     href: "/painel/membros",
     label: "Membros e papéis",

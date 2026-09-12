@@ -139,8 +139,12 @@ export default async function BibliaPage({
                 <div key={grupo}>
                   <p className="mb-2 text-[12.5px] font-medium text-muted">{grupo}</p>
                   {/* Grade de nomes em vez de lista de linhas: 73 livros em
-                      linhas viraria uma rolagem sem fim no celular. */}
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      linhas viraria uma rolagem sem fim no celular.
+
+                      No computador vai a cinco colunas: nome de livro é
+                      curto ("Gênesis", "1 Samuel"), e parar em três deixa
+                      dois terços da largura vazios enquanto a lista desce. */}
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                     {doTestamento
                       .filter((b) => b.group === grupo)
                       .map((livro) => (

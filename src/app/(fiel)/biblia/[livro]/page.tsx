@@ -58,7 +58,9 @@ export default async function LivroPage({ params }: { params: Promise<{ livro: s
         {/* Números grandes o bastante para o dedo: 44px de lado é o mínimo
             confortável, e um livro de 150 capítulos (Salmos) precisa que a
             grade se adense na horizontal em vez de esticar a rolagem. */}
-        <div className="grid grid-cols-5 gap-2 sm:grid-cols-8">
+        {/* Números de capítulo são minúsculos: no computador cabem doze por
+            linha, e os Salmos passam de 19 fileiras para 13. */}
+        <div className="grid grid-cols-5 gap-2 sm:grid-cols-8 lg:grid-cols-12">
           {capitulos.map((n) => (
             <Link
               key={n}

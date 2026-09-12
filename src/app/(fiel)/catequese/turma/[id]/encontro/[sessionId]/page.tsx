@@ -75,7 +75,17 @@ export default async function ChamadaPage({
           description="Nada para chamar por enquanto."
         />
       ) : (
-        <>
+        /*
+         * As duas presenças LADO A LADO no computador.
+         *
+         * São duas listas da mesma turma, com os mesmos nomes. Empilhadas,
+         * o catequista marca 25 crianças, rola a tela inteira e marca as
+         * mesmas 25 de novo. Lado a lado ele vê os dois lançamentos juntos.
+         *
+         * Colunas iguais, e não a proporção do `DuasColunas`: aqui nenhuma
+         * das duas é "consulta ao lado" — as duas são o trabalho.
+         */
+        <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
           {/*
             Duas presenças, e nenhuma substitui a outra: a do encontro diz se
             a criança veio à catequese; a da missa é o que a caminhada
@@ -100,7 +110,7 @@ export default async function ChamadaPage({
             </Card>
           </section>
 
-          <section className="pt-7">
+          <section className="pt-7 lg:pt-0">
             <Eyebrow tone="accent" className="mb-3">
               <Church className="mr-1.5 inline h-3.5 w-3.5" strokeWidth={2} aria-hidden />
               Presença na missa
@@ -119,7 +129,7 @@ export default async function ChamadaPage({
               />
             </Card>
           </section>
-        </>
+        </div>
       )}
     </div>
   );

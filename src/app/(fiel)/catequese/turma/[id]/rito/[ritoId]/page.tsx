@@ -70,7 +70,7 @@ export default async function RitoDaTurmaPage({
       : hojeEmBrasilia();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col lg:max-w-[42rem]">
       <div className="pb-4">
         <Link
           href={`/catequese/turma/${id}`}

@@ -1,5 +1,5 @@
 /**
- * Gera docs/apresentacao/apresentacao.pdf a partir do index.html.
+ * Gera o PDF de uma apresentação. Sem argumento, a completa.
  *
  * Usa o modo `print-pdf` do reveal.js, que reorganiza os slides em páginas
  * antes da impressão. Sem ele, sai uma página só com tudo empilhado.
@@ -17,7 +17,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
-const SAIDA = path.join(AQUI, "apresentacao.pdf");
+/*
+ * Qual deck gerar. Sem argumento, a completa — que é o index.html e o
+ * caminho de sempre.
+ *
+ *   node docs/apresentacao/export-pdf.mjs            -> apresentacao.pdf
+ *   node docs/apresentacao/export-pdf.mjs resumida   -> resumida.pdf
+ */
+const DECK = process.argv[2] ?? "index";
+const SAIDA = path.join(AQUI, DECK === "index" ? "apresentacao.pdf" : `${DECK}.pdf`);
 
 // Mesma proporção do palco do reveal (1600x900), em polegadas a 96dpi.
 const LARGURA_POL = 1600 / 96;
@@ -49,7 +57,7 @@ const erros = [];
 pagina.on("pageerror", (e) => erros.push(e.message));
 pagina.on("requestfailed", (r) => erros.push(`recurso não carregou: ${r.url()}`));
 
-await pagina.goto(`http://127.0.0.1:${porta}/index.html?print-pdf`, { waitUntil: "networkidle", timeout: 60_000 });
+await pagina.goto(`http://127.0.0.1:${porta}/${DECK}.html?print-pdf`, { waitUntil: "networkidle", timeout: 60_000 });
 
 // O reveal só termina de paginar depois de montar; esperar o marcador dele.
 await pagina.waitForSelector(".reveal.ready", { timeout: 30_000 });
@@ -70,7 +78,7 @@ await pagina.pdf({
 await navegador.close();
 servidor.close();
 
-console.log(`PDF gerado: docs/apresentacao/apresentacao.pdf (${paginas} páginas, 16:9)`);
+console.log(`PDF gerado: ${path.relative(process.cwd(), SAIDA)} (${paginas} páginas, 16:9)`);
 if (erros.length) {
   console.log("\nAvisos durante a geração:");
   for (const e of [...new Set(erros)]) console.log("  - " + e);

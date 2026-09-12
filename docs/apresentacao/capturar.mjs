@@ -106,6 +106,23 @@ const TELAS = [
   { arquivo: "minha-oferta", url: "/contribuir" },
   { arquivo: "plano", url: "/plano" },
   { arquivo: "comunidade-sacerdotes", url: "/comunidade/sacerdotes" },
+  { arquivo: "paroco", url: "/paroco" },
+
+  /*
+   * As telas que provam que o app RECEBE, e não só publica.
+   *
+   * Um padre olhou a apresentação anterior e perguntou se a paróquia já não
+   * tinha um site. A pergunta é justa: tudo o que estava nos prints era
+   * coisa que a paróquia PUBLICA — avisos, horários, a mensagem do padre.
+   * Site faz isso. O que site nenhum faz é saber quem é a pessoa, alcançá-la
+   * durante a semana e receber alguma coisa de volta.
+   *
+   * Estas quatro são a prova disso, e por isso entraram.
+   */
+  { arquivo: "pedidos", url: "/oracao/pedidos" },
+  { arquivo: "eu", url: "/eu" },
+  { arquivo: "familia", url: "/eu/familia" },
+  { arquivo: "catequese", url: "/catequese" },
   // No celular o painel também é usado de pé, no fundo da igreja.
   { arquivo: "painel", url: "/painel", rolarAte: "text=Membros e papéis" },
   { arquivo: "painel-avisos", url: "/painel/avisos" },
@@ -148,7 +165,17 @@ const contexto = await navegador.newContext({
 });
 
 await contexto.addCookies([
-  { name: "comunidade_session", value: token, domain: "localhost", path: "/", httpOnly: true, sameSite: "Lax" },
+  /*
+   * O domínio SAI do BASE, e não fica fixo em "localhost".
+   *
+   * O script já aceitava BASE_URL — e precisa aceitar: o `fetch` do Node
+   * resolve "localhost" para ::1 e o guarda de servidor falhava com o
+   * servidor de pé, o que obriga a apontar para 127.0.0.1. Só que o cookie
+   * continuava sendo gravado para "localhost", o navegador não o mandava
+   * para 127.0.0.1, e as 33 telas caíam em /login — com uma sessão válida
+   * no banco. Duas configurações da mesma coisa em lugares diferentes.
+   */
+  { name: "comunidade_session", value: token, domain: new URL(BASE).hostname, path: "/", httpOnly: true, sameSite: "Lax" },
 ]);
 
 // O indicador do Next em desenvolvimento fica flutuando no canto e não faz
@@ -187,7 +214,15 @@ for (const tela of TELAS) {
 
     // Enquadramento: alguns trechos que valem o print não estão no topo.
     if (tela.rolarAte) {
-      const alvo = pagina.locator(tela.rolarAte).first();
+      /*
+       * Procura DENTRO do conteúdo, não na página inteira.
+       *
+       * Desde que o painel ganhou barra lateral, "Membros e papéis" existe
+       * duas vezes: na barra (escondida no celular) e na lista. O `.first()`
+       * pegava a da barra, e o Playwright esperava quinze segundos por um
+       * elemento que nunca ficaria visível.
+       */
+      const alvo = pagina.locator("main").locator(tela.rolarAte).first();
       await alvo.scrollIntoViewIfNeeded({ timeout: 15_000 });
       await pagina.evaluate(() => window.scrollBy(0, -120));
     }

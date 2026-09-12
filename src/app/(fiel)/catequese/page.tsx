@@ -247,20 +247,27 @@ export default async function CatequesePage({
             {overview.turmasSemCatequista > 0 && (
               <p className="mt-2.5 flex items-start gap-2 text-[12.5px] leading-relaxed text-muted">
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
-                {overview.turmasSemCatequista === 1
-                  ? "Uma turma está sem catequista designado."
-                  : `${overview.turmasSemCatequista} turmas estão sem catequista designado.`}{" "}
                 {/*
-                  O caminho certo, e não "edite a turma".
-                
-                  A frase mandava para Membros e papéis e depois para "editar
-                  a turma" — só que editar a turma muda nome e ano, e não a
-                  catequista. Quem seguiu a instrução não achou o que ela
-                  prometia. Quem designa mora DENTRO da turma.
+                  A FRASE INTEIRA num só `span`.
+
+                  O pai é `flex`, e num flex cada filho vira uma coluna. O
+                  `<strong>` solto no meio do texto virava um segundo item, e
+                  a frase se partia em duas colunas no celular — "…escolha em"
+                  de um lado, "Catequista. Quem aparece na lista…" do outro.
+                  Visto num print da apresentação, não em teste.
+
+                  O caminho: a frase mandava para Membros e papéis e depois
+                  para "editar a turma" — só que editar a turma muda nome e
+                  ano, não a catequista. Quem designa mora DENTRO da turma.
                 */}
-                Abra a turma e escolha em <strong className="text-foreground">Catequista</strong>.
-                Quem aparece na lista é quem pode lecionar — catequistas e a coordenação da
-                catequese.
+                <span>
+                  {overview.turmasSemCatequista === 1
+                    ? "Uma turma está sem catequista designado."
+                    : `${overview.turmasSemCatequista} turmas estão sem catequista designado.`}{" "}
+                  Abra a turma e escolha em{" "}
+                  <strong className="text-foreground">Catequista</strong>. Quem aparece na lista é
+                  quem pode lecionar — catequistas e a coordenação da catequese.
+                </span>
               </p>
             )}
           </section>

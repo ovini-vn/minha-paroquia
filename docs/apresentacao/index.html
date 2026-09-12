@@ -8,238 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css" id="theme" />
 
-    <style>
-      /* Paleta do próprio aplicativo (src/app/globals.css). */
-      :root {
-        --marfim: #f6f3ec;
-        --superficie: #fffdf8;
-        --grafite: #242124;
-        --suave: #6f6a67;
-        --dourado: #c9a44c;
-        --dourado-claro: #e3ce95;
-        --roxo: #5b2890;
-        --roxo-claro: #efeaf6;
-        --borda: #e4ddd1;
-      }
-
-      .reveal {
-        font-family: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
-        font-size: 34px;
-        color: var(--grafite);
-      }
-      .reveal-viewport { background: var(--marfim); }
-
-      .reveal h1, .reveal h2, .reveal h3 {
-        font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-        font-weight: 600;
-        color: var(--grafite);
-        text-transform: none;
-        letter-spacing: -0.02em;
-        margin: 0;
-      }
-      .reveal h1 { font-size: 2.6em; line-height: 0.98; }
-      .reveal h2 { font-size: 1.72em; line-height: 1.06; }
-      .reveal h3 { font-size: 0.82em; line-height: 1.25; }
-      .reveal p { line-height: 1.5; }
-      .reveal .slides section { text-align: left; }
-
-      .rotulo-secao {
-        font-size: 0.42em;
-        font-weight: 700;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--roxo);
-        margin: 0 0 0.5em;
-      }
-      .fio { width: 56px; height: 2px; background: var(--dourado); border: 0; margin: 0.45em 0 0.7em; }
-      .centro { display: flex; flex-direction: column; justify-content: center; }
-      .nota { font-size: 0.46em; color: var(--suave); line-height: 1.55; }
-
-      /* =============================================== slides escuros */
-      /*
-       * O ritmo claro/escuro é o que tira a apresentação do branco chapado.
-       * Slides de sentimento (problema, promessa, convite) são escuros; os
-       * de comparação e de lista ficam claros, onde texto pequeno se lê
-       * melhor.
-       */
-      .escuro h1, .escuro h2, .escuro h3 { color: #fffdf8; }
-      .escuro p { color: rgba(255, 253, 248, 0.88); }
-      .escuro .rotulo-secao { color: var(--dourado); }
-      .escuro .nota { color: rgba(255, 253, 248, 0.62); }
-      .escuro li { color: rgba(255, 253, 248, 0.84); }
-      .escuro li::before { border-color: var(--dourado); }
-      .escuro .card {
-        background: rgba(255, 253, 248, 0.07);
-        border-color: rgba(255, 253, 248, 0.18);
-        backdrop-filter: blur(2px);
-      }
-      .escuro .card h3 { color: #fffdf8; }
-      .escuro .card p { color: rgba(255, 253, 248, 0.78); }
-      .escuro .frase p { color: #fffdf8; }
-      .escuro .icone { border-color: var(--dourado); }
-      .escuro .icone svg { stroke: var(--dourado-claro); }
-      .escuro .passo .n { border-color: var(--dourado); color: var(--dourado-claro); }
-      .escuro .legenda-celular { color: rgba(255, 253, 248, 0.7); }
-
-      /* ------------------------------------------- moldura de celular */
-      /*
-       * 13px de moldura com raio 44 (interno 31) é a relação de um aparelho
-       * real. Com 8px e raio 32 o preto virava um fio e o conteúdo avançava
-       * até dentro da curva — lia como imagem com contorno, não como
-       * telefone. As escalas menores mantêm a mesma proporção.
-       */
-      .celular {
-        background: #141214;
-        border-radius: 44px;
-        padding: 13px;
-        overflow: hidden;
-        position: relative;
-        flex: 0 0 auto;
-        box-shadow: 0 28px 60px -26px rgba(20, 10, 34, 0.7), 0 0 0 1px rgba(36, 33, 36, 0.1);
-      }
-      .celular img { display: block; width: 100%; border-radius: 31px; background: var(--superficie); margin: 0; }
-      .celular::before {
-        content: "";
-        position: absolute;
-        top: 22px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        background: #080708;
-        box-shadow: inset 0 0 0 1px rgba(255, 253, 248, 0.16);
-        z-index: 2;
-      }
-      .celular.xs { width: 150px; border-radius: 26px; padding: 8px; }
-      .celular.xs img { border-radius: 18px; }
-      .celular.xs::before { top: 14px; width: 6px; height: 6px; }
-      .celular.p { width: 232px; border-radius: 35px; padding: 10px; }
-      .celular.p img { border-radius: 25px; }
-      .celular.p::before { top: 17px; width: 7px; height: 7px; }
-      .celular.m { width: 288px; border-radius: 42px; padding: 12px; }
-      .celular.m img { border-radius: 30px; }
-      .celular.g { width: 330px; }
-
-      /* Halo dourado atrás do aparelho, só no escuro: dá profundidade. */
-      .escuro .celular { box-shadow: 0 30px 70px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(201, 164, 76, 0.28); }
-
-      .fileira { display: flex; gap: 26px; align-items: flex-start; justify-content: center; }
-      .fileira > div { display: flex; flex-direction: column; align-items: center; }
-      .legenda-celular {
-        font-size: 0.4em;
-        color: var(--suave);
-        text-align: center;
-        margin-top: 0.7em;
-        line-height: 1.4;
-      }
-
-      /* ------------------------------------------------------ estrutura */
-      .duas { display: grid; grid-template-columns: 1fr auto; gap: 54px; align-items: center; }
-      .duas.espelho { grid-template-columns: auto 1fr; }
-
-      .reveal ul { margin: 0; list-style: none; }
-      .reveal li {
-        margin-bottom: 0.6em;
-        font-size: 0.58em;
-        line-height: 1.45;
-        color: var(--suave);
-        padding-left: 1.5em;
-        position: relative;
-      }
-      .reveal li::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0.48em;
-        width: 11px;
-        height: 11px;
-        border: 2px solid var(--dourado);
-        border-radius: 50%;
-      }
-      .reveal li strong { color: var(--grafite); font-weight: 650; }
-      .escuro li strong { color: #fffdf8; }
-
-      .grade-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 0.5em; }
-      .grade-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 0.6em; }
-      .card {
-        background: var(--superficie);
-        border: 1px solid var(--borda);
-        border-radius: 18px;
-        padding: 26px 28px 28px;
-      }
-      .card.apagado { background: #ece7dd; border-color: #ddd5c8; }
-      .card.apagado h3, .card.apagado p { color: var(--suave); }
-      .card.ouro {
-        background: linear-gradient(150deg, #5b2890 0%, #401a6d 100%);
-        border-color: rgba(201, 164, 76, 0.5);
-      }
-      .card.ouro h3 { color: var(--dourado-claro); }
-      .card.ouro p { color: rgba(255, 253, 248, 0.9); }
-      .card h3 { margin-bottom: 0.32em; }
-      .card p { font-size: 0.48em; line-height: 1.55; margin: 0.4em 0 0; color: var(--grafite); }
-
-      .icone {
-        width: 54px;
-        height: 54px;
-        border-radius: 50%;
-        border: 1.5px solid var(--dourado);
-        display: grid;
-        place-items: center;
-        margin-bottom: 0.45em;
-      }
-      .icone svg { width: 25px; height: 25px; stroke: var(--roxo); fill: none; stroke-width: 1.5; }
-
-      /* A frase que precisa ficar — grande, em serifa. */
-      .frase { border-left: 3px solid var(--dourado); padding: 6px 0 6px 28px; margin-top: 1em; }
-      .frase p {
-        font-family: Georgia, serif;
-        font-size: 0.88em;
-        line-height: 1.32;
-        margin: 0;
-        color: var(--grafite);
-      }
-
-      .passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 0.7em; }
-      .passo { position: relative; padding-top: 58px; }
-      .passo .n {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: 1.5px solid var(--dourado);
-        color: var(--roxo);
-        font-family: Georgia, serif;
-        font-size: 0.6em;
-        display: grid;
-        place-items: center;
-      }
-      .passo h3 { font-size: 0.72em; margin-bottom: 0.3em; }
-      .passo p { font-size: 0.46em; color: var(--suave); line-height: 1.55; margin: 0; }
-      .escuro .passo p { color: rgba(255, 253, 248, 0.75); }
-
-      .pilares { font-size: 0.44em; color: var(--dourado); letter-spacing: 0.22em; margin-top: 1.7em; }
-
-      /* Arcos concêntricos — caminho e comunidade, sem símbolo religioso. */
-      .arcos { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-      /*
-       * `:not(.arcos)` é essencial: sem isso a regra dá `position: relative`
-       * ao SVG decorativo, ele deixa de ser absoluto, entra no fluxo e
-       * empurra todo o conteúdo do slide para baixo.
-       */
-      .reveal .slides section > *:not(.arcos) { position: relative; z-index: 1; }
-
-      .reveal .progress { color: var(--dourado); height: 4px; }
-      .reveal .controls { color: var(--roxo); }
-      .reveal .slide-number { background: rgba(36, 33, 36, 0.45); }
-
-      @media print {
-        .celular { box-shadow: 0 0 0 1px rgba(36, 33, 36, 0.18); }
-        .escuro .celular { box-shadow: 0 0 0 1px rgba(201, 164, 76, 0.3); }
-      }
-    </style>
+    <link rel="stylesheet" href="estilo.css" />
   </head>
 
   <body>
@@ -274,6 +43,74 @@
             Abrir com a pergunta, antes do produto: entre um domingo e o outro, o que a paróquia
             consegue dizer a quem esteve na missa? Os três pilares — caminhar, pertencer, servir —
             são a estrutura do aplicativo inteiro.
+          </aside>
+        </section>
+
+        <!-- 2 ....................... A PERGUNTA DO PÁROCO (claro) -->
+        <!--
+          ESTE SLIDE EXISTE POR UMA PERGUNTA REAL.
+
+          Um pároco viu a versão anterior desta apresentação e perguntou se a
+          paróquia já não tinha um site. A pergunta é justa, e a apresentação
+          não a respondia: todos os prints mostravam coisas que a paróquia
+          PUBLICA — avisos, horários, a mensagem do padre —, e é exatamente
+          isso que um site faz.
+
+          A resposta não é negar. O aplicativo abre no navegador. A diferença
+          é o que ele faz e um site não faz.
+        -->
+        <section>
+          <div class="centro">
+            <p class="rotulo-secao">A pergunta que todo pároco faz</p>
+            <h2>“Já não temos um site na paróquia?”</h2>
+            <hr class="fio" />
+            <p style="max-width: 22em; margin-top: 0.5em">
+              Têm — e este aplicativo também abre no navegador, sem instalar nada e sem loja de
+              aplicativos. A diferença não está na tecnologia. Está em três verbos.
+            </p>
+          </div>
+          <aside class="notes">
+            Reconhecer a pergunta antes de responder. Negá-la custa a credibilidade do resto da
+            conversa: a tela realmente abre no navegador como um site.
+          </aside>
+        </section>
+
+        <!-- 3 ............................... SITE x FERRAMENTA (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(160deg, #2e1149 0%, #1c0b2e 100%)"
+        >
+          <div class="centro">
+            <p class="rotulo-secao">A diferença</p>
+            <h2>Um site publica. Este conhece, alcança e recebe.</h2>
+            <hr class="fio" />
+            <div class="grade-3" style="margin-top: 0.7em">
+              <div class="card">
+                <h3>Sabe quem é você</h3>
+                <p>
+                  Seu nome, sua família, seus sacramentos, a turma do seu filho, o que você já
+                  se ofereceu para fazer. Um site mostra a mesma página para todo mundo.
+                </p>
+              </div>
+              <div class="card">
+                <h3>Alcança você</h3>
+                <p>
+                  A missa mudou de horário, e o aviso chega ao telefone de quem não estava lá.
+                  Num site, a mudança espera a pessoa lembrar de entrar.
+                </p>
+              </div>
+              <div class="card">
+                <h3>Recebe de volta</h3>
+                <p>
+                  Pedido de oração, disponibilidade para servir, presença na catequese, oferta.
+                  Um site não tem como receber nada — só mostrar.
+                </p>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            É o slide mais importante da apresentação. Se o padre entender os três verbos, entendeu
+            a ferramenta — e o resto vira exemplo.
           </aside>
         </section>
 
@@ -346,6 +183,166 @@
             paróquia vive. A da direita não promete milagre — descreve o que muda de lugar. Quem
             administra a secretaria costuma se convencer aqui.
           </aside>
+        </section>
+
+        <!-- 4-bis ............................ UMA SEMANA, dia a dia -->
+        <!--
+          O CORAÇÃO DA APRESENTAÇÃO COMPLETA.
+
+          Lista de funcionalidades não convence ninguém — e foi o que a
+          versão anterior fazia. Uma semana de uma pessoa concreta mostra
+          a mesma coisa de um jeito que um pároco reconhece, porque ele
+          conhece essa pessoa.
+
+          Cada dia usa UMA função, e nenhuma delas existe num site.
+          Maria Aparecida é o nome que está nos dados de demonstração.
+        -->
+        <section>
+          <div class="centro">
+            <p class="rotulo-secao">O que muda na prática</p>
+            <h2>Uma semana de dona Maria</h2>
+            <hr class="fio" />
+            <p style="max-width: 24em; margin-top: 0.5em">
+              Ela vai à missa de domingo há trinta anos. Entre um domingo e o outro, a paróquia
+              não tinha como falar com ela — nem ela com a paróquia.
+            </p>
+          </div>
+          <aside class="notes">
+            Apresentar a pessoa antes das telas. Os próximos slides são os dias da semana dela.
+          </aside>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Segunda-feira, 6h10</p>
+              <h2>O Evangelho do dia, no ônibus</h2>
+              <hr class="fio" />
+              <p>
+                Ela abre o aplicativo e ouve o Evangelho de hoje em áudio, a caminho do trabalho.
+                Logo abaixo, a mensagem que o pároco gravou de manhã.
+              </p>
+              <p class="nota">
+                Áudio, e não só texto: quem enxerga pouco escuta. É diário e não depende de
+                ninguém digitar nada — as leituras vêm do Vatican News.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/inicio.png" alt="A tela inicial com o Evangelho do dia" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Terça-feira</p>
+              <h2>A Bíblia inteira, no bolso</h2>
+              <hr class="fio" />
+              <p>
+                A leitura de domingo deixou uma dúvida. Ela procura a passagem pelo nome e acha
+                em segundos — os 73 livros estão ali, com busca por palavra.
+              </p>
+              <p class="nota">
+                Nada é baixado: a Bíblia já está no aplicativo, e funciona sem procurar em outro
+                lugar da internet.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/biblia-busca.png" alt="Busca na Bíblia" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Quarta-feira</p>
+              <h2>Um pedido de oração que ninguém mais precisa ler</h2>
+              <hr class="fio" />
+              <p>
+                A mãe dela adoeceu. Ela escreve o pedido e escolhe que só o pároco veja — e pode
+                nem assinar, se preferir.
+              </p>
+              <p class="nota">
+                Ou manda para o mural, e a comunidade reza junto. Quem decide é ela, pedido por
+                pedido. Um site não tem como receber isso.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/pedidos.png" alt="Enviar um pedido de oração" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Quinta-feira</p>
+              <h2>A catequese do neto, sem precisar perguntar</h2>
+              <hr class="fio" />
+              <p>
+                O neto está na catequese. Ela vê a turma, os encontros que já houve e as presenças
+                — sem ligar para a secretaria e sem esperar o bilhete no caderno.
+              </p>
+              <p class="nota">
+                A catequista lança a chamada pelo telefone, no fim do encontro. A mesma tela
+                serve aos dois lados.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/catequese.png" alt="Tela da catequese" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Sexta-feira</p>
+              <h2>A missa de domingo mudou de horário</h2>
+              <hr class="fio" />
+              <p>
+                O aviso chega ao telefone dela. Antes, esse recado era dado na missa de sábado —
+                e chegava só a quem estava lá.
+              </p>
+              <p class="nota">
+                Cada tipo de aviso pode ser desligado por quem recebe. Urgente, pessoal, pastoral
+                e espiritual são separados de propósito.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/notificacoes.png" alt="Avisos no aparelho" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Sábado</p>
+              <h2>“Posso ajudar no mutirão”</h2>
+              <hr class="fio" />
+              <p>
+                Ela vê que a paróquia precisa de gente para a limpeza da igreja e diz que pode ir.
+                Quem coordena recebe o nome dela na hora.
+              </p>
+              <p class="nota">
+                Antes, quem queria servir precisava encontrar a pessoa certa depois da missa — e
+                quem coordenava precisava perguntar de novo a cada mês.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/servir.png" alt="Tela de servir" /></div>
+          </div>
+        </section>
+
+        <section>
+          <div class="duas">
+            <div>
+              <p class="rotulo-secao">Domingo</p>
+              <h2>A missa fica guardada com ela</h2>
+              <hr class="fio" />
+              <p>
+                Ao voltar, ela registra a missa na sua Caminhada, junto com o batizado do neto e
+                a crisma da filha.
+              </p>
+              <p class="nota">
+                Isso é dela: a paróquia não vê, ninguém é cobrado, e não existe contagem de quem
+                foi mais ou menos vezes.
+              </p>
+            </div>
+            <div class="celular g"><img src="screenshots/caminhada.png" alt="Minha Caminhada" /></div>
+          </div>
         </section>
 
         <!-- 4 ..................................... PARA O FIEL (escuro) -->

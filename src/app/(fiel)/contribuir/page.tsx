@@ -16,14 +16,10 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { DuasColunas } from "@/components/layout/DuasColunas";
 import { formatDateOnly } from "@/lib/date";
 import { iconeDeDoacao } from "@/lib/doacao";
+import { emReais } from "@/lib/dinheiro";
 import { EscolherFinalidade } from "./_components/EscolherFinalidade";
 
 export const metadata: Metadata = { title: "Minha oferta" };
-
-/** "R$ 150,00" a partir de centavos inteiros. */
-export function emReais(centavos: number): string {
-  return (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
 
 /**
  * Minha oferta: onde o fiel escolhe a finalidade e gera o próprio Pix.

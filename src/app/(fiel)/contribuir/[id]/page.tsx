@@ -9,7 +9,7 @@ import { LinkButton } from "@/components/ui/Button";
 import { BotaoCopiar } from "@/components/ui/BotaoCopiar";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { Leitura } from "@/components/layout/DuasColunas";
-import { emReais } from "../page";
+import { emReais } from "@/lib/dinheiro";
 
 export const metadata: Metadata = { title: "Seu código PIX" };
 

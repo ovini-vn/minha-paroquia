@@ -97,7 +97,21 @@ export default async function ComunidadePage() {
       description: e.description,
       semHora: e.semHora,
     })),
-  ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  ]
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+    /*
+     * CINCO, e não os dez que vinham das duas consultas.
+     *
+     * Isto é uma prévia, não a agenda. Medido no computador: os dez itens
+     * davam 902px numa coluna de 382 — a lateral inteira ficava com 1.500px
+     * contra 1.153 da principal, ou seja, a coluna estreita de "olhar de
+     * relance" carregava mais que a larga.
+     *
+     * O corte só é honesto com o caminho para o resto, e ele não existia:
+     * a seção não tinha link para a Agenda em tela nenhuma. Quem chegava ao
+     * décimo item não tinha para onde ir.
+     */
+    .slice(0, 5);
 
   const localizacao = [parish?.city, parish?.state].filter(Boolean).join(" · ");
 
@@ -268,7 +282,12 @@ export default async function ComunidadePage() {
         lateral={
           <>
       <section className="pt-7">
-        <SectionTitle eyebrow="Agenda" title="Próximos encontros" />
+        <SectionTitle
+          eyebrow="Agenda"
+          title="Próximos encontros"
+          actionLabel="Ver agenda"
+          actionHref="/agenda"
+        />
         <ProximosEncontros encontros={agendaItems} />
       </section>
 

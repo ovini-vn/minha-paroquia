@@ -52,7 +52,15 @@
       }
       .fio { width: 56px; height: 2px; background: var(--dourado); border: 0; margin: 0.45em 0 0.7em; }
       .centro { display: flex; flex-direction: column; justify-content: center; }
-      .nota { font-size: 0.46em; color: var(--suave); line-height: 1.55; }
+      /*
+       * A nota cresceu e escureceu.
+       *
+       * Estava em 0.46em no cinza claro — pequena e de baixo contraste
+       * justamente para o público desta apresentação, que são párocos, boa
+       * parte deles com a vista cansada. Quem projeta numa sala de reunião
+       * lê de longe, e o que não se lê não conta.
+       */
+      .nota { font-size: 0.54em; color: #56514e; line-height: 1.55; }
 
       /* =============================================== slides escuros */
       /*
@@ -64,7 +72,7 @@
       .escuro h1, .escuro h2, .escuro h3 { color: #fffdf8; }
       .escuro p { color: rgba(255, 253, 248, 0.88); }
       .escuro .rotulo-secao { color: var(--dourado); }
-      .escuro .nota { color: rgba(255, 253, 248, 0.62); }
+      .escuro .nota { color: rgba(255, 253, 248, 0.75); }
       .escuro li { color: rgba(255, 253, 248, 0.84); }
       .escuro li::before { border-color: var(--dourado); }
       .escuro .card {
@@ -78,7 +86,7 @@
       .escuro .icone { border-color: var(--dourado); }
       .escuro .icone svg { stroke: var(--dourado-claro); }
       .escuro .passo .n { border-color: var(--dourado); color: var(--dourado-claro); }
-      .escuro .legenda-celular { color: rgba(255, 253, 248, 0.7); }
+      .escuro .legenda-celular { color: rgba(255, 253, 248, 0.82); }
 
       /* ------------------------------------------- moldura de celular */
       /*
@@ -126,8 +134,8 @@
       .fileira { display: flex; gap: 26px; align-items: flex-start; justify-content: center; }
       .fileira > div { display: flex; flex-direction: column; align-items: center; }
       .legenda-celular {
-        font-size: 0.4em;
-        color: var(--suave);
+        font-size: 0.44em;
+        color: #56514e;
         text-align: center;
         margin-top: 0.7em;
         line-height: 1.4;

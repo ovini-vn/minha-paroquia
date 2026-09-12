@@ -185,76 +185,74 @@
           </aside>
         </section>
 
-        <!-- 4-bis ............................ UMA SEMANA, dia a dia -->
+        <!-- 4-bis ................................. UMA SEMANA (escuro) -->
         <!--
-          O CORAÇÃO DA APRESENTAÇÃO COMPLETA.
+          O CORAÇÃO DA APRESENTAÇÃO COMPLETA — e a segunda tentativa.
 
-          Lista de funcionalidades não convence ninguém — e foi o que a
-          versão anterior fazia. Uma semana de uma pessoa concreta mostra
-          a mesma coisa de um jeito que um pároco reconhece, porque ele
-          conhece essa pessoa.
+          A primeira versão tinha OITO slides, um por dia, todos claros e
+          todos com o mesmo telefone grande à direita. Lista de
+          funcionalidades não convence, e oito slides idênticos também não:
+          o deck perdeu o ritmo claro/escuro e virou uma coisa só, repetida.
 
-          Cada dia usa UMA função, e nenhuma delas existe num site.
-          Maria Aparecida é o nome que está nos dados de demonstração.
+          Agora a semana inteira cabe num slide — sete telas pequenas, uma
+          por dia —, e só os três momentos que o pároco precisa VER de perto
+          ganham slide próprio, alternando fundo claro e escuro.
         -->
-        <section>
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(160deg, #2e1149 0%, #1c0b2e 100%)"
+        >
           <div class="centro">
             <p class="rotulo-secao">O que muda na prática</p>
             <h2>Uma semana de dona Maria</h2>
             <hr class="fio" />
-            <p style="max-width: 24em; margin-top: 0.5em">
+            <p style="font-size: 0.56em; max-width: 30em; margin-top: 0.3em">
               Ela vai à missa de domingo há trinta anos. Entre um domingo e o outro, a paróquia
               não tinha como falar com ela — nem ela com a paróquia.
             </p>
+            <div class="fileira" style="margin-top: 0.5em">
+              <div>
+                <div class="celular xs"><img src="screenshots/inicio.png" alt="Tela inicial" /></div>
+                <p class="legenda-celular"><strong>Segunda</strong><br />Ouve o Evangelho<br />do dia no ônibus</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/biblia-busca.png" alt="Busca na Bíblia" /></div>
+                <p class="legenda-celular"><strong>Terça</strong><br />Procura a passagem<br />que ficou na dúvida</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/pedidos.png" alt="Pedido de oração" /></div>
+                <p class="legenda-celular"><strong>Quarta</strong><br />Pede oração pela mãe,<br />só o padre vê</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/catequese.png" alt="Catequese" /></div>
+                <p class="legenda-celular"><strong>Quinta</strong><br />Vê a catequese<br />do neto</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/notificacoes.png" alt="Avisos" /></div>
+                <p class="legenda-celular"><strong>Sexta</strong><br />A missa de domingo<br />mudou de horário</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/servir.png" alt="Servir" /></div>
+                <p class="legenda-celular"><strong>Sábado</strong><br />“Posso ajudar<br />no mutirão”</p>
+              </div>
+              <div>
+                <div class="celular xs"><img src="screenshots/caminhada.png" alt="Minha Caminhada" /></div>
+                <p class="legenda-celular"><strong>Domingo</strong><br />Guarda a missa<br />na sua Caminhada</p>
+              </div>
+            </div>
           </div>
           <aside class="notes">
-            Apresentar a pessoa antes das telas. Os próximos slides são os dias da semana dela.
+            Sete dias, sete funções — e nenhuma delas é possível num site. Os três próximos slides
+            abrem os momentos mais fortes. Se o tempo for curto, pule direto para o pedido de oração.
           </aside>
         </section>
 
+        <!-- 4-ter ................... o pedido de oração (claro) -->
         <section>
           <div class="duas">
             <div>
-              <p class="rotulo-secao">Segunda-feira, 6h10</p>
-              <h2>O Evangelho do dia, no ônibus</h2>
-              <hr class="fio" />
-              <p>
-                Ela abre o aplicativo e ouve o Evangelho de hoje em áudio, a caminho do trabalho.
-                Logo abaixo, a mensagem que o pároco gravou de manhã.
-              </p>
-              <p class="nota">
-                Áudio, e não só texto: quem enxerga pouco escuta. É diário e não depende de
-                ninguém digitar nada — as leituras vêm do Vatican News.
-              </p>
-            </div>
-            <div class="celular g"><img src="screenshots/inicio.png" alt="A tela inicial com o Evangelho do dia" /></div>
-          </div>
-        </section>
-
-        <section>
-          <div class="duas">
-            <div>
-              <p class="rotulo-secao">Terça-feira</p>
-              <h2>A Bíblia inteira, no bolso</h2>
-              <hr class="fio" />
-              <p>
-                A leitura de domingo deixou uma dúvida. Ela procura a passagem pelo nome e acha
-                em segundos — os 73 livros estão ali, com busca por palavra.
-              </p>
-              <p class="nota">
-                Nada é baixado: a Bíblia já está no aplicativo, e funciona sem procurar em outro
-                lugar da internet.
-              </p>
-            </div>
-            <div class="celular g"><img src="screenshots/biblia-busca.png" alt="Busca na Bíblia" /></div>
-          </div>
-        </section>
-
-        <section>
-          <div class="duas">
-            <div>
-              <p class="rotulo-secao">Quarta-feira</p>
-              <h2>Um pedido de oração que ninguém mais precisa ler</h2>
+              <p class="rotulo-secao">Quarta-feira · recebe de volta</p>
+              <h2>Um pedido que ninguém mais precisa ler</h2>
               <hr class="fio" />
               <p>
                 A mãe dela adoeceu. Ela escreve o pedido e escolhe que só o pároco veja — e pode
@@ -265,83 +263,50 @@
                 pedido. Um site não tem como receber isso.
               </p>
             </div>
-            <div class="celular g"><img src="screenshots/pedidos.png" alt="Enviar um pedido de oração" /></div>
+            <div class="celular m"><img src="screenshots/pedidos.png" alt="Enviar um pedido de oração" /></div>
           </div>
         </section>
 
-        <section>
+        <!-- 4-quater ................. o aviso que alcança (escuro) -->
+        <section
+          class="escuro"
+          data-background-gradient="linear-gradient(150deg, #5b2890 0%, #33124f 100%)"
+        >
           <div class="duas">
             <div>
-              <p class="rotulo-secao">Quinta-feira</p>
-              <h2>A catequese do neto, sem precisar perguntar</h2>
-              <hr class="fio" />
-              <p>
-                O neto está na catequese. Ela vê a turma, os encontros que já houve e as presenças
-                — sem ligar para a secretaria e sem esperar o bilhete no caderno.
-              </p>
-              <p class="nota">
-                A catequista lança a chamada pelo telefone, no fim do encontro. A mesma tela
-                serve aos dois lados.
-              </p>
-            </div>
-            <div class="celular g"><img src="screenshots/catequese.png" alt="Tela da catequese" /></div>
-          </div>
-        </section>
-
-        <section>
-          <div class="duas">
-            <div>
-              <p class="rotulo-secao">Sexta-feira</p>
+              <p class="rotulo-secao">Sexta-feira · alcança você</p>
               <h2>A missa de domingo mudou de horário</h2>
               <hr class="fio" />
               <p>
                 O aviso chega ao telefone dela. Antes, esse recado era dado na missa de sábado —
-                e chegava só a quem estava lá.
+                e alcançava só quem estava lá.
               </p>
               <p class="nota">
-                Cada tipo de aviso pode ser desligado por quem recebe. Urgente, pessoal, pastoral
-                e espiritual são separados de propósito.
+                Urgente, pessoal, pastoral e espiritual são separados, e cada um pode ser
+                desligado por quem recebe.
               </p>
             </div>
-            <div class="celular g"><img src="screenshots/notificacoes.png" alt="Avisos no aparelho" /></div>
+            <div class="celular m"><img src="screenshots/notificacoes.png" alt="Avisos no aparelho" /></div>
           </div>
         </section>
 
+        <!-- 4-quinquies .............. a catequese do neto (claro) -->
         <section>
           <div class="duas">
             <div>
-              <p class="rotulo-secao">Sábado</p>
-              <h2>“Posso ajudar no mutirão”</h2>
+              <p class="rotulo-secao">Quinta-feira · sabe quem é você</p>
+              <h2>A catequese do neto, sem precisar perguntar</h2>
               <hr class="fio" />
               <p>
-                Ela vê que a paróquia precisa de gente para a limpeza da igreja e diz que pode ir.
-                Quem coordena recebe o nome dela na hora.
+                Ela vê a turma, os encontros que já houve e as presenças — sem ligar para a
+                secretaria e sem esperar o bilhete no caderno.
               </p>
               <p class="nota">
-                Antes, quem queria servir precisava encontrar a pessoa certa depois da missa — e
-                quem coordenava precisava perguntar de novo a cada mês.
+                A catequista lança a chamada pelo telefone, no fim do encontro. A mesma tela
+                serve aos dois lados do balcão.
               </p>
             </div>
-            <div class="celular g"><img src="screenshots/servir.png" alt="Tela de servir" /></div>
-          </div>
-        </section>
-
-        <section>
-          <div class="duas">
-            <div>
-              <p class="rotulo-secao">Domingo</p>
-              <h2>A missa fica guardada com ela</h2>
-              <hr class="fio" />
-              <p>
-                Ao voltar, ela registra a missa na sua Caminhada, junto com o batizado do neto e
-                a crisma da filha.
-              </p>
-              <p class="nota">
-                Isso é dela: a paróquia não vê, ninguém é cobrado, e não existe contagem de quem
-                foi mais ou menos vezes.
-              </p>
-            </div>
-            <div class="celular g"><img src="screenshots/caminhada.png" alt="Minha Caminhada" /></div>
+            <div class="celular m"><img src="screenshots/catequese.png" alt="Tela da catequese" /></div>
           </div>
         </section>
 

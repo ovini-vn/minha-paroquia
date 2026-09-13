@@ -26,6 +26,7 @@ export const ACOES = {
   AVISO_APAGADO: "aviso.apagado",
   ORACAO_MODERADA: "oracao.moderada",
   TURMA_APAGADA: "turma.apagada",
+  ONBOARDING_REINICIADO: "onboarding.reiniciado",
 } as const;
 
 export type Acao = (typeof ACOES)[keyof typeof ACOES];
@@ -39,6 +40,7 @@ export const ROTULO_DA_ACAO: Record<Acao, string> = {
   [ACOES.AVISO_APAGADO]: "Apagou um aviso",
   [ACOES.TURMA_APAGADA]: "Excluiu uma turma de catequese",
   [ACOES.ORACAO_MODERADA]: "Moderou um pedido de oração",
+  [ACOES.ONBOARDING_REINICIADO]: "Reiniciou o cadastro de alguém",
 };
 
 export type Entrada = {

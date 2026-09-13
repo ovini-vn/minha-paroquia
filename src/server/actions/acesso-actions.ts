@@ -4,6 +4,9 @@ import { requireSession } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { criarLinkDeNovaSenhaParaMembro } from "@/server/modules/users/password-reset-service";
 import { appBaseUrl } from "@/lib/url";
+import { reiniciarOnboarding } from "@/server/modules/onboarding/service";
+import { AppError } from "@/server/shared/errors";
+import { revalidatePath } from "next/cache";
 
 export type EstadoDoLink = {
   erro?: string;
@@ -62,4 +65,51 @@ export async function gerarLinkDeNovaSenhaAction(
       expiraEm: resultado.expiraEm.toISOString(),
     },
   };
+}
+
+export type EstadoDoReinicio = { erro?: string; ok?: string };
+
+/**
+ * Devolve uma conta ao começo do onboarding.
+ *
+ * Mesma permissão do link de nova senha, e pela mesma razão: as duas são
+ * "ajudar alguém com o acesso", feitas por quem atende no balcão. Criar um
+ * código de permissão só para esta obrigaria a conceder mais uma coisa a
+ * quem já pode a outra.
+ *
+ * As travas moram no serviço, não aqui: conta de outra paróquia, conta com
+ * histórico e conta em duas paróquias são recusadas lá, onde o dado é
+ * escrito, e não na tela que por acaso chamou.
+ */
+export async function reiniciarOnboardingAction(
+  _anterior: EstadoDoReinicio,
+  formData: FormData,
+): Promise<EstadoDoReinicio> {
+  const session = await requireSession();
+  if (!session.membership) return { erro: "Você precisa pertencer a uma paróquia." };
+
+  if (!session.permissions.includes(PERMISSIONS.MEMBER_PASSWORD_RESET)) {
+    return { erro: "Você não tem permissão para reiniciar o cadastro de alguém." };
+  }
+
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) return { erro: "Escolha uma pessoa." };
+
+  /*
+   * Reiniciar a SI MESMO derrubaria o próprio vínculo — e com ele o acesso
+   * ao painel, no meio da operação. Quem quer testar o próprio onboarding
+   * pede a outra pessoa da secretaria, ou usa uma segunda conta.
+   */
+  if (userId === session.userId) {
+    return { erro: "Você não pode reiniciar a sua própria conta: perderia o acesso ao painel." };
+  }
+
+  try {
+    const { nome } = await reiniciarOnboarding(session.membership.parishId, userId, session.userId);
+    revalidatePath("/painel/acesso");
+    return { ok: `${nome} volta ao começo no próximo acesso.` };
+  } catch (erro) {
+    if (erro instanceof AppError) return { erro: erro.message };
+    throw erro;
+  }
 }

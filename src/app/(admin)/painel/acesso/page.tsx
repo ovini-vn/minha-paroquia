@@ -6,6 +6,9 @@ import { listActiveMembers } from "@/server/modules/parishes/service";
 import { PageHeader } from "@/components/ui/Typography";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GerarLinkForm } from "./GerarLinkForm";
+import { ReiniciarForm } from "./ReiniciarForm";
+import { listarContasReiniciaveis } from "@/server/modules/onboarding/service";
+import { Eyebrow } from "@/components/ui/Typography";
 
 /**
  * Quando alguém esquece a senha.
@@ -28,6 +31,8 @@ export default async function AcessoPage() {
   const podeGerenciarPermissoes = session.permissions.includes(
     PERMISSIONS.PERMISSION_OVERRIDES_MANAGE,
   );
+
+  const reiniciaveis = await listarContasReiniciaveis(session.membership.parishId);
 
   const membros = (await listActiveMembers(session.membership.parishId))
     // A lista já reflete o que o servidor vai aceitar. Mostrar um nome que
@@ -54,6 +59,32 @@ export default async function AcessoPage() {
       ) : (
         <GerarLinkForm membros={membros} />
       )}
+
+      {/*
+        Reiniciar o cadastro mora AQUI, e não numa tela própria.
+
+        É a mesma pergunta de quem chega ao balcão — "não consigo entrar",
+        "entrei na paróquia errada" —, feita pela mesma pessoa, com a mesma
+        permissão. Uma tela só para isto seria mais um destino na barra
+        para uma tarefa que se faz junto com a outra.
+      */}
+      <section className="pt-2">
+        <Eyebrow tone="accent" className="mb-3">
+          Voltar alguém ao começo
+        </Eyebrow>
+        <p className="mb-3 text-[13px] leading-relaxed text-muted">
+          Apaga o vínculo com a paróquia e as boas-vindas já vistas. A conta e a senha continuam
+          valendo — no próximo acesso a pessoa escolhe a paróquia e vê as boas-vindas de novo.
+          Serve para quem entrou na paróquia errada, e para testar o cadastro.
+        </p>
+        {reiniciaveis.length === 0 ? (
+          <p className="text-[13px] text-muted">
+            Nenhuma conta desta paróquia pode ser reiniciada agora.
+          </p>
+        ) : (
+          <ReiniciarForm contas={reiniciaveis} />
+        )}
+      </section>
 
       <div className="rounded-lg border border-border bg-sunken px-4 py-3.5">
         <p className="text-[13px] leading-relaxed text-muted">

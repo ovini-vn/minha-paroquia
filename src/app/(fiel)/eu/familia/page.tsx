@@ -65,7 +65,7 @@ export default async function FamilyPage() {
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium text-foreground">{member.fullName}</p>
                     {member.birthDate && (
-                      <p className="mt-0.5 text-[12.5px] text-muted">
+                      <p className="mt-0.5 text-[13px] text-muted">
                         {formatDateOnly(member.birthDate)}
                       </p>
                     )}

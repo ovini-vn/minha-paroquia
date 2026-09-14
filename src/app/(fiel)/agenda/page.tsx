@@ -233,7 +233,7 @@ export default async function AgendaPage({
           {vista === "calendario" && (
             <Card className="mt-5 max-w-[36rem]">
               <CalendarioDoMes ano={ano} mes={mes} dias={diasDoCalendario} />
-              <p className="mt-3 border-t border-border pt-3 text-[12px] leading-relaxed text-muted">
+              <p className="mt-3 border-t border-border pt-3 text-[13px] leading-relaxed text-muted">
                 Toque num dia para ver o que está marcado nele.
               </p>
             </Card>
@@ -281,7 +281,7 @@ export default async function AgendaPage({
                         <p className="text-[14.5px] font-medium leading-snug text-foreground">
                           {item.label}
                         </p>
-                        <p className="mt-0.5 text-[12.5px] text-muted">
+                        <p className="mt-0.5 text-[13px] text-muted">
                           {item.semHora
                             ? CATEGORIAS[item.categoria].rotulo
                             : `${formatDateTime(item.startsAt).split(", ").pop()} · ${CATEGORIAS[item.categoria].rotulo}`}

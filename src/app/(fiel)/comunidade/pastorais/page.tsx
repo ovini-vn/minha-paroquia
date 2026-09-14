@@ -70,7 +70,7 @@ export default async function PastoraisPage() {
                 {detalhes.length > 0 && (
                   <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">
                     {detalhes.map((d) => (
-                      <p key={d.text} className="flex items-center gap-2 text-[12.5px] text-muted">
+                      <p key={d.text} className="flex items-center gap-2 text-[13px] text-muted">
                         <d.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden />
                         {d.text}
                       </p>
@@ -107,7 +107,7 @@ export default async function PastoraisPage() {
         </div>
       )}
 
-      <p className="pt-5 text-xs leading-relaxed text-muted">
+      <p className="pt-5 text-[13px] leading-relaxed text-muted">
         Manifestar interesse não inscreve você na pastoral — apenas avisa o coordenador, que entra
         em contato.
       </p>

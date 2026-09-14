@@ -38,7 +38,7 @@ export function MassParticipationForm() {
           placeholder="Aprendi que..."
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
-        <p className="text-xs text-muted">
+        <p className="text-[13px] text-muted">
           Fica só com você — sua paróquia só vê quantas pessoas refletiram, nunca o que você escreveu.
         </p>
       </div>

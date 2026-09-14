@@ -100,11 +100,16 @@ export default async function DoacaoPage() {
           <Eyebrow tone="accent" className="mb-3">
             Sua oferta ajuda
           </Eyebrow>
-          {/* Três colunas em qualquer tela. No celular cada card tem cerca
-              de 105px, então o conteúdo se empilha na vertical — ícone em
-              cima, texto embaixo — em vez de dividir essa largura entre
-              ícone e frase, o que sobraria pouco para os dois. */}
-          <div className="grade-finalidades grid grid-cols-3 gap-2 sm:gap-2.5">
+          {/* Duas colunas no celular, três a partir de 640px. O conteúdo se
+              empilha na vertical — ícone em cima, texto embaixo — em vez de
+              dividir a largura do card entre ícone e frase.
+
+              Eram três colunas também no celular: cards de 105px, a frase
+              em linhas de uma ou duas palavras e o quarto card sozinho numa
+              fileira. Com o piso de 13px (ver Typography.tsx) até "Quero
+              ajudar" quebrava. Em duas, quatro finalidades fecham duas
+              fileiras cheias. */}
+          <div className="grade-finalidades grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5">
             {finalidades.map((f) => {
               const Icone = iconeDeDoacao(f.icon);
 
@@ -126,14 +131,14 @@ export default async function DoacaoPage() {
                       linha, e sem agrupar eles ficariam lado a lado com o
                       ícone, cada um espremido num terço da largura. */}
                   <div className="texto-finalidade flex min-w-0 flex-col gap-2">
-                    <p className="text-[12.5px] font-semibold leading-tight text-foreground sm:text-[14.5px]">
+                    <p className="text-[13px] font-semibold leading-tight text-foreground sm:text-[14.5px]">
                       {f.title}
                     </p>
-                    <p className="text-[11px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
+                    <p className="text-[13px] leading-snug text-muted sm:text-[13px] sm:leading-relaxed">
                       {f.description}
                     </p>
                     {f.finalidadeId && (
-                      <span className="text-[11px] font-semibold text-primary sm:text-[12px]">
+                      <span className="text-[13px] font-semibold text-primary sm:text-[13px]">
                         Quero ajudar
                       </span>
                     )}
@@ -292,7 +297,7 @@ export default async function DoacaoPage() {
                         <p className="text-[14.5px] font-medium text-foreground">{i.title}</p>
                         <Badge tone="muted">{CATEGORIAS_DE_INICIATIVA[i.category]}</Badge>
                       </div>
-                      {quando && <p className="mt-0.5 text-[12px] text-muted">{quando}</p>}
+                      {quando && <p className="mt-0.5 text-[13px] text-muted">{quando}</p>}
                     </div>
                   </div>
 

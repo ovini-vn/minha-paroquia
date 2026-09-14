@@ -69,7 +69,7 @@ export default async function ProfilePage() {
             {session.membership && (
               <div className="mt-1 flex flex-col items-center gap-1.5">
                 <Badge>{session.membership.roleName}</Badge>
-                <p className="text-xs text-muted">{session.membership.parishName}</p>
+                <p className="text-[13px] text-muted">{session.membership.parishName}</p>
               </div>
             )}
           </Card>
@@ -164,11 +164,14 @@ export default async function ProfilePage() {
                 title="Notificações"
                 subtitle="Quais avisos você quer receber"
               />
+              {/* Dizia "Aparência — Tema padrão ou cor do Tempo Litúrgico":
+                  quem procurava letra maior lia o item inteiro e não
+                  encontrava a palavra "letra". */}
               <RowLink
                 href="/eu/aparencia"
                 icon={Sparkles}
-                title="Aparência"
-                subtitle="Tema padrão ou cor do Tempo Litúrgico"
+                title="Tamanho da letra e aparência"
+                subtitle="Letra maior, tema claro ou escuro, cor do Tempo Litúrgico"
               />
             </Card>
           </section>

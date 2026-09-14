@@ -61,7 +61,7 @@ export function PainelNav({ permitidos }: { permitidos: string[] }) {
 
         return (
           <div key={grupo} className="mb-5 last:mb-0">
-            <p className="mb-1.5 px-2.5 text-[10px] font-semibold uppercase tracking-eyebrow text-muted">
+            <p className="mb-1.5 px-2.5 text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
               {grupo}
             </p>
             <ul className="flex flex-col gap-0.5">

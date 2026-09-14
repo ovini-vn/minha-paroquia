@@ -65,7 +65,7 @@ function Bloco({ bloco }: { bloco: BlocoDeLeitura }) {
         <p className="text-[13px] font-medium leading-snug text-primary">{bloco.rotulo}</p>
       )}
       {bloco.referencia && (
-        <p className="mb-1.5 text-[12.5px] text-muted">{bloco.referencia}</p>
+        <p className="mb-1.5 text-[13px] text-muted">{bloco.referencia}</p>
       )}
       <Versos linhas={bloco.linhas} />
     </section>

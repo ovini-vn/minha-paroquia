@@ -26,13 +26,24 @@ export function TabBar({ destinosComDica = [] }: { destinosComDica?: string[] })
          * parecer que ainda falta alguma coisa ali.
          */
         const temDica = !active && destinosComDica.includes(item.href);
+        /*
+         * O nome da aba tem 12px — abaixo do piso de 13px, e medido.
+         *
+         * Era 10px, o menor texto do app no lugar mais tocado. "Comunidade"
+         * é a palavra que decide: sem espaçamento entre letras ela mede 73px
+         * a 12px e 79px a 13px, e a aba tem 73px num celular de 375px. A
+         * 13px o nome invadiria o vizinho; a 12px ocupa a aba toda e, nos
+         * aparelhos menores, sobra para o lado sem encostar em "Palavra",
+         * que é curta. O espaçamento de 0.04em saiu pelo mesmo motivo: eram
+         * 5px que faziam falta à letra.
+         */
         return (
           <Link
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "relative flex flex-col items-center gap-[3px] rounded-md px-0.5 pb-[5px] pt-[7px] text-[10px] tracking-[0.04em] transition-colors",
+              "relative flex flex-col items-center gap-[3px] rounded-md px-0.5 pb-[5px] pt-[7px] text-[12px] transition-colors",
               // Sem folga (`ring-offset`) aqui: a barra é estreita e a folga
               // faria o anel de um destino encostar no vizinho.
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",

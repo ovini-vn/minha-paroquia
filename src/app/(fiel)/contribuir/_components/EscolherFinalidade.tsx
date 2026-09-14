@@ -91,7 +91,7 @@ export function EscolherFinalidade({
                 {f.nome}
               </span>
               {f.descricao && (
-                <span className="line-clamp-2 text-[12px] leading-snug text-muted">
+                <span className="line-clamp-2 text-[13px] leading-snug text-muted">
                   {f.descricao}
                 </span>
               )}
@@ -116,7 +116,7 @@ export function EscolherFinalidade({
           <span className="text-[13.5px] font-semibold leading-tight text-foreground">
             {OFERTA_ESPONTANEA}
           </span>
-          <span className="line-clamp-2 text-[12px] leading-snug text-muted">
+          <span className="line-clamp-2 text-[13px] leading-snug text-muted">
             Sem destino definido — a paróquia aplica onde for mais necessário.
           </span>
         </button>
@@ -133,7 +133,7 @@ export function EscolherFinalidade({
           placeholder="Ex.: 50,00"
           className={INPUT_CLASSES}
         />
-        <p className="text-[12px] leading-relaxed text-muted">
+        <p className="text-[13px] leading-relaxed text-muted">
           Deixe em branco para escolher o valor no aplicativo do seu banco.
         </p>
       </div>
@@ -143,7 +143,7 @@ export function EscolherFinalidade({
           {pendente ? "Gerando..." : "Gerar meu código PIX"}
         </Button>
         {!escolhida && (
-          <p className="text-[12.5px] text-muted">Escolha uma finalidade acima.</p>
+          <p className="text-[13px] text-muted">Escolha uma finalidade acima.</p>
         )}
         {estado.error && <p className="w-full text-sm text-error">{estado.error}</p>}
       </div>

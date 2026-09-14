@@ -169,7 +169,7 @@ export function GestaoDaTurma({
         </form>
 
         {catechistName && (
-          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-2.5 text-[13px] leading-relaxed text-muted">
             {catechistName} ainda não usa o aplicativo, então não consegue lançar chamada. Quando
             ela se cadastrar, troque para <strong className="text-foreground">Já usa o app</strong> —
             o histórico da turma continua o mesmo.

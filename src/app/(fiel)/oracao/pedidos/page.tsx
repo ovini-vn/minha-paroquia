@@ -65,7 +65,7 @@ export default async function PrayerRequestsPage() {
                   <p className="font-serif text-[17px] leading-relaxed text-foreground">
                     {request.contentText}
                   </p>
-                  <p className="mt-2 text-xs text-muted">
+                  <p className="mt-2 text-[13px] text-muted">
                     {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                   </p>
                 </Card>
@@ -90,7 +90,7 @@ export default async function PrayerRequestsPage() {
                 <p className="font-serif text-[17px] leading-relaxed text-foreground">
                   {request.contentText}
                 </p>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-[13px] text-muted">
                   {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                 </p>
               </Card>
@@ -115,7 +115,7 @@ export default async function PrayerRequestsPage() {
                   {request.contentText}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <p className="text-xs text-muted">{formatDateTime(request.createdAt)}</p>
+                  <p className="text-[13px] text-muted">{formatDateTime(request.createdAt)}</p>
                   {/* Sem isto, quem pediu olharia o mural, não se encontraria
                       lá e concluiria que o pedido se perdeu. */}
                   {request.visibility === "comunidade" && request.status === "pendente" && (

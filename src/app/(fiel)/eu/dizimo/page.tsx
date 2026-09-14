@@ -53,7 +53,7 @@ export default async function MyTithePage() {
         </Card>
       )}
 
-      <p className="pt-5 text-xs leading-relaxed text-muted">
+      <p className="pt-5 text-[13px] leading-relaxed text-muted">
         O app não registra nem exibe valores — apenas em quais períodos houve contribuição.
       </p>
 

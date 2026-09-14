@@ -97,7 +97,7 @@ export function ProfileForm({
             <span className="block text-[14px] font-medium text-foreground">
               Deixar a comunidade rezar por mim nas minhas datas
             </span>
-            <span className="mt-1 block text-[12.5px] leading-relaxed text-muted">
+            <span className="mt-1 block text-[13px] leading-relaxed text-muted">
               Seu nome e o dia aparecem em &ldquo;Esta semana na comunidade&rdquo;. Nos sacramentos
               a comunidade vê quantos anos completa — &ldquo;10 anos de casamento&rdquo;; no
               aniversário, a sua IDADE não aparece. Datas de dependentes nunca entram, e você pode

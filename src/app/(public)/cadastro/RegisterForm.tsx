@@ -35,7 +35,7 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
 
       {aberto ? (
         <>
-          <div className="my-5 flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-eyebrow text-muted">
+          <div className="my-5 flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
             <span className="rule-gold flex-1" />
             ou
             <span className="rule-gold flex-1" />
@@ -77,7 +77,7 @@ export function RegisterForm({ inviteCode = "" }: { inviteCode?: string }) {
         </Link>
       </p>
 
-      <p className="mt-4 text-center text-[12px] leading-relaxed text-muted">
+      <p className="mt-4 text-center text-[13px] leading-relaxed text-muted">
         Ao criar sua conta você concorda com a{" "}
         <Link href="/privacidade" className="text-primary underline underline-offset-2">
           Política de Privacidade

@@ -83,7 +83,7 @@ export default async function SacerdotesPage() {
                   {/* O que ele atende vem junto do cargo, e não numa
                       tarja à parte: é a mesma pergunta — "quem é este e o
                       que dá para pedir a ele?". */}
-                  <span className="mt-0.5 block text-[12.5px] text-muted">
+                  <span className="mt-0.5 block text-[13px] text-muted">
                     {priest.title}
                     {oQueAtende(priest) ? ` · ${oQueAtende(priest)}` : ""}
                   </span>

@@ -81,7 +81,7 @@ export default async function AppointmentsPage() {
                     <p className="text-[14.5px] font-medium text-foreground">
                       {APPOINTMENT_CATEGORY_LABELS[appointment.category]}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
+                    <p className="mt-0.5 text-[13px] text-muted">
                       {nomeDoSacerdote(appointment.priestProfile)} ·{" "}
                       {formatDateTime(appointment.scheduledAt)}
                     </p>
@@ -133,7 +133,7 @@ export default async function AppointmentsPage() {
                       <p className="text-[14.5px] font-medium text-foreground">
                         {appointment.fiel.fullName}
                       </p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">
+                      <p className="mt-0.5 text-[13px] text-muted">
                         {APPOINTMENT_CATEGORY_LABELS[appointment.category]} ·{" "}
                         {formatDateTime(appointment.scheduledAt)}
                       </p>

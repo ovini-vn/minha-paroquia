@@ -2,6 +2,29 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
 
+/*
+ * O PISO DE TAMANHO DA LETRA, que vale para o app do fiel inteiro.
+ *
+ *   - Frase, nome, data, legenda, botão: no mínimo 13px.
+ *   - Rótulo em CAIXA ALTA com espaçamento (este Eyebrow, o Badge, o
+ *     "Paróquia" do cabeçalho): no mínimo 11px.
+ *
+ * Dois pisos, e não um, porque maiúscula rende mais por pixel. Na Inter a
+ * maiúscula tem 73% da altura da letra e a minúscula 55%: a 11px, "TEMPO
+ * COMUM" tem 8px de altura; a 13px, "tempo comum" tem 7. Subir os rótulos
+ * para 13px os deixaria MAIORES que o texto que eles nomeiam, e a hierarquia
+ * do desenho se perderia.
+ *
+ * Antes não havia piso: medido a 375px em 27 telas, todas tinham de 12 a 80
+ * textos abaixo de 13px — legenda a 11px, data a 12px, o nome das abas a
+ * 10px. O público da paróquia é o que mais sofre com isso, e o ajuste de
+ * letra em Eu fica para quem sabe que ele existe.
+ *
+ * As duas exceções medidas, cada uma com o motivo no próprio lugar: o nome
+ * das abas (12px, TabBar.tsx) e o número dentro da bolinha do sininho
+ * (SiteHeader.tsx).
+ */
+
 /**
  * Rótulo de categoria — pequeno, caixa alta, com letter-spacing. É o único
  * lugar onde usamos uppercase (briefing, seção 5): nunca em texto corrido.
@@ -18,7 +41,7 @@ export function Eyebrow({
   return (
     <p
       className={cn(
-        "text-[10.5px] font-semibold uppercase tracking-eyebrow",
+        "text-[11px] font-semibold uppercase tracking-eyebrow",
         tone === "accent" ? "text-primary" : "text-muted",
         className,
       )}
@@ -52,7 +75,7 @@ export function SectionTitle({
       {actionLabel && actionHref && (
         <Link
           href={actionHref}
-          className="shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+          className="shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
         >
           {actionLabel}
         </Link>
@@ -103,7 +126,7 @@ export function EyebrowComAtalho({
       <Eyebrow tone="accent">{titulo}</Eyebrow>
       <a
         href={`#${alvo}`}
-        className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         {rotulo}
       </a>

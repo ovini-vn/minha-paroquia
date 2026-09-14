@@ -90,7 +90,7 @@ export function SacramentForm({ priests }: { priests: Priest[] }) {
         />
       </div>
 
-      <p className="text-xs text-muted">
+      <p className="text-[13px] text-muted">
         Este registro é pessoal — se sua paróquia guarda um registro oficial, ela pode validar depois.
       </p>
 

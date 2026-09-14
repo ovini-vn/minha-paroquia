@@ -32,18 +32,18 @@ export function SiteFooter({
               <p className="font-serif text-lg font-semibold leading-none text-foreground">
                 Minha Paróquia
               </p>
-              <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
                 Caminhar · Pertencer · Servir
               </p>
             </div>
           </div>
           <p className="mt-4 text-[13.5px] font-medium text-foreground">{parishName}</p>
-          {city && <p className="text-[12.5px] text-muted">{city}</p>}
-          {contato && <p className="mt-0.5 text-[12.5px] text-muted">{contato}</p>}
+          {city && <p className="text-[13px] text-muted">{city}</p>}
+          {contato && <p className="mt-0.5 text-[13px] text-muted">{contato}</p>}
         </div>
 
         <nav aria-label="Rodapé">
-          <p className="mb-3 text-[10.5px] font-semibold uppercase tracking-eyebrow text-muted">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
             Navegar
           </p>
           <ul className="flex flex-col gap-2">
@@ -62,7 +62,7 @@ export function SiteFooter({
       </div>
 
       <div className="rule-gold" />
-      <p className="mx-auto w-full max-w-6xl px-8 py-5 text-xs text-muted">
+      <p className="mx-auto w-full max-w-6xl px-8 py-5 text-[13px] text-muted">
         Minha Paróquia — um lugar digital da sua comunidade.
       </p>
     </footer>

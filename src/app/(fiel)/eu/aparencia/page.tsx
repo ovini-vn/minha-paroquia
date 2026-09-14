@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 
-export const metadata: Metadata = { title: "Aparência" };
+export const metadata: Metadata = { title: "Tamanho da letra e aparência" };
 
 export default async function AppearancePage() {
   const session = await requireSessionForPage();
@@ -23,38 +23,22 @@ export default async function AppearancePage() {
   return (
     <div className="flex flex-col lg:max-w-[42rem] gap-4">
       <PageHeader
-        title="Aparência"
-        description="Tamanho da letra, cor da marca ou do Tempo Litúrgico, e tema claro ou escuro."
+        title="Tamanho da letra e aparência"
+        description="Letra maior, desenho da letra, tema claro ou escuro e a cor do Tempo Litúrgico."
       />
 
-      <Card>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <Eyebrow tone="accent">Tempo litúrgico de hoje</Eyebrow>
-          <Badge tone="gold">{season.name}</Badge>
-        </div>
-        {/* Cada amostra carrega seu próprio data-season: a cor sai do CSS,
-            nunca de um valor repetido aqui. */}
-        <div className="flex flex-wrap gap-2">
-          {LITURGICAL_SEASONS.map((code) => (
-            <div
-              key={code}
-              data-season={code}
-              className="flex items-center gap-2 rounded-full border border-border py-1.5 pl-1.5 pr-3"
-            >
-              <span className="h-5 w-5 rounded-full bg-primary" aria-hidden />
-              <span
-                className={
-                  code === season.season
-                    ? "text-xs font-semibold text-foreground"
-                    : "text-xs text-muted"
-                }
-              >
-                {SEASON_NAMES[code]}
-              </span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {/*
+        O TAMANHO DA LETRA VEM PRIMEIRO, e dá nome à tela.
+
+        Quem chega aqui, na maioria, veio aumentar a letra. A tela se
+        chamava só "Aparência", o item em Eu dizia "Tema padrão ou cor do
+        Tempo Litúrgico", e o primeiro cartão era a amostra das cores do
+        ano litúrgico — o ajuste que mais importa para o público da
+        paróquia ficava escondido atrás de três nomes que não falavam dele.
+
+        As cores do Tempo Litúrgico desceram para junto de "Cor do tema",
+        que é a escolha que elas ilustram.
+      */}
 
       <Card>
         <p className="mb-1 font-serif text-xl font-semibold text-foreground">Tamanho da letra</p>
@@ -90,7 +74,7 @@ export default async function AppearancePage() {
                 <span className={`${option.tamanho} font-serif font-semibold leading-none`}>
                   {option.label}
                 </span>
-                <span className="text-[11px] opacity-80">{option.desc}</span>
+                <span className="text-[13px] opacity-80">{option.desc}</span>
               </button>
             );
           })}
@@ -138,7 +122,7 @@ export default async function AppearancePage() {
                 <span className={`${option.classe} text-[19px] font-semibold leading-none`}>
                   Il1 lha
                 </span>
-                <span className="text-[11px] opacity-80">{option.label}</span>
+                <span className="text-[13px] opacity-80">{option.label}</span>
               </button>
             );
           })}
@@ -182,6 +166,35 @@ export default async function AppearancePage() {
       </Card>
 
       <Card>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <Eyebrow tone="accent">Tempo litúrgico de hoje</Eyebrow>
+          <Badge tone="gold">{season.name}</Badge>
+        </div>
+        {/* Cada amostra carrega seu próprio data-season: a cor sai do CSS,
+            nunca de um valor repetido aqui. */}
+        <div className="flex flex-wrap gap-2">
+          {LITURGICAL_SEASONS.map((code) => (
+            <div
+              key={code}
+              data-season={code}
+              className="flex items-center gap-2 rounded-full border border-border py-1.5 pl-1.5 pr-3"
+            >
+              <span className="h-5 w-5 rounded-full bg-primary" aria-hidden />
+              <span
+                className={
+                  code === season.season
+                    ? "text-[13px] font-semibold text-foreground"
+                    : "text-[13px] text-muted"
+                }
+              >
+                {SEASON_NAMES[code]}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
         <p className="mb-3 font-serif text-xl font-semibold text-foreground">Cor do tema</p>
         <form action={setThemePreferenceAction} className="flex flex-col gap-3">
           <label className="flex items-start gap-3 text-sm text-foreground">
@@ -194,7 +207,7 @@ export default async function AppearancePage() {
             />
             <span>
               <span className="font-medium">Tema padrão</span>
-              <span className="block text-xs text-muted">Violeta e dourado, sempre a mesma cor.</span>
+              <span className="block text-[13px] text-muted">Violeta e dourado, sempre a mesma cor.</span>
             </span>
           </label>
           <label className="flex items-start gap-3 text-sm text-foreground">
@@ -207,7 +220,7 @@ export default async function AppearancePage() {
             />
             <span>
               <span className="font-medium">Usar cor do Tempo Litúrgico</span>
-              <span className="block text-xs text-muted">
+              <span className="block text-[13px] text-muted">
                 A atmosfera do app acompanha o calendário da Igreja — hoje seria {season.name}.
               </span>
             </span>

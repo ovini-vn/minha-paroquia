@@ -198,7 +198,7 @@ export default async function ComunidadePage() {
       )}
 
       {(parish?.address || parish?.phone) && (
-        <p className="pt-4 text-[12.5px] text-muted">
+        <p className="pt-4 text-[13px] text-muted">
           {[parish?.address, parish?.phone].filter(Boolean).join(" · ")}
         </p>
       )}
@@ -233,7 +233,7 @@ export default async function ComunidadePage() {
                   <p className="text-[14.5px] font-medium text-foreground">{aviso.title}</p>
                   {/* Duas linhas e para: aqui é vitrine. O texto inteiro
                       está em /avisos, no "Ver todos" acima. */}
-                  <p className="mt-0.5 line-clamp-2 text-[12.5px] text-muted">{aviso.body}</p>
+                  <p className="mt-0.5 line-clamp-2 text-[13px] text-muted">{aviso.body}</p>
                 </div>
               </div>
             ))}
@@ -314,7 +314,7 @@ export default async function ComunidadePage() {
                 <Avatar name={nomeDoSacerdote(priest)} size="sm" />
                 <div className="min-w-0">
                   <p className="text-[14.5px] font-medium text-foreground">{nomeDoSacerdote(priest)}</p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">{priest.title}</p>
+                  <p className="mt-0.5 text-[13px] text-muted">{priest.title}</p>
                 </div>
               </Link>
             ))}

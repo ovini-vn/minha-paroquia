@@ -187,7 +187,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
               )}
 
               {andamento?.itinerario && andamento.previstos > 0 && (
-                <p className="mb-3 text-[12.5px] text-muted">
+                <p className="mb-3 text-[13px] text-muted">
                   Itinerário{" "}
                   <span className="font-medium text-foreground">{andamento.itinerario.nome}</span> —{" "}
                   {andamento.dados} de {andamento.previstos} encontros previstos já dados.
@@ -216,14 +216,14 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                         <p className="text-[14.5px] font-medium text-foreground">
                           {s.tema?.titulo || s.topic || "Encontro"}
                         </p>
-                        <p className="mt-0.5 text-[12.5px] text-muted">
+                        <p className="mt-0.5 text-[13px] text-muted">
                           {formatDateOnly(s.date)}
                           {/* Sem conteúdo é a informação que a catequista procura
                               na lista — dizer só a data a faria abrir uma a uma. */}
                           {!s.tema && !s.topic?.trim() && " · sem conteúdo lançado"}
                         </p>
                       </div>
-                      <span className="text-[12.5px] text-muted">Chamada →</span>
+                      <span className="text-[13px] text-muted">Chamada →</span>
                     </Link>
                     <EditarEncontroForm
                       groupId={id}
@@ -264,7 +264,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                           >
                             {enrollment.familyMember.fullName}
                           </Link>
-                          <p className="mt-0.5 text-[12.5px] text-muted">
+                          <p className="mt-0.5 text-[13px] text-muted">
                             {enrollment.familyMember.responsible
                               ? `Responsável: ${enrollment.familyMember.responsible.fullName}`
                               : enrollment.familyMember.guardianName
@@ -333,7 +333,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="text-[14px] font-medium text-foreground">{rito.nome}</p>
-                            <p className="mt-0.5 text-[12.5px] text-muted">
+                            <p className="mt-0.5 text-[13px] text-muted">
                               {rito.completedAt
                                 ? `Realizado · ${rito._count.participacoes} ${
                                     rito._count.participacoes === 1 ? "participou" : "participaram"
@@ -343,7 +343,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                                   : "Sem data marcada"}
                             </p>
                           </div>
-                          <span className="text-[12.5px] text-muted">
+                          <span className="text-[13px] text-muted">
                             {rito.completedAt ? "Corrigir →" : "Marcar quem participou →"}
                           </span>
                         </Link>
@@ -436,7 +436,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                   <Button type="submit">Salvar</Button>
                 </form>
                 {itinerarios.length === 0 && (
-                  <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+                  <p className="mt-3 text-[13px] leading-relaxed text-muted">
                     Nenhum itinerário cadastrado ainda. Crie o primeiro em{" "}
                     <Link href="/catequese/itinerarios" className="font-medium text-primary hover:underline">
                       Itinerários

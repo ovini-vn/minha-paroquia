@@ -82,7 +82,7 @@ export default async function CapituloPage({
             // `id` para o link da busca cair no versículo certo, e
             // `scroll-mt` para ele não ficar debaixo do cabeçalho fixo.
             <p key={v.number} id={`v${v.number}`} className="mb-3 scroll-mt-24">
-              <span className="mr-1.5 align-super text-[11px] font-sans font-semibold text-primary">
+              <span className="mr-1.5 align-super text-[13px] font-sans font-semibold text-primary">
                 {v.number}
               </span>
               {v.text}
@@ -117,7 +117,7 @@ export default async function CapituloPage({
         )}
       </nav>
 
-      <p className="pt-6 text-[12px] leading-relaxed text-muted">
+      <p className="pt-6 text-[13px] leading-relaxed text-muted">
         {TRADUCAO.nome} · {TRADUCAO.detalhe}.
       </p>
 

@@ -73,7 +73,7 @@ export default async function LivroPage({ params }: { params: Promise<{ livro: s
         </div>
       </section>
 
-      <p className="pt-7 text-[12px] leading-relaxed text-muted">
+      <p className="pt-7 text-[13px] leading-relaxed text-muted">
         {TRADUCAO.nome} · {TRADUCAO.detalhe}.
       </p>
 

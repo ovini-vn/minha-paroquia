@@ -60,7 +60,7 @@ export function PalavraDoDiaCard({
         <LeiturasDoDia blocos={palavra.blocos} />
 
         {/* O crédito acompanha o conteúdo em qualquer lugar onde ele apareça. */}
-        <p className="mt-2 text-[11px] text-muted">Vatican News · Dicastério para a Comunicação</p>
+        <p className="mt-2 text-[13px] text-muted">Vatican News · Dicastério para a Comunicação</p>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export function PalavraDoDiaCard({
           Se um dia houver fonte, volta — SANTO_DO_DIA_URL segue exportado
           pelo serviço. */}
 
-      <p className="mt-3 text-[11px] leading-relaxed text-muted">
+      <p className="mt-3 text-[13px] leading-relaxed text-muted">
         Conteúdo do Vatican News — Dicastério para a Comunicação. Os links abrem o site oficial.
       </p>
     </Card>

@@ -106,7 +106,7 @@ export default async function ContribuirPage({
                         <p className="text-[14.5px] font-medium text-foreground">
                           {nomeDaFinalidade(c.finalidade)}
                         </p>
-                        <p className="text-[12.5px] text-muted">{formatDateOnly(c.recebidaEm)}</p>
+                        <p className="text-[13px] text-muted">{formatDateOnly(c.recebidaEm)}</p>
                       </div>
                       <p className="shrink-0 font-mono text-[15px] font-semibold text-foreground">
                         {emReais(c.centavos)}
@@ -119,7 +119,7 @@ export default async function ContribuirPage({
                   ofertou, a pergunta é se a paróquia recebeu — e uma oferta
                   só aparece nesta lista depois que recebeu.
                 */}
-                <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
                   A lista mostra o que a paróquia já registrou como recebido. Ofertas em dinheiro
                   ou envelope aparecem quando a secretaria as lança.
                 </p>
@@ -146,7 +146,7 @@ export default async function ContribuirPage({
                     </LinkButton>
                   ))}
                 </div>
-                <p className="mt-3 text-[12px] leading-relaxed text-muted">
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
                   Um código gerado não compromete você a nada. Se não usar, ele simplesmente deixa
                   de aparecer aqui.
                 </p>

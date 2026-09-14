@@ -88,7 +88,7 @@ export default async function CaminhadaPage() {
                           <p className="font-serif text-lg font-semibold leading-tight text-foreground">
                             {SACRAMENT_TYPE_LABELS[s.type]}
                           </p>
-                          <p className="mt-0.5 text-[12.5px] text-muted">
+                          <p className="mt-0.5 text-[13px] text-muted">
                             {formatDateOnly(s.date)}
                             {s.location ? ` · ${s.location}` : ""}
                             {s.priestProfile ? ` · ${nomeDoSacerdote(s.priestProfile)}` : ""}

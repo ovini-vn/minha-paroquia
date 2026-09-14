@@ -140,7 +140,7 @@ export default async function NotificationsPage({
                       className="flex items-center gap-2"
                     >
                       <input type="hidden" name="endpoint" value={aparelho.endpoint} />
-                      <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted">
+                      <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
                         {descreverAparelho(aparelho.userAgent)}
                       </span>
                       <Button type="submit" variant="ghost" size="sm">
@@ -223,7 +223,7 @@ export default async function NotificationsPage({
                         />
                       )}
                     </span>
-                    <span className="mt-0.5 block text-[12.5px] leading-relaxed text-muted">
+                    <span className="mt-0.5 block text-[13px] leading-relaxed text-muted">
                       {notification.body}
                     </span>
                     <span className="mt-1.5 block text-[11px] uppercase tracking-[0.04em] text-muted">
@@ -300,7 +300,7 @@ export default async function NotificationsPage({
         a janela, não caminhar de 30 em 30 até o fim.
       */}
       {truncado && (
-        <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">
           Mostrando as {TETO_DE_NOTIFICACOES} mais recentes deste período — há mais atrás delas.
           Escolha um período menor para ver tudo o que cabe nele.
         </p>
@@ -330,7 +330,7 @@ export default async function NotificationsPage({
                   {/* Desligar sem saber o que se perde faz a pessoa desligar
                       tudo ou nada. A frase diz o que cala. */}
                   {NOTIFICATION_CATEGORY_HINTS[preference.category] && (
-                    <p className="mt-0.5 text-[12.5px] leading-relaxed text-muted">
+                    <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
                       {NOTIFICATION_CATEGORY_HINTS[preference.category]}
                     </p>
                   )}

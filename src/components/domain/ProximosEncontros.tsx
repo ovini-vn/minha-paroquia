@@ -71,7 +71,7 @@ export function ProximosEncontros({ encontros }: { encontros: Encontro[] }) {
             </span>
             <div className="min-w-0">
               <p className="text-[14.5px] font-medium text-foreground">{item.label}</p>
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <p className="mt-0.5 text-[13px] text-muted">
                 {item.semHora ? formatDateOnly(item.startsAt) : formatDateTime(item.startsAt)}
                 {item.location ? ` · ${item.location}` : ""}
               </p>

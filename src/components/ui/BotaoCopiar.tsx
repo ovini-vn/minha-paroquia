@@ -109,7 +109,7 @@ export function BotaoCopiar({
       </p>
 
       {estado === "falhou" && (
-        <p className="text-[12px] leading-relaxed text-muted">
+        <p className="text-[13px] leading-relaxed text-muted">
           Não foi possível copiar automaticamente. Selecione o texto acima e copie à mão.
         </p>
       )}

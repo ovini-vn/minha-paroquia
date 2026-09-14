@@ -106,7 +106,7 @@ export default async function ContatoPage() {
                 </p>
                 <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">
                   {horarios.map((h) => (
-                    <p key={h.dia} className="flex justify-between gap-3 text-[12.5px] text-muted">
+                    <p key={h.dia} className="flex justify-between gap-3 text-[13px] text-muted">
                       <span>{h.dia}</span>
                       <span className="text-foreground">{h.horarios}</span>
                     </p>
@@ -135,7 +135,7 @@ export default async function ContatoPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[14.5px] font-medium text-foreground">Ligar</span>
-                  <span className="mt-0.5 block text-[12.5px] text-muted">{parish.phone}</span>
+                  <span className="mt-0.5 block text-[13px] text-muted">{parish.phone}</span>
                 </span>
               </a>
             )}
@@ -156,7 +156,7 @@ export default async function ContatoPage() {
                   <span className="block text-[14.5px] font-medium text-foreground">
                     Enviar mensagem
                   </span>
-                  <span className="mt-0.5 block text-[12.5px] text-muted">{parish.whatsapp}</span>
+                  <span className="mt-0.5 block text-[13px] text-muted">{parish.whatsapp}</span>
                 </span>
               </a>
             )}
@@ -175,7 +175,7 @@ export default async function ContatoPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[14.5px] font-medium text-foreground">Como chegar</span>
-                  <span className="mt-0.5 block text-[12.5px] text-muted">{endereco}</span>
+                  <span className="mt-0.5 block text-[13px] text-muted">{endereco}</span>
                 </span>
               </a>
             )}
@@ -217,7 +217,7 @@ export default async function ContatoPage() {
                 className="flex flex-1 flex-col items-center gap-2 rounded-lg border border-border bg-surface px-3 py-5 transition-colors hover:border-primary"
               >
                 <IconeInstagram className="h-9 w-9 shrink-0 text-[#C13584]" />
-                <span className="text-[12px] font-medium text-muted">Instagram</span>
+                <span className="text-[13px] font-medium text-muted">Instagram</span>
               </LinkRede>
             )}
             {parish.facebookUrl && (
@@ -227,7 +227,7 @@ export default async function ContatoPage() {
                 className="flex flex-1 flex-col items-center gap-2 rounded-lg border border-border bg-surface px-3 py-5 transition-colors hover:border-primary"
               >
                 <IconeFacebook className="h-9 w-9 shrink-0 text-[#1877F2]" />
-                <span className="text-[12px] font-medium text-muted">Facebook</span>
+                <span className="text-[13px] font-medium text-muted">Facebook</span>
               </LinkRede>
             )}
           </div>

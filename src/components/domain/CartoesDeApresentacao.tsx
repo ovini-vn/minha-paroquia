@@ -80,7 +80,7 @@ export function CartoesDeApresentacao({
               <p className="text-[13.5px] font-semibold leading-tight text-foreground">
                 {cartao.titulo}
               </p>
-              <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-muted">
+              <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-muted">
                 {cartao.legenda}
               </p>
             </div>

@@ -120,7 +120,7 @@ export default async function AvailabilityPage() {
                   <p className="text-[14.5px] font-medium text-foreground">
                     {WEEKDAY_LABELS[window.weekday]} · {window.startTime} às {window.endTime}
                   </p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
+                  <p className="mt-0.5 text-[13px] text-muted">
                     {AVAILABILITY_TYPE_LABELS[window.type]} · horários de {window.slotMinutes} min
                   </p>
                 </div>

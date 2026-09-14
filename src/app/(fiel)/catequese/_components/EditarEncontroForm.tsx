@@ -44,7 +44,7 @@ export function EditarEncontroForm({
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         <Pencil className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
         Corrigir
@@ -119,7 +119,7 @@ export function EditarEncontroForm({
           type="submit"
           name="apagar"
           value="sim"
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] text-muted transition-colors hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-muted transition-colors hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
           Apagar encontro e a chamada dele

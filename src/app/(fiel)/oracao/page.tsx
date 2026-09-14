@@ -74,7 +74,7 @@ export default async function OracaoPage() {
         <section className="relative overflow-hidden bg-wash px-[18px] pb-6 pt-7 text-white">
           <Arch className="pointer-events-none absolute inset-0 h-full w-full opacity-45" />
           <div className="relative">
-            <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-eyebrow text-gold-soft">
+            <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-eyebrow text-gold-soft">
               <Sparkles className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
               {context.seasonName}
             </p>
@@ -108,7 +108,7 @@ export default async function OracaoPage() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-serif text-[19px] font-semibold leading-tight">Bíblia</span>
-          <span className="mt-0.5 block text-[12.5px] leading-snug text-white/80">
+          <span className="mt-0.5 block text-[13px] leading-snug text-white/80">
             Os 73 livros, para ler e procurar
           </span>
         </span>
@@ -137,7 +137,7 @@ export default async function OracaoPage() {
               <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
               <div>
                 <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
-                <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
+                <p className="text-[13px] text-muted">{formatDateTime(latestPost.publishedAt)}</p>
               </div>
             </div>
             <p className="mt-3 font-serif text-[18px] leading-[1.62] text-foreground">
@@ -212,7 +212,7 @@ export default async function OracaoPage() {
                 <p className="font-serif text-[17px] leading-relaxed text-foreground">
                   {request.contentText}
                 </p>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-[13px] text-muted">
                   {request.requesterName ?? "Anônimo"} · {formatDateTime(request.createdAt)}
                 </p>
               </Card>

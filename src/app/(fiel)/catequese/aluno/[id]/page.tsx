@@ -150,10 +150,10 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                 <span
                   className={
                     passo.estado === "concluido"
-                      ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary-tint text-[12px] font-semibold text-primary"
+                      ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary-tint text-[13px] font-semibold text-primary"
                       : passo.estado === "atual"
-                        ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary text-[12px] font-semibold text-white dark:bg-primary-light"
-                        : "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-border-strong text-[12px] font-semibold text-muted"
+                        ? "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full bg-primary text-[13px] font-semibold text-white dark:bg-primary-light"
+                        : "grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full border border-border-strong text-[13px] font-semibold text-muted"
                   }
                 >
                   {passo.estado === "concluido" ? (
@@ -173,7 +173,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                   >
                     {passo.titulo}
                   </p>
-                  <p className="mt-0.5 text-[12px] text-muted">
+                  <p className="mt-0.5 text-[13px] text-muted">
                     {passo.estado === "atual" && "É o próximo"}
                     {passo.estado === "previsto" && "Ainda vem"}
                     {passo.estado === "concluido" && passo.data && formatDateOnly(passo.data)}
@@ -198,7 +198,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
           <Stat label="Missas" value={String(resumo.missas)} />
           <Stat label="Ritos" value={String(ritos.filter((r) => r.completedAt).length)} />
         </div>
-        <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+        <p className="mt-2.5 text-[13px] leading-relaxed text-muted">
           Os encontros contam só os que já aconteceram — os marcados para frente não entram no
           total.
         </p>
@@ -227,7 +227,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                       <p className="text-[14.5px] font-medium text-foreground">
                         {encontro.tema?.titulo || encontro.topic || "Encontro"}
                       </p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">{formatDateOnly(encontro.date)}</p>
+                      <p className="mt-0.5 text-[13px] text-muted">{formatDateOnly(encontro.date)}</p>
                     </div>
                     {futuro ? (
                       <Badge tone="muted">A realizar</Badge>
@@ -312,7 +312,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium text-foreground">{rito.name}</p>
                     {rito.scheduledAt && (
-                      <p className="mt-0.5 text-[12.5px] text-muted">
+                      <p className="mt-0.5 text-[13px] text-muted">
                         {formatDateOnly(rito.scheduledAt)}
                       </p>
                     )}
@@ -356,7 +356,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                     <p className="text-[14px] font-medium text-foreground">
                       {SACRAMENT_TYPE_LABELS[sac.type]}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
+                    <p className="mt-0.5 text-[13px] text-muted">
                       {formatDateOnly(sac.date)}
                       {sac.location ? ` · ${sac.location}` : ""}
                       {sac.note ? ` · ${sac.note}` : ""}
@@ -366,7 +366,7 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
                       está quando a família pede o documento. */}
                   <Link
                     href={`/painel/sacramentos/${sac.id}/certidao`}
-                    className="shrink-0 text-[12.5px] font-medium text-primary hover:underline"
+                    className="shrink-0 text-[13px] font-medium text-primary hover:underline"
                   >
                     Certidão →
                   </Link>

@@ -27,7 +27,7 @@ export function RowLink({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[14.5px] font-medium text-foreground">{title}</span>
-        {subtitle && <span className="mt-0.5 block text-[12.5px] text-muted">{subtitle}</span>}
+        {subtitle && <span className="mt-0.5 block text-[13px] text-muted">{subtitle}</span>}
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
     </Link>

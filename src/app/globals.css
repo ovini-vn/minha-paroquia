@@ -422,14 +422,39 @@ body {
 /*
  * A barra de abas tem cinco destinos e não pode virar quatro. "Comunidade"
  * é a palavra mais longa e é ela que decide: no G o rótulo encolhe um
- * pouco em relação ao resto, e mesmo assim sai MAIOR do que é hoje no P
- * (10px x 1,5 = 15px viraria 13,5px com este ajuste — ainda acima dos 10px
- * de agora). Sem quebra de linha, para a barra não mudar de altura.
+ * pouco em relação ao resto, e mesmo assim sai MAIOR do que no P
+ * (9px x 1,5 = 13,5px — acima dos 12px do P). Sem quebra de linha, para a
+ * barra não mudar de altura.
  */
 :root[data-font-scale="g"] .rotulo-de-aba {
   font-size: 9px;
   white-space: nowrap;
   letter-spacing: 0;
+}
+
+/*
+ * O M só encolhe a aba em celular com menos de 360px.
+ *
+ * Com o nome da aba a 12px (TabBar.tsx), o M multiplica para 13,8px, e a
+ * 320px de largura "Comunidade" passava 4px por cima de "Palavra" — medido.
+ * A 360px e a 375px sobram de 4 a 7px, e ali o M continua inteiro.
+ *
+ * A consulta de mídia olha a largura do APARELHO, que o `zoom` do M não
+ * altera; por isso ela separa exatamente os telefones pequenos. 10,5px x
+ * 1,15 = 12,1px, que ainda não fica abaixo dos 12px do P.
+ *
+ * O G tinha o mesmo defeito antes de o P mudar — 3px de sobreposição a
+ * 320px, com os 9px de cima. Ali ele desce a 8px, que x 1,5 dá os mesmos
+ * 12px do P: nunca menor que o padrão, e sem encostar no vizinho.
+ */
+@media (max-width: 359px) {
+  :root[data-font-scale="m"] .rotulo-de-aba {
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+  :root[data-font-scale="g"] .rotulo-de-aba {
+    font-size: 8px;
+  }
 }
 
 /*

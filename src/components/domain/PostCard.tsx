@@ -48,7 +48,7 @@ export function PostCard({
         <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
         <div className="min-w-0">
           <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
-          <p className="text-xs text-muted">
+          <p className="text-[13px] text-muted">
             {assinatura.titulo} · {formatDateTime(post.publishedAt)}
           </p>
         </div>
@@ -84,7 +84,7 @@ export function PostCard({
           href={post.mediaUrl ?? "#"}
           target="_blank"
           rel="noreferrer"
-          className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/45 px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:border-gold"
+          className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/45 px-3.5 py-2 text-[13px] font-semibold text-foreground transition-colors hover:border-gold"
         >
           {media && <media.icon className="h-4 w-4" strokeWidth={1.5} aria-hidden />}
           {media?.label ?? "Abrir"}

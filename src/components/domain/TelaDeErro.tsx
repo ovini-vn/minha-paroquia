@@ -79,10 +79,10 @@ export function TelaDeErro({
       </div>
 
       {digest && (
-        <p className="mt-7 text-[11.5px] leading-relaxed text-muted">
+        <p className="mt-7 text-[13px] leading-relaxed text-muted">
           Se acontecer de novo, avise a secretaria e informe este código:
           <br />
-          <code className="mt-1 inline-block rounded bg-sunken px-2 py-1 font-mono text-[11px] text-foreground">
+          <code className="mt-1 inline-block rounded bg-sunken px-2 py-1 font-mono text-[13px] text-foreground">
             {digest}
           </code>
         </p>

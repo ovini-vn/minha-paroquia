@@ -40,7 +40,7 @@ const VARIANT_CLASSES: Record<Variant, string> = {
 
 const SIZE_CLASSES: Record<Size, string> = {
   md: "px-5 py-3 text-sm",
-  sm: "px-3.5 py-2 text-xs",
+  sm: "px-3.5 py-2 text-[13px]",
 };
 
 /*

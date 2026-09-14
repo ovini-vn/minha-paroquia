@@ -110,7 +110,7 @@ export function Passos({
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
               Se a letra estiver pequena, aumente agora — as telas seguintes já vêm no tamanho que
-              você escolher. Dá para mudar quando quiser, em Eu › Aparência.
+              você escolher. Dá para mudar quando quiser, em Eu › Tamanho da letra e aparência.
             </p>
 
             <div className="mt-6">
@@ -148,7 +148,7 @@ export function Passos({
               <PushToggle vapidPublicKey={vapidPublicKey} />
             </div>
 
-            <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
+            <p className="mt-4 text-[13px] leading-relaxed text-muted">
               Você escolhe depois quais avisos quer receber, em Eu → Notificações.
             </p>
 
@@ -204,7 +204,7 @@ export function Passos({
                             {pastoral.name}
                           </span>
                           {pastoral.description && (
-                            <span className="mt-0.5 block text-[12.5px] leading-relaxed text-muted">
+                            <span className="mt-0.5 block text-[13px] leading-relaxed text-muted">
                               {pastoral.description}
                             </span>
                           )}
@@ -226,7 +226,7 @@ export function Passos({
                 {pendente ? "Entrando…" : escolhida ? "Entrar na comunidade" : "Entrar"}
               </Button>
               {escolhida && (
-                <p className="text-center text-[12.5px] text-muted">
+                <p className="text-center text-[13px] text-muted">
                   Ninguém é inscrito automaticamente — é só um aviso ao coordenador.
                 </p>
               )}

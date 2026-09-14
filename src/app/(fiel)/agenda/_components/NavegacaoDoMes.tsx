@@ -79,8 +79,8 @@ export function NavegacaoDoMes({ estado }: { estado: EstadoDaAgenda }) {
             aria-current={vista === id ? "true" : undefined}
             className={
               vista === id
-                ? "inline-flex items-center gap-1.5 bg-primary px-3.5 py-2 text-[12.5px] font-semibold text-white dark:bg-primary-light"
-                : "inline-flex items-center gap-1.5 bg-surface px-3.5 py-2 text-[12.5px] font-semibold text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                ? "inline-flex items-center gap-1.5 bg-primary px-3.5 py-2 text-[13px] font-semibold text-white dark:bg-primary-light"
+                : "inline-flex items-center gap-1.5 bg-surface px-3.5 py-2 text-[13px] font-semibold text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             }
           >
             <Icone className="h-4 w-4" strokeWidth={1.7} aria-hidden />

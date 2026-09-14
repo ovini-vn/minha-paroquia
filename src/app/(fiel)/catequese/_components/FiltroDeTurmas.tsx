@@ -43,7 +43,7 @@ export function FiltroDeTurmas({
   quantos: Record<SituacaoDeTurmas, number>;
 }) {
   const base =
-    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+    "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[13px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
   const aceso = `${base} border-primary bg-primary-tint font-semibold text-primary`;
   const apagado = `${base} border-border text-muted hover:border-primary hover:text-foreground`;
 

@@ -61,7 +61,7 @@ export function LoginForm({ inviteCode }: { inviteCode: string | null }) {
 
       {aberto && (
         <>
-          <div className="my-5 flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-eyebrow text-muted">
+          <div className="my-5 flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
             <span className="rule-gold flex-1" />
             ou
             <span className="rule-gold flex-1" />

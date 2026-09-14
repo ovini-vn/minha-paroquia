@@ -51,7 +51,7 @@ export function PostForm() {
           }
           className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
         />
-        <p className="text-xs text-muted">
+        <p className="text-[13px] text-muted">
           É o que a comunidade lê no aviso do celular. Sem título, o aviso mostra o começo da
           mensagem — e num {mediaType === "texto" ? "texto" : mediaType === "audio" ? "áudio" : "vídeo"}
           {mediaType === "texto" ? " isso costuma bastar." : " ele só consegue dizer que chegou um novo."}
@@ -83,7 +83,7 @@ export function PostForm() {
             placeholder="https://..."
             className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground"
           />
-          <p className="text-xs text-muted">
+          <p className="text-[13px] text-muted">
             Cole o link de onde o {mediaType === "audio" ? "áudio" : "vídeo"} já está hospedado.
           </p>
         </div>

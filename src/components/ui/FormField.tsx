@@ -55,8 +55,8 @@ export function FormField({
           <span className="absolute inset-y-0 right-0 flex items-center pr-1.5">{acessorio}</span>
         )}
       </div>
-      {hint && !error && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
-      {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
+      {hint && !error && <p className="mt-1.5 text-[13px] text-muted">{hint}</p>}
+      {error && <p className="mt-1.5 text-[13px] text-error">{error}</p>}
     </div>
   );
 }

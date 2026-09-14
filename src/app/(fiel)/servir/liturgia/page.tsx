@@ -103,7 +103,7 @@ export default async function LiturgiaPage() {
                     <p className="text-[14.5px] font-medium text-foreground">
                       {LITURGICAL_ROLE_LABELS[s.roleType]}
                     </p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
+                    <p className="mt-0.5 text-[13px] text-muted">
                       {formatDateTime(s.celebration.startsAt)}
                     </p>
                   </div>

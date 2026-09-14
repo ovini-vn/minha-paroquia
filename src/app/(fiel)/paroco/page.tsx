@@ -117,7 +117,7 @@ export default async function ParocoPage() {
           </LinkButton>
         )}
         {paroco.priestProfileId && !atendePeloApp && (
-          <p className="mt-2.5 text-center text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-2.5 text-center text-[13px] leading-relaxed text-muted">
             O atendimento com {paroco.nome} é combinado pela secretaria.
           </p>
         )}

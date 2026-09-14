@@ -59,7 +59,7 @@ export function CampoDeImagem({
           className={`${campo} file:mr-3 file:rounded-md file:border-0 file:bg-primary-tint file:px-3 file:py-1.5 file:text-sm file:text-primary`}
         />
       ) : (
-        <p className="text-[12px] text-muted">
+        <p className="text-[13px] text-muted">
           O envio de arquivo não está disponível. Cole o link da imagem abaixo.
           {motivoIndisponivel ? ` (${motivoIndisponivel})` : ""}
         </p>
@@ -76,7 +76,7 @@ export function CampoDeImagem({
         className={campo}
       />
 
-      <p className="text-[12px] leading-relaxed text-muted">
+      <p className="text-[13px] leading-relaxed text-muted">
         Até 5 MB. {ajuda}
       </p>
     </div>

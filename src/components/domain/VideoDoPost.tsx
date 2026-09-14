@@ -34,7 +34,7 @@ export function VideoDoPost({ url, titulo }: { url: string; titulo?: string }) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/45 px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:border-gold"
+        className="mt-3 inline-flex items-center gap-2 rounded-full border border-gold/45 px-3.5 py-2 text-[13px] font-semibold text-foreground transition-colors hover:border-gold"
       >
         <Video className="h-4 w-4" strokeWidth={1.5} aria-hidden />
         Assistir vídeo

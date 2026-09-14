@@ -64,7 +64,7 @@ export default async function PixDeContribuicaoPage({
             <p className="text-[11px] font-semibold uppercase tracking-eyebrow text-muted">
               PIX Copia e Cola
             </p>
-            <p className="mt-2 max-h-28 overflow-y-auto break-all rounded-lg border border-border bg-sunken p-3 font-mono text-[11.5px] leading-relaxed text-muted">
+            <p className="mt-2 max-h-28 overflow-y-auto break-all rounded-lg border border-border bg-sunken p-3 font-mono text-[13px] leading-relaxed text-muted">
               {pix.brcode}
             </p>
             <BotaoCopiar
@@ -81,7 +81,7 @@ export default async function PixDeContribuicaoPage({
             Depois de confirmar no banco, <strong>você não precisa enviar comprovante</strong>. A oferta
             aparece em Minha oferta quando a paróquia a registrar.
           </p>
-          <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-2 text-[13px] leading-relaxed text-muted">
             O dinheiro vai direto para a conta da paróquia — o aplicativo não recebe nem guarda
             valor nenhum.
           </p>

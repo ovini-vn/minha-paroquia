@@ -57,7 +57,7 @@ export function SiteHeader({
         <Link
           href="/eu/aparencia"
           className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15 lg:hidden"
-          aria-label="Aparência e tempo litúrgico"
+          aria-label="Tamanho da letra e aparência"
         >
           <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
         </Link>
@@ -67,14 +67,14 @@ export function SiteHeader({
             identifica a comunidade. */}
         <div className="min-w-0 flex-1 lg:hidden">
           {tipoDaParoquia && (
-            <p className="text-[9.5px] font-semibold uppercase leading-none tracking-eyebrow text-white/65">
+            <p className="text-[11px] font-semibold uppercase leading-none tracking-eyebrow text-white/65">
               {tipoDaParoquia}
             </p>
           )}
           <p className="mt-0.5 line-clamp-2 font-serif text-[18px] font-semibold leading-[1.15]">
             {nomeDaParoquia}
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-eyebrow text-gold-soft">
+          <p className="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-eyebrow text-gold-soft">
             <span className="h-[5px] w-[5px] shrink-0 rounded-full bg-gold" aria-hidden />
             {seasonName}
           </p>
@@ -121,7 +121,7 @@ export function SiteHeader({
         <div className="hidden min-w-0 items-center gap-3 lg:flex">
           <div className="min-w-0 text-right">
             <p className="truncate text-[13px] font-medium leading-tight">{parishName}</p>
-            <p className="mt-0.5 flex items-center justify-end gap-1.5 text-[10px] font-semibold uppercase tracking-eyebrow text-gold-soft">
+            <p className="mt-0.5 flex items-center justify-end gap-1.5 text-[11px] font-semibold uppercase tracking-eyebrow text-gold-soft">
               <span className="h-[5px] w-[5px] rounded-full bg-gold" aria-hidden />
               {seasonName}
             </p>
@@ -129,7 +129,7 @@ export function SiteHeader({
           <Link
             href="/eu/aparencia"
             className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
-            aria-label="Aparência e tempo litúrgico"
+            aria-label="Tamanho da letra e aparência"
           >
             <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
           </Link>
@@ -177,6 +177,9 @@ export function SiteHeader({
           }
         >
           <Bell className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+          {/* Fica em 10px, abaixo do piso (ver Typography.tsx): é um número
+              dentro de uma bolinha de 16px pendurada no ícone, e a 13px ela
+              engoliria o sino. A contagem por extenso está no aria-label. */}
           {unreadCount > 0 && (
             <span
               aria-hidden

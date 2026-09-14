@@ -47,7 +47,7 @@ export function GestaoDaPalavra({
         <button
           type="button"
           onClick={() => setAberto(true)}
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Pencil className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
           Corrigir
@@ -110,7 +110,7 @@ export function GestaoDaPalavra({
             anunciado costuma temer justamente que a paróquia seja acordada
             de novo.
           */}
-          <p className="text-[12px] leading-relaxed text-muted">
+          <p className="text-[13px] leading-relaxed text-muted">
             Corrigir não envia notificação — o aviso foi da publicação.
           </p>
         </div>
@@ -132,14 +132,14 @@ export function GestaoDaPalavra({
       */}
       <form action={apagar} className="border-t border-error/30 pt-3">
         <input type="hidden" name="postId" value={postId} />
-        <p className="mb-2 text-[12.5px] leading-relaxed text-muted">
+        <p className="mb-2 text-[13px] leading-relaxed text-muted">
           Apagar tira a mensagem do Início e da Comunidade.{" "}
           <strong className="text-foreground">Não tem volta.</strong>
         </p>
         <button
           type="submit"
           disabled={apagando}
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[12.5px] text-muted transition-colors hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-muted transition-colors hover:text-error focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error"
         >
           <Trash2 className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
           {apagando ? "Apagando..." : "Apagar publicação"}

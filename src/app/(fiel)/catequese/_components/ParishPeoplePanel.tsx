@@ -74,7 +74,7 @@ function Vincular({ pessoa }: { pessoa: Pessoa }) {
   const [aberto, setAberto] = useState(false);
   const [state, formAction, pending] = useActionState(linkParishPersonAction, initialState);
 
-  if (state.ok) return <p className="text-[12.5px] text-success">{state.ok}</p>;
+  if (state.ok) return <p className="text-[13px] text-success">{state.ok}</p>;
 
   if (!aberto) {
     return (
@@ -103,7 +103,7 @@ function Vincular({ pessoa }: { pessoa: Pessoa }) {
       <Button type="button" variant="ghost" size="sm" onClick={() => setAberto(false)}>
         Cancelar
       </Button>
-      {state.error && <p className="w-full text-right text-[12.5px] text-error">{state.error}</p>}
+      {state.error && <p className="w-full text-right text-[13px] text-error">{state.error}</p>}
     </form>
   );
 }
@@ -112,7 +112,7 @@ function Excluir({ pessoa }: { pessoa: Pessoa }) {
   const [confirmando, setConfirmando] = useState(false);
   const [state, formAction, pending] = useActionState(removeParishPersonAction, initialState);
 
-  if (state.ok) return <p className="text-[12.5px] text-success">{state.ok}</p>;
+  if (state.ok) return <p className="text-[13px] text-success">{state.ok}</p>;
 
   if (!confirmando) {
     return (
@@ -125,10 +125,10 @@ function Excluir({ pessoa }: { pessoa: Pessoa }) {
   return (
     <form action={formAction} className="flex flex-col items-end gap-1.5">
       <input type="hidden" name="familyMemberId" value={pessoa.id} />
-      <p className="text-right text-[12.5px] text-muted">
+      <p className="text-right text-[13px] text-muted">
         Excluir o cadastro de {pessoa.fullName}?
       </p>
-      {state.error && <p className="text-right text-[12.5px] text-error">{state.error}</p>}
+      {state.error && <p className="text-right text-[13px] text-error">{state.error}</p>}
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
           {pending ? "Excluindo…" : "Sim, excluir"}
@@ -155,7 +155,7 @@ export function ParishPeoplePanel({ pessoas }: { pessoas: Pessoa[] }) {
 
       {pessoas.length > 0 && (
         <div className="border-t border-border pt-3">
-          <p className="mb-2 text-[12.5px] text-muted">
+          <p className="mb-2 text-[13px] text-muted">
             Cadastrados pela secretaria, ainda sem conta no app vinculada:
           </p>
           <div className="flex flex-col">
@@ -167,7 +167,7 @@ export function ParishPeoplePanel({ pessoas }: { pessoas: Pessoa[] }) {
                 <div className="min-w-0 flex-1">
                   <p className="text-[14px] font-medium text-foreground">{pessoa.fullName}</p>
                   {(pessoa.guardianName || pessoa.guardianPhone) && (
-                    <p className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-muted">
+                    <p className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted">
                       <Phone className="h-3 w-3" strokeWidth={1.5} aria-hidden />
                       {[pessoa.guardianName, pessoa.guardianPhone].filter(Boolean).join(" · ")}
                     </p>

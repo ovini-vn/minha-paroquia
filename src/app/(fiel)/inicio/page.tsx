@@ -173,7 +173,7 @@ export default async function HomePage() {
             <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
             <div>
               <p className="text-[13px] font-medium text-foreground">{assinatura.nome}</p>
-              <p className="text-xs text-muted">{formatDateTime(latestPost.publishedAt)}</p>
+              <p className="text-[13px] text-muted">{formatDateTime(latestPost.publishedAt)}</p>
             </div>
           </div>
           {/* O título manda na prévia do Início pelo mesmo motivo que
@@ -239,7 +239,7 @@ export default async function HomePage() {
               </span>
             )}
             <div className="min-w-0">
-              <p className="text-[12.5px] tracking-[0.04em] text-white/70">
+              <p className="text-[13px] tracking-[0.04em] text-white/70">
                 {greeting()}, {firstName}
               </p>
               <h1 className="mt-1 font-serif text-[27px] font-medium leading-[1.12]">
@@ -409,7 +409,7 @@ export default async function HomePage() {
                   <p className="text-[14.5px] font-medium leading-tight text-foreground">
                     {a.nome}
                   </p>
-                  <p className="mt-0.5 text-[12.5px] text-muted">
+                  <p className="mt-0.5 text-[13px] text-muted">
                     {NOME_DO_ANIVERSARIO[a.tipo]}
                     {a.tipo !== "nascimento" && a.anos ? ` · ${a.anos} anos` : ""} ·{" "}
                     {a.faltam === 0 ? "hoje" : formatDateOnly(a.quando)}
@@ -418,7 +418,7 @@ export default async function HomePage() {
               </div>
             ))}
           </Card>
-          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-2.5 text-[13px] leading-relaxed text-muted">
             Rezemos por eles. Para aparecer aqui no seu dia, marque a opção no{" "}
             <Link href="/eu/perfil" className="font-medium text-primary underline">
               seu perfil

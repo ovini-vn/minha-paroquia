@@ -69,7 +69,7 @@ export function EscolherForm({
               </span>
               <span className="min-w-0">
                 <span className="block text-[14.5px] font-medium text-foreground">{p.name}</span>
-                {p.local && <span className="mt-0.5 block text-[12.5px] text-muted">{p.local}</span>}
+                {p.local && <span className="mt-0.5 block text-[13px] text-muted">{p.local}</span>}
               </span>
             </button>
           );

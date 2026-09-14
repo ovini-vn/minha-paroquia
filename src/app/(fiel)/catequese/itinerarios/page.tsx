@@ -68,7 +68,7 @@ export default async function ItinerariosPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[14.5px] font-medium text-foreground">{itinerario.nome}</p>
-                    <p className="mt-0.5 text-[12.5px] text-muted">
+                    <p className="mt-0.5 text-[13px] text-muted">
                       {itinerario._count.temas === 0
                         ? "Nenhum encontro digitado ainda"
                         : `${itinerario._count.temas} ${

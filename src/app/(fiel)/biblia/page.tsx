@@ -117,7 +117,7 @@ export default async function BibliaPage({
           )}
 
           {truncado && (
-            <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+            <p className="mt-3 text-[13px] leading-relaxed text-muted">
               Há mais versículos com essa expressão. Escreva um trecho mais longo para chegar ao
               que procura.
             </p>
@@ -137,7 +137,7 @@ export default async function BibliaPage({
             <div className="flex flex-col gap-4">
               {grupos.map((grupo) => (
                 <div key={grupo}>
-                  <p className="mb-2 text-[12.5px] font-medium text-muted">{grupo}</p>
+                  <p className="mb-2 text-[13px] font-medium text-muted">{grupo}</p>
                   {/* Grade de nomes em vez de lista de linhas: 73 livros em
                       linhas viraria uma rolagem sem fim no celular.
 
@@ -171,7 +171,7 @@ export default async function BibliaPage({
         );
       })}
 
-      <p className="pt-7 text-[12px] leading-relaxed text-muted">
+      <p className="pt-7 text-[13px] leading-relaxed text-muted">
         {TRADUCAO.nome} · {TRADUCAO.detalhe}.
       </p>
 

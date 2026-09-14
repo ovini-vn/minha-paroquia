@@ -195,7 +195,7 @@ export default async function CatequesePage({
                           <p className="text-[14.5px] font-medium text-foreground">
                             {aluno.familyMember.fullName}
                           </p>
-                          <p className="mt-0.5 text-[12.5px] text-muted">
+                          <p className="mt-0.5 text-[13px] text-muted">
                             {aluno.group.name}
                             {/* O contato do responsável fora do app é o que
                                 o catequista precisa quando o aluno falta. */}
@@ -232,7 +232,7 @@ export default async function CatequesePage({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[14.5px] font-medium text-foreground">Itinerários</span>
-                <span className="block text-[12.5px] text-muted">
+                <span className="block text-[13px] text-muted">
                   Os encontros previstos de cada etapa, digitados pela paróquia.
                 </span>
               </span>
@@ -245,7 +245,7 @@ export default async function CatequesePage({
               <Stat label="Sem catequista" value={String(overview.turmasSemCatequista)} />
             </div>
             {overview.turmasSemCatequista > 0 && (
-              <p className="mt-2.5 flex items-start gap-2 text-[12.5px] leading-relaxed text-muted">
+              <p className="mt-2.5 flex items-start gap-2 text-[13px] leading-relaxed text-muted">
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
                 {/*
                   A FRASE INTEIRA num só `span`.
@@ -291,7 +291,7 @@ export default async function CatequesePage({
                           da criança, e a mesma entrega do Credo aparecia
                           vinte e cinco vezes — uma por matrícula. */}
                       <p className="text-[14.5px] font-medium text-foreground">{rito.nome}</p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">{rito.group.name}</p>
+                      <p className="mt-0.5 text-[13px] text-muted">{rito.group.name}</p>
                     </div>
                     {rito.scheduledAt && <Badge>{formatDateOnly(rito.scheduledAt)}</Badge>}
                   </div>
@@ -374,12 +374,12 @@ export default async function CatequesePage({
                       <p className="text-[14.5px] font-medium text-foreground">
                         {turma.nome} · {turma.ano}
                       </p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">
+                      <p className="mt-0.5 text-[13px] text-muted">
                         {turma.catequista ?? "Sem catequista"}
                         {turma.catequistaSemApp && " (sem app)"} · {turma.matriculados}{" "}
                         {turma.matriculados === 1 ? "matriculado" : "matriculados"}
                       </p>
-                      <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[12px]">
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px]">
                         {turma.itinerario && turma.previstos > 0 ? (
                           <span className="text-muted">
                             {turma.itinerario.nome} ·{" "}
@@ -464,7 +464,7 @@ export default async function CatequesePage({
               />
             ))}
           </Card>
-          <p className="mt-2.5 text-[12.5px] leading-relaxed text-muted">
+          <p className="mt-2.5 text-[13px] leading-relaxed text-muted">
             Abra para ver o que está sendo dado, as presenças nos encontros e nas missas.
           </p>
         </section>

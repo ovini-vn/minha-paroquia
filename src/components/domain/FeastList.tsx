@@ -48,16 +48,17 @@ export function FeastList({ from, limit = 4 }: { from: Date; limit?: number }) {
               <p className="text-[14.5px] font-medium leading-snug text-foreground">{feast.name}</p>
               {/* Sem `capitalize`: em português é "8 de setembro", não "8 De
                   Setembro" — o rótulo relativo já vem com maiúscula. */}
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <p className="mt-0.5 text-[13px] text-muted">
                 {relativo ? `${relativo} · ` : ""}
                 {DATE_FORMATTER.format(feast.date)}
               </p>
             </div>
 
             {feast.civilHoliday && (
-              <Badge tone="muted">
-                <span className="normal-case">Feriado</span>
-              </Badge>
+              // Em caixa alta como todo Badge. Em minúsculas a 11px ficava
+              // abaixo do piso de 13px (ver Typography.tsx); em maiúsculas
+              // a 11px tem a altura dos outros rótulos da tela.
+              <Badge tone="muted">Feriado</Badge>
             )}
           </div>
         );

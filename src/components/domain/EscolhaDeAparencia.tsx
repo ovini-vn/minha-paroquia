@@ -67,7 +67,7 @@ export function EscolhaDeAparencia({
                 }
               >
                 <span className={`${t.classe} font-serif font-semibold leading-none`}>{t.label}</span>
-                <span className="text-[11.5px] opacity-80">{t.desc}</span>
+                <span className="text-[13px] opacity-80">{t.desc}</span>
               </button>
             );
           })}

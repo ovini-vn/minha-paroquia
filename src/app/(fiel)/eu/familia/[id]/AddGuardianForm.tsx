@@ -38,7 +38,7 @@ export function AddGuardianForm({ familyMemberId }: { familyMemberId: string }) 
           {pending ? "Adicionando…" : "Adicionar"}
         </Button>
       </div>
-      <p className="text-[12.5px] text-muted">
+      <p className="text-[13px] text-muted">
         A pessoa já precisa ter conta no app, e o nome deve ser digitado por inteiro.
       </p>
       {state.error && <p className="text-sm text-error">{state.error}</p>}

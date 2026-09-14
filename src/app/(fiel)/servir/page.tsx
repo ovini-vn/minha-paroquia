@@ -144,7 +144,7 @@ export default async function ServirPage() {
                     <p className="mt-1.5 text-[13.5px] text-muted">{opportunity.description}</p>
                   )}
                   {opportunity.startsAt && (
-                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+                    <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted">
                       <CalendarDays className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
                       {formatDateTime(opportunity.startsAt)}
                     </p>

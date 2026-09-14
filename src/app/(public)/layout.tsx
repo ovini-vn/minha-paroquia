@@ -44,7 +44,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           cabeçalho da marca junto, e a política ganharia o lockup completo em
           cima do texto jurídico.
         */}
-        <p className="flex items-center justify-center gap-2.5 text-[12px] leading-relaxed text-muted">
+        <p className="flex items-center justify-center gap-2.5 text-[13px] leading-relaxed text-muted">
           <a href="/como-funciona" className="underline underline-offset-2 hover:text-primary">
             Como funciona
           </a>

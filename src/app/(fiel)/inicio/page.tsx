@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { BookOpen, Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Phone, Users } from "lucide-react";
+import { Cake, CalendarDays, Church, Footprints, HandCoins, HandHeart, HeartHandshake, Megaphone, MessagesSquare, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -32,12 +32,31 @@ import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 
+/*
+ * Os atalhos são o que a pessoa VEIO fazer, e não um espelho da barra.
+ *
+ * Tinha "Servir" e "Palavra" aqui — os mesmos destinos das abas logo
+ * abaixo, dois dos seis lugares gastos com o que já estava a um toque.
+ * Enquanto isso, pedir oração ficava na aba Palavra, depois de rolar duas
+ * telas (Bíblia, a mensagem inteira do padre, o Evangelho), e falar com um
+ * sacerdote exigia saber que ele mora ali ou no fim da Comunidade.
+ *
+ * São justamente as duas coisas que o app faz e um site não faz: receber
+ * o pedido de alguém e marcar a conversa. A primeira fileira é delas, ao
+ * lado da Agenda; o resto vem depois.
+ *
+ * Os ícones são os mesmos da aba Palavra para os mesmos destinos: quem
+ * reconhece o desenho num lugar reconhece no outro.
+ *
+ * "o padre" vai preso por espaço inquebrável. No celular o rótulo não cabe
+ * numa linha, e a quebra natural deixava "Falar com o" em cima e "padre"
+ * sozinho embaixo — medido a 375px e a 320px.
+ */
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
-  { href: "/servir", icon: HeartHandshake, label: "Servir" },
+  { href: "/oracao/pedidos", icon: HandHeart, label: "Pedir oração" },
+  { href: "/comunidade/sacerdotes", icon: MessagesSquare, label: "Falar com o padre" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
-  // Leva à aba Palavra: Bíblia, Evangelho do dia e as leituras.
-  { href: "/oracao", icon: BookOpen, label: "Palavra" },
   { href: "/doacao", icon: HandCoins, label: "Ofertar" },
   { href: "/contato", icon: Phone, label: "Contato" },
 ] as const;

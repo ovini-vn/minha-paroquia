@@ -29,6 +29,7 @@ import { OuvirAudioDoPost } from "@/components/domain/OuvirAudioDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
+import { InstalarNaTelaInicial } from "@/components/domain/InstalarNaTelaInicial";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 
@@ -274,6 +275,11 @@ export default async function HomePage() {
           <Badge tone="gold">{season.name}</Badge>
         </div>
       </div>
+
+      {/* Só aparece no celular, no navegador, para quem ainda não instalou
+          — e fica ACIMA dos atalhos porque é o que faz a pessoa voltar
+          amanhã. Recolhido, custa uma faixa; some quando o app é instalado. */}
+      <InstalarNaTelaInicial />
 
       {/* Atalhos — "a vida da paróquia" a um toque. */}
       <section className="pt-[26px]">

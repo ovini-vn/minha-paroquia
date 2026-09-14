@@ -172,6 +172,27 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="font-sans antialiased">
         {/*
+          Guarda o convite de instalação do Android para o cartão do Início.
+
+          O Chrome oferece instalar o app UMA vez por carregamento, com o
+          evento `beforeinstallprompt`, e pode disparar antes de o React
+          terminar de montar a tela. Um ouvinte dentro do componente
+          perderia o evento justo em quem já tem o service worker de outra
+          visita. Por isso é script solto no HTML, que roda enquanto a
+          página ainda está sendo lida, e guarda o evento na janela — onde
+          ele sobrevive às trocas de tela feitas pelo próprio app.
+
+          Não chama `preventDefault`: o convite do próprio navegador continua
+          aparecendo como antes. O cartão é mais um caminho, não o único.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "addEventListener('beforeinstallprompt',function(e){window.__conviteDeInstalacao=e;dispatchEvent(new Event('convite-de-instalacao'))});" +
+              "addEventListener('appinstalled',function(){window.__conviteDeInstalacao=null;window.__appInstalado=true;dispatchEvent(new Event('convite-de-instalacao'))});",
+          }}
+        />
+        {/*
           Primeiro elemento focalizável da página, e invisível até receber
           foco. Quem navega por teclado ou leitor de tela chegava percorrendo
           o cabeçalho e a navegação inteira antes do conteúdo, em TODA

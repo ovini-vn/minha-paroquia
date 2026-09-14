@@ -157,6 +157,60 @@ describe("reiniciar onboarding", () => {
     expect(nomes).not.toContain("Fiel Da Vizinha");
   });
 
+  it("não conta histórico de OUTRA paróquia — nem revela quantos pedidos a pessoa fez lá", async () => {
+    /*
+     * O vazamento que este teste fecha.
+     *
+     * A contagem de impedimentos roda com a RLS desligada. Sem `parishId`,
+     * ela somava os pedidos de oração feitos em qualquer paróquia, e a
+     * tela mostrava o número à secretaria: quem mudou de paróquia aparecia
+     * para a nova com "1 pedido(s) de oração" feito na anterior — mesmo
+     * sendo um pedido "só o padre vê".
+     *
+     * Por isso o pedido aqui é PRIVADO e fica na paróquia antiga, com o
+     * vínculo de lá já encerrado: é exatamente a vida real de quem mudou.
+     */
+    const id = await novoMembro("Fiel Que Veio De Outra");
+    const papel = await prisma.role.findUniqueOrThrow({ where: { code: "FIEL" } });
+    await withTenantContext(outraParoquiaId, async (tx) => {
+      await tx.parishMembership.create({
+        data: {
+          userId: id,
+          parishId: outraParoquiaId,
+          roleId: papel.id,
+          status: "inactive",
+          leftAt: new Date(),
+        },
+      });
+      await tx.prayerRequest.create({
+        data: {
+          parishId: outraParoquiaId,
+          requesterUserId: id,
+          contentText: "Pedido que só o padre da paróquia antiga deveria ver.",
+        },
+      });
+    });
+
+    // A lista desta paróquia não pode acusar o pedido de lá.
+    const contas = await listarContasReiniciaveis(parishId);
+    const conta = contas.find((c) => c.id === id)!;
+    expect(conta.impedimentos).toEqual([]);
+
+    // E o reinício segue: histórico de outra paróquia não impede apagar o
+    // vínculo DESTA — que é o único que ele toca.
+    await reiniciarOnboarding(parishId, id, secretariaId);
+
+    const depois = await withPlatformContext(async (tx) => ({
+      aqui: await tx.parishMembership.count({ where: { userId: id, parishId } }),
+      pedidoDeLa: await tx.prayerRequest.count({
+        where: { requesterUserId: id, parishId: outraParoquiaId },
+      }),
+    }));
+    expect(depois.aqui).toBe(0);
+    // O pedido da paróquia antiga continua intacto: não é desta secretaria.
+    expect(depois.pedidoDeLa).toBe(1);
+  });
+
   it("deixa registro em auditoria — apagar vínculo sem rastro é pior que não apagar", async () => {
     const id = await novoMembro("Fiel Auditado");
     await reiniciarOnboarding(parishId, id, secretariaId);

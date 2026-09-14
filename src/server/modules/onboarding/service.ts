@@ -27,15 +27,30 @@ import { registrar, ACOES } from "@/server/modules/auditoria/service";
 /** O que impede reiniciar esta conta, em palavras que a tela mostra. */
 export type Impedimento = string;
 
+/*
+ * As contagens são SEMPRE desta paróquia — e o `parishId` aqui não é
+ * enfeite, é a única coisa entre a secretaria e a vida da pessoa em outra.
+ *
+ * Esta função roda dentro de `withPlatformContext`, que desliga a RLS. A
+ * primeira versão contava sem `parishId`, e a tela mostrava o número:
+ * quem tinha mudado de paróquia aparecia para a secretaria da NOVA com
+ * "2 pedido(s) de oração" feitos na anterior — inclusive os marcados como
+ * "só o padre vê". Só a contagem, não o texto; mas numa paróquia até o
+ * número de pedidos privados é da conta da pessoa.
+ *
+ * Contar só desta paróquia também é a regra certa para o reinício: o que
+ * ele apaga é o vínculo DAQUI, então o que o impede é o histórico daqui.
+ */
 async function impedimentosDe(
   tx: Parameters<Parameters<typeof withPlatformContext>[0]>[0],
+  parishId: string,
   userId: string,
 ): Promise<Impedimento[]> {
   const [atendimentos, oracoes, familiares, guardioes] = await Promise.all([
-    tx.appointment.count({ where: { fielUserId: userId } }),
-    tx.prayerRequest.count({ where: { requesterUserId: userId } }),
-    tx.familyMember.count({ where: { responsibleUserId: userId } }),
-    tx.familyMemberGuardian.count({ where: { userId } }),
+    tx.appointment.count({ where: { parishId, fielUserId: userId } }),
+    tx.prayerRequest.count({ where: { parishId, requesterUserId: userId } }),
+    tx.familyMember.count({ where: { parishId, responsibleUserId: userId } }),
+    tx.familyMemberGuardian.count({ where: { parishId, userId } }),
   ]);
 
   const partes: Impedimento[] = [];
@@ -84,7 +99,7 @@ export function listarContasReiniciaveis(parishId: string): Promise<ContaReinici
         nome: m.user.fullName,
         email: m.user.email,
         jaViuAsBoasVindas: m.user.onboardedAt !== null,
-        impedimentos: await impedimentosDe(tx, m.userId),
+        impedimentos: await impedimentosDe(tx, parishId, m.userId),
       });
     }
     return contas;
@@ -109,7 +124,7 @@ export async function reiniciarOnboarding(
     });
     if (!aqui) throw new AppError("Esta conta não é um membro ativo desta paróquia.", "NAO_E_MEMBRO");
 
-    const impedimentos = await impedimentosDe(tx, userId);
+    const impedimentos = await impedimentosDe(tx, parishId, userId);
     if (impedimentos.length > 0) {
       throw new AppError(
         `Esta conta tem histórico — ${impedimentos.join(", ")}. Apagar o vínculo deixaria esses registros órfãos.`,

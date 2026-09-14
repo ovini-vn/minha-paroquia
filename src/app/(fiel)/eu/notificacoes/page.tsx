@@ -306,7 +306,10 @@ export default async function NotificationsPage({
         </p>
       )}
 
-      <section className="pt-7">
+      {/* A âncora é o destino de Eu › Notificações. Quem chega por lá veio
+          ESCOLHER avisos, e esta seção fica depois da lista inteira — umas
+          quatro telas abaixo no celular. O sininho continua abrindo no topo. */}
+      <section id="o-que-receber" className="scroll-mt-24 pt-7">
         <Eyebrow tone="accent" className="mb-3">
           O que quero receber
         </Eyebrow>

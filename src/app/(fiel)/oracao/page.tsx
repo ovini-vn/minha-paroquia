@@ -5,7 +5,6 @@ import {
   Footprints,
   ScrollText,
   Sparkles,
-  Mic,
   BookOpen,
   MessagesSquare,
   ChevronRight,
@@ -20,9 +19,9 @@ import { resolverParoco, assinaturaDoPost } from "@/server/modules/parishes/paro
 import { getPalavraDoDia } from "@/server/modules/liturgia/vatican-news-service";
 import { diaEmBrasilia, hojeEmBrasilia } from "@/lib/brasilia";
 import { Card } from "@/components/ui/Card";
-import { LinkButton } from "@/components/ui/Button";
 import { Retrato } from "@/components/ui/Retrato";
 import { VideoDoPost } from "@/components/domain/VideoDoPost";
+import { OuvirAudioDoPost } from "@/components/domain/OuvirAudioDoPost";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { RowLink } from "@/components/ui/RowLink";
@@ -149,12 +148,7 @@ export default async function OracaoPage() {
             {latestPost.mediaType === "video" && latestPost.mediaUrl && (
               <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
             )}
-            {latestPost.mediaType !== "video" && (
-              <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
-                <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-                Ler mensagem
-              </LinkButton>
-            )}
+            <OuvirAudioDoPost mediaType={latestPost.mediaType} mediaUrl={latestPost.mediaUrl} />
           </article>
         </section>
       )}

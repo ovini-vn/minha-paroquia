@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   UserPen,
   Sparkles,
+  Bell,
   CalendarDays,
   Users,
   HandCoins,
@@ -150,6 +151,18 @@ export default async function ProfilePage() {
                 icon={UserPen}
                 title="Editar perfil"
                 subtitle="Nome, telefone e data de nascimento"
+              />
+              {/*
+                As boas-vindas dizem "você escolhe depois quais avisos quer
+                receber, em Eu → Notificações" — e este item não existia: o
+                único caminho era o sininho, que não tem nome. A frase
+                mandava a pessoa a um lugar que ela não ia achar.
+              */}
+              <RowLink
+                href="/eu/notificacoes#o-que-receber"
+                icon={Bell}
+                title="Notificações"
+                subtitle="Quais avisos você quer receber"
               />
               <RowLink
                 href="/eu/aparencia"

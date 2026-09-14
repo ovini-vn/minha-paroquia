@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { BookOpen, Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Mic, Phone, Users } from "lucide-react";
+import { BookOpen, Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -25,6 +25,7 @@ import { BleedTop } from "@/components/layout/Bleed";
 import { FeastList } from "@/components/domain/FeastList";
 import { formatDateTime, formatDateOnly } from "@/lib/date";
 import { VideoDoPost } from "@/components/domain/VideoDoPost";
+import { OuvirAudioDoPost } from "@/components/domain/OuvirAudioDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
 import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
@@ -179,14 +180,10 @@ export default async function HomePage() {
             <VideoDoPost url={latestPost.mediaUrl} titulo={assinatura.nome} />
           )}
 
-          {/* Post de vídeo não precisa do botão: assistir é a ação, e ela
-              está na própria capa. "Ver todas" no título leva às anteriores. */}
-          {latestPost.mediaType !== "video" && (
-            <LinkButton href="/comunidade" variant="gold" size="sm" className="mt-3.5">
-              <Mic className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-              Ler mensagem
-            </LinkButton>
-          )}
+          {/* Só áudio ganha botão: o vídeo toca na capa e o texto já está
+              inteiro aqui. "Ver todas" no título leva às anteriores. */}
+          <OuvirAudioDoPost mediaType={latestPost.mediaType} mediaUrl={latestPost.mediaUrl} />
+
         </article>
       </section>
     ) : null;

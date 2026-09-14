@@ -31,7 +31,27 @@ const SAIDA = path.join(AQUI, DECK === "index" ? "apresentacao.pdf" : `${DECK}.p
 const LARGURA_POL = 1600 / 96;
 const ALTURA_POL = 900 / 96;
 
-const TIPOS = { ".html": "text/html; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml" };
+/*
+ * O `.css` precisa estar aqui, e a falta dele quebrou o PDF inteiro.
+ *
+ * Quando o estilo das apresentações saiu do HTML para `estilo.css`, este
+ * mapa não sabia o que era `.css` e o servia como application/octet-stream.
+ * O Chromium RECUSA aplicar folha de estilo com tipo errado — e o PDF saiu
+ * só com o tema cru do reveal: prints de celular fora da moldura, títulos
+ * em caixa alta, texto escuro sobre fundo roxo. No navegador o HTML estava
+ * perfeito, porque lá qualquer servidor comum manda o tipo certo.
+ */
+const TIPOS = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
+};
 
 const servidor = createServer(async (req, res) => {
   try {
@@ -63,6 +83,32 @@ await pagina.goto(`http://127.0.0.1:${porta}/${DECK}.html?print-pdf`, { waitUnti
 await pagina.waitForSelector(".reveal.ready", { timeout: 30_000 });
 await pagina.waitForFunction(() => document.querySelectorAll(".pdf-page").length > 0, { timeout: 30_000 });
 await pagina.waitForTimeout(1500);
+
+/*
+ * CONFERE que o estilo da apresentação aplicou, antes de gravar.
+ *
+ * O defeito do `.css` passou em silêncio porque este script só vigiava
+ * erro de script e requisição que falha — e um estilo recusado por tipo
+ * errado volta 200 e não é nenhum dos dois. O script disse "PDF gerado"
+ * sobre um PDF quebrado, e o PDF quebrado foi entregue.
+ *
+ * A prova é o título: o `estilo.css` põe Georgia nos h1/h2; o tema cru do
+ * reveal põe sans-serif em caixa alta. Se a fonte não é serifada, o estilo
+ * não chegou, e é melhor não gerar nada do que gerar isso.
+ */
+const estilo = await pagina.evaluate(() => {
+  const h = document.querySelector(".reveal h1, .reveal h2");
+  const cs = h ? getComputedStyle(h) : null;
+  return { fonte: cs?.fontFamily ?? "", caixa: cs?.textTransform ?? "" };
+});
+if (!/georgia/i.test(estilo.fonte) || estilo.caixa === "uppercase") {
+  console.error("O estilo da apresentação NÃO foi aplicado — o PDF sairia quebrado.");
+  console.error(`  fonte do título: ${estilo.fonte || "(nenhuma)"} | caixa: ${estilo.caixa || "-"}`);
+  console.error("  Confira se estilo.css está sendo servido com content-type text/css.");
+  await navegador.close();
+  servidor.close();
+  process.exit(1);
+}
 
 const paginas = await pagina.evaluate(() => document.querySelectorAll(".pdf-page").length);
 

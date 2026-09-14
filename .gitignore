@@ -48,3 +48,8 @@ docs/*.zip
 # imagem gerada é encher o histórico de binário que se refaz num comando.
 docs/passo-a-passo/prints/
 docs/passo-a-passo/passo-a-passo.html
+
+# graphify: o grafo gerado fica em graphify-out/ DENTRO do repositório e
+# pode carregar trechos dos arquivos varridos — a skill não diz respeitar o
+# .gitignore ao varrer, então o .env pode entrar nele. Não vai para o git.
+graphify-out/

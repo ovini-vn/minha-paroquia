@@ -30,7 +30,7 @@ export function FiltroDeCategorias({
   const filtrando = estado.categorias.length > 0;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2.5">
       {presentes.map((cat) => {
         const marcada = estado.categorias.includes(cat);
         const cor = `rgb(var(--cat-${CATEGORIAS[cat].token}))`;
@@ -46,8 +46,8 @@ export function FiltroDeCategorias({
             title={CATEGORIAS[cat].descricao}
             className={
               marcada
-                ? "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                : "inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-[13px] text-muted transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                ? "alvo-de-toque inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[13px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                : "alvo-de-toque inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1.5 text-[13px] text-muted transition-colors hover:border-primary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             }
             style={marcada ? { borderColor: cor, color: cor } : undefined}
           >
@@ -69,7 +69,7 @@ export function FiltroDeCategorias({
       {filtrando && (
         <Link
           href={enderecoDaAgenda({ ...estado, categorias: [] })}
-          className="rounded-full px-2 py-1 text-[13px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="alvo-de-toque rounded-full px-2 py-1.5 text-[13px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           Ver todas
         </Link>

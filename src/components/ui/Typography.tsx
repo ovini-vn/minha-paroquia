@@ -75,7 +75,7 @@ export function SectionTitle({
       {actionLabel && actionHref && (
         <Link
           href={actionHref}
-          className="shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+          className="alvo-de-toque shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
         >
           {actionLabel}
         </Link>
@@ -126,7 +126,7 @@ export function EyebrowComAtalho({
       <Eyebrow tone="accent">{titulo}</Eyebrow>
       <a
         href={`#${alvo}`}
-        className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="alvo-de-toque shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         {rotulo}
       </a>

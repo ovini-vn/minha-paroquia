@@ -56,7 +56,7 @@ export function SiteHeader({
         {/* Celular: aparência. Desktop: entra no menu de ações à direita. */}
         <Link
           href="/eu/aparencia"
-          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15 lg:hidden"
+          className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15 lg:hidden"
           aria-label="Tamanho da letra e aparência"
         >
           <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
@@ -128,7 +128,7 @@ export function SiteHeader({
           </div>
           <Link
             href="/eu/aparencia"
-            className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
+            className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
             aria-label="Tamanho da letra e aparência"
           >
             <Sparkles className="h-5 w-5" strokeWidth={1.5} aria-hidden />
@@ -143,7 +143,7 @@ export function SiteHeader({
         {managementHref && (
           <Link
             href={managementHref}
-            className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
+            className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
             aria-label="Gestão da paróquia"
             title="Gestão"
           >
@@ -169,7 +169,7 @@ export function SiteHeader({
         */}
         <Link
           href="/eu/notificacoes"
-          className="relative grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
+          className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
           aria-label={
             unreadCount > 0
               ? `Notificações, ${unreadCount} não ${unreadCount === 1 ? "lida" : "lidas"}`

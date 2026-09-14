@@ -60,7 +60,7 @@ export default async function CapituloPage({
     <Leitura className="flex flex-col">
       <Link
         href={`/biblia/${livro.slug}`}
-        className="mb-3 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-primary"
+        className="alvo-de-toque mb-3 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-primary"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
         {livro.name}
@@ -96,7 +96,7 @@ export default async function CapituloPage({
         {anterior ? (
           <Link
             href={`/biblia/${livro.slug}/${anterior}`}
-            className="inline-flex items-center gap-1 text-[13.5px] text-primary transition-opacity hover:opacity-80"
+            className="alvo-de-toque inline-flex items-center gap-1 text-[13.5px] text-primary transition-opacity hover:opacity-80"
           >
             <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
             Capítulo {anterior}
@@ -107,7 +107,7 @@ export default async function CapituloPage({
         {proximo ? (
           <Link
             href={`/biblia/${livro.slug}/${proximo}`}
-            className="inline-flex items-center gap-1 text-[13.5px] text-primary transition-opacity hover:opacity-80"
+            className="alvo-de-toque inline-flex items-center gap-1 text-[13.5px] text-primary transition-opacity hover:opacity-80"
           >
             Capítulo {proximo}
             <ChevronRight className="h-4 w-4" strokeWidth={1.5} aria-hidden />

@@ -31,7 +31,7 @@ export function nomeDoMes(mes: number): string {
 export function NavegacaoDoMes({ estado }: { estado: EstadoDaAgenda }) {
   const { ano, mes, vista } = estado;
   const seta =
-    "grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+    "alvo-de-toque grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -62,10 +62,13 @@ export function NavegacaoDoMes({ estado }: { estado: EstadoDaAgenda }) {
         que vai acontecer"; o calendário responde "como está o mês". Quem
         precisa de uma raramente precisa da outra ao mesmo tempo.
       */}
+      {/* Sem `overflow-hidden`: ele cortaria a área de toque dos dois lados
+          (ver `.alvo-de-toque`). O canto redondo passa para os próprios
+          botões, com `first:` e `last:`. */}
       <div
         role="group"
         aria-label="Como ver a agenda"
-        className="inline-flex overflow-hidden rounded-full border border-border"
+        className="inline-flex rounded-full border border-border"
       >
         {(
           [
@@ -79,8 +82,8 @@ export function NavegacaoDoMes({ estado }: { estado: EstadoDaAgenda }) {
             aria-current={vista === id ? "true" : undefined}
             className={
               vista === id
-                ? "inline-flex items-center gap-1.5 bg-primary px-3.5 py-2 text-[13px] font-semibold text-white dark:bg-primary-light"
-                : "inline-flex items-center gap-1.5 bg-surface px-3.5 py-2 text-[13px] font-semibold text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                ? "alvo-de-toque inline-flex items-center gap-1.5 bg-primary px-3.5 py-2 first:rounded-l-full last:rounded-r-full text-[13px] font-semibold text-white dark:bg-primary-light"
+                : "alvo-de-toque inline-flex items-center gap-1.5 bg-surface px-3.5 py-2 first:rounded-l-full last:rounded-r-full text-[13px] font-semibold text-muted transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             }
           >
             <Icone className="h-4 w-4" strokeWidth={1.7} aria-hidden />

@@ -139,7 +139,7 @@ export default async function PlanoPage() {
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="rounded-md px-2 py-1.5 text-[13.5px] leading-snug text-muted transition-colors hover:bg-sunken hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="flex min-h-11 items-center rounded-md px-2 py-1.5 text-[13.5px] leading-snug text-muted transition-colors hover:bg-sunken hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {item.titulo}
                     </a>

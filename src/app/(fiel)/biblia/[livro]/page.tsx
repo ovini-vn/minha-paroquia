@@ -38,7 +38,7 @@ export default async function LivroPage({ params }: { params: Promise<{ livro: s
     <div className="flex flex-col">
       <Link
         href="/biblia"
-        className="mb-3 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-primary"
+        className="alvo-de-toque mb-3 inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-primary"
       >
         <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
         Todos os livros

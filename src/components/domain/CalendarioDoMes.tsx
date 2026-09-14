@@ -87,7 +87,7 @@ export function CalendarioDoMes({
               key={dia}
               href={`#dia-${chave}`}
               aria-label={`${dia}: ${doDia.quantos} ${doDia.quantos === 1 ? "compromisso" : "compromissos"}`}
-              className="flex aspect-square flex-col items-center justify-center gap-1 rounded-md border border-border bg-surface transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="alvo-de-toque flex aspect-square flex-col items-center justify-center gap-1 rounded-md border border-border bg-surface transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {miolo}
             </a>

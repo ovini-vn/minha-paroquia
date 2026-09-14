@@ -39,7 +39,10 @@ function CheckboxGroup({
         <input type="checkbox" name={checkboxName} defaultChecked={defaultChecked} />
         {legend}
       </label>
-      <div className="mt-3 flex flex-wrap gap-3">
+      {/* Sem folga vertical entre as fileiras: cada opção já tem 44px de
+          altura tocável (ver a regra das caixinhas em globals.css), e a
+          folga somaria um vão que antes não existia. */}
+      <div className="mt-1 flex flex-wrap gap-x-4">
         {Object.entries(options).map(([value, label]) => (
           <label key={value} className="flex items-center gap-1.5 text-sm text-muted">
             <input type="checkbox" name={name} value={value} defaultChecked={defaultValues.includes(value)} />

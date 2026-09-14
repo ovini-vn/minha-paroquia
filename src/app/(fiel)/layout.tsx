@@ -2,9 +2,8 @@ import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import {
-  caminhoComNovidade,
-  caminhosNaoLidos,
   countUnreadNotifications,
+  situacaoDaBarra,
 } from "@/server/modules/notifications/service";
 import { LidoAoNavegar } from "@/components/domain/LidoAoAbrir";
 import { destinoDoCaminho } from "@/components/layout/nav-items";
@@ -26,18 +25,16 @@ export default async function FielLayout({ children }: { children: React.ReactNo
   // onde o convite entrega as pessoas; /bem-vindo mora fora dele, senão
   // este redirecionamento se chamaria em laço.
   if (session.membership && !session.onboardedAt) redirect("/bem-vindo");
-  const [unreadCount, parish, novidade, naoLidos] = await Promise.all([
+  const [unreadCount, parish, barra] = await Promise.all([
     session.membership
       ? countUnreadNotifications(session.membership.parishId, session.userId)
       : Promise.resolve(0),
     session.membership ? getParish(session.membership.parishId) : Promise.resolve(null),
     session.membership
-      ? caminhoComNovidade(session.membership.parishId, session.userId)
-      : Promise.resolve(null),
-    session.membership
-      ? caminhosNaoLidos(session.membership.parishId, session.userId)
-      : Promise.resolve([] as string[]),
+      ? situacaoDaBarra(session.membership.parishId, session.userId)
+      : Promise.resolve({ novidade: null, naoLidos: [] as string[] }),
   ]);
+  const { novidade, naoLidos } = barra;
 
   /*
    * O destino que ganha bolinha — calculado AQUI, no servidor, e no máximo UM.

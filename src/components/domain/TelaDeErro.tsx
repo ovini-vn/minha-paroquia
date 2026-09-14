@@ -71,7 +71,7 @@ export function TelaDeErro({
         )}
         <Link
           href={voltarPara}
-          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[14px] text-primary transition-opacity hover:opacity-80"
+          className="alvo-de-toque inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[14px] text-primary transition-opacity hover:opacity-80"
         >
           <ChevronLeft className="h-4 w-4" strokeWidth={1.6} aria-hidden />
           {rotuloDoVoltar}

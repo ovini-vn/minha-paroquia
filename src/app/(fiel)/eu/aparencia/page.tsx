@@ -153,8 +153,8 @@ export default async function AppearancePage() {
                 aria-pressed={atual}
                 className={
                   atual
-                    ? "inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white dark:bg-primary-light"
-                    : "inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+                    ? "alvo-de-toque inline-flex items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2.5 text-sm font-semibold text-white dark:bg-primary-light"
+                    : "alvo-de-toque inline-flex items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
                 }
               >
                 <Icon className="h-4 w-4" strokeWidth={1.5} aria-hidden />

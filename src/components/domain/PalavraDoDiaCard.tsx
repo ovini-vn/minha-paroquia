@@ -97,11 +97,14 @@ export function PalavraDoDiaCard({
 
           <LeiturasDoDia blocos={palavra.blocos} />
 
+          {/* 24px, e não 12, de "Ler as leituras de hoje": as duas áreas de
+              toque de 44px (ver `.alvo-de-toque`) se sobrepunham, e o toque
+              no botão de cima caía neste link. */}
           <a
             href={palavra.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-primary"
+            className="alvo-de-toque mt-6 inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-primary"
           >
             Abrir no site do Vatican News
             <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />

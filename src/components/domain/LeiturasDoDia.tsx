@@ -119,7 +119,7 @@ export function LeiturasDoDia({ blocos }: { blocos: BlocoDeLeitura[] }) {
           type="button"
           onClick={() => setAberto((v) => !v)}
           aria-expanded={aberto}
-          className="mt-2.5 flex w-full items-center gap-2 text-left text-[13.5px] font-medium text-primary transition-colors hover:text-primary-hover"
+          className="alvo-de-toque mt-2.5 flex w-full items-center gap-2 text-left text-[13.5px] font-medium text-primary transition-colors hover:text-primary-hover"
         >
           {aberto ? "Fechar as leituras" : "Ler as leituras de hoje"}
           <ChevronDown

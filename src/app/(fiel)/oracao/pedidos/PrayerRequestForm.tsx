@@ -39,7 +39,7 @@ export function PrayerRequestForm() {
         </select>
       </div>
       <label className="flex items-center gap-2 text-sm text-muted">
-        <input type="checkbox" name="isAnonymous" className="h-4 w-4" />
+        <input type="checkbox" name="isAnonymous" />
         Não mostrar meu nome
       </label>
       <Button type="submit" disabled={pending} className="self-start">

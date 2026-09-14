@@ -40,7 +40,9 @@ const VARIANT_CLASSES: Record<Variant, string> = {
 
 const SIZE_CLASSES: Record<Size, string> = {
   md: "px-5 py-3 text-sm",
-  sm: "px-3.5 py-2 text-[13px]",
+  // O pequeno mede de 30 a 38px de altura: toca como se tivesse 44 (ver
+  // `.alvo-de-toque` em globals.css), sem crescer na tela.
+  sm: "alvo-de-toque px-3.5 py-2 text-[13px]",
 };
 
 /*

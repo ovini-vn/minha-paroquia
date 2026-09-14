@@ -703,3 +703,69 @@ body {
     box-shadow: var(--shadow-1);
   }
 }
+
+/*
+ * ÁREA DE TOQUE DE 44px, SEM MUDAR O DESENHO.
+ *
+ * 44px é a medida em que o dedo acerta sem mirar — a das diretrizes da
+ * Apple e a do nível AAA de acessibilidade. Medido a 375px antes desta
+ * classe: 204 alvos abaixo disso nas telas do fiel. Os ícones do topo com
+ * 38px, os botões pequenos com 30 a 38, "Ler as leituras de hoje" com 21, e
+ * "Todos os livros" da Bíblia com 20 — justamente para o público que mais
+ * erra o toque.
+ *
+ * Crescer o botão resolveria e mudaria a tela inteira. Esta classe estende
+ * só a parte TOCÁVEL: um retângulo invisível de pelo menos 44x44, centrado
+ * no elemento. O que se vê continua igual; o que se toca, não.
+ *
+ * Três cuidados de quem usar:
+ *
+ * - Alvos empilhados precisam de folga. Dois chips de 30px com 8px entre
+ *   as fileiras teriam as áreas invisíveis sobrepostas, e o toque no meio
+ *   cairia no de baixo. Ali o ajuste é outro (ver os chips da agenda).
+ * - `overflow: hidden` num ancestral corta a área invisível junto com o
+ *   resto. O seletor da agenda perdeu o `overflow-hidden` por isso.
+ * - Fica em `@layer components` para que um `absolute` do Tailwind no
+ *   mesmo elemento vença o `relative` daqui.
+ */
+@layer components {
+  .alvo-de-toque {
+    position: relative;
+  }
+  .alvo-de-toque::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/*
+ * CAIXINHAS E RÁDIOS: 20px de caixa, 44px de linha.
+ *
+ * A caixinha nativa do navegador tem 13px — medido em "Eu posso ajudar",
+ * onde cada opção tocável tinha 20px de altura contando a palavra ao lado.
+ * Tocar a palavra também marca (a caixinha mora dentro da <label>), mas
+ * 20px é menos da metade do dedo, e a caixinha de 13px quase não se vê.
+ *
+ * Regra de base, e não classe: são onze caixinhas em nove telas, cada uma
+ * com a sua <label> escrita de um jeito. Uma regra que alguém precisa
+ * lembrar de aplicar é a mesma lista esquecida que manteve as bolinhas
+ * acesas. Em `@layer base`, qualquer classe na própria tela ainda vence.
+ */
+@layer base {
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    accent-color: rgb(var(--color-primary));
+  }
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    min-height: 44px;
+  }
+}

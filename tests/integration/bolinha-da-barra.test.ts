@@ -8,6 +8,7 @@ import {
   caminhoComNovidade,
   caminhosNaoLidos,
   markNotificationsReadByPath,
+  situacaoDaBarra,
 } from "@/server/modules/notifications/service";
 import { cleanupTenantData } from "../helpers/cleanup";
 
@@ -140,6 +141,16 @@ describe("bolinha da barra", () => {
 
     const caminhos = await caminhosNaoLidos(parishId, fielId);
     expect([...caminhos].sort()).toEqual(["/avisos", "/oracao", "/servir/liturgia"]);
+  });
+
+  it("o layout recebe as duas respostas numa consulta só, iguais às separadas", async () => {
+    await aviso(fielId, "/biblia", "descoberta", 300);
+    await aviso(fielId, "/avisos", "urgente", 5);
+
+    expect(await situacaoDaBarra(parishId, fielId)).toEqual({
+      novidade: await caminhoComNovidade(parishId, fielId),
+      naoLidos: await caminhosNaoLidos(parishId, fielId),
+    });
   });
 
   it("dar por lida uma tela apaga todas as dela, e só as dela", async () => {

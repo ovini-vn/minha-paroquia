@@ -151,7 +151,7 @@ export default async function BibliaPage({
                         <Link
                           key={livro.slug}
                           href={`/biblia/${livro.slug}`}
-                          className="flex items-center justify-between gap-1.5 rounded-lg border border-border bg-surface px-3 py-2.5 transition-colors hover:border-primary hover:bg-primary-tint"
+                          className="flex min-h-11 items-center justify-between gap-1.5 rounded-lg border border-border bg-surface px-3 py-2.5 transition-colors hover:border-primary hover:bg-primary-tint"
                         >
                           <span className="min-w-0 truncate text-[13.5px] text-foreground">
                             {livro.name}

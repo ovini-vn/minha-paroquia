@@ -243,20 +243,24 @@ export function setPreference(userId: string, category: NotificationCategory, en
  * visitar. O sino do cabeçalho continua contando o não lido em geral.
  */
 export function caminhoComNovidade(parishId: string, userId: string): Promise<string | null> {
-  return withTenantContext(parishId, async (tx) => {
-    const maisRecente = await tx.notification.findFirst({
-      where: {
-        parishId,
-        userId,
-        category: { in: ["descoberta", "espiritual"] },
-        readAt: null,
-        linkPath: { not: null },
-      },
-      orderBy: { createdAt: "desc" },
-      select: { linkPath: true },
-    });
-    return maisRecente?.linkPath ?? null;
+  return withTenantContext(parishId, (tx) => novidadeMaisRecente(tx, parishId, userId));
+}
+
+type TxDeNotificacao = Parameters<Parameters<typeof withTenantContext>[1]>[0];
+
+async function novidadeMaisRecente(tx: TxDeNotificacao, parishId: string, userId: string) {
+  const maisRecente = await tx.notification.findFirst({
+    where: {
+      parishId,
+      userId,
+      category: { in: ["descoberta", "espiritual"] },
+      readAt: null,
+      linkPath: { not: null },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { linkPath: true },
   });
+  return maisRecente?.linkPath ?? null;
 }
 
 /**
@@ -268,14 +272,37 @@ export function caminhoComNovidade(parishId: string, userId: string): Promise<st
  * marcar nada.
  */
 export function caminhosNaoLidos(parishId: string, userId: string): Promise<string[]> {
-  return withTenantContext(parishId, async (tx) => {
-    const linhas = await tx.notification.findMany({
-      where: { parishId, userId, readAt: null, linkPath: { not: null } },
-      select: { linkPath: true },
-      distinct: ["linkPath"],
-    });
-    return linhas.map((l) => l.linkPath!).filter(Boolean);
+  return withTenantContext(parishId, (tx) => telasPendentes(tx, parishId, userId));
+}
+
+async function telasPendentes(tx: TxDeNotificacao, parishId: string, userId: string) {
+  const linhas = await tx.notification.findMany({
+    where: { parishId, userId, readAt: null, linkPath: { not: null } },
+    select: { linkPath: true },
+    distinct: ["linkPath"],
   });
+  return linhas.map((l) => l.linkPath!).filter(Boolean);
+}
+
+/**
+ * As duas perguntas do layout — a bolinha e as telas pendentes — numa
+ * transação só.
+ *
+ * O layout do app roda em TODA tela e já abria três transações em paralelo.
+ * Separadas, estas duas faziam quatro, e no desenvolvimento a quarta
+ * esbarrou no limite de espera do Prisma ("Unable to start a transaction
+ * in the given time", P2028) e derrubou a tela de notificações. Cada
+ * transação é uma conexão presa; uma pergunta a mais por tela não pode
+ * custar uma conexão a mais.
+ */
+export function situacaoDaBarra(
+  parishId: string,
+  userId: string,
+): Promise<{ novidade: string | null; naoLidos: string[] }> {
+  return withTenantContext(parishId, async (tx) => ({
+    novidade: await novidadeMaisRecente(tx, parishId, userId),
+    naoLidos: await telasPendentes(tx, parishId, userId),
+  }));
 }
 
 /**

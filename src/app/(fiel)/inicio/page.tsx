@@ -28,8 +28,8 @@ import { VideoDoPost } from "@/components/domain/VideoDoPost";
 import { OuvirAudioDoPost } from "@/components/domain/OuvirAudioDoPost";
 import { Retrato } from "@/components/ui/Retrato";
 import { CELEBRATION_TYPE_LABELS } from "@/lib/celebration-labels";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { InstalarNaTelaInicial } from "@/components/domain/InstalarNaTelaInicial";
+import { LidoAoVer } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 
@@ -169,6 +169,10 @@ export default async function HomePage() {
           actionLabel="Ver todas"
           actionHref="/comunidade"
         />
+        {/* Chegar à mensagem aqui conta como tê-la visto: a notificação dela
+            leva à aba Palavra, e sem isto a bolinha ficaria acesa lá para
+            quem já leu no Início. Ver `LidoAoVer`. */}
+        <LidoAoVer caminho="/oracao">
         <article className="relative overflow-hidden rounded-lg border border-border bg-surface p-5 before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
           <div className="flex items-center gap-3">
             <Retrato nome={assinatura.nome} fotoUrl={assinatura.fotoUrl} size="sm" />
@@ -205,6 +209,7 @@ export default async function HomePage() {
           <OuvirAudioDoPost mediaType={latestPost.mediaType} mediaUrl={latestPost.mediaUrl} />
 
         </article>
+        </LidoAoVer>
       </section>
     ) : null;
 
@@ -219,7 +224,6 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      <LidoAoAbrir caminho="/inicio" />
       {/* Hero — portal e caminho dourado, a assinatura da marca. */}
       <BleedTop>
         <section className="relative overflow-hidden bg-wash px-[18px] pb-[26px] pt-[30px] text-white">

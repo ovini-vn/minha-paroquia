@@ -36,7 +36,6 @@ import { AcoesRapidas } from "@/components/domain/AcoesRapidas";
 import { CreateAvisoForm } from "@/app/(admin)/painel/avisos/CreateAvisoForm";
 import { CreateEventForm } from "@/app/(admin)/painel/CreateEventForm";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 export const metadata: Metadata = { title: "Minha Comunidade" };
@@ -147,7 +146,6 @@ export default async function ComunidadePage() {
 
   return (
     <div className="flex flex-col">
-      <LidoAoAbrir caminho="/comunidade" />
       {/* Capa — a paróquia como lugar, não como cabeçalho de formulário. */}
       <BleedTop>
         <section className="relative overflow-hidden bg-wash px-[18px] pb-6 pt-7 text-white">

@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
 import {
-  caminhosComNovidade,
+  caminhoComNovidade,
+  caminhosNaoLidos,
   countUnreadNotifications,
 } from "@/server/modules/notifications/service";
+import { LidoAoNavegar } from "@/components/domain/LidoAoAbrir";
 import { destinoDoCaminho } from "@/components/layout/nav-items";
 import { getParish } from "@/server/modules/parishes/service";
 import { atributoDoTempo, getLiturgicalSeason } from "@/lib/liturgical-season";
@@ -24,24 +26,29 @@ export default async function FielLayout({ children }: { children: React.ReactNo
   // onde o convite entrega as pessoas; /bem-vindo mora fora dele, senão
   // este redirecionamento se chamaria em laço.
   if (session.membership && !session.onboardedAt) redirect("/bem-vindo");
-  const [unreadCount, parish, caminhosComDica] = await Promise.all([
+  const [unreadCount, parish, novidade, naoLidos] = await Promise.all([
     session.membership
       ? countUnreadNotifications(session.membership.parishId, session.userId)
       : Promise.resolve(0),
     session.membership ? getParish(session.membership.parishId) : Promise.resolve(null),
     session.membership
-      ? caminhosComNovidade(session.membership.parishId, session.userId)
+      ? caminhoComNovidade(session.membership.parishId, session.userId)
+      : Promise.resolve(null),
+    session.membership
+      ? caminhosNaoLidos(session.membership.parishId, session.userId)
       : Promise.resolve([] as string[]),
   ]);
 
   /*
-   * Os destinos que ganham bolinha — calculados AQUI, no servidor.
+   * O destino que ganha bolinha — calculado AQUI, no servidor, e no máximo UM.
    *
    * A barra é um componente de cliente e não pode consultar o banco. Passar
-   * a lista pronta evita que ela precise conhecer o formato de uma
-   * notificação para desenhar um ponto.
+   * o destino pronto evita que ela precise conhecer o formato de uma
+   * notificação para desenhar um ponto. Continua sendo uma lista porque a
+   * barra e o cabeçalho já recebem lista; ela só nunca passa de um item
+   * (ver `caminhoComNovidade`).
    */
-  const destinosComDica = [...new Set(caminhosComDica.map(destinoDoCaminho))];
+  const destinosComDica = novidade ? [destinoDoCaminho(novidade)] : [];
 
   const season = getLiturgicalSeason(new Date());
   // "Usar cor do Tempo Litúrgico" (/eu/aparencia): o atributo troca a paleta
@@ -83,7 +90,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
 
       <div className="flex flex-1 justify-center lg:block">
         <main id="conteudo" tabIndex={-1} className="w-full max-w-[440px] flex-1 animate-enter bg-background px-[18px] pb-24 pt-6 shadow-lg lg:mx-auto lg:max-w-6xl lg:px-8 lg:pb-16 lg:pt-10 lg:shadow-none xl:px-10">
-          {children}
+          <LidoAoNavegar caminhos={naoLidos}>{children}</LidoAoNavegar>
         </main>
       </div>
 

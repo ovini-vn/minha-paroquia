@@ -98,12 +98,16 @@ export default async function NotificationsPage({
   const notifications = truncado ? encontradas.slice(0, TETO_DE_NOTIFICACOES) : encontradas;
 
   /*
-   * A contagem do botão vem do BANCO, e da conta inteira.
+   * A contagem vem do BANCO, e da conta inteira — e o botão NÃO a mostra.
    *
    * Ela saía de `notifications.filter(...)` sobre a lista já cortada: o
    * botão dizia "marcar as 30 não lidas" e marcava 458, porque a ação
-   * sempre foi de conta inteira. Um botão que subestima o que faz é pior
-   * do que um botão sem número.
+   * sempre foi de conta inteira. Corrigido o número, sobrou outro defeito:
+   * logo abaixo dele, a tarja "Não lidas" conta só o período escolhido. A
+   * tela dizia "Marcar as 16 não lidas" em cima de "Não lidas 10", e as duas
+   * estavam certas — o que ninguém tem como adivinhar. O botão diz o que
+   * faz, "todas", e o número fica com a tarja, que divide o que está na
+   * tela. Aqui a contagem só decide se o botão aparece.
    */
   const unreadCount = naoLidasNaConta;
 
@@ -114,52 +118,11 @@ export default async function NotificationsPage({
         description="O que aconteceu na sua comunidade desde a última visita."
       />
 
-      {/* Notificação FORA do app — a que lembra do compromisso assumido. */}
-      <Card className="mb-4 border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">
-        <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
-            <BellRing className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[14.5px] font-medium text-foreground">Avisos no aparelho</p>
-            <p className="mb-3 mt-1 text-[13px] leading-relaxed text-muted">
-              Receba um lembrete na véspera e no dia dos compromissos que você assumiu — escala da
-              liturgia, mutirão em que se ofereceu, atendimento marcado. Chega mesmo com o app
-              fechado.
-            </p>
-            <PushToggle vapidPublicKey={vapidPublicKey} />
-
-            {aparelhos.length > 0 && (
-              <div className="mt-4 border-t border-border pt-3">
-                <Eyebrow className="mb-2">Aparelhos registrados</Eyebrow>
-                <div className="flex flex-col gap-1.5">
-                  {aparelhos.map((aparelho) => (
-                    <form
-                      key={aparelho.id}
-                      action={unsubscribeFromPushAction}
-                      className="flex items-center gap-2"
-                    >
-                      <input type="hidden" name="endpoint" value={aparelho.endpoint} />
-                      <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
-                        {descreverAparelho(aparelho.userAgent)}
-                      </span>
-                      <Button type="submit" variant="ghost" size="sm">
-                        Remover
-                      </Button>
-                    </form>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </Card>
-
       {unreadCount > 0 && (
         <form action={markAllNotificationsReadAction} className="mb-4">
           <Button type="submit" variant="ghost" size="sm">
             <CheckCheck className="h-4 w-4" strokeWidth={1.5} aria-hidden />
-            Marcar {unreadCount === 1 ? "a não lida" : `as ${unreadCount} não lidas`}
+            {unreadCount === 1 ? "Marcar como lida" : "Marcar todas como lidas"}
           </Button>
         </form>
       )}
@@ -306,11 +269,62 @@ export default async function NotificationsPage({
         </p>
       )}
 
-      {/* A âncora é o destino de Eu › Notificações. Quem chega por lá veio
-          ESCOLHER avisos, e esta seção fica depois da lista inteira — umas
-          quatro telas abaixo no celular. O sininho continua abrindo no topo. */}
+      {/*
+        COMO QUERO SER AVISADO — o aparelho e as categorias, juntos no fim.
+
+        A âncora é o destino de Eu › Notificações. Quem chega por lá veio
+        ESCOLHER avisos, e esta seção fica depois da lista inteira — umas
+        quatro telas abaixo no celular. O sininho continua abrindo no topo.
+
+        O cartão "Avisos no aparelho" morava no TOPO da tela, acima da
+        lista. Quem toca no sininho veio ler o que chegou, e encontrava
+        primeiro um cartão de configuração de duzentos pixels — para sempre,
+        inclusive quem já tinha ligado os avisos. Ligar o aparelho é uma
+        escolha, e escolhas ficam aqui, ao lado das outras.
+      */}
       <section id="o-que-receber" className="scroll-mt-24 pt-7">
-        <Eyebrow tone="accent" className="mb-3">
+        {/* Notificação FORA do app — a que lembra do compromisso assumido. */}
+        <Card className="border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">
+          <div className="flex items-start gap-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gold/15 text-[#8a6b24] dark:text-gold">
+              <BellRing className="h-[18px] w-[18px]" strokeWidth={1.5} aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14.5px] font-medium text-foreground">Avisos no aparelho</p>
+              <p className="mb-3 mt-1 text-[13px] leading-relaxed text-muted">
+                Receba um lembrete na véspera e no dia dos compromissos que você assumiu — escala da
+                liturgia, mutirão em que se ofereceu, atendimento marcado. Chega mesmo com o app
+                fechado.
+              </p>
+              <PushToggle vapidPublicKey={vapidPublicKey} />
+
+              {aparelhos.length > 0 && (
+                <div className="mt-4 border-t border-border pt-3">
+                  <Eyebrow className="mb-2">Aparelhos registrados</Eyebrow>
+                  <div className="flex flex-col gap-1.5">
+                    {aparelhos.map((aparelho) => (
+                      <form
+                        key={aparelho.id}
+                        action={unsubscribeFromPushAction}
+                        className="flex items-center gap-2"
+                      >
+                        <input type="hidden" name="endpoint" value={aparelho.endpoint} />
+                        <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
+                          {descreverAparelho(aparelho.userAgent)}
+                        </span>
+                        <Button type="submit" variant="ghost" size="sm">
+                          Remover
+                        </Button>
+                      </form>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <Eyebrow tone="accent" className="mb-3 mt-7">
           O que quero receber
         </Eyebrow>
         <div className="lista-adaptavel">

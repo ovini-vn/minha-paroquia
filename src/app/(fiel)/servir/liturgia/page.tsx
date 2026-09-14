@@ -12,7 +12,6 @@ import { formatDateTime } from "@/lib/date";
 import { WEEKDAY_LABELS } from "@/lib/pastoral-care-labels";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { AvailabilityForm } from "./AvailabilityForm";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 
 export const metadata: Metadata = { title: "Escala da liturgia" };
 
@@ -35,7 +34,6 @@ export default async function LiturgiaPage() {
 
   return (
     <div className="flex flex-col">
-      <LidoAoAbrir caminho="/servir/liturgia" />
       <PageHeader
         title="Liturgia"
         description="Diga em que função você pode servir nas celebrações — leitura, canto, acolhida e mais."

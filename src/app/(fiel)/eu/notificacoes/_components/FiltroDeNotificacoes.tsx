@@ -1,9 +1,16 @@
 import Link from "next/link";
 
+/*
+ * Os nomes cabem numa linha só num celular de 375px — medido: 277px de
+ * 339. "Últimos 7 dias · Últimos 30 dias · Desde o começo" media 372 e
+ * quebrava em duas, e com a tarja de não lidas eram três fileiras de botão
+ * antes da primeira notificação. "Última semana" é também como a pessoa
+ * fala; ninguém diz "últimos 7 dias" em voz alta.
+ */
 export const PERIODOS = [
-  { id: "7", rotulo: "Últimos 7 dias", dias: 7 },
-  { id: "30", rotulo: "Últimos 30 dias", dias: 30 },
-  { id: "tudo", rotulo: "Desde o começo", dias: null },
+  { id: "7", rotulo: "Última semana", dias: 7 },
+  { id: "30", rotulo: "Último mês", dias: 30 },
+  { id: "tudo", rotulo: "Tudo", dias: null },
 ] as const;
 
 export type PeriodoDeNotificacoes = (typeof PERIODOS)[number]["id"];

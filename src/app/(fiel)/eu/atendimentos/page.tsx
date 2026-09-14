@@ -15,7 +15,6 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatDateTime } from "@/lib/date";
 import { APPOINTMENT_CATEGORY_LABELS, APPOINTMENT_STATUS_LABELS } from "@/lib/pastoral-care-labels";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
 
 /** Tom do badge por situação — cor reforça o texto, nunca o substitui. */
@@ -41,7 +40,6 @@ export default async function AppointmentsPage() {
 
   return (
     <div className="flex flex-col">
-      <LidoAoAbrir caminho="/eu/atendimentos" />
       <PageHeader
         title="Atendimentos"
         description="Conversas e confissões que você pediu — e, se você é sacerdote, as que pediram a você."

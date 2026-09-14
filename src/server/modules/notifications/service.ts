@@ -220,27 +220,31 @@ export function setPreference(userId: string, category: NotificationCategory, en
 }
 
 /**
- * Os caminhos com novidade que esta pessoa ainda não abriu.
+ * A novidade que acende a bolinha da barra — UMA, a mais recente.
  *
- * Alimenta a bolinha da barra de navegação: cada caminho vira um ponto no
- * destino que leva até ele, e o ponto some quando ela chega lá — porque
- * abrir a tela dá a notificação por lida (`markNotificationsReadByPath`).
+ * O ponto aparece no destino que leva até ela e some quando a pessoa chega
+ * lá, porque abrir a tela dá a notificação por lida (ver `caminhosNaoLidos`
+ * e `LidoAoNavegar`). Aí a próxima novidade, se houver, acende o seu.
+ *
+ * Era uma bolinha por caminho, e medido no banco de desenvolvimento a
+ * conta de demonstração tinha nove caminhos pendentes: quatro das cinco
+ * abas acesas. Quando tudo tem ponto, nenhum ponto diz "olhe aqui". O
+ * acúmulo tinha uma segunda causa, pior — abrir a tela quase nunca dava a
+ * notificação por lida, porque só seis telas marcavam e o servidor aceitava
+ * uma lista fixa de endereços. Os pontos nunca apagavam.
  *
  * DUAS categorias, e só duas:
  *
- * - `descoberta` — a trilha que ensina o app, uma dica por vez.
+ * - `descoberta` — a trilha que ensina o app, duas dicas por semana.
  * - `espiritual` — a Palavra do Padre, que nesta paróquia sai TODO DIA.
- *   É a única coisa diária que o app tem, e a barra não dava sinal nenhum
- *   de que havia algo novo: quem abriu ontem não tinha como saber.
  *
  * As outras ficam de fora de propósito. Aviso urgente e escala já chegam
  * por notificação e são sobre um compromisso, não sobre uma tela a
- * visitar; acender os cinco destinos apagaria o sinal dos dois que
- * importam. O sino do cabeçalho continua contando o não lido em geral.
+ * visitar. O sino do cabeçalho continua contando o não lido em geral.
  */
-export function caminhosComNovidade(parishId: string, userId: string): Promise<string[]> {
+export function caminhoComNovidade(parishId: string, userId: string): Promise<string | null> {
   return withTenantContext(parishId, async (tx) => {
-    const linhas = await tx.notification.findMany({
+    const maisRecente = await tx.notification.findFirst({
       where: {
         parishId,
         userId,
@@ -248,6 +252,25 @@ export function caminhosComNovidade(parishId: string, userId: string): Promise<s
         readAt: null,
         linkPath: { not: null },
       },
+      orderBy: { createdAt: "desc" },
+      select: { linkPath: true },
+    });
+    return maisRecente?.linkPath ?? null;
+  });
+}
+
+/**
+ * As telas onde esta pessoa tem notificação não lida, de QUALQUER categoria.
+ *
+ * É a lista que `LidoAoNavegar` consulta a cada troca de tela: só quando o
+ * endereço aberto está aqui ele pede ao servidor para marcar. Sem ela, cada
+ * navegação do app seria uma escrita no banco para, quase sempre, não
+ * marcar nada.
+ */
+export function caminhosNaoLidos(parishId: string, userId: string): Promise<string[]> {
+  return withTenantContext(parishId, async (tx) => {
+    const linhas = await tx.notification.findMany({
+      where: { parishId, userId, readAt: null, linkPath: { not: null } },
       select: { linkPath: true },
       distinct: ["linkPath"],
     });

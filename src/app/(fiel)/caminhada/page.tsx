@@ -16,7 +16,6 @@ import { Path, PathItem } from "@/components/ui/Path";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { SACRAMENT_TYPE_LABELS, SACRAMENT_STATUS_LABELS } from "@/lib/caminhada-labels";
 import { formatDateOnly } from "@/lib/date";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { DuasColunas } from "@/components/layout/DuasColunas";
 import { hojeEmBrasilia } from "@/lib/brasilia";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
@@ -46,7 +45,6 @@ export default async function CaminhadaPage() {
 
   return (
     <div className="flex flex-col">
-      <LidoAoAbrir caminho="/caminhada" />
       <PageHeader
         title="Minha Caminhada"
         description="Uma memória pessoal da sua fé. Parte fica só com você — veja abaixo o que é de cada um."

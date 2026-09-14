@@ -5,7 +5,6 @@ import { listPublishedAvisos } from "@/server/modules/avisos/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
-import { LidoAoAbrir } from "@/components/domain/LidoAoAbrir";
 import { formatDateTime } from "@/lib/date";
 import { Leitura } from "@/components/layout/DuasColunas";
 
@@ -39,10 +38,6 @@ export default async function AvisosPage() {
 
   return (
     <Leitura className="flex flex-col">
-      {/* Chegar aqui É ter lido: não faz sentido pedir um segundo toque em
-          outra tela para dizer que se leu o que se acabou de ler. */}
-      <LidoAoAbrir caminho="/avisos" />
-
       <PageHeader
         title="Avisos"
         description="O que a paróquia comunicou, do mais recente para o mais antigo."

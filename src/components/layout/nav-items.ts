@@ -21,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   // Minha Caminhada e a Bíblia vivem sob Palavra. O ENDEREÇO continua
   // /oracao de propósito: notificações já gravadas apontam para ele, e
   // trocar a rota quebraria os avisos que estão no aparelho das pessoas.
-  { href: "/oracao", label: "Palavra", icon: BookOpen, alsoMatches: ["/caminhada", "/biblia"] },
+  { href: "/oracao", label: "Palavra", icon: BookOpen, alsoMatches: ["/caminhada", "/biblia", "/rezar"] },
   { href: "/servir", label: "Servir", icon: HeartHandshake },
   { href: "/eu", label: "Eu", icon: User },
 ];

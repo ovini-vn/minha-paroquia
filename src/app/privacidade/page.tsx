@@ -96,6 +96,7 @@ export default function PrivacidadePage() {
             "registro de participação no dízimo, por período",
             "presença em encontros de catequese e sacramentos recebidos",
             "interesse em servir em pastorais e ministérios",
+            "as novenas que você começou em Rezar e em que dia de cada uma você está — só isso: o que você pede em silêncio durante a oração não é escrito em lugar nenhum, e ninguém da paróquia vê as suas novenas",
             "sua preferência de tema visual e, se você autorizar, o registro para receber notificações",
           ]}
         />

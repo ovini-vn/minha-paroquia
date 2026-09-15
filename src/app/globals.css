@@ -769,3 +769,67 @@ body {
     min-height: 44px;
   }
 }
+
+/*
+ * A conta da vez respira — devagar, como quem passa a conta entre os dedos.
+ *
+ * `transform-origin` vem em pixels no próprio elemento (PedacoDoTerco.tsx),
+ * medidos no espaço do desenho; por isso `view-box`. Quem pediu menos
+ * movimento no aparelho vê a conta acesa, parada.
+ */
+@keyframes conta-respira {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+.conta-atual {
+  transform-box: view-box;
+  animation: conta-respira 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .conta-atual {
+    animation: none;
+  }
+}
+
+/*
+ * A barra das mãos em oração no tamanho de letra Grande.
+ *
+ * No G tudo é 1,5 vez maior, e a barra normal cobria a instrução e o começo
+ * da oração — medido a 390px: a Ave-Maria só aparecia rolando, com a barra
+ * por cima. Aqui ela vira uma linha: o círculo desce para 44px (que no G
+ * são 66 na tela, ainda maior que o dedo), o nome da próxima oração vai para
+ * o lado, e somem a contagem e a palavra "Voltar" (a seta fica).
+ */
+:root[data-font-scale="g"] .barra-das-maos {
+  padding-block: 0.25rem;
+}
+:root[data-font-scale="g"] .barra-das-maos-botao {
+  flex-direction: row;
+  gap: 0.5rem;
+}
+:root[data-font-scale="g"] .barra-das-maos-circulo {
+  width: 44px;
+  height: 44px;
+}
+:root[data-font-scale="g"] .barra-das-maos-circulo svg {
+  width: 26px;
+  height: 26px;
+}
+:root[data-font-scale="g"] .barra-das-maos-rotulo {
+  max-width: 7rem;
+}
+:root[data-font-scale="g"] .barra-das-maos-contagem,
+:root[data-font-scale="g"] .barra-das-maos-voltar {
+  display: none;
+}
+
+/* No Grande, o "6ª Ave-Maria de 10" do cartão quebrava em duas linhas e
+   empurrava a oração ainda mais para baixo. */
+:root[data-font-scale="g"] .contador-da-conta {
+  font-size: 17px;
+}

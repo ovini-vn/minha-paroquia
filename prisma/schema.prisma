@@ -141,6 +141,7 @@ model User {
   provinceMemberships           ProvinceMembership[]
   nationalMembership            NationalMembership?
   pushSubscriptions             WebPushSubscription[]
+  novenas                       NovenaAndamento[]
   massParticipations            MassParticipation[]
   sacraments                    Sacrament[]
   confessionLogs                ConfessionLog[]
@@ -1860,6 +1861,32 @@ model NotificationPreference {
 
   @@unique([userId, category])
   @@map("notification_preferences")
+}
+
+/// Em que dia de cada novena a pessoa está.
+///
+/// Da CONTA, e não da paróquia — como as preferências de notificação: a
+/// novena é oração pessoal, e continua se a pessoa mudar de paróquia. Por
+/// isso sem `parish_id` e sem RLS; toda leitura e escrita filtra por
+/// `user_id` no serviço (src/server/modules/novenas/service.ts).
+///
+/// O CONTEÚDO da novena não mora no banco: está em src/lib/oracoes/novenas.ts,
+/// e `novena` guarda o slug dela. Uma linha por pessoa e novena; recomeçar
+/// reaproveita a linha.
+model NovenaAndamento {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  novena      String
+  /// Quantos dias já rezou: 0 a 9. O próximo a rezar é este + 1.
+  diasRezados Int       @default(0) @map("dias_rezados")
+  ultimoDiaEm DateTime? @map("ultimo_dia_em")
+  iniciadaEm  DateTime  @default(now()) @map("iniciada_em")
+  concluidaEm DateTime? @map("concluida_em")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, novena])
+  @@map("novena_andamentos")
 }
 
 enum PrayerRequestVisibility {

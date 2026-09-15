@@ -31,6 +31,7 @@ import { Arch } from "@/components/brand/Arch";
 import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
 import { DuasColunas } from "@/components/layout/DuasColunas";
+import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
 
 export const metadata: Metadata = { title: "Palavra" };
 
@@ -161,13 +162,43 @@ export default async function OracaoPage() {
         <PalavraDoDiaCard palavra={palavraDoDia} />
       </section>
 
+      {/*
+        REZAR — depois da Palavra, porque é o que vem depois de ouvir.
+
+        Um cartão só, com as quatro orações dentro: terço, rosário, terço da
+        misericórdia e novenas. Contorno dourado e não fundo cheio: o fundo
+        cheio desta tela é da Bíblia, e dois cartões gritando lado a lado
+        não destacam nenhum.
+      */}
+      <section className="pt-[26px]">
+        <Link
+          href="/rezar"
+          className="flex items-center gap-3.5 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 py-4 transition-colors hover:border-gold"
+        >
+          {/* O mesmo círculo dourado dos outros cartões de contorno dourado
+              do app — e que acompanha o tema escuro. */}
+          <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-gold/15 text-[#8a6b24] dark:text-gold">
+            <MaosEmOracao className="h-7 w-7" strokeWidth={1.4} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-serif text-[22px] font-semibold leading-tight text-foreground">Rezar</span>
+            <span className="mt-0.5 block text-[13.5px] leading-snug text-muted">
+              Rosário, Terço, Terço da Misericórdia e Novenas
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
+        </Link>
+      </section>
+
           </>
         }
         lateral={
           <>
       <section className="pt-[26px]">
+        {/* Era "Rezar hoje" — o nome ficou com o botão Rezar, que guia a oração.
+            O que mora aqui é pedir, registrar e conversar. */}
         <Eyebrow tone="accent" className="mb-3">
-          Rezar hoje
+          Oração e sacramentos
         </Eyebrow>
 
         <Card className="px-3.5 py-1.5">

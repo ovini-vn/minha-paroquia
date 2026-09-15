@@ -37,6 +37,14 @@ import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 
 export const metadata: Metadata = { title: "Palavra" };
 
+/** Os quatro botões do topo — ver o comentário onde são desenhados. */
+const FERRAMENTAS = [
+  { href: "/biblia", icon: BookOpen, label: "Bíblia" },
+  { href: "/rezar", icon: MaosEmOracao, label: "Rezar" },
+  { href: "/oracao/pedidos", icon: HandHeart, label: "Pedir oração" },
+  { href: "/caminhada", icon: Footprints, label: "Minha caminhada" },
+] as const;
+
 export default async function OracaoPage() {
   const session = await getSessionContext();
   if (!session?.membership) {
@@ -89,67 +97,47 @@ export default async function OracaoPage() {
         </section>
       </BleedTop>
 
-      {/* A BÍBLIA vem primeiro, logo abaixo do dia litúrgico.
-          Antes havia aqui um "Evangelho de hoje" que a paróquia tinha de
-          digitar todo dia — e que ficava dizendo "sua paróquia ainda não
-          publicou". Era a mesma coisa que a Palavra do Padre, com o
-          agravante de exigir trabalho diário para não parecer abandonado.
-
-          O contraste é o dos atalhos do Início: fundo cheio, ícone branco.
-          Fica só nesta tela — se tudo se destaca, nada se destaca.
-
-          NÃO sobrepor à faixa litúrgica. O card que ficava aqui antes era
-          branco, e branco sobre o verde da faixa contrasta; este é verde,
-          e sobreposto ele desaparece dentro dela. Precisa do fundo claro
-          da página embaixo para ter o mesmo efeito do Início. */}
-      <Link
-        href="/biblia"
-        className="mt-5 flex items-center gap-3.5 rounded-lg bg-primary px-4 py-4 text-white shadow transition-transform dark:bg-primary-light hover:-translate-y-px"
-      >
-        <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-white/15">
-          <BookOpen className="h-[26px] w-[26px]" strokeWidth={1.5} aria-hidden />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-serif text-[19px] font-semibold leading-tight">Bíblia</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-white/80">
-            Os 73 livros, para ler e procurar
-          </span>
-        </span>
-        <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
-      </Link>
-
       {/*
-        REZAR, logo abaixo da Bíblia — no lugar que foi do Catecismo enquanto
-        ele está oculto (15/09/2026, decisão do usuário). Antes ficava depois
-        da Palavra do Dia, duas telas abaixo.
+        AS FERRAMENTAS DE ORAÇÃO, em quatro botões iguais aos atalhos do
+        Início (15/09/2026, decisão do usuário): Bíblia, Rezar, Pedir oração e
+        Minha caminhada. É o que a pessoa vem fazer quando toca em Orações —
+        ler, rezar, pedir e registrar —, e fica tudo à vista antes de rolar.
 
-        Um cartão só, com as quatro orações dentro: terço, rosário, terço da
-        misericórdia e novenas. Contorno dourado e não fundo cheio: o fundo
-        cheio desta tela é da Bíblia, e dois cartões gritando lado a lado não
-        destacam nenhum. Mesma altura e mesmo tamanho de título da Bíblia,
-        para os dois lerem como par.
+        Antes eram dois cartões compridos (a Bíblia cheia e o Rezar dourado),
+        e pedir oração e a Caminhada moravam na coluna de baixo, depois da
+        Palavra do Padre e do Evangelho.
+
+        O desenho é o mesmo do Início de propósito — quadrado cheio, ícone
+        branco, nome embaixo: quem aprendeu lá reconhece aqui. Quatro numa
+        fileira no celular; no tamanho de letra G, a regra de
+        `.grade-de-atalhos` em globals.css passa para duas colunas.
+
+        NÃO sobrepor à faixa litúrgica: quadrado cheio sobre a faixa da mesma
+        cor desaparece dentro dela. Precisa do fundo claro embaixo.
       */}
-      <Link
-        href="/rezar"
-        className="mt-2.5 flex items-center gap-3.5 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 py-4 transition-colors hover:border-gold"
-      >
-        {/* O mesmo círculo dourado dos outros cartões de contorno dourado
-            do app — e que acompanha o tema escuro. */}
-        <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full bg-gold/15 text-[#8a6b24] dark:text-gold">
-          <MaosEmOracao className="h-[26px] w-[26px]" strokeWidth={1.4} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-serif text-[19px] font-semibold leading-tight text-foreground">Rezar</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-muted">
-            Rosário, Terço e Novenas
-          </span>
-        </span>
-        <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
-      </Link>
+      <nav aria-label="Ferramentas de oração" className="pt-5">
+        <div className="grade-de-atalhos grid grid-cols-4 gap-2.5 lg:max-w-[34rem]">
+          {FERRAMENTAS.map((ferramenta) => {
+            const Icone = ferramenta.icon;
+            return (
+              <Link
+                key={ferramenta.href}
+                href={ferramenta.href}
+                className="flex flex-col items-center gap-2 rounded-xl px-0.5 pb-2 pt-1 text-center transition-transform hover:-translate-y-px"
+              >
+                <span className="mx-auto grid aspect-square w-full max-w-[96px] place-items-center rounded-[22px] bg-primary text-white shadow-sm transition-colors dark:bg-primary-light">
+                  <Icone className="h-[34px] w-[34px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="text-[13px] font-medium leading-tight text-foreground">{ferramenta.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* O CATECISMO: é para onde se vai quando a pergunta é "o que a Igreja
-          ensina sobre isso?". Contorno e não fundo cheio — o destaque desta
-          tela é da Bíblia.
+          ensina sobre isso?". Contorno e não fundo cheio — os botões cheios
+          desta tela são as ferramentas de oração.
           Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts). */}
       {CATECISMO_ATIVO && (
       <Link
@@ -173,7 +161,7 @@ export default async function OracaoPage() {
 
       {/*
         Principal: a palavra do padre e a leitura do dia — o que se LÊ.
-        Lateral: rezar hoje e o mural, que são atalhos e consulta.
+        Lateral: falar com um sacerdote e o mural.
       */}
       <DuasColunas
         principal={
@@ -222,25 +210,14 @@ export default async function OracaoPage() {
         lateral={
           <>
       <section className="pt-[26px]">
-        {/* Era "Rezar hoje" — o nome ficou com o botão Rezar, que guia a oração.
-            O que mora aqui é pedir, registrar e conversar. */}
+        {/* Pedidos de oração e Minha caminhada subiram para os botões do topo
+            (15/09/2026). Fica aqui o que não virou botão: conversar com um
+            sacerdote. */}
         <Eyebrow tone="accent" className="mb-3">
-          Oração e sacramentos
+          Sacramentos
         </Eyebrow>
 
         <Card className="px-3.5 py-1.5">
-          <RowLink
-            href="/oracao/pedidos"
-            icon={HandHeart}
-            title="Pedidos de oração"
-            subtitle="Envie ao pároco ou compartilhe no mural"
-          />
-          <RowLink
-            href="/caminhada"
-            icon={Footprints}
-            title="Minha caminhada"
-            subtitle="Sacramentos, missas e confissões"
-          />
           <RowLink
             href="/comunidade/sacerdotes"
             icon={MessagesSquare}

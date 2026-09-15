@@ -47,11 +47,12 @@ import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
  * o pedido de alguém e marcar a conversa. A primeira fileira é delas, ao
  * lado da Agenda; o resto vem depois.
  *
- * "Pedir oração" virou "Orações", e abre o Rezar (15/09/2026, decisão do
- * usuário). Um botão de AÇÃO — mandar um pedido — no meio de botões que são
- * LUGARES destoava. "Orações" é um lugar, e o que a pessoa encontra nele é
- * rezar: terço, rosário, misericórdia e novenas. Pedir oração continua na
- * aba Palavra, em Pedidos de oração.
+ * "Pedir oração" virou "Orações" (15/09/2026, decisão do usuário). Um botão
+ * de AÇÃO — mandar um pedido — no meio de botões que são LUGARES destoava.
+ * "Orações" abre a aba Palavra, que no topo tem as quatro ferramentas de
+ * oração: Bíblia, Rezar, Pedir oração e Minha caminhada. É a exceção à regra
+ * de não espelhar a barra, pedida assim: para quem pensa "vou rezar", o
+ * nome da aba, Palavra, não diz que é ali.
  *
  * Os ícones são os mesmos da aba Palavra para os mesmos destinos: quem
  * reconhece o desenho num lugar reconhece no outro — as mãos em oração são
@@ -63,7 +64,7 @@ import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
  */
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
-  { href: "/rezar", icon: MaosEmOracao, label: "Orações" },
+  { href: "/oracao", icon: MaosEmOracao, label: "Orações" },
   { href: "/comunidade/sacerdotes", icon: MessagesSquare, label: "Falar com o padre" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
   { href: "/doacao", icon: HandCoins, label: "Ofertar" },

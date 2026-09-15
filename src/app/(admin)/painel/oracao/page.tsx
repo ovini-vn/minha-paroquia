@@ -84,7 +84,7 @@ export default async function ModerarOracaoPage() {
 
       <p className="text-[12.5px] leading-relaxed text-muted">
         Pedidos marcados como “só o padre” não passam por aqui — vão direto para o sacerdote, em
-        Palavra › Pedidos de oração.
+        Palavra › Pedir oração.
       </p>
     </div>
   );

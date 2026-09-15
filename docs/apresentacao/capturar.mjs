@@ -82,6 +82,20 @@ function obterToken() {
 await conferirServidor();
 const token = obterToken();
 
+/**
+ * O TAMANHO DE LETRA DOS PRINTS: M, e não o padrão.
+ *
+ * As apresentações passam em projetor, e quem acompanha pode enxergar mal
+ * (pedido do usuário em 15/09/2026). No P, o texto do app dentro da moldura
+ * de celular somia na parede. O G foi testado e descartado para os prints
+ * em geral: o Início mostrava só o cabeçalho e a próxima missa, e o nome da
+ * paróquia saía cortado — a tela deixava de mostrar o que o slide descreve.
+ * O M cresce a letra e mantém a tela reconhecível.
+ *
+ * O G continua no print "letra-grande", que existe para mostrar o G.
+ */
+const TAMANHO_DOS_PRINTS = "m";
+
 /** Cada tela vira um arquivo. `espera` é o que precisa existir antes do clique do obturador. */
 const TELAS = [
   { arquivo: "inicio", url: "/inicio", espera: "text=A VIDA DA PARÓQUIA" },
@@ -235,10 +249,9 @@ for (const tela of TELAS) {
     // dele que todas as cores da tela descem.
     // Tamanho de letra: a preferência real mora no banco; aqui basta o
     // atributo, que é o que o CSS lê.
-    if (tela.fontScale) {
-      await pagina.evaluate((v) => document.documentElement.setAttribute("data-font-scale", v), tela.fontScale);
-      await pagina.waitForTimeout(400);
-    }
+    const tamanho = tela.fontScale ?? TAMANHO_DOS_PRINTS;
+    await pagina.evaluate((v) => document.documentElement.setAttribute("data-font-scale", v), tamanho);
+    await pagina.waitForTimeout(400);
 
     if (tela.espera) await pagina.waitForSelector(tela.espera, { timeout: 15_000 });
 
@@ -299,6 +312,10 @@ for (const tela of TELAS) {
       await pagina.waitForTimeout(500);
     }
 
+    // De novo junto ao obturador, pela mesma razão do tempo litúrgico: uma
+    // nova renderização depois da hidratação devolveria o tamanho real.
+    await pagina.evaluate((v) => document.documentElement.setAttribute("data-font-scale", v), tamanho);
+    await pagina.waitForTimeout(300);
     await pagina.screenshot({ path: path.join(DESTINO, `${tela.arquivo}.png`) });
     console.log(`ok    ${tela.arquivo.padEnd(22)} ${tela.url}`);
   } catch (erro) {

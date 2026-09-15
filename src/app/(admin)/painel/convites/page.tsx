@@ -11,7 +11,9 @@ import { Button } from "@/components/ui/Button";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { CreateInviteForm } from "../CreateInviteForm";
 
-export const metadata: Metadata = { title: "Convites" };
+// Desligado, sem título próprio — senão a página de "não existe" mostraria
+// "Convites" na aba do navegador.
+export const metadata: Metadata = CONVITES_ATIVOS ? { title: "Convites" } : {};
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendente",

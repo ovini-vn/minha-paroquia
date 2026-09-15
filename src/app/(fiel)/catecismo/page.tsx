@@ -18,7 +18,10 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
 
-export const metadata: Metadata = { title: "Catecismo" };
+// Desligado, sem título próprio: a página de "não existe" herdava o
+// "Catecismo" na aba do navegador. Assim a aba mostra o mesmo "Minha
+// Paróquia" de qualquer endereço que não existe.
+export const metadata: Metadata = CATECISMO_ATIVO ? { title: "Catecismo" } : {};
 
 /**
  * O Catecismo da Igreja Católica: achar o parágrafo, e abrir no Vaticano.

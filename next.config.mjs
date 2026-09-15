@@ -65,11 +65,20 @@ const nextConfig = {
           // Sai o domínio na navegação para fora, nunca o caminho: o
           // endereço de uma tela pode conter identificador de paróquia.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // Nada aqui usa câmera, microfone ou localização. Negar tudo
-          // significa que um script de terceiro também não consegue pedir.
+          // Câmera e localização: nada aqui usa. Negar significa que um
+          // script de terceiro também não consegue pedir.
+          //
+          // O MICROFONE é `(self)` desde 15/09/2026, por causa do Terço com
+          // a voz. Com `microphone=()` o navegador recusava antes de
+          // perguntar à pessoa: o Terço dizia "bloqueado" com o microfone
+          // permitido nas configurações do Chrome. Liberar só na rota do
+          // Terço não serve — o app troca de tela sem recarregar, e esta
+          // regra vale para a página carregada primeiro. `(self)` libera
+          // para o próprio app, continua negando a iframe de fora, e o
+          // navegador ainda pergunta à pessoa antes de ligar.
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+            value: "camera=(), microphone=(self), geolocation=(), payment=(), usb=()",
           },
           {
             key: "Strict-Transport-Security",

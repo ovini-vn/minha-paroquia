@@ -97,6 +97,7 @@ export default function PrivacidadePage() {
             "presença em encontros de catequese e sacramentos recebidos",
             "interesse em servir em pastorais e ministérios",
             "as novenas que você começou em Rezar e em que dia de cada uma você está — só isso: o que você pede em silêncio durante a oração não é escrito em lugar nenhum, e ninguém da paróquia vê as suas novenas",
+            "no Terço com a voz (em teste), o microfone só fica ligado naquela tela enquanto você reza; o aplicativo não grava nem guarda o áudio, e a transformação da voz em texto é feita pelo serviço do próprio navegador (no Chrome, o do Google)",
             "sua preferência de tema visual e, se você autorizar, o registro para receber notificações",
           ]}
         />

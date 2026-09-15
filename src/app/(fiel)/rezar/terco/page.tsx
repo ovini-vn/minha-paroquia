@@ -9,6 +9,8 @@ import {
 } from "@/lib/oracoes/misterios";
 import { roteiroDoTerco } from "@/lib/oracoes/roteiros";
 import { SessaoDeOracao } from "@/components/oracao/SessaoDeOracao";
+import { TERCO_COM_A_VOZ_EM_TESTE } from "@/lib/funcionalidades";
+import { Mic } from "lucide-react";
 
 export const metadata: Metadata = { title: "Terço" };
 
@@ -53,6 +55,22 @@ export default async function TercoPage({
           </Link>
         ))}
       </div>
+
+      {/* Protótipo do terço pela voz — ver `TERCO_COM_A_VOZ_EM_TESTE`. */}
+      {TERCO_COM_A_VOZ_EM_TESTE && (
+        <Link
+          href={escolhido === doDia ? "/rezar/terco/voz" : `/rezar/terco/voz?misterios=${escolhido}`}
+          className="mt-5 flex items-center gap-3 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-3.5 py-3 transition-colors hover:border-gold"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold/15 text-[#8a6b24] dark:text-gold">
+            <Mic className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[14.5px] font-semibold text-foreground">Rezar com a voz (em teste)</span>
+            <span className="block text-[13px] leading-snug text-muted">O aplicativo ouve e passa as orações sozinho</span>
+          </span>
+        </Link>
+      )}
     </div>
   );
 

@@ -54,3 +54,17 @@ export const CONVITES_ATIVOS = false;
  * banco, sem aparecer. O índice (src/lib/catecismo) e os testes ficam.
  */
 export const CATECISMO_ATIVO = false;
+
+/**
+ * TERÇO COM A VOZ — protótipo em teste desde 15/09/2026.
+ *
+ * O aplicativo ouve quem reza, acende as palavras e passa sozinho para a
+ * próxima oração. Pedido para quem reza no carro. Fica ligado para o
+ * usuário testar em aparelhos reais; o link aparece no Terço marcado como
+ * "em teste".
+ *
+ * Desligar esconde o link e faz /rezar/terco/voz responder "não
+ * encontrado". Nada fica guardado: a voz não é gravada nem enviada ao
+ * servidor do app.
+ */
+export const TERCO_COM_A_VOZ_EM_TESTE = true;

@@ -1,185 +1,27 @@
-import type { Metadata } from "next";
-import { HandHeart } from "lucide-react";
-import { requireSessionForPage } from "@/server/auth/guards";
-import {
-  expirarPixAntigos,
-  listarFinalidades,
-  listarMinhasContribuicoes,
-  listarPixEmAberto,
-} from "@/server/modules/contribuicao/service";
-import { nomeDaFinalidade } from "@/server/modules/contribuicao/schema";
-import { getDonationSettings } from "@/server/modules/doacao/service";
-import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { LinkButton } from "@/components/ui/Button";
-import { PageHeader, Eyebrow } from "@/components/ui/Typography";
-import { DuasColunas } from "@/components/layout/DuasColunas";
-import { formatDateOnly } from "@/lib/date";
-import { iconeDeDoacao } from "@/lib/doacao";
-import { emReais } from "@/lib/dinheiro";
-import { EscolherFinalidade } from "./_components/EscolherFinalidade";
-
-export const metadata: Metadata = { title: "Minha oferta" };
+import { redirect } from "next/navigation";
 
 /**
- * Minha oferta: onde o fiel escolhe a finalidade e gera o próprio Pix.
+ * "Minha oferta" virou parte de Ofertar.
  *
- * Não é uma tela de pagamento, e a linguagem cuida disso: ninguém deve nada,
- * ninguém cobra nada. O valor é opcional porque o dízimo é assim — cada um
- * dá o quanto pode, e um campo obrigatório transformaria isso noutra coisa.
+ * Eram duas telas com as mesmas finalidades: Ofertar, com os cartões que
+ * explicam cada causa, e esta, com o formulário e o histórico. Agora tudo
+ * mora em /doacao (ver o comentário de lá).
  *
- * O identificador que vai dentro do código é o que permite à paróquia saber
- * a que se refere o dinheiro quando ele cair. O fiel não precisa saber disso,
- * e por isso ele não aparece com nome técnico em lugar nenhum.
+ * O endereço continua respondendo, e não devolve 404: há notificações
+ * gravadas, favoritos e o botão "Ver como o fiel vê" do painel apontando
+ * para cá. Quem chega com `?para=` continua chegando com a finalidade
+ * marcada, e já rolado até o formulário.
+ *
+ * /contribuir/[id] — o código gerado — continua onde está: é o destino do
+ * formulário, e o endereço de cada código já foi entregue a quem o gerou.
  */
 export default async function ContribuirPage({
   searchParams,
 }: {
-  /** `?para=<finalidade>` — quem veio de uma iniciativa já chega com ela marcada. */
   searchParams: Promise<{ para?: string }>;
 }) {
   const { para } = await searchParams;
-  const session = await requireSessionForPage();
-  if (!session.membership) return null;
-  const parishId = session.membership.parishId;
-
-  await expirarPixAntigos(parishId);
-
-  const [finalidades, settings, emAberto, historico] = await Promise.all([
-    listarFinalidades(parishId),
-    getDonationSettings(parishId),
-    listarPixEmAberto(parishId, session.userId),
-    listarMinhasContribuicoes(parishId, session.userId),
-  ]);
-
-  const semChave = !settings?.pixKey;
-
-  return (
-    <div className="flex flex-col">
-      <PageHeader
-        title="Minha oferta"
-        description="Escolha a finalidade, gere o seu código e acompanhe o que você já ofertou."
-      />
-
-      <DuasColunas
-        principal={
-          <div className="flex flex-col gap-7">
-            <section>
-              <Eyebrow tone="accent" className="mb-3">
-                Ofertar
-              </Eyebrow>
-
-              {semChave ? (
-                <EmptyState
-                  icon={HandHeart}
-                  title="A paróquia ainda não abriu as ofertas pelo app"
-                  description="Assim que a secretaria cadastrar a chave PIX, você poderá gerar aqui o seu código de oferta."
-                />
-              ) : finalidades.length === 0 ? (
-                <EmptyState
-                  icon={HandHeart}
-                  title="Ainda não há finalidades cadastradas"
-                  description="A paróquia define para onde as ofertas podem ir — dízimo, obras, coleta, catequese. Assim que ela cadastrar, elas aparecem aqui."
-                />
-              ) : (
-                <EscolherFinalidade
-                  finalidadeInicial={para ?? null}
-                  finalidades={finalidades.map((f) => ({
-                    id: f.id,
-                    nome: f.nome,
-                    descricao: f.descricao,
-                    icone: f.icone,
-                  }))}
-                />
-              )}
-            </section>
-
-            {historico.length > 0 && (
-              <section>
-                <Eyebrow tone="accent" className="mb-3">
-                  Minhas ofertas
-                </Eyebrow>
-                <div className="flex flex-col gap-2">
-                  {historico.map((c) => (
-                    <Card key={c.id} className="flex items-center justify-between gap-3 py-3">
-                      <div className="min-w-0">
-                        <p className="text-[14.5px] font-medium text-foreground">
-                          {nomeDaFinalidade(c.finalidade)}
-                        </p>
-                        <p className="text-[13px] text-muted">{formatDateOnly(c.recebidaEm)}</p>
-                      </div>
-                      <p className="shrink-0 font-mono text-[15px] font-semibold text-foreground">
-                        {emReais(c.centavos)}
-                      </p>
-                    </Card>
-                  ))}
-                </div>
-                {/*
-                  Nada de txid, identificador ou "conciliado" aqui. Para quem
-                  ofertou, a pergunta é se a paróquia recebeu — e uma oferta
-                  só aparece nesta lista depois que recebeu.
-                */}
-                <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                  A lista mostra o que a paróquia já registrou como recebido. Ofertas em dinheiro
-                  ou envelope aparecem quando a secretaria as lança.
-                </p>
-              </section>
-            )}
-          </div>
-        }
-        lateral={
-          <div className="flex flex-col gap-4">
-            {emAberto.length > 0 && (
-              <Card>
-                <Eyebrow className="mb-3">Códigos que você gerou</Eyebrow>
-                <div className="flex flex-col gap-2">
-                  {emAberto.map((pix) => (
-                    <LinkButton
-                      key={pix.id}
-                      href={`/contribuir/${pix.id}`}
-                      variant="ghost"
-                      size="sm"
-                      className="!justify-start"
-                    >
-                      {nomeDaFinalidade(pix.finalidade)}
-                      {pix.centavos ? ` · ${emReais(pix.centavos)}` : ""}
-                    </LinkButton>
-                  ))}
-                </div>
-                <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                  Um código gerado não compromete você a nada. Se não usar, ele simplesmente deixa
-                  de aparecer aqui.
-                </p>
-              </Card>
-            )}
-
-            <Card>
-              <Eyebrow className="mb-2">Como funciona</Eyebrow>
-              <ol className="flex list-decimal flex-col gap-1.5 pl-4 text-[13px] leading-relaxed text-muted">
-                <li>Escolha a finalidade e, se quiser, um valor.</li>
-                <li>Copie o código e cole no aplicativo do seu banco.</li>
-                <li>
-                  Não precisa enviar comprovante: a oferta aparece aqui quando a paróquia a
-                  registrar.
-                </li>
-              </ol>
-            </Card>
-
-            {(() => {
-              const Icone = iconeDeDoacao("igreja");
-              return (
-                <Card className="flex items-start gap-3">
-                  <Icone className="mt-0.5 h-5 w-5 shrink-0 text-primary" strokeWidth={1.5} aria-hidden />
-                  <p className="text-[13px] leading-relaxed text-muted">
-                    O dinheiro vai direto para a conta da paróquia. O aplicativo não guarda valor
-                    nenhum: ele só ajuda a saber de que finalidade foi cada oferta.
-                  </p>
-                </Card>
-              );
-            })()}
-          </div>
-        }
-      />
-    </div>
+  redirect(
+    para ? `/doacao?para=${encodeURIComponent(para)}#gerar-codigo` : "/doacao#gerar-codigo",
   );
 }

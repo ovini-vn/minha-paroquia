@@ -40,10 +40,20 @@ const ESPONTANEA = "espontanea";
 export function EscolherFinalidade({
   finalidades,
   finalidadeInicial,
+  comDescricao = true,
 }: {
   finalidades: FinalidadeOferecida[];
-  /** Vem de uma iniciativa que trouxe a pessoa até aqui. */
+  /** Vem do cartão ou da iniciativa que a pessoa tocou. */
   finalidadeInicial?: string | null;
+  /**
+   * Mostrar a frase de cada finalidade.
+   *
+   * Em Ofertar, os cartões de "Sua oferta ajuda" logo acima já explicam cada
+   * causa com o texto que a secretaria escreveu. Repetir a explicação aqui
+   * era o que fazia a tela mostrar a mesma lista duas vezes seguidas. Sem
+   * cartões cadastrados, a frase volta, porque aí ela é a única explicação.
+   */
+  comDescricao?: boolean;
 }) {
   /*
    * Só aceita o que existe e está sendo oferecido. Um endereço com uma
@@ -90,7 +100,7 @@ export function EscolherFinalidade({
               <span className="text-[13.5px] font-semibold leading-tight text-foreground">
                 {f.nome}
               </span>
-              {f.descricao && (
+              {comDescricao && f.descricao && (
                 <span className="line-clamp-2 text-[13px] leading-snug text-muted">
                   {f.descricao}
                 </span>
@@ -117,7 +127,7 @@ export function EscolherFinalidade({
             {OFERTA_ESPONTANEA}
           </span>
           <span className="line-clamp-2 text-[13px] leading-snug text-muted">
-            Sem destino definido — a paróquia aplica onde for mais necessário.
+            {comDescricao ? "Sem destino definido — a paróquia aplica onde for mais necessário." : "Onde for mais necessário"}
           </span>
         </button>
       </div>

@@ -78,7 +78,7 @@ export async function descartarPixAction(
   try {
     const { parishId, userId } = await exigirParoquia();
     await descartarPix(parishId, String(formData.get("pixId") ?? ""), userId);
-    revalidatePath("/contribuir");
+    revalidatePath("/doacao");
     return { ok: true };
   } catch (erro) {
     return comoErro(erro);
@@ -99,7 +99,7 @@ export async function criarFinalidadeAction(
     });
     await criarFinalidade({ ...dados, parishId });
     revalidatePath("/painel/financeiro");
-    revalidatePath("/contribuir");
+    revalidatePath("/doacao");
     return { ok: true };
   } catch (erro) {
     return comoErro(erro);
@@ -125,7 +125,7 @@ export async function editarFinalidadeAction(
     });
     await editarFinalidade({ ...dados, parishId });
     revalidatePath("/painel/financeiro");
-    revalidatePath("/contribuir");
+    revalidatePath("/doacao");
     return { ok: true };
   } catch (erro) {
     return comoErro(erro);
@@ -136,7 +136,7 @@ export async function copiarFinalidadesAction(): Promise<void> {
   const { parishId } = await exigirTesouraria();
   await copiarFinalidadesDaDoacao(parishId);
   revalidatePath("/painel/financeiro");
-  revalidatePath("/contribuir");
+  revalidatePath("/doacao");
 }
 
 export async function lancarContribuicaoAction(
@@ -199,7 +199,7 @@ export async function confirmarRecebimentoAction(
       confirmadaPor: userId,
     });
     revalidatePath("/painel/financeiro");
-    revalidatePath("/contribuir");
+    revalidatePath("/doacao");
     return { ok: true };
   } catch (erro) {
     return comoErro(erro);
@@ -214,7 +214,7 @@ export async function cancelarContribuicaoAction(
     const { parishId } = await exigirTesouraria();
     await cancelarContribuicao(parishId, String(formData.get("contribuicaoId") ?? ""));
     revalidatePath("/painel/financeiro");
-    revalidatePath("/contribuir");
+    revalidatePath("/doacao");
     return { ok: true };
   } catch (erro) {
     return comoErro(erro);

@@ -14,6 +14,13 @@ import {
   listPurposesForFiel,
   listInitiativesForFiel,
 } from "@/server/modules/doacao/service";
+import {
+  expirarPixAntigos,
+  listarFinalidades,
+  listarMinhasContribuicoes,
+  listarPixEmAberto,
+} from "@/server/modules/contribuicao/service";
+import { nomeDaFinalidade } from "@/server/modules/contribuicao/schema";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -22,6 +29,8 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { iconeDeDoacao, CATEGORIAS_DE_INICIATIVA, destinoDoDizimo } from "@/lib/doacao";
 import { formatarChavePix, ehTipoDeChavePix } from "@/lib/pix";
 import { formatDateOnly } from "@/lib/date";
+import { emReais } from "@/lib/dinheiro";
+import { EscolherFinalidade } from "./_components/EscolherFinalidade";
 
 /**
  * Ofertar — por que ofertar, antes de como ofertar.
@@ -39,10 +48,23 @@ import { formatDateOnly } from "@/lib/date";
  * agora; o dízimo é compromisso contínuo, acompanhado pela pastoral. Por
  * isso o dízimo aparece no fim, como convite — nunca como mais uma forma de
  * pagar.
+ *
+ * UMA TELA SÓ. Eram duas: esta, que o Início chama de "Ofertar", mostrava
+ * os cartões e mandava para /contribuir, que Eu chamava de "Minha oferta" e
+ * mostrava as mesmas finalidades de novo, num formulário. Duas portas, dois
+ * nomes, a mesma lista duas vezes — e quem chegava por Eu nunca via os
+ * cartões que a secretaria escreveu. Agora o formulário, os códigos e o
+ * histórico moram aqui, logo abaixo do porquê; /contribuir só redireciona.
  */
 export const metadata: Metadata = { title: "Ofertar" };
 
-export default async function DoacaoPage() {
+export default async function DoacaoPage({
+  searchParams,
+}: {
+  /** `?para=<finalidade>` — quem tocou num cartão ou iniciativa chega com ela marcada. */
+  searchParams: Promise<{ para?: string }>;
+}) {
+  const { para } = await searchParams;
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
@@ -55,12 +77,17 @@ export default async function DoacaoPage() {
   }
 
   const parishId = session.membership.parishId;
-  const [parish, settings, finalidades, iniciativas] = await Promise.all([
-    getParish(parishId),
-    getDonationSettings(parishId),
-    listPurposesForFiel(parishId),
-    listInitiativesForFiel(parishId),
-  ]);
+  await expirarPixAntigos(parishId);
+  const [parish, settings, finalidades, iniciativas, destinos, emAberto, historico] =
+    await Promise.all([
+      getParish(parishId),
+      getDonationSettings(parishId),
+      listPurposesForFiel(parishId),
+      listInitiativesForFiel(parishId),
+      listarFinalidades(parishId),
+      listarPixEmAberto(parishId, session.userId),
+      listarMinhasContribuicoes(parishId, session.userId),
+    ]);
   if (!parish) return null;
 
   const tipoDaChave =
@@ -155,7 +182,7 @@ export default async function DoacaoPage() {
                   className="card-finalidade p-0 transition-colors hover:border-primary focus-within:border-primary"
                 >
                   <Link
-                    href={`/contribuir?para=${f.finalidadeId}`}
+                    href={`/doacao?para=${f.finalidadeId}#gerar-codigo`}
                     className={`${dentro} rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                   >
                     {conteudo}
@@ -175,22 +202,18 @@ export default async function DoacaoPage() {
         A ordem diz o que a paróquia pensa sobre contribuir.
 
         Primeiro o porquê — os cartões de "Sua oferta ajuda". Depois o
-        caminho de quem já quer participar. Depois o dízimo, que é
-        pertencimento contínuo e não campanha. E só então as
-        iniciativas, que são o que está acontecendo agora.
+        caminho de quem já quer participar, e logo abaixo dele o que a
+        pessoa já ofertou. Depois o dízimo, que é pertencimento contínuo e
+        não campanha. E só então as iniciativas, que são o que está
+        acontecendo agora.
 
         Pedido pontual por último de propósito: campanha antes de
         vínculo é a ordem de quem arrecada, não a de quem convida.
       */}
       {/*
-        O caminho principal da tela, e o único botão CHEIO do app aqui.
-
-        Era um botão pequeno, encostado à direita de um cartão de rodapé,
-        depois de rolar a grade inteira de finalidades: o gesto mais
-        importante da página tinha o menor alvo de toque dela. Agora ocupa a
-        largura toda, com o preenchimento primário — e nada mais nesta tela
-        é um botão preenchido, nem o do dízimo, que é de contorno dourado.
-        Quem chega rolando encontra uma coisa só para tocar.
+        O caminho principal da tela, e o único botão CHEIO dela: "Gerar meu
+        código PIX", dentro do formulário. O do dízimo é de contorno
+        dourado. Quem chega rolando encontra uma coisa só para tocar.
 
         O destaque é do BOTÃO, não do cartão: o fundo continua o mesmo das
         outras superfícies. Tingir o cartão brigaria com o convite ao
@@ -215,7 +238,7 @@ export default async function DoacaoPage() {
         pertencer, o silêncio sobre o valor seria lido como expectativa.
       */}
       {chaveFormatada && (
-        <section className="pt-7">
+        <section id="gerar-codigo" className="scroll-mt-24 pt-7">
           <Card className="border-primary/40">
             <div className="flex items-center gap-3">
               <span className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded-md bg-primary-tint text-primary">
@@ -226,17 +249,121 @@ export default async function DoacaoPage() {
               </p>
             </div>
 
-            <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
-              Cada oferta entra no que a comunidade está construindo — a catequese que forma, a
-              igreja que se mantém de pé, a mão que chega a quem precisa. Escolha onde a sua vai
-              ajudar e acompanhe aqui o que você já ofertou. O valor é sempre seu: o app não
-              sugere quantia nenhuma.
+            <p className="mb-4 mt-3 text-[13.5px] leading-relaxed text-muted">
+              Escolha onde a sua oferta vai ajudar. O valor é sempre seu: o app não sugere quantia
+              nenhuma.
             </p>
 
-            <LinkButton href="/contribuir" className="mt-4 w-full">
-              Quero fazer parte
-            </LinkButton>
+            {/*
+              O FORMULÁRIO MORA AQUI, e não atrás de um botão.
+
+              Era um "Quero fazer parte" que abria outra tela com as mesmas
+              finalidades dos cartões de cima. Agora tocar num cartão marca a
+              finalidade aqui mesmo, e a tela rola até este cartão.
+
+              A `key` é o que faz a marcação seguir o toque: sem ela, o
+              componente guardaria a escolha anterior ao trocar só o endereço.
+            */}
+            {destinos.length === 0 ? (
+              <p className="text-[13px] leading-relaxed text-muted">
+                A paróquia ainda está definindo para onde as ofertas podem ir. Assim que ela
+                cadastrar, você escolhe aqui.
+              </p>
+            ) : (
+              <EscolherFinalidade
+                key={para ?? "nenhuma"}
+                finalidadeInicial={para ?? null}
+                comDescricao={finalidades.length === 0}
+                finalidades={destinos.map((f) => ({
+                  id: f.id,
+                  nome: f.nome,
+                  descricao: f.descricao,
+                  icone: f.icone,
+                }))}
+              />
+            )}
+
+            {/* O "como funciona" que tinha cartão próprio na outra tela cabe
+                aqui em duas frases — é o que alguém precisa saber antes de
+                tocar no botão, não depois. */}
+            <p className="mt-4 border-t border-border pt-3 text-[13px] leading-relaxed text-muted">
+              Copie o código e cole no aplicativo do seu banco. Não precisa enviar comprovante: a
+              oferta aparece em Minhas ofertas quando a paróquia a registrar. O dinheiro vai direto
+              para a conta da paróquia.
+            </p>
           </Card>
+        </section>
+      )}
+
+      {/*
+        Minhas ofertas — o destino de Eu, com a âncora sempre presente.
+
+        Aparece para quem pode ofertar pelo app, mesmo sem nada ainda: o item
+        de Eu aponta para cá, e uma âncora que só existe depois da primeira
+        oferta deixaria quem nunca ofertou no topo da tela, sem entender.
+      */}
+      {(chaveFormatada || historico.length > 0 || emAberto.length > 0) && (
+        <section id="minhas-ofertas" className="scroll-mt-24 pt-7">
+          <Eyebrow tone="accent" className="mb-3">
+            Minhas ofertas
+          </Eyebrow>
+
+          {emAberto.length > 0 && (
+            <Card className="mb-3">
+              <p className="mb-2 text-[13px] font-medium text-foreground">Códigos que você gerou</p>
+              <div className="flex flex-col gap-2">
+                {emAberto.map((pix) => (
+                  <LinkButton
+                    key={pix.id}
+                    href={`/contribuir/${pix.id}`}
+                    variant="ghost"
+                    size="sm"
+                    className="!justify-start"
+                  >
+                    {nomeDaFinalidade(pix.finalidade)}
+                    {pix.centavos ? ` · ${emReais(pix.centavos)}` : ""}
+                  </LinkButton>
+                ))}
+              </div>
+              <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                Um código gerado não compromete você a nada. Se não usar, ele simplesmente deixa de
+                aparecer aqui.
+              </p>
+            </Card>
+          )}
+
+          {historico.length === 0 ? (
+            <p className="text-[13px] leading-relaxed text-muted">
+              Você ainda não tem ofertas registradas pelo app.
+            </p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                {historico.map((c) => (
+                  <Card key={c.id} className="flex items-center justify-between gap-3 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[14.5px] font-medium text-foreground">
+                        {nomeDaFinalidade(c.finalidade)}
+                      </p>
+                      <p className="text-[13px] text-muted">{formatDateOnly(c.recebidaEm)}</p>
+                    </div>
+                    <p className="shrink-0 font-mono text-[15px] font-semibold text-foreground">
+                      {emReais(c.centavos)}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+              {/*
+                Nada de txid, identificador ou "conciliado" aqui. Para quem
+                ofertou, a pergunta é se a paróquia recebeu — e uma oferta
+                só aparece nesta lista depois que recebeu.
+              */}
+              <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                A lista mostra o que a paróquia já registrou como recebido. Ofertas em dinheiro ou
+                envelope aparecem quando a secretaria as lança.
+              </p>
+            </>
+          )}
         </section>
       )}
 
@@ -328,7 +455,7 @@ export default async function DoacaoPage() {
                   */}
                   {i.finalidadeId && (
                     <Link
-                      href={`/contribuir?para=${i.finalidadeId}`}
+                      href={`/doacao?para=${i.finalidadeId}#gerar-codigo`}
                       className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       Quero ajudar nisto

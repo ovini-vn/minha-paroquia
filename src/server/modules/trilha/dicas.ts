@@ -189,7 +189,10 @@ export const DICAS: Dica[] = [
     id: "missa-na-caminhada",
     titulo: "Guardar as missas que você viveu",
     corpo:
-      "Registre as missas na sua Caminhada. É só seu — a paróquia não vê, e ninguém é cobrado por isso.",
+      // Dizia "ninguém é cobrado por isso". Cobrar é palavra que o app não usa em
+      // lugar nenhum: numa paróquia nada é devido, e a palavra faz a pessoa
+      // pensar em conta a pagar mesmo quando o assunto é missa.
+      "Registre as missas na sua Caminhada. É só seu — a paróquia não vê, e não existe obrigação nenhuma.",
     linkPath: "/caminhada",
     publico: "todos",
     jaUsou: (tx, { parishId, userId }) =>

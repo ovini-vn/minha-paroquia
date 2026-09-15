@@ -4,6 +4,7 @@ import {
   Sparkles,
   Bell,
   CalendarDays,
+  Footprints,
   Users,
   HandCoins,
   HandHeart,
@@ -78,10 +79,30 @@ export default async function ProfilePage() {
       principal={
         <div className="flex flex-col gap-6">
           <section>
+            {/*
+              "Minha vida na paróquia", e não "Minha caminhada".
+
+              A seção se chamava Minha caminhada e listava atendimentos,
+              família, ofertas e dízimo — enquanto a tela que o app inteiro
+              chama de Minha Caminhada (sacramentos, missas, confissões)
+              morava na aba Palavra e nem aparecia aqui. O mesmo nome para
+              duas coisas: quem procurava o próprio batismo abria esta seção e
+              não achava.
+
+              Agora o nome é da tela, e a tela está na lista, em primeiro: é o
+              registro mais pessoal que o app guarda. Abrir por aqui acende a
+              aba Palavra, que é onde a Caminhada mora na barra.
+            */}
             <Eyebrow tone="accent" className="mb-3">
-              Minha caminhada
+              Minha vida na paróquia
             </Eyebrow>
             <Card className="px-3.5 py-1.5">
+              <RowLink
+                href="/caminhada"
+                icon={Footprints}
+                title="Minha Caminhada"
+                subtitle="Sacramentos, missas e confissões"
+              />
               <RowLink
                 href="/eu/atendimentos"
                 icon={CalendarDays}
@@ -97,9 +118,11 @@ export default async function ProfilePage() {
               {/*
                 A oferta antes do dízimo, e as duas juntas.
 
-                Até aqui o único caminho para "Minha oferta" era passar por
-                Ofertar — quem só queria conferir o que já ofertou tinha de
-                atravessar a tela de convite para chegar ao próprio histórico.
+                Leva à MESMA tela do "Ofertar" do Início, já rolada até Minhas
+                ofertas. Eram duas telas — "Minha oferta" aqui, "Ofertar" lá —
+                e quem entrava por aqui nunca via os cartões que explicam cada
+                causa. Quem só quer conferir o que já ofertou continua sem
+                atravessar o convite.
 
                 A oferta vem primeiro porque é a que se FAZ: leva a gerar um
                 código hoje. O dízimo abaixo é registro do que a Pastoral já
@@ -111,10 +134,10 @@ export default async function ProfilePage() {
                 nunca agendou. Cada destino explica o próprio vazio.
               */}
               <RowLink
-                href="/contribuir"
+                href="/doacao#minhas-ofertas"
                 icon={HandHeart}
-                title="Minha oferta"
-                subtitle="Fazer uma oferta e ver as anteriores"
+                title="Minhas ofertas"
+                subtitle="O que você já ofertou, e fazer uma nova oferta"
               />
               <RowLink
                 href="/eu/dizimo"

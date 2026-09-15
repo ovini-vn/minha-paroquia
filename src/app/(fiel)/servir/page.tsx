@@ -128,7 +128,7 @@ export default async function ServirPage() {
         {opportunities.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
-            title="Nenhuma oportunidade em aberto"
+            title="Nenhuma oportunidade no momento"
             description="Quando a paróquia precisar de voluntários, aparece aqui."
           />
         ) : (

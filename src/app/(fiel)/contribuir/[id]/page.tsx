@@ -79,7 +79,7 @@ export default async function PixDeContribuicaoPage({
         <Card className="bg-sunken">
           <p className="text-[13.5px] leading-relaxed text-foreground">
             Depois de confirmar no banco, <strong>você não precisa enviar comprovante</strong>. A oferta
-            aparece em Minha oferta quando a paróquia a registrar.
+            aparece em Minhas ofertas, na tela Ofertar, quando a paróquia a registrar.
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-muted">
             O dinheiro vai direto para a conta da paróquia — o aplicativo não recebe nem guarda
@@ -87,8 +87,8 @@ export default async function PixDeContribuicaoPage({
           </p>
         </Card>
 
-        <LinkButton href="/contribuir" variant="ghost" size="sm">
-          Voltar para Minha oferta
+        <LinkButton href="/doacao#minhas-ofertas" variant="ghost" size="sm">
+          Voltar para Ofertar
         </LinkButton>
       </Leitura>
     </div>

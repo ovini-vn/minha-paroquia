@@ -114,7 +114,7 @@ export default async function FinanceiroPage({
           title="Financeiro"
           description="As finalidades para onde as contribuições podem ir, e a chave PIX que as recebe."
         />
-        <LinkButton href="/contribuir" variant="ghost" size="sm">
+        <LinkButton href="/doacao" variant="ghost" size="sm">
           Ver como o fiel vê
         </LinkButton>
       </div>
@@ -147,7 +147,7 @@ export default async function FinanceiroPage({
           <EmptyState
             icon={HandCoins}
             title="Nenhuma finalidade cadastrada"
-            description="Sem finalidade, quem abre Minha oferta não tem o que escolher. Comece pelo dízimo e pela oferta livre; catequese, festa e campanhas entram quando fizerem sentido."
+            description="Sem finalidade, quem abre Ofertar não tem o que escolher. Comece pelo dízimo e pela oferta livre; catequese, festa e campanhas entram quando fizerem sentido."
             action={
               podeCopiar ? (
                 <form action={copiarFinalidadesAction}>
@@ -210,7 +210,7 @@ export default async function FinanceiroPage({
         {aguardando.length === 0 ? (
           <Card className="bg-sunken">
             <p className="text-[13px] leading-relaxed text-muted">
-              Nenhum código esperando. Quando alguém gerar um PIX em Minha oferta, ele aparece
+              Nenhum código esperando. Quando alguém gerar um PIX em Ofertar, ele aparece
               aqui.
             </p>
           </Card>

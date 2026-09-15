@@ -6,6 +6,7 @@ import {
   ScrollText,
   Sparkles,
   BookOpen,
+  BookMarked,
   MessagesSquare,
   ChevronRight,
 } from "lucide-react";
@@ -114,6 +115,27 @@ export default async function OracaoPage() {
           </span>
         </span>
         <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
+      </Link>
+
+      {/* O CATECISMO, logo abaixo da Bíblia: é para onde se vai quando a
+          pergunta é "o que a Igreja ensina sobre isso?". Contorno e não
+          fundo cheio — o destaque desta tela é da Bíblia. */}
+      <Link
+        href="/catecismo"
+        className="mt-2.5 flex items-center gap-3.5 rounded-lg border border-border bg-surface px-4 py-3.5 transition-colors hover:border-primary"
+      >
+        <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-[14px] bg-primary-tint text-primary">
+          <BookMarked className="h-[24px] w-[24px]" strokeWidth={1.5} aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-[19px] font-semibold leading-tight text-foreground">
+            Catecismo
+          </span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-muted">
+            Pelo número ou pelo assunto
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
       </Link>
 
       {/*

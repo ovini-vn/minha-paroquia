@@ -51,6 +51,7 @@ import {
   linkParishPersonToUser,
   removeParishPerson,
 } from "@/server/modules/family/service";
+import { ligarParagrafoAoTema, desligarParagrafoDoTema } from "@/server/modules/catecismo/service";
 import { AppError } from "@/server/shared/errors";
 import type { SessionContext } from "@/server/auth/session";
 
@@ -449,6 +450,51 @@ export async function removerTemaAction(formData: FormData): Promise<void> {
   if (typeof temaId !== "string") return;
 
   await removerTema(session.membership.parishId, temaId);
+  revalidatePath(`/catequese/itinerarios/${typeof itinerarioId === "string" ? itinerarioId : ""}`);
+}
+
+/** Liga um parágrafo do Catecismo a um encontro do itinerário. */
+export async function ligarParagrafoAoTemaAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  if (!session.membership) return { error: "Você não pertence a uma paróquia." };
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const temaId = formData.get("temaId");
+  const itinerarioId = formData.get("itinerarioId");
+  if (typeof temaId !== "string" || typeof itinerarioId !== "string") {
+    return { error: "Encontro não informado." };
+  }
+  // Aceita "1324", "§ 1324" ou "CIC 1324" — é assim que o número aparece
+  // nos materiais de catequese.
+  const numero = Number(String(formData.get("paragrafo") ?? "").replace(/\D/g, ""));
+  if (!numero) return { error: "Escreva o número do parágrafo." };
+
+  try {
+    const ligado = await ligarParagrafoAoTema(session.membership.parishId, temaId, numero);
+    if (!ligado) return { error: "Encontro não encontrado." };
+    if ("jaEstava" in ligado) return { error: `O parágrafo ${numero} já está neste encontro.` };
+  } catch (erro) {
+    if (erro instanceof AppError) return { error: erro.message };
+    throw erro;
+  }
+
+  revalidatePath(`/catequese/itinerarios/${itinerarioId}`);
+  return {};
+}
+
+export async function desligarParagrafoDoTemaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  if (!session.membership) return;
+  requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+
+  const id = formData.get("id");
+  const itinerarioId = formData.get("itinerarioId");
+  if (typeof id !== "string") return;
+
+  await desligarParagrafoDoTema(session.membership.parishId, id);
   revalidatePath(`/catequese/itinerarios/${typeof itinerarioId === "string" ? itinerarioId : ""}`);
 }
 

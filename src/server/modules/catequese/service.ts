@@ -411,7 +411,14 @@ export async function getEnrollmentProgress(
             // O itinerário vem junto: é dele que sai "onde estamos e o que
             // vem", que era a pergunta sem resposta da família.
             itinerario: {
-              include: { temas: { orderBy: [{ ordem: "asc" }, { createdAt: "asc" }] } },
+              include: {
+                temas: {
+                  orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+                  // Os parágrafos do Catecismo do próximo encontro são o
+                  // "para ler em casa" da família.
+                  include: { catecismo: { orderBy: { paragrafo: "asc" } } },
+                },
+              },
             },
           },
         },
@@ -623,7 +630,10 @@ export function obterItinerario(parishId: string, id: string) {
       include: {
         // Empate na ordem resolve pela criação: é o que permite a ordem não
         // ser única e ainda assim a lista sair estável.
-        temas: { orderBy: [{ ordem: "asc" }, { createdAt: "asc" }] },
+        temas: {
+          orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+          include: { catecismo: { orderBy: { paragrafo: "asc" } } },
+        },
         grupos: { select: { id: true, name: true, year: true } },
       },
     }),
@@ -711,6 +721,34 @@ export function listarTemasDaTurma(parishId: string, groupId: string) {
     return tx.itinerarioTema.findMany({
       where: { parishId, itinerarioId: grupo.itinerarioId },
       orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+    });
+  });
+}
+
+/**
+ * O próximo tema a preparar: o primeiro do itinerário que ainda não tem
+ * encontro lançado — nem dado, nem marcado.
+ *
+ * Existe para a catequista ver, na tela da turma, o que vem e os parágrafos
+ * do Catecismo que a coordenação ligou a ele. Separado de
+ * `listarTemasDaTurma` de propósito: aquela lista vai para os formulários
+ * de cada encontro, e levar os trechos junto os repetiria na página inteira.
+ */
+export function obterProximoTemaDaTurma(parishId: string, groupId: string) {
+  return withTenantContext(parishId, async (tx) => {
+    const grupo = await tx.catechismGroup.findFirst({
+      where: { id: groupId, parishId },
+      select: { itinerarioId: true },
+    });
+    if (!grupo?.itinerarioId) return null;
+    return tx.itinerarioTema.findFirst({
+      where: {
+        parishId,
+        itinerarioId: grupo.itinerarioId,
+        encontros: { none: { catechismGroupId: groupId } },
+      },
+      orderBy: [{ ordem: "asc" }, { createdAt: "asc" }],
+      include: { catecismo: { orderBy: { paragrafo: "asc" } } },
     });
   });
 }

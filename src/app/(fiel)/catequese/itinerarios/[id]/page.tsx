@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ListOrdered, Trash2 } from "lucide-react";
+import { ListOrdered, Trash2, X } from "lucide-react";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { obterItinerario } from "@/server/modules/catequese/service";
-import { removerTemaAction } from "@/server/actions/catequese-actions";
+import { removerTemaAction, desligarParagrafoDoTemaAction } from "@/server/actions/catequese-actions";
+import { PARAGRAFOS_POR_TEMA } from "@/server/modules/catecismo/service";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
+import { TrechoDoCatecismo } from "@/components/domain/TrechoDoCatecismo";
 import { CriarTemaForm } from "../../_components/CriarTemaForm";
+import { LigarParagrafoForm } from "../../_components/LigarParagrafoForm";
 
 export const metadata: Metadata = { title: "Itinerário" };
 
@@ -67,6 +70,56 @@ export default async function ItinerarioPage({ params }: { params: Promise<{ id:
                         {tema.descricao}
                       </p>
                     )}
+
+                    {/*
+                      O Catecismo do encontro, fechado por padrão: são trinta
+                      temas numa lista, e abrir o editor de todos de uma vez
+                      transformaria a página numa parede. O resumo já diz
+                      quais parágrafos estão ligados.
+                    */}
+                    <details className="group mt-2">
+                      <summary className="alvo-de-toque inline-flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-primary [&::-webkit-details-marker]:hidden">
+                        {tema.catecismo.length === 0
+                          ? "Ligar ao Catecismo"
+                          : `Catecismo: ${tema.catecismo.map((c) => `§ ${c.paragrafo}`).join(", ")}`}
+                        <span className="text-muted transition-transform group-open:rotate-90" aria-hidden>
+                          ›
+                        </span>
+                      </summary>
+                      <div className="mt-3 flex flex-col gap-4">
+                        {tema.catecismo.map((c) => (
+                          <TrechoDoCatecismo
+                            key={c.id}
+                            paragrafo={c.paragrafo}
+                            trecho={c.trecho}
+                            completo={c.completo}
+                            compacto
+                            acao={
+                              <form action={desligarParagrafoDoTemaAction}>
+                                <input type="hidden" name="id" value={c.id} />
+                                <input type="hidden" name="itinerarioId" value={itinerario.id} />
+                                <button
+                                  type="submit"
+                                  aria-label={`Tirar o parágrafo ${c.paragrafo} deste encontro`}
+                                  className="alvo-de-toque inline-flex items-center gap-1 text-[13px] text-muted transition-colors hover:text-error"
+                                >
+                                  <X className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
+                                  Tirar
+                                </button>
+                              </form>
+                            }
+                          />
+                        ))}
+                        {tema.catecismo.length < PARAGRAFOS_POR_TEMA ? (
+                          <LigarParagrafoForm temaId={tema.id} itinerarioId={itinerario.id} />
+                        ) : (
+                          <p className="text-[13px] leading-relaxed text-muted">
+                            Este encontro já tem {PARAGRAFOS_POR_TEMA} parágrafos, o máximo. Tire um para
+                            acrescentar outro.
+                          </p>
+                        )}
+                      </div>
+                    </details>
                   </div>
                   <form action={removerTemaAction} className="shrink-0">
                     <input type="hidden" name="temaId" value={tema.id} />

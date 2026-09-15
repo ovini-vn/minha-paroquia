@@ -18,6 +18,7 @@ import { Stat } from "@/components/ui/Stat";
 import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateOnly, formatDateTime } from "@/lib/date";
 import { MassAttendanceForm } from "../../_components/MassAttendanceForm";
+import { TrechoDoCatecismo } from "@/components/domain/TrechoDoCatecismo";
 
 /**
  * A ficha do catequizando: o que foi dado, quem esteve presente, os ritos.
@@ -63,6 +64,11 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
   const { enrollment, encontros, presencaPorSessao, ritos, missas, resumo, caminhada } = progresso;
   const proximo = progresso.proximoRito;
   const hoje = new Date();
+  // O Catecismo do próximo encontro, se a coordenação ligou algum.
+  const temaDoProximo = caminhada?.proximo
+    ? enrollment.group.itinerario?.temas.find((t) => t.id === caminhada.proximo?.temaId)
+    : undefined;
+  const catecismoDoProximo = temaDoProximo?.catecismo ?? [];
 
   return (
     <div className="flex flex-col">
@@ -115,10 +121,25 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {caminhada.proximo ? (
-              <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
-                O próximo encontro é{" "}
-                <span className="font-medium text-foreground">{caminhada.proximo.titulo}</span>.
-              </p>
+              <>
+                <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
+                  O próximo encontro é{" "}
+                  <span className="font-medium text-foreground">{caminhada.proximo.titulo}</span>.
+                </p>
+                {/*
+                  Para ler em casa: o que o Catecismo diz sobre o tema que
+                  vem. Dá à família um jeito de acompanhar que não depende
+                  de ter o material da catequese em mãos.
+                */}
+                {catecismoDoProximo.length > 0 && (
+                  <div className="mt-4 flex flex-col gap-4 border-t border-gold/30 pt-4">
+                    <Eyebrow>Para ler em casa</Eyebrow>
+                    {catecismoDoProximo.map((c) => (
+                      <TrechoDoCatecismo key={c.id} paragrafo={c.paragrafo} trecho={c.trecho} completo={c.completo} />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <p className="mt-3 text-[13.5px] leading-relaxed text-muted">
                 Todos os encontros previstos já foram dados.

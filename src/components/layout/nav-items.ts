@@ -18,10 +18,10 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/inicio", label: "Início", icon: Home, alsoMatches: ["/agenda"] },
   { href: "/comunidade", label: "Comunidade", icon: Church },
-  // Minha Caminhada e a Bíblia vivem sob Palavra. O ENDEREÇO continua
+  // Minha Caminhada, a Bíblia, Rezar e o Catecismo vivem sob Palavra. O ENDEREÇO continua
   // /oracao de propósito: notificações já gravadas apontam para ele, e
   // trocar a rota quebraria os avisos que estão no aparelho das pessoas.
-  { href: "/oracao", label: "Palavra", icon: BookOpen, alsoMatches: ["/caminhada", "/biblia", "/rezar"] },
+  { href: "/oracao", label: "Palavra", icon: BookOpen, alsoMatches: ["/caminhada", "/biblia", "/rezar", "/catecismo"] },
   { href: "/servir", label: "Servir", icon: HeartHandshake },
   { href: "/eu", label: "Eu", icon: User },
 ];

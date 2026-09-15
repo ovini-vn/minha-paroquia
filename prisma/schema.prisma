@@ -352,6 +352,7 @@ model Parish {
   conciliacoesPix         ConciliacaoPix[]
   planoSecoes             PlanoSecao[]
   itinerarioTemas         ItinerarioTema[]
+  itinerarioTemaCatecismo ItinerarioTemaCatecismo[]
   catechismGroupRites     CatechismGroupRite[]
   catechismEnrollments    CatechismEnrollment[]
   catechismSessions       CatechismSession[]
@@ -1242,9 +1243,34 @@ model ItinerarioTema {
   parish      Parish             @relation(fields: [parishId], references: [id], onDelete: Cascade)
   itinerario  Itinerario         @relation(fields: [itinerarioId], references: [id], onDelete: Cascade)
   encontros   CatechismSession[]
+  catecismo   ItinerarioTemaCatecismo[]
 
   @@index([parishId, itinerarioId])
   @@map("itinerario_temas")
+}
+
+/// Um parágrafo do Catecismo ligado a um encontro do itinerário.
+///
+/// A coordenação escolhe o número; o trecho é lido uma vez em vatican.va
+/// e guardado aqui, curto, para a família e a catequista lerem sem sair do
+/// app. O texto inteiro continua no site do Vaticano, a um toque.
+model ItinerarioTemaCatecismo {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  temaId    String   @map("tema_id")
+  paragrafo Int
+  /// Trecho curto do parágrafo, sem as chamadas de nota.
+  trecho    String
+  /// Se o trecho é o parágrafo inteiro ou foi cortado.
+  completo  Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish Parish         @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  tema   ItinerarioTema @relation(fields: [temaId], references: [id], onDelete: Cascade)
+
+  @@unique([temaId, paragrafo])
+  @@index([parishId, temaId])
+  @@map("itinerario_tema_catecismo")
 }
 
 model CatechismGroup {

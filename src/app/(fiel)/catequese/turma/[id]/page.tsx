@@ -14,7 +14,9 @@ import {
   listarRitosDaTurma,
   listRitesForEnrollment,
   listarQuemPodeLecionar,
+  obterProximoTemaDaTurma,
 } from "@/server/modules/catequese/service";
+import { TrechoDoCatecismo } from "@/components/domain/TrechoDoCatecismo";
 import { listAllFamilyMembers } from "@/server/modules/family/service";
 import { completeRiteAction } from "@/server/actions/catequese-actions";
 import { Card } from "@/components/ui/Card";
@@ -56,7 +58,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
   const group = await getGroup(parishId, id, coordena ? undefined : session.userId);
   if (!group) notFound();
 
-  const [enrollments, sessions, temas, andamento, itinerarios, ritosDaTurma, catequistas] =
+  const [enrollments, sessions, temas, andamento, itinerarios, ritosDaTurma, catequistas, proximoTema] =
     await Promise.all([
     listEnrollments(parishId, id),
     listSessions(parishId, id),
@@ -65,6 +67,7 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
     coordena ? listarItinerarios(parishId) : [],
     listarRitosDaTurma(parishId, id),
     coordena ? listarQuemPodeLecionar(parishId) : [],
+    obterProximoTemaDaTurma(parishId, id),
   ]);
 
   const ritesByEnrollment = await Promise.all(
@@ -192,6 +195,22 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
                   <span className="font-medium text-foreground">{andamento.itinerario.nome}</span> —{" "}
                   {andamento.dados} de {andamento.previstos} encontros previstos já dados.
                 </p>
+              )}
+              {/*
+                O próximo tema a preparar, com o Catecismo que a coordenação
+                ligou a ele. Só aparece quando há parágrafos: o nome do tema
+                sozinho a catequista já vê na lista do formulário.
+              */}
+              {proximoTema && proximoTema.catecismo.length > 0 && (
+                <Card className="mb-3 border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">
+                  <Eyebrow className="mb-1">Para preparar o próximo encontro</Eyebrow>
+                  <p className="text-[15px] font-medium text-foreground">{proximoTema.titulo}</p>
+                  <div className="mt-3 flex flex-col gap-4">
+                    {proximoTema.catecismo.map((c) => (
+                      <TrechoDoCatecismo key={c.id} paragrafo={c.paragrafo} trecho={c.trecho} completo={c.completo} />
+                    ))}
+                  </div>
+                </Card>
               )}
               <Card>
                 <CreateSessionForm groupId={id} temas={temas} />

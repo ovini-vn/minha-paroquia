@@ -100,10 +100,14 @@ const TELAS = [
   { arquivo: "servir", url: "/servir" },
   // "Ofertar" era "Doação" até 02/09/2026 — o arquivo acompanha o nome da
   // tela, senão daqui a um ano ninguém sabe o que o print mostra.
-  // Rola até o convite: o cartão "Faça parte das obras" e o botão cheio são
-  // o coração da tela, e o topo sozinho mostra só a grade de finalidades.
-  { arquivo: "ofertar", url: "/doacao", rolarAte: "text=Faça parte das obras" },
-  { arquivo: "minha-oferta", url: "/contribuir" },
+  //
+  // Uma tela só desde 14/09/2026: "Minha oferta" (/contribuir) virou parte
+  // de Ofertar. Por isso dois prints da MESMA tela — o topo, com os cartões
+  // que explicam cada causa, e o formulário logo abaixo deles.
+  { arquivo: "ofertar", url: "/doacao" },
+  // Rola até o VALOR, e não até o título do cartão: com o título, o print
+  // saía com o fim da grade de cartões e o formulário cortado no meio.
+  { arquivo: "ofertar-formulario", url: "/doacao", rolarAte: "text=Valor (opcional)" },
   { arquivo: "plano", url: "/plano" },
   { arquivo: "comunidade-sacerdotes", url: "/comunidade/sacerdotes" },
   { arquivo: "paroco", url: "/paroco" },

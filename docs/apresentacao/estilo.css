@@ -73,8 +73,15 @@
       .escuro p { color: rgba(255, 253, 248, 0.88); }
       .escuro .rotulo-secao { color: var(--dourado); }
       .escuro .nota { color: rgba(255, 253, 248, 0.75); }
-      .escuro li { color: rgba(255, 253, 248, 0.84); }
-      .escuro li::before { border-color: var(--dourado); }
+      /*
+       * `.reveal .escuro`, e não só `.escuro`: a regra geral `.reveal li`
+       * (mais abaixo, cor --suave) tem o mesmo peso e vem depois, então
+       * vencia. Nos slides escuros com lista, o texto dos tópicos saía
+       * cinza-escuro sobre roxo — só o negrito se lia. Estava assim no PDF
+       * e no link, e passou em 14/09 porque o negrito, branco, disfarçava.
+       */
+      .reveal .escuro li { color: rgba(255, 253, 248, 0.84); }
+      .reveal .escuro li::before { border-color: var(--dourado); }
       .escuro .card {
         background: rgba(255, 253, 248, 0.07);
         border-color: rgba(255, 253, 248, 0.18);

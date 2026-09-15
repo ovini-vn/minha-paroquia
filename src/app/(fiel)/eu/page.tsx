@@ -9,6 +9,7 @@ import {
   HandCoins,
   HandHeart,
   Clock,
+  Church,
   LogOut,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
@@ -175,6 +176,16 @@ export default async function ProfilePage() {
                 title="Editar perfil"
                 subtitle="Nome, telefone e data de nascimento"
               />
+              {/* Sem convites (ver src/lib/funcionalidades.ts), a pessoa
+                  escolhe a paróquia sozinha — e muda sozinha também. */}
+              {session.membership && (
+                <RowLink
+                  href="/escolher-paroquia?trocar=1"
+                  icon={Church}
+                  title="Mudar de paróquia"
+                  subtitle={`Hoje: ${session.membership.parishName}`}
+                />
+              )}
               {/*
                 As boas-vindas dizem "você escolhe depois quais avisos quer
                 receber, em Eu → Notificações" — e este item não existia: o

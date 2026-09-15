@@ -62,7 +62,7 @@ export default async function CatequesePage({
       <EmptyState
         icon={BookOpen}
         title="Você ainda não pertence a uma comunidade"
-        description="Peça um convite à secretaria da sua paróquia para acompanhar a catequese."
+        description="Escolha a sua paróquia para acompanhar a catequese."
       />
     );
   }

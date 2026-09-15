@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
 import { LoginForm } from "./LoginForm";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 
 const OAUTH_ERROR_LABELS: Record<string, string> = {
   oauth: "Não foi possível entrar com essa conta.",
@@ -30,7 +31,9 @@ export default async function LoginPage({
         A vida da sua paróquia durante a semana: missas, avisos, a palavra do padre e a Bíblia.
       </p>
       {errorMessage && <p className="mb-4 text-sm text-error">{errorMessage}</p>}
-      <LoginForm inviteCode={convite ?? null} />
+      {/* Convites desligados: o código do endereço não segue adiante
+          (ver src/lib/funcionalidades.ts). */}
+      <LoginForm inviteCode={CONVITES_ATIVOS ? (convite ?? null) : null} />
     </Card>
   );
 }

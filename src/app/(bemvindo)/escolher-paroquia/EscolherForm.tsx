@@ -12,9 +12,12 @@ type Paroquia = { id: string; name: string; local: string };
 export function EscolherForm({
   paroquias,
   buscaAtual,
+  trocando = false,
 }: {
   paroquias: Paroquia[];
   buscaAtual: string;
+  /** Quem já tem paróquia e veio por "Mudar de paróquia". */
+  trocando?: boolean;
 }) {
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [state, formAction, pending] = useActionState(entrarNaParoquiaAction, initialState);
@@ -24,6 +27,9 @@ export function EscolherForm({
       {/* Busca por GET: recarrega a lista pelo servidor, sem trazer todas as
           paróquias para o navegador. */}
       <form method="get" className="flex items-center gap-2">
+        {/* A busca recarrega a página por GET: sem isto, perderia o
+            `trocar=1`, e quem já tem paróquia seria mandado ao Início. */}
+        {trocando && <input type="hidden" name="trocar" value="1" />}
         <div className="relative flex-1">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
@@ -79,7 +85,13 @@ export function EscolherForm({
 
         {escolhida && (
           <Button type="submit" disabled={pending} className="mt-2 w-full">
-            {pending ? "Entrando…" : "Entrar nesta paróquia"}
+            {pending
+              ? trocando
+                ? "Mudando…"
+                : "Entrando…"
+              : trocando
+                ? "Mudar para esta paróquia"
+                : "Entrar nesta paróquia"}
           </Button>
         )}
       </form>

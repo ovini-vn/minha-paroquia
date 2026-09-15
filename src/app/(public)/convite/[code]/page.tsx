@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { validateInvitation, type InvitationValidation } from "@/server/modules/invitations/service";
 import { Mail } from "lucide-react";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 
 type InvalidReason = Extract<InvitationValidation, { valid: false }>["reason"];
 
@@ -16,6 +17,38 @@ const INVALID_REASON_MESSAGE: Record<InvalidReason, string> = {
 };
 
 export default async function InvitePage({ params }: { params: Promise<{ code: string }> }) {
+  /*
+   * Convites desligados (ver src/lib/funcionalidades.ts).
+   *
+   * Um link de convite já pode estar num grupo de WhatsApp. Quem toca nele
+   * não deve dar com "convite indisponível", que soa como porta fechada: a
+   * entrada continua aberta, só é outra. A tela diz isso e leva ao cadastro.
+   */
+  if (!CONVITES_ATIVOS) {
+    return (
+      <Card className="p-6 text-center shadow">
+        <Eyebrow tone="accent">Bem-vindo ao Minha Paróquia</Eyebrow>
+        <h1 className="mb-2 mt-1.5 font-serif text-[26px] font-semibold leading-tight text-foreground">
+          Você não precisa de convite
+        </h1>
+        <p className="text-[13.5px] leading-relaxed text-muted">
+          Crie a sua conta, ou entre com a que já tem, e escolha a sua paróquia. Leva um minuto.
+        </p>
+
+        <div className="rule-gold my-5" />
+
+        <div className="flex flex-col gap-2.5">
+          <LinkButton href="/cadastro" className="w-full">
+            Criar conta
+          </LinkButton>
+          <LinkButton href="/login" variant="ghost" className="w-full">
+            Já tenho conta
+          </LinkButton>
+        </div>
+      </Card>
+    );
+  }
+
   const { code } = await params;
   const validation = await validateInvitation(code);
 

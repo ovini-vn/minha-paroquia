@@ -21,6 +21,7 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 import { PERMISSIONS, type PermissionCode } from "@/server/auth/rbac";
 
 /**
@@ -151,13 +152,20 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
     permissao: PERMISSIONS.PLANO_MANAGE,
   },
 
-  {
-    href: "/painel/convites",
-    label: "Convites",
-    icon: Ticket,
-    grupo: "Acessos",
-    permissao: PERMISSIONS.INVITATIONS_CREATE,
-  },
+  // Desligado por `CONVITES_ATIVOS` (ver src/lib/funcionalidades.ts): fora
+  // da lista, some do menu lateral E da página inicial do painel, que leem
+  // esta mesma lista.
+  ...(CONVITES_ATIVOS
+    ? [
+        {
+          href: "/painel/convites",
+          label: "Convites",
+          icon: Ticket,
+          grupo: "Acessos" as const,
+          permissao: PERMISSIONS.INVITATIONS_CREATE,
+        },
+      ]
+    : []),
   {
     href: "/painel/membros",
     label: "Membros e papéis",

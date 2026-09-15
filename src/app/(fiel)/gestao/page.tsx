@@ -43,7 +43,7 @@ export default async function GestaoPage() {
                   href="/painel"
                   icon={LayoutDashboard}
                   title="Painel da paróquia"
-                  subtitle="Avisos, missas, eventos, catequese e convites"
+                  subtitle="Avisos, missas, eventos e catequese"
                 />
               )}
               {acesso.catequese && (

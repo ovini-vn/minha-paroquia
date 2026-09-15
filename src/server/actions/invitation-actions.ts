@@ -7,10 +7,14 @@ import { PERMISSIONS } from "@/server/auth/rbac";
 import { createInvitation, revokeInvitation } from "@/server/modules/invitations/service";
 import { createInvitationInputSchema } from "@/server/modules/invitations/schema";
 import { AppError } from "@/server/shared/errors";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 
 export type ActionState = { error?: string };
 
 export async function createInvitationAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  // A tela está desligada, mas a ação é um endereço público de servidor:
+  // sem esta linha, dava para criar convite chamando-a direto.
+  if (!CONVITES_ATIVOS) return { error: "Os convites estão desligados por enquanto." };
   const session = await requireSession();
   if (!session.membership) return { error: "Você precisa pertencer a uma paróquia para criar convites." };
   requirePermission(session, PERMISSIONS.INVITATIONS_CREATE);
@@ -35,6 +39,7 @@ export async function createInvitationAction(_prev: ActionState, formData: FormD
 }
 
 export async function revokeInvitationAction(formData: FormData): Promise<void> {
+  if (!CONVITES_ATIVOS) return;
   const session = await requireSession();
   if (!session.membership) return;
   requirePermission(session, PERMISSIONS.INVITATIONS_CREATE);

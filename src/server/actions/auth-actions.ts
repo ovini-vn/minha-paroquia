@@ -8,6 +8,7 @@ import { requireSession } from "@/server/auth/guards";
 import { registerUser, authenticateUser, updateOwnProfile } from "@/server/modules/users/service";
 import { loginInputSchema, registerInputSchema, updateProfileInputSchema } from "@/server/modules/users/schema";
 import { validateInvitation } from "@/server/modules/invitations/service";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 import { tryAcceptInvitationIfPresent } from "@/server/modules/invitations/accept-if-present";
 import { AppError } from "@/server/shared/errors";
 import {
@@ -48,7 +49,8 @@ function firstZodMessage(error: ZodError): string {
 }
 
 export async function registerAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const inviteCode = (formData.get("convite") as string | null)?.trim() || null;
+  // Convites desligados: o código do formulário é ignorado (ver src/lib/funcionalidades.ts).
+  const inviteCode = CONVITES_ATIVOS ? (formData.get("convite") as string | null)?.trim() || null : null;
 
   if (inviteCode) {
     const validation = await validateInvitation(inviteCode);
@@ -77,7 +79,8 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
 }
 
 export async function loginAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const inviteCode = (formData.get("convite") as string | null)?.trim() || null;
+  // Convites desligados: o código do formulário é ignorado (ver src/lib/funcionalidades.ts).
+  const inviteCode = CONVITES_ATIVOS ? (formData.get("convite") as string | null)?.trim() || null : null;
 
   try {
     const input = loginInputSchema.parse({

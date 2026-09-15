@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 import type { Metadata } from "next";
 import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -36,6 +38,10 @@ const STATUS_TONE: Record<string, "success" | "muted" | "warning" | "error"> = {
  * ou cancelar um que não deveria mais valer.
  */
 export default async function ConvitesPage() {
+  // Desligada (ver src/lib/funcionalidades.ts). "Não encontrado", e não um
+  // aviso: a tela não está em menu nenhum, e só chega aqui quem guardou o
+  // endereço.
+  if (!CONVITES_ATIVOS) notFound();
   const session = await requirePermissionForPage(PERMISSIONS.INVITATIONS_CREATE);
   if (!session.membership) return null;
 

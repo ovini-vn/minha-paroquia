@@ -86,7 +86,7 @@ export default async function MembrosAdminPage({
           title={todos.length === 0 ? "Ninguém na comunidade ainda" : "Ninguém neste recorte"}
           description={
             todos.length === 0
-              ? "Crie um convite no painel para as primeiras pessoas entrarem."
+              ? "As pessoas entram pelo aplicativo: criam a conta e escolhem esta paróquia."
               : busca
                 ? `Nenhum nome com "${busca}"${escolhido ? " neste papel" : ""}.`
                 : "Não há ninguém com este papel."

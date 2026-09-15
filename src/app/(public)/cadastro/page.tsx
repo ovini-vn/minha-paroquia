@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Eyebrow } from "@/components/ui/Typography";
 import { validateInvitation } from "@/server/modules/invitations/service";
 import { RegisterForm } from "./RegisterForm";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 import { Mail } from "lucide-react";
 
 export const metadata: Metadata = { title: "Criar conta" };
@@ -13,7 +14,9 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<{ convite?: string }>;
 }) {
-  const { convite } = await searchParams;
+  // Convites desligados: um código no endereço é ignorado, e a pessoa vê o
+  // cadastro normal (ver src/lib/funcionalidades.ts).
+  const convite = CONVITES_ATIVOS ? (await searchParams).convite : undefined;
 
   // Sem convite, a conta é criada do mesmo jeito e a paróquia é escolhida
   // no passo seguinte. Exigir convite para ver o horário da missa afastava

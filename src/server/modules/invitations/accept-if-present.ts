@@ -1,4 +1,5 @@
 import { acceptInvitation } from "./service";
+import { CONVITES_ATIVOS } from "@/lib/funcionalidades";
 
 /**
  * Se um código de convite acompanha o cadastro/login (form ou OAuth), tenta
@@ -9,7 +10,10 @@ import { acceptInvitation } from "./service";
  * um arquivo "use server".
  */
 export async function tryAcceptInvitationIfPresent(userId: string, code: string | null): Promise<void> {
-  if (!code) return;
+  // Convites desligados (ver src/lib/funcionalidades.ts): um código antigo
+  // no endereço não põe ninguém numa paróquia. A pessoa escolhe a dela no
+  // passo seguinte, como quem chegou sem código.
+  if (!code || !CONVITES_ATIVOS) return;
   try {
     await acceptInvitation({ code, userId });
   } catch {

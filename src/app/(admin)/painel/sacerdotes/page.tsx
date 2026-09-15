@@ -39,9 +39,9 @@ export default async function SacerdotesPage() {
         </Eyebrow>
         {priests.length === 0 ? (
           <p className="text-sm text-muted">
-            Nenhum sacerdote cadastrado ainda — crie um convite com vínculo
-            &ldquo;Sacerdote&rdquo; em Convites, ou cadastre ao fim desta página quem não usa o
-            aplicativo.
+            Nenhum sacerdote cadastrado ainda. Quem usa o aplicativo cria a conta, escolhe esta
+            paróquia, e você muda o papel dele para &ldquo;Sacerdote&rdquo; em Membros e papéis.
+            Quem não usa, cadastre ao fim desta página.
           </p>
         ) : (
           <Card>

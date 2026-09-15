@@ -397,10 +397,44 @@ export async function joinParish(parishId: string, userId: string) {
   // acontece pelo caminho de "minhas próprias linhas", que é justamente o
   // que a política permite ler por user_id.
   const anterior = await withOwnMembershipLookup(userId, (tx) =>
-    tx.parishMembership.findFirst({ where: { userId, status: "active" } }),
+    tx.parishMembership.findFirst({
+      where: { userId, status: "active" },
+      include: { role: { select: { code: true } } },
+    }),
   );
 
   if (anterior?.parishId === parishId) return anterior;
+
+  if (anterior && ROLES_QUE_ADMINISTRAM.includes(anterior.role.code as RoleCode)) {
+    /*
+     * Quem administra não sai deixando a paróquia sem comando.
+     *
+     * É a mesma regra de `changeMemberRole`, e faltava aqui: trocar de
+     * paróquia era possível só para quem ainda não tinha nenhuma, então
+     * ninguém chegava a este ponto com papel. Desde que "Mudar de paróquia"
+     * está em Eu (15/09/2026), o pároco que fosse o único administrador
+     * encerraria o próprio vínculo — e ninguém mais conseguiria mexer em
+     * papel nenhum lá, nem para devolver o dele.
+     */
+    const outros = await withTenantContext(anterior.parishId, (tx) =>
+      tx.parishMembership.count({
+        where: {
+          parishId: anterior.parishId,
+          status: "active",
+          userId: { not: userId },
+          OR: [
+            { role: { code: { in: ROLES_QUE_ADMINISTRAM } } },
+            { user: { isPlatformAdmin: true } },
+          ],
+        },
+      }),
+    );
+    if (outros === 0) {
+      throw new ValidationError(
+        "Você é a única pessoa que administra a sua paróquia atual. Antes de mudar, defina outro Pároco ou Administrador da paróquia em Membros e papéis.",
+      );
+    }
+  }
 
   if (anterior) {
     // Uma paróquia por vez: entrar numa nova encerra a anterior, mesmo

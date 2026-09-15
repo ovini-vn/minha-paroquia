@@ -187,7 +187,7 @@ export default function ComoFuncionaPage() {
       <Secao titulo="Como entrar">
         <p>
           Dá para entrar com Google, com Facebook ou com e-mail e senha. Depois é só escolher a sua
-          paróquia — ou usar o link de convite que a comunidade enviou, que já leva direto para ela.
+          paróquia — e, se um dia mudar de paróquia, dá para trocar em Eu.
         </p>
         <p className="pt-1.5">
           <Link

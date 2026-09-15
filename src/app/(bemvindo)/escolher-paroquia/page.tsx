@@ -1,6 +1,7 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Church } from "lucide-react";
+import { Church, ChevronLeft } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { listParishesForJoin } from "@/server/modules/parishes/service";
 import { Symbol } from "@/components/brand/Symbol";
@@ -20,27 +21,62 @@ export const metadata: Metadata = { title: "Escolher paróquia" };
 export default async function EscolherParoquiaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ busca?: string }>;
+  searchParams: Promise<{ busca?: string; trocar?: string }>;
 }) {
   const session = await requireSessionForPage();
-  // Já pertence a alguma: nada a escolher.
-  if (session.membership) redirect("/inicio");
+  const { busca, trocar } = await searchParams;
 
-  const { busca } = await searchParams;
-  const paroquias = await listParishesForJoin(busca);
+  /*
+   * Duas portas para a mesma tela.
+   *
+   * Sem paróquia, é o primeiro passo do app. Com paróquia, só se chega por
+   * "Mudar de paróquia", em Eu (`?trocar=1`) — sem o parâmetro, quem já tem
+   * paróquia volta ao Início, como sempre foi.
+   *
+   * Mudar ficou ao alcance do fiel quando os convites foram desligados
+   * (15/09/2026): entrar numa paróquia já encerrava a anterior, só não
+   * havia botão. A regra de não deixar a paróquia antiga sem administrador
+   * mora em `joinParish`, e o erro dela aparece nesta tela.
+   */
+  const atual = session.membership;
+  if (atual && trocar !== "1") redirect("/inicio");
+  const trocando = Boolean(atual);
+
+  const paroquias = (await listParishesForJoin(busca)).filter((p) => p.id !== atual?.parishId);
 
   return (
     <div className="flex min-h-dvh flex-col px-[18px] pb-10 pt-8">
+      {trocando && (
+        <Link
+          href="/eu"
+          className="alvo-de-toque mb-4 inline-flex items-center gap-1 self-start text-[13px] text-muted transition-colors hover:text-primary"
+        >
+          <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
+          Voltar
+        </Link>
+      )}
       <Symbol className="h-12 w-auto text-primary" />
       <h1 className="mt-5 font-serif text-[28px] font-semibold leading-tight text-foreground">
-        Qual é a sua paróquia?
+        {trocando ? "Mudar de paróquia" : "Qual é a sua paróquia?"}
       </h1>
       <p className="mt-2.5 text-[15px] leading-relaxed text-muted">
-        Escolha e pronto, você já faz parte. Nada a aprovar, ninguém a esperar.
+        {atual
+          ? `Hoje você faz parte da ${atual.parishName}. Escolha a nova, e a mudança vale na hora.`
+          : "Escolha e pronto, você já faz parte. Nada a aprovar, ninguém a esperar."}
       </p>
+
+      {/* Quem tem papel perde o papel ao mudar, e precisa saber ANTES de
+          tocar: na nova paróquia todo mundo entra como fiel. */}
+      {atual && atual.roleCode !== "FIEL" && (
+        <div className="mt-4 rounded-lg border border-warning/40 bg-warning-tint p-3.5 text-[13.5px] leading-relaxed text-foreground">
+          Você é <strong>{atual.roleName}</strong> na {atual.parishName}. Na nova paróquia você
+          entra como fiel, e esse papel fica na atual.
+        </div>
+      )}
 
       <div className="mt-6">
         <EscolherForm
+          trocando={trocando}
           paroquias={paroquias.map((p) => ({
             id: p.id,
             name: p.name,
@@ -54,7 +90,9 @@ export default async function EscolherParoquiaPage({
         <div className="mt-8 flex flex-col items-center gap-2 text-center">
           <Church className="h-8 w-8 text-border-strong" strokeWidth={1.5} aria-hidden />
           <p className="text-[14px] text-muted">
-            Nenhuma paróquia encontrada com esse nome ou cidade.
+            {trocando && !busca
+              ? "Ainda não há outra paróquia no aplicativo."
+              : "Nenhuma paróquia encontrada com esse nome ou cidade."}
           </p>
           <p className="text-[13px] text-muted">
             Se a sua ainda não está no app, peça ao pároco para cadastrar.

@@ -16,7 +16,7 @@ export default async function NewSacramentPage() {
       <EmptyState
         icon={HandHeart}
         title="Você ainda não pertence a uma comunidade"
-        description="Peça ao seu pároco, secretaria ou a alguém da paróquia um link ou QR Code de convite para entrar."
+        description="Escolha a sua paróquia para acompanhar a vida da comunidade."
       />
     );
   }

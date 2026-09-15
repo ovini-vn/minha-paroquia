@@ -10,6 +10,7 @@ import {
 } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { cadastrarSacerdoteSemConta } from "@/server/modules/priests/service";
+import { prisma } from "@/server/db/prisma";
 import { cleanupTenantData } from "../helpers/cleanup";
 
 /**
@@ -120,6 +121,47 @@ describe("escolher a paróquia sem convite", () => {
     );
     expect(antigo?.status).toBe("inactive");
     expect(antigo?.leftAt).not.toBeNull();
+  });
+
+  it("quem é o único administrador não sai deixando a paróquia sem comando", async () => {
+    /*
+     * "Mudar de paróquia" ficou ao alcance de todo mundo em Eu. Sem esta
+     * guarda, o pároco sozinho no comando encerraria o próprio vínculo, e
+     * ninguém mais mexeria em papel nenhum na paróquia antiga.
+     */
+    const paroco = await registerUser({
+      fullName: "Paroco Unico Escolha",
+      email: `paroco-unico-${stamp}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    userIds.push(paroco.id);
+    const papel = await prisma.role.findUniqueOrThrow({ where: { code: "PAROCO" } });
+    await withTenantContext(paroquiaAId, (tx) =>
+      tx.parishMembership.create({
+        data: { userId: paroco.id, parishId: paroquiaAId, roleId: papel.id, status: "active" },
+      }),
+    );
+
+    await expect(joinParish(paroquiaBId, paroco.id)).rejects.toThrow(/única pessoa que administra/);
+
+    // Nada mudou: continua na antiga, e não entrou na nova.
+    expect((await listActiveMembers(paroquiaAId)).some((m) => m.user.id === paroco.id)).toBe(true);
+    expect((await listActiveMembers(paroquiaBId)).some((m) => m.user.id === paroco.id)).toBe(false);
+
+    // Com outro administrador na antiga, a troca passa.
+    const outro = await registerUser({
+      fullName: "Outro Admin Escolha",
+      email: `outro-admin-${stamp}@test.comunidade.app`,
+      password: "SenhaForte123",
+    });
+    userIds.push(outro.id);
+    await withTenantContext(paroquiaAId, (tx) =>
+      tx.parishMembership.create({
+        data: { userId: outro.id, parishId: paroquiaAId, roleId: papel.id, status: "active" },
+      }),
+    );
+    await joinParish(paroquiaBId, paroco.id);
+    expect((await listActiveMembers(paroquiaBId)).some((m) => m.user.id === paroco.id)).toBe(true);
   });
 
   it("recusa paróquia inexistente", async () => {

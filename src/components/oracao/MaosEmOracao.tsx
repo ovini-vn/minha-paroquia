@@ -10,7 +10,15 @@
  * gesto ser reconhecido são os ANTEBRAÇOS abrindo em V e os polegares —
  * é assim que o 🙏 se lê de longe.
  */
-export function MaosEmOracao({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) {
+export function MaosEmOracao({
+  className,
+  strokeWidth = 1.5,
+}: {
+  className?: string;
+  strokeWidth?: number;
+  /** Aceito para caber onde vão os ícones da biblioteca; o desenho é sempre decorativo. */
+  "aria-hidden"?: boolean;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"

@@ -19,6 +19,7 @@ import { Eyebrow } from "@/components/ui/Typography";
 import { formatDateOnly, formatDateTime } from "@/lib/date";
 import { MassAttendanceForm } from "../../_components/MassAttendanceForm";
 import { TrechoDoCatecismo } from "@/components/domain/TrechoDoCatecismo";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 
 /**
  * A ficha do catequizando: o que foi dado, quem esteve presente, os ritos.
@@ -64,8 +65,9 @@ export default async function AlunoPage({ params }: { params: Promise<{ id: stri
   const { enrollment, encontros, presencaPorSessao, ritos, missas, resumo, caminhada } = progresso;
   const proximo = progresso.proximoRito;
   const hoje = new Date();
-  // O Catecismo do próximo encontro, se a coordenação ligou algum.
-  const temaDoProximo = caminhada?.proximo
+  // O Catecismo do próximo encontro, se a coordenação ligou algum. Oculto
+  // por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts).
+  const temaDoProximo = CATECISMO_ATIVO && caminhada?.proximo
     ? enrollment.group.itinerario?.temas.find((t) => t.id === caminhada.proximo?.temaId)
     : undefined;
   const catecismoDoProximo = temaDoProximo?.catecismo ?? [];

@@ -33,6 +33,7 @@ import { BleedTop } from "@/components/layout/Bleed";
 import { formatDateTime } from "@/lib/date";
 import { DuasColunas } from "@/components/layout/DuasColunas";
 import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 
 export const metadata: Metadata = { title: "Palavra" };
 
@@ -117,9 +118,40 @@ export default async function OracaoPage() {
         <ChevronRight className="h-5 w-5 shrink-0 text-white/60" strokeWidth={1.5} aria-hidden />
       </Link>
 
-      {/* O CATECISMO, logo abaixo da Bíblia: é para onde se vai quando a
-          pergunta é "o que a Igreja ensina sobre isso?". Contorno e não
-          fundo cheio — o destaque desta tela é da Bíblia. */}
+      {/*
+        REZAR, logo abaixo da Bíblia — no lugar que foi do Catecismo enquanto
+        ele está oculto (15/09/2026, decisão do usuário). Antes ficava depois
+        da Palavra do Dia, duas telas abaixo.
+
+        Um cartão só, com as quatro orações dentro: terço, rosário, terço da
+        misericórdia e novenas. Contorno dourado e não fundo cheio: o fundo
+        cheio desta tela é da Bíblia, e dois cartões gritando lado a lado não
+        destacam nenhum. Mesma altura e mesmo tamanho de título da Bíblia,
+        para os dois lerem como par.
+      */}
+      <Link
+        href="/rezar"
+        className="mt-2.5 flex items-center gap-3.5 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 py-4 transition-colors hover:border-gold"
+      >
+        {/* O mesmo círculo dourado dos outros cartões de contorno dourado
+            do app — e que acompanha o tema escuro. */}
+        <span className="grid h-[46px] w-[46px] shrink-0 place-items-center rounded-full bg-gold/15 text-[#8a6b24] dark:text-gold">
+          <MaosEmOracao className="h-[26px] w-[26px]" strokeWidth={1.4} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-[19px] font-semibold leading-tight text-foreground">Rezar</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-muted">
+            Rosário, Terço e Novenas
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
+      </Link>
+
+      {/* O CATECISMO: é para onde se vai quando a pergunta é "o que a Igreja
+          ensina sobre isso?". Contorno e não fundo cheio — o destaque desta
+          tela é da Bíblia.
+          Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts). */}
+      {CATECISMO_ATIVO && (
       <Link
         href="/catecismo"
         className="mt-2.5 flex items-center gap-3.5 rounded-lg border border-border bg-surface px-4 py-3.5 transition-colors hover:border-primary"
@@ -137,6 +169,7 @@ export default async function OracaoPage() {
         </span>
         <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
       </Link>
+      )}
 
       {/*
         Principal: a palavra do padre e a leitura do dia — o que se LÊ.
@@ -182,34 +215,6 @@ export default async function OracaoPage() {
           pessoa encontra. */}
       <section className="pt-[26px]">
         <PalavraDoDiaCard palavra={palavraDoDia} />
-      </section>
-
-      {/*
-        REZAR — depois da Palavra, porque é o que vem depois de ouvir.
-
-        Um cartão só, com as quatro orações dentro: terço, rosário, terço da
-        misericórdia e novenas. Contorno dourado e não fundo cheio: o fundo
-        cheio desta tela é da Bíblia, e dois cartões gritando lado a lado
-        não destacam nenhum.
-      */}
-      <section className="pt-[26px]">
-        <Link
-          href="/rezar"
-          className="flex items-center gap-3.5 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-4 py-4 transition-colors hover:border-gold"
-        >
-          {/* O mesmo círculo dourado dos outros cartões de contorno dourado
-              do app — e que acompanha o tema escuro. */}
-          <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-gold/15 text-[#8a6b24] dark:text-gold">
-            <MaosEmOracao className="h-7 w-7" strokeWidth={1.4} />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-serif text-[22px] font-semibold leading-tight text-foreground">Rezar</span>
-            <span className="mt-0.5 block text-[13.5px] leading-snug text-muted">
-              Rosário, Terço, Terço da Misericórdia e Novenas
-            </span>
-          </span>
-          <ChevronRight className="h-5 w-5 shrink-0 text-border-strong" strokeWidth={1.5} aria-hidden />
-        </Link>
       </section>
 
           </>

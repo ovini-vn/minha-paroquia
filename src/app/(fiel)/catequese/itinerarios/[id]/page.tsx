@@ -6,6 +6,7 @@ import { PERMISSIONS } from "@/server/auth/rbac";
 import { obterItinerario } from "@/server/modules/catequese/service";
 import { removerTemaAction, desligarParagrafoDoTemaAction } from "@/server/actions/catequese-actions";
 import { PARAGRAFOS_POR_TEMA } from "@/server/modules/catecismo/service";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
@@ -76,7 +77,10 @@ export default async function ItinerarioPage({ params }: { params: Promise<{ id:
                       temas numa lista, e abrir o editor de todos de uma vez
                       transformaria a página numa parede. O resumo já diz
                       quais parágrafos estão ligados.
+
+                      Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts).
                     */}
+                    {CATECISMO_ATIVO && (
                     <details className="group mt-2">
                       <summary className="alvo-de-toque inline-flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-primary [&::-webkit-details-marker]:hidden">
                         {tema.catecismo.length === 0
@@ -120,6 +124,7 @@ export default async function ItinerarioPage({ params }: { params: Promise<{ id:
                         )}
                       </div>
                     </details>
+                    )}
                   </div>
                   <form action={removerTemaAction} className="shrink-0">
                     <input type="hidden" name="temaId" value={tema.id} />

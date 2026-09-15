@@ -109,6 +109,32 @@ const TELAS = [
   // saía com o fim da grade de cartões e o formulário cortado no meio.
   { arquivo: "ofertar-formulario", url: "/doacao", rolarAte: "text=Valor (opcional)" },
   { arquivo: "plano", url: "/plano" },
+
+  /*
+   * Rezar, desde 15/09/2026. Três prints: o menu, o terço no meio de uma
+   * dezena — que é o que explica a ideia, o pedaço do terço com a conta da
+   * vez acesa — e a lista de novenas.
+   *
+   * O terço abre na apresentação ("Começar"). Para chegar à 4ª Ave-Maria da
+   * 1ª dezena, o script toca Começar e usa a seta do teclado, que a sessão
+   * aceita, até o contador dizer isso. Contar toques fixos quebraria na
+   * primeira mudança do roteiro.
+   */
+  { arquivo: "rezar", url: "/rezar" },
+  {
+    arquivo: "rezar-terco",
+    url: "/rezar/terco",
+    acao: async (pagina) => {
+      await pagina.getByRole("button", { name: /Começar/ }).last().click();
+      for (let i = 0; i < 40; i++) {
+        if (await pagina.getByText("4ª Ave-Maria de 10").count()) break;
+        await pagina.keyboard.press("ArrowRight");
+        await pagina.waitForTimeout(120);
+      }
+      await pagina.evaluate(() => window.scrollTo(0, 0));
+    },
+  },
+  { arquivo: "rezar-novenas", url: "/rezar/novenas" },
   { arquivo: "comunidade-sacerdotes", url: "/comunidade/sacerdotes" },
   { arquivo: "paroco", url: "/paroco" },
 
@@ -215,6 +241,9 @@ for (const tela of TELAS) {
     }
 
     if (tela.espera) await pagina.waitForSelector(tela.espera, { timeout: 15_000 });
+
+    // Telas que só mostram o que importa depois de um toque (o terço).
+    if (tela.acao) await tela.acao(pagina);
 
     // Enquadramento: alguns trechos que valem o print não estão no topo.
     if (tela.rolarAte) {

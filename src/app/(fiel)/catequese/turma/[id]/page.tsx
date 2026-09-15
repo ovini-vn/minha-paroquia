@@ -17,6 +17,7 @@ import {
   obterProximoTemaDaTurma,
 } from "@/server/modules/catequese/service";
 import { TrechoDoCatecismo } from "@/components/domain/TrechoDoCatecismo";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 import { listAllFamilyMembers } from "@/server/modules/family/service";
 import { completeRiteAction } from "@/server/actions/catequese-actions";
 import { Card } from "@/components/ui/Card";
@@ -67,7 +68,8 @@ export default async function TurmaPage({ params }: { params: Promise<{ id: stri
     coordena ? listarItinerarios(parishId) : [],
     listarRitosDaTurma(parishId, id),
     coordena ? listarQuemPodeLecionar(parishId) : [],
-    obterProximoTemaDaTurma(parishId, id),
+    // Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts).
+    CATECISMO_ATIVO ? obterProximoTemaDaTurma(parishId, id) : null,
   ]);
 
   const ritesByEnrollment = await Promise.all(

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { Cake, CalendarDays, Church, Footprints, HandCoins, HandHeart, HeartHandshake, Megaphone, MessagesSquare, Phone, Users } from "lucide-react";
+import { Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, MessagesSquare, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -32,6 +32,7 @@ import { InstalarNaTelaInicial } from "@/components/domain/InstalarNaTelaInicial
 import { LidoAoVer } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
+import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
 
 /*
  * Os atalhos são o que a pessoa VEIO fazer, e não um espelho da barra.
@@ -46,8 +47,15 @@ import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
  * o pedido de alguém e marcar a conversa. A primeira fileira é delas, ao
  * lado da Agenda; o resto vem depois.
  *
+ * "Pedir oração" virou "Orações", e abre o Rezar (15/09/2026, decisão do
+ * usuário). Um botão de AÇÃO — mandar um pedido — no meio de botões que são
+ * LUGARES destoava. "Orações" é um lugar, e o que a pessoa encontra nele é
+ * rezar: terço, rosário, misericórdia e novenas. Pedir oração continua na
+ * aba Palavra, em Pedidos de oração.
+ *
  * Os ícones são os mesmos da aba Palavra para os mesmos destinos: quem
- * reconhece o desenho num lugar reconhece no outro.
+ * reconhece o desenho num lugar reconhece no outro — as mãos em oração são
+ * as do botão Rezar.
  *
  * "o padre" vai preso por espaço inquebrável. No celular o rótulo não cabe
  * numa linha, e a quebra natural deixava "Falar com o" em cima e "padre"
@@ -55,7 +63,7 @@ import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
  */
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
-  { href: "/oracao/pedidos", icon: HandHeart, label: "Pedir oração" },
+  { href: "/rezar", icon: MaosEmOracao, label: "Orações" },
   { href: "/comunidade/sacerdotes", icon: MessagesSquare, label: "Falar com o padre" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
   { href: "/doacao", icon: HandCoins, label: "Ofertar" },

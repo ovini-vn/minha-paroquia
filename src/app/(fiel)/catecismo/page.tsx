@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { ChevronRight, ExternalLink, Search } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import {
@@ -12,6 +13,7 @@ import {
   type RamoDoIndice,
 } from "@/lib/catecismo/busca";
 import { ULTIMO_PARAGRAFO } from "@/lib/catecismo/endereco";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 import { Card } from "@/components/ui/Card";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
@@ -37,6 +39,8 @@ export default async function CatecismoPage({
 }: {
   searchParams: Promise<{ busca?: string }>;
 }) {
+  // Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts).
+  if (!CATECISMO_ATIVO) notFound();
   await requireSessionForPage();
   const { busca } = await searchParams;
   const termo = (busca ?? "").trim().slice(0, 80);

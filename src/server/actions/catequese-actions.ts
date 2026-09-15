@@ -53,6 +53,7 @@ import {
 } from "@/server/modules/family/service";
 import { ligarParagrafoAoTema, desligarParagrafoDoTema } from "@/server/modules/catecismo/service";
 import { AppError } from "@/server/shared/errors";
+import { CATECISMO_ATIVO } from "@/lib/funcionalidades";
 import type { SessionContext } from "@/server/auth/session";
 
 export type ActionState = { error?: string };
@@ -461,6 +462,8 @@ export async function ligarParagrafoAoTemaAction(
   const session = await requireSession();
   if (!session.membership) return { error: "Você não pertence a uma paróquia." };
   requirePermission(session, PERMISSIONS.CATEQUESE_MANAGE);
+  // Oculto por `CATECISMO_ATIVO` (ver src/lib/funcionalidades.ts).
+  if (!CATECISMO_ATIVO) return { error: "O Catecismo está desligado por enquanto." };
 
   const temaId = formData.get("temaId");
   const itinerarioId = formData.get("itinerarioId");

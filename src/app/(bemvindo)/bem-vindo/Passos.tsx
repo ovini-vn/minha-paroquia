@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowRight, BellRing, Check, Eye, HeartHandshake } from "lucide-react";
+import { ArrowRight, BellRing, Check, Eye, HeartHandshake, Mic } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Symbol } from "@/components/brand/Symbol";
 import { PushToggle } from "@/components/domain/PushToggle";
+import { PermitirMicrofone } from "@/components/domain/PermitirMicrofone";
 import { EscolhaDeAparencia } from "@/components/domain/EscolhaDeAparencia";
 import type { FontScale, ThemePreference } from "@prisma/client";
 import { concluirBoasVindasAction, entrarNaPastoralAction } from "@/server/actions/onboarding-actions";
 
 type Pastoral = { id: string; name: string; description: string | null };
 
-const TOTAL = 4;
+type Etapa = "boas-vindas" | "letra" | "avisos" | "microfone" | "pastorais";
 
 /**
- * Boas-vindas em quatro passos.
+ * Boas-vindas em quatro passos — cinco enquanto o Terço com a voz estiver em
+ * teste, com o passo do microfone (15/09/2026, pedido do usuário).
  *
  * Existe porque o convite entregava alguém numa tela e o app não pedia
  * nada: nem explicava o que era, nem oferecia o aviso no celular, nem
@@ -33,6 +35,7 @@ export function Passos({
   fontScale,
   themePreference,
   nomeDoTempo,
+  comMicrofone,
 }: {
   primeiroNome: string;
   parishName: string;
@@ -41,8 +44,16 @@ export function Passos({
   fontScale: FontScale;
   themePreference: ThemePreference;
   nomeDoTempo: string;
+  /** Mostra o passo do microfone — ver `TERCO_COM_A_VOZ_EM_TESTE`. */
+  comMicrofone: boolean;
 }) {
+  const etapas: Etapa[] = comMicrofone
+    ? ["boas-vindas", "letra", "avisos", "microfone", "pastorais"]
+    : ["boas-vindas", "letra", "avisos", "pastorais"];
+  const TOTAL = etapas.length;
   const [passo, setPasso] = useState(1);
+  const etapa = etapas[passo - 1];
+  const seguir = () => setPasso((p) => Math.min(TOTAL, p + 1));
   const [escolhida, setEscolhida] = useState<string | null>(null);
   const [pendente, startTransition] = useTransition();
 
@@ -72,7 +83,7 @@ export function Passos({
       </p>
 
       <div className="flex flex-1 flex-col px-[18px] pb-8 pt-6">
-        {passo === 1 && (
+        {etapa === "boas-vindas" && (
           <div className="flex flex-1 flex-col">
             <Symbol className="h-14 w-auto text-primary" />
             <h1 className="mt-5 font-serif text-[30px] font-semibold leading-tight text-foreground">
@@ -88,11 +99,11 @@ export function Passos({
             </p>
             <div className="rule-gold my-7" />
             <p className="text-[13.5px] leading-relaxed text-muted">
-              São três perguntas rápidas e você já entra.
+              São {TOTAL - 1 === 3 ? "três" : "quatro"} perguntas rápidas e você já entra.
             </p>
 
             <div className="mt-auto pt-8">
-              <Button type="button" onClick={() => setPasso(2)} className="w-full">
+              <Button type="button" onClick={seguir} className="w-full">
                 Começar
                 <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
               </Button>
@@ -100,7 +111,7 @@ export function Passos({
           </div>
         )}
 
-        {passo === 2 && (
+        {etapa === "letra" && (
           <div className="flex flex-1 flex-col">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary-tint text-primary">
               <Eye className="h-6 w-6" strokeWidth={1.5} aria-hidden />
@@ -122,7 +133,7 @@ export function Passos({
             </div>
 
             <div className="mt-auto pt-8">
-              <Button type="button" onClick={() => setPasso(3)} className="w-full">
+              <Button type="button" onClick={seguir} className="w-full">
                 Continuar
                 <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
               </Button>
@@ -131,7 +142,7 @@ export function Passos({
         )}
 
 
-        {passo === 3 && (
+        {etapa === "avisos" && (
           <div className="flex flex-1 flex-col">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold/15 text-[#8a6b24] dark:text-gold">
               <BellRing className="h-6 w-6" strokeWidth={1.5} aria-hidden />
@@ -153,7 +164,7 @@ export function Passos({
             </p>
 
             <div className="mt-auto flex flex-col gap-2 pt-8">
-              <Button type="button" onClick={() => setPasso(4)} className="w-full">
+              <Button type="button" onClick={seguir} className="w-full">
                 Continuar
                 <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
               </Button>
@@ -161,7 +172,38 @@ export function Passos({
           </div>
         )}
 
-        {passo === 4 && (
+        {etapa === "microfone" && (
+          <div className="flex flex-1 flex-col">
+            <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold/15 text-[#8a6b24] dark:text-gold">
+              <Mic className="h-6 w-6" strokeWidth={1.5} aria-hidden />
+            </span>
+            <h1 className="mt-5 font-serif text-[27px] font-semibold leading-tight text-foreground">
+              Quer rezar o terço com a voz?
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              No Terço com a voz, o aplicativo ouve você rezando e passa as orações sozinho — bom para
+              rezar no carro ou com as mãos ocupadas. Para isso, ele precisa do microfone.
+            </p>
+
+            <div className="mt-6">
+              <PermitirMicrofone />
+            </div>
+
+            <p className="mt-4 text-[13px] leading-relaxed text-muted">
+              O microfone só é usado quando você abre o Terço com a voz, em Palavra › Rezar › Terço. Nada é
+              gravado.
+            </p>
+
+            <div className="mt-auto flex flex-col gap-2 pt-8">
+              <Button type="button" onClick={seguir} className="w-full">
+                Continuar
+                <ArrowRight className="h-[17px] w-[17px]" strokeWidth={1.5} aria-hidden />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {etapa === "pastorais" && (
           <div className="flex flex-1 flex-col">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary-tint text-primary">
               <HeartHandshake className="h-6 w-6" strokeWidth={1.5} aria-hidden />

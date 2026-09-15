@@ -15,6 +15,7 @@ import {
 import { MaosEmOracao } from "./MaosEmOracao";
 import { PedacoDoTerco } from "./PedacoDoTerco";
 import { Eyebrow } from "@/components/ui/Typography";
+import { PermitirMicrofone } from "@/components/domain/PermitirMicrofone";
 
 /**
  * O TERÇO REZADO PELA VOZ — protótipo (15/09/2026), pedido para quem reza
@@ -366,7 +367,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
 
         <ol className="mt-5 flex flex-col gap-2.5">
           {[
-            "Toque em Começar e permita o uso do microfone.",
+            "Libere o microfone (abaixo) e toque em Começar.",
             "Reze em voz normal. As palavras acendem conforme você reza.",
             "Ao terminar cada oração, o aplicativo passa sozinho para a próxima, com um som curto. Se ele se perder, toque em Próxima.",
           ].map((texto, i) => (
@@ -389,12 +390,11 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
           internet.
         </p>
 
-        {!suportado && (
-          <p className="mt-4 rounded-lg border border-error/40 bg-error-tint px-3.5 py-3 text-[13.5px] leading-relaxed text-foreground">
-            Este navegador não reconhece voz. No Android, abra o aplicativo pelo Chrome; no iPhone, pelo Safari. Você
-            pode rezar o terço normal, tocando nas mãos.
-          </p>
-        )}
+        {/* O microfone, com o estado à vista: liberado, a liberar ou bloqueado
+            (com o caminho para desbloquear). Tocar em Começar também pede. */}
+        <div className="mt-5 rounded-lg border border-border bg-surface p-3.5">
+          <PermitirMicrofone />
+        </div>
 
         <label className="mt-5 flex items-center gap-2.5 text-[14px] text-foreground">
           <input type="checkbox" checked={comSom} onChange={(e) => setComSom(e.target.checked)} />

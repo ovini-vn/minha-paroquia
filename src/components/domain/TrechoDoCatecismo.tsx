@@ -31,16 +31,19 @@ export function TrechoDoCatecismo({
   acao?: ReactNode;
   className?: string;
 }) {
+  // O título MAIS ESPECÍFICO acima do parágrafo. Era o do artigo, e o § 543
+  // aparecia como «Jesus Cristo foi concebido… nasceu da Virgem Maria» —
+  // certo na estrutura do livro, mas não dizia nada; o subtítulo logo acima,
+  // "O anúncio do reino de Deus", diz. "Resumindo" não é assunto, então sobe.
   const caminho = caminhoDoParagrafo(paragrafo);
-  const artigo =
-    caminho.find((t) => t.nivel === "artigo") ?? caminho.find((t) => t.nivel === "capitulo") ?? caminho[0];
+  const assunto = [...caminho].reverse().find((t) => t.titulo !== "Resumindo");
   const endereco = enderecoDoParagrafo(paragrafo);
 
   return (
     <figure className={cn("border-l-2 border-gold/60 pl-3.5", className)}>
       <figcaption className="text-[13px] leading-snug text-muted">
         <span className="font-semibold text-primary">Catecismo, § {paragrafo}</span>
-        {artigo && <> · {artigo.titulo}</>}
+        {assunto && <> · {assunto.titulo}</>}
       </figcaption>
       <blockquote
         className={cn(

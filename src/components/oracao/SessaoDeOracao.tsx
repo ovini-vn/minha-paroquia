@@ -6,8 +6,7 @@ import { BookOpen, ChevronLeft, RotateCcw } from "lucide-react";
 import type { Roteiro } from "@/lib/oracoes/roteiros";
 import { marcarDiaRezadoAction } from "@/server/actions/novena-actions";
 import { MaosEmOracao } from "./MaosEmOracao";
-import { PedacoDoTerco } from "./PedacoDoTerco";
-import { Eyebrow } from "@/components/ui/Typography";
+import { CartaoDaConta } from "./CartaoDaConta";
 
 /**
  * A oração guiada: um passo por vez, com o botão das mãos para seguir.
@@ -273,25 +272,15 @@ export function SessaoDeOracao({
       </div>
 
       {/*
-        O chaveiro: a parte, o pedaço do terço e onde se está.
-
-        Um cartão como os outros do app — fundo, borda e o fio dourado no
-        topo dos cartões da Palavra — e não um objeto de cor fixa. Assim ele
-        acompanha o tema claro ou escuro, a cor do Tempo Litúrgico e a letra
-        que a pessoa escolheu em Aparência.
+        O chaveiro: a parte, o pedaço do terço e onde se está. Ele fica preso
+        no topo enquanto a pessoa rola a oração — ver CartaoDaConta.
       */}
-      <div className="relative overflow-hidden rounded-lg border border-border bg-surface px-4 pb-3.5 pt-3 shadow-sm before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
-        <Eyebrow tone="accent">{passo.parte}</Eyebrow>
-        <div className="mt-1">
-          <PedacoDoTerco contas={passo.contas} rotulo={`${passo.parte}: ${passo.contador}`} />
-        </div>
-        <p className="contador-da-conta text-center font-serif text-[22px] font-semibold leading-tight text-foreground" aria-live="polite">
-          {passo.contador}
-        </p>
-        <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-sunken" aria-hidden>
-          <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${((indice + 1) / total) * 100}%` }} />
-        </div>
-      </div>
+      <CartaoDaConta
+        parte={passo.parte}
+        contador={passo.contador}
+        contas={passo.contas}
+        progresso={(indice + 1) / total}
+      />
 
       {/*
         O mistério inteiro — com a frase para contemplar e a passagem — só

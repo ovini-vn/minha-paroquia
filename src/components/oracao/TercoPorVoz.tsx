@@ -12,9 +12,9 @@ import {
   terminou,
   type Andamento,
 } from "@/lib/oracoes/acompanhar-voz";
+import { wavQuaseEmSilencio } from "@/lib/oracoes/silencio";
 import { MaosEmOracao } from "./MaosEmOracao";
-import { PedacoDoTerco } from "./PedacoDoTerco";
-import { Eyebrow } from "@/components/ui/Typography";
+import { CartaoDaConta } from "./CartaoDaConta";
 import { PermitirMicrofone } from "@/components/domain/PermitirMicrofone";
 
 /**
@@ -35,6 +35,10 @@ import { PermitirMicrofone } from "@/components/domain/PermitirMicrofone";
  * reconhecimento passa pelo serviço do Google e precisa de internet, e no
  * iPhone ele para mais vezes sozinho — por isso a tela religa o microfone
  * sempre que ele cai.
+ *
+ * O BOTÃO DO VOLANTE (16/09/2026) é a saída para o barulho, que foi o que
+ * mais atrapalhou no primeiro teste no carro: o mesmo botão que passa a
+ * música passa a oração, e a mão não sai do volante. Ver `ligarVolante`.
  *
  * É protótipo de propósito: a regra de quando passar precisa ser acertada
  * com gente rezando de verdade, e a linha "O app ouviu" embaixo da oração
@@ -84,6 +88,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   const [estado, setEstado] = useState<Estado>("parado");
   const [ouvido, setOuvido] = useState("");
   const [comSom, setComSom] = useState(true);
+  const [comVolante, setComVolante] = useState(true);
   const [suportado, setSuportado] = useState(true);
 
   const reconhecedor = useRef<Reconhecedor | null>(null);
@@ -96,6 +101,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trava = useRef<TravaDeTela | null>(null);
   const audio = useRef<AudioContext | null>(null);
+  const somDoVolante = useRef<HTMLAudioElement | null>(null);
   const somLigado = useRef(true);
   const palavraAtual = useRef<HTMLSpanElement | null>(null);
   const ultimoErro = useRef<string | null>(null);
@@ -136,6 +142,49 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     }
   };
 
+  /**
+   * O botão "próxima faixa" do volante, do fone ou da tela de bloqueio.
+   *
+   * O carro só mostra esses controles quando o aparelho está tocando algo —
+   * daí o som quase em silêncio em repetição. Quem responde aos botões é a
+   * Media Session, e a mesma ficha mostra no painel do carro em que oração a
+   * pessoa está.
+   */
+  const ligarVolante = () => {
+    if (!somDoVolante.current) {
+      try {
+        const elemento = new Audio(URL.createObjectURL(wavQuaseEmSilencio()));
+        elemento.loop = true;
+        elemento.volume = 0.05;
+        // Dentro da página, e não solto: há navegador que só oferece os
+        // controles de mídia quando o áudio está no documento.
+        elemento.setAttribute("aria-hidden", "true");
+        document.body.appendChild(elemento);
+        somDoVolante.current = elemento;
+      } catch {
+        return;
+      }
+    }
+    somDoVolante.current.play().catch(() => undefined);
+  };
+
+  const desligarVolante = () => {
+    const elemento = somDoVolante.current;
+    if (elemento) {
+      elemento.pause();
+      elemento.currentTime = 0;
+    }
+    if (typeof navigator !== "undefined" && "mediaSession" in navigator) {
+      for (const acao of ["nexttrack", "previoustrack", "play", "pause"] as const) {
+        try {
+          navigator.mediaSession.setActionHandler(acao, null);
+        } catch {
+          // navegador sem essa ação
+        }
+      }
+    }
+  };
+
   const soltarTela = () => {
     trava.current?.release().catch(() => undefined);
     trava.current = null;
@@ -150,6 +199,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       // já parado
     }
     soltarTela();
+    desligarVolante();
     setEstado((e) => (e === "ouvindo" ? "parado" : e));
   }, []);
 
@@ -236,6 +286,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     querOuvir.current = true;
     ultimoErro.current = null;
     void segurarTela();
+    if (comVolante) ligarVolante();
 
     const r = reconhecedor.current ?? new Construtor();
     reconhecedor.current = r;
@@ -311,7 +362,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     } catch {
       // já estava ligado
     }
-  }, [oracoes, processar, irPara]);
+  }, [oracoes, processar, irPara, comVolante]);
 
   // A trava da tela cai quando o app vai para o fundo; ao voltar, pede de novo.
   useEffect(() => {
@@ -333,6 +384,8 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
         // já parado
       }
       soltarTela();
+      desligarVolante();
+      somDoVolante.current?.remove();
       audio.current?.close().catch(() => undefined);
     },
     [],
@@ -347,6 +400,33 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   }, [posicao, indice]);
 
   const manual = (novo: number) => irPara(novo, palavrasDaSessao.current.length, false);
+
+  /*
+   * O que os botões do volante fazem, e o que o painel do carro mostra.
+   * Refeito a cada oração: é assim que o carro exibe "Ave-Maria · 4ª de 10"
+   * e que "próxima" sabe para onde ir.
+   */
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const sessao = navigator.mediaSession;
+    const passoAtual = roteiro.passos[indice];
+    if (!comVolante || indice < 0 || indice >= total || !passoAtual) return;
+
+    try {
+      sessao.metadata = new MediaMetadata({
+        title: passoAtual.oracao.titulo,
+        artist: `${passoAtual.parte} · ${passoAtual.contador}`,
+        album: `${roteiro.titulo} · ${roteiro.subtitulo}`,
+      });
+      sessao.playbackState = "playing";
+      sessao.setActionHandler("nexttrack", () => manual(indice + 1));
+      sessao.setActionHandler("previoustrack", () => manual(indice - 1));
+      sessao.setActionHandler("pause", () => pararDeOuvir());
+      sessao.setActionHandler("play", () => comecarAOuvir());
+    } catch {
+      // navegador sem Media Session completa
+    }
+  });
 
   // ---- apresentação ----------------------------------------------------------
   if (indice < 0) {
@@ -399,6 +479,21 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
         <label className="mt-5 flex items-center gap-2.5 text-[14px] text-foreground">
           <input type="checkbox" checked={comSom} onChange={(e) => setComSom(e.target.checked)} />
           Tocar um som curto ao passar para a próxima oração
+        </label>
+        <label className="mt-3 flex items-start gap-2.5 text-[14px] text-foreground">
+          <input
+            type="checkbox"
+            checked={comVolante}
+            className="mt-1"
+            onChange={(e) => setComVolante(e.target.checked)}
+          />
+          <span>
+            Passar a oração pelo botão do volante ou do fone
+            <span className="mt-0.5 block text-[13px] leading-relaxed text-muted">
+              O botão de “próxima” do carro passa a oração — é o que resolve quando o barulho atrapalha a voz. Para
+              isso, o aplicativo toca um som quase em silêncio, e o carro pode parar o rádio ou a música.
+            </span>
+          </span>
         </label>
 
         <button
@@ -463,18 +558,12 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
         </Link>
       </div>
 
-      <div className="relative overflow-hidden rounded-lg border border-border bg-surface px-4 pb-3.5 pt-3 shadow-sm before:absolute before:inset-x-5 before:top-0 before:h-px before:bg-gradient-to-r before:from-gold before:to-transparent">
-        <Eyebrow tone="accent">{passo.parte}</Eyebrow>
-        <div className="mt-1">
-          <PedacoDoTerco contas={passo.contas} rotulo={`${passo.parte}: ${passo.contador}`} />
-        </div>
-        <p className="contador-da-conta text-center font-serif text-[22px] font-semibold leading-tight text-foreground" aria-live="polite">
-          {passo.contador}
-        </p>
-        <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-sunken" aria-hidden>
-          <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${((indice + 1) / total) * 100}%` }} />
-        </div>
-      </div>
+      <CartaoDaConta
+        parte={passo.parte}
+        contador={passo.contador}
+        contas={passo.contas}
+        progresso={(indice + 1) / total}
+      />
 
       {passo.misterio && (
         <p className="mt-3 text-[13.5px] leading-snug text-muted">

@@ -149,6 +149,34 @@ const TELAS = [
     },
   },
   { arquivo: "rezar-novenas", url: "/rezar/novenas" },
+  /*
+   * O Terço com a voz, com as palavras acendendo (15/09/2026). Não há voz
+   * no navegador do script: um reconhecedor falso (ver o addInitScript
+   * abaixo) entrega a frase como se alguém tivesse rezado. A tela é a de
+   * verdade — só a fala é simulada.
+   *
+   * Chega à 4ª Ave-Maria da 1ª dezena tocando Próxima (a Ave-Maria é a
+   * oração que mais se reza, e é nela que o videokê faz sentido), e "reza"
+   * o começo dela — o bastante para ver as palavras ditas acesas e as que
+   * faltam apagadas, antes da barra do microfone.
+   */
+  {
+    arquivo: "rezar-voz",
+    url: "/rezar/terco/voz",
+    acao: async (pagina) => {
+      await pagina.getByRole("button", { name: /^Começar/ }).click();
+      for (let i = 0; i < 40; i++) {
+        if (await pagina.getByText("4ª Ave-Maria de 10").count()) break;
+        await pagina.getByRole("button", { name: /Passar para a próxima oração/ }).click();
+        await pagina.waitForTimeout(80);
+      }
+      await pagina.evaluate(() =>
+        window.__dizer?.("ave maria cheia de graça o senhor é convosco"),
+      );
+      await pagina.waitForTimeout(400);
+      await pagina.evaluate(() => window.scrollTo(0, 0));
+    },
+  },
   { arquivo: "comunidade-sacerdotes", url: "/comunidade/sacerdotes" },
   { arquivo: "paroco", url: "/paroco" },
 
@@ -206,6 +234,9 @@ const contexto = await navegador.newContext({
   hasTouch: true,
   locale: "pt-BR",
   timezoneId: "America/Sao_Paulo",
+  // Sem animação: o anel pulsando do microfone saía congelado no meio da
+  // expansão, por cima da barra, no print do Terço com a voz.
+  reducedMotion: "reduce",
 });
 
 await contexto.addCookies([
@@ -224,6 +255,35 @@ await contexto.addCookies([
 
 // O indicador do Next em desenvolvimento fica flutuando no canto e não faz
 // parte do produto. Fora dele antes de qualquer clique do obturador.
+// O reconhecedor de voz falso do print "rezar-voz". Não afeta as outras
+// telas: nenhuma delas liga o microfone.
+await contexto.addInitScript(() => {
+  class ReconhecedorFalso {
+    constructor() {
+      window.__fala = this;
+      this.resultados = [];
+    }
+    start() {
+      setTimeout(() => this.onstart?.(), 10);
+    }
+    stop() {
+      setTimeout(() => this.onend?.(), 10);
+    }
+    abort() {
+      this.stop();
+    }
+  }
+  for (const nome of ["SpeechRecognition", "webkitSpeechRecognition"]) {
+    Object.defineProperty(window, nome, { value: ReconhecedorFalso, configurable: true, writable: true });
+  }
+  window.__dizer = (texto) => {
+    const fala = window.__fala;
+    if (!fala) return;
+    fala.resultados.push({ 0: { transcript: texto }, isFinal: true });
+    fala.onresult?.({ results: Object.assign([...fala.resultados], { length: fala.resultados.length }) });
+  };
+});
+
 await contexto.addInitScript(() => {
   const estilo = document.createElement("style");
   estilo.textContent =

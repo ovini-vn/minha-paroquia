@@ -22,14 +22,19 @@ describe("o som quase em silêncio do botão do volante", () => {
     expect(bytes.length).toBe(44 + 8000 * 2);
   });
 
-  it("tem som, mas baixo demais para se ouvir", async () => {
+  it("tem som suficiente para o navegador contar como tocando, e ainda assim baixo", async () => {
     const bytes = new Uint8Array(await wavQuaseEmSilencio(8000, 1).arrayBuffer());
     let maior = 0;
     for (let i = 44; i < bytes.length; i += 2) {
       const amostra = new DataView(bytes.buffer).getInt16(i, true);
       maior = Math.max(maior, Math.abs(amostra));
     }
-    expect(maior).toBeGreaterThan(0);
-    expect(maior).toBeLessThan(32767 * 0.001);
+    /*
+     * O primeiro protótipo usava 8 de 32767 — silêncio para o navegador, e
+     * por isso o botão do volante não recebia nada. O piso aqui é o que faz
+     * a página valer como "tocando som"; o teto é o que a mantém discreta.
+     */
+    expect(maior).toBeGreaterThan(32767 * 0.005);
+    expect(maior).toBeLessThan(32767 * 0.02);
   });
 });

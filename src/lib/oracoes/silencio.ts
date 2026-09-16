@@ -1,14 +1,20 @@
 /**
- * Um segundo de quase-silêncio, em WAV.
+ * Um segundo de som grave e baixo, em WAV.
  *
- * Serve ao BOTÃO DO VOLANTE: o carro (ou o fone Bluetooth) só oferece os
- * controles de faixa — passar, voltar, pausar — quando o aparelho está
- * tocando alguma coisa. Então o app toca isto em repetição enquanto a
- * pessoa reza, e o "próxima faixa" do volante passa a oração.
+ * Serve ao BOTÃO DO VOLANTE: o carro (ou o fone Bluetooth) só entrega os
+ * controles de faixa — passar, voltar, pausar — à página que está TOCANDO
+ * SOM. Então o app toca isto em repetição enquanto a pessoa reza, e o
+ * "próxima faixa" do volante passa a oração.
  *
- * Silêncio absoluto não serve: alguns navegadores e alguns carros ignoram
- * uma faixa muda. É uma onda de 60 Hz com amplitude perto de zero —
- * inaudível no carro, mas contada como som tocando.
+ * A primeira versão era quase silêncio absoluto (amplitude 8 de 32767, com
+ * volume 0,05: uns 100 dB abaixo do máximo). No teste do usuário, no fone e
+ * no computador, o botão não passou a oração: para o navegador, aquilo era
+ * silêncio, e quem fica com os botões é outro aplicativo. Agora a amplitude
+ * é 1% do máximo, alto o bastante para contar como som tocando.
+ *
+ * 55 Hz porque é grave: alto-falante de celular quase não reproduz essa
+ * faixa, e no carro e no fone, nesse volume, fica abaixo do ruído do
+ * ambiente.
  */
 export function wavQuaseEmSilencio(taxa = 8000, segundos = 1): Blob {
   const amostras = Math.max(1, Math.round(taxa * segundos));
@@ -33,7 +39,10 @@ export function wavQuaseEmSilencio(taxa = 8000, segundos = 1): Blob {
   dados.setUint32(40, amostras * 2, true);
 
   for (let i = 0; i < amostras; i++) {
-    dados.setInt16(44 + i * 2, Math.round(Math.sin((i / taxa) * 2 * Math.PI * 60) * 8), true);
+    // 1% do máximo (328 de 32767), com as bordas em rampa para o laço não
+    // estalar a cada volta.
+    const rampa = Math.min(1, Math.min(i, amostras - 1 - i) / 200);
+    dados.setInt16(44 + i * 2, Math.round(Math.sin((i / taxa) * 2 * Math.PI * 55) * 328 * rampa), true);
   }
 
   return new Blob([dados.buffer], { type: "audio/wav" });

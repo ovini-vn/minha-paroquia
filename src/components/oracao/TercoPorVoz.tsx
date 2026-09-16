@@ -75,6 +75,15 @@ type TravaDeTela = { release: () => Promise<void> };
 
 const ZERO: Andamento = { posicao: 0, acertos: 0, metadeEm: null, fimEm: null };
 
+/*
+ * Os botões de mídia que o app escuta.
+ *
+ * Nem todo aparelho manda "próxima faixa": há fone e central de carro que
+ * mandam avançar/retroceder (`seekforward`/`seekbackward`) no mesmo botão.
+ * Todos levam para a oração seguinte ou para a anterior.
+ */
+const ACOES_DE_MIDIA = ["nexttrack", "previoustrack", "seekforward", "seekbackward", "play", "pause", "stop"] as const;
+
 /** Pausa depois da última palavra antes de passar — e a maior, quando a última se perdeu. */
 const PAUSA_NO_FIM = 700;
 const PAUSA_QUASE_NO_FIM = 1600;
@@ -90,6 +99,9 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   const [comSom, setComSom] = useState(true);
   const [comVolante, setComVolante] = useState(true);
   const [suportado, setSuportado] = useState(true);
+  /* Quantos toques de botão de mídia chegaram — a prova, no teste, de que o
+     volante está falando com o app. */
+  const [toquesDoVolante, setToquesDoVolante] = useState(0);
 
   const reconhecedor = useRef<Reconhecedor | null>(null);
   const querOuvir = useRef(false);
@@ -155,7 +167,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       try {
         const elemento = new Audio(URL.createObjectURL(wavQuaseEmSilencio()));
         elemento.loop = true;
-        elemento.volume = 0.05;
+        elemento.volume = 0.6;
         // Dentro da página, e não solto: há navegador que só oferece os
         // controles de mídia quando o áudio está no documento.
         elemento.setAttribute("aria-hidden", "true");
@@ -175,7 +187,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       elemento.currentTime = 0;
     }
     if (typeof navigator !== "undefined" && "mediaSession" in navigator) {
-      for (const acao of ["nexttrack", "previoustrack", "play", "pause"] as const) {
+      for (const acao of ACOES_DE_MIDIA) {
         try {
           navigator.mediaSession.setActionHandler(acao, null);
         } catch {
@@ -412,6 +424,17 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     const passoAtual = roteiro.passos[indice];
     if (!comVolante || indice < 0 || indice >= total || !passoAtual) return;
 
+    const atender = (acao: (typeof ACOES_DE_MIDIA)[number], fazer: () => void) => {
+      try {
+        sessao.setActionHandler(acao, () => {
+          setToquesDoVolante((n) => n + 1);
+          fazer();
+        });
+      } catch {
+        // este aparelho não manda esta ação
+      }
+    };
+
     try {
       sessao.metadata = new MediaMetadata({
         title: passoAtual.oracao.titulo,
@@ -419,13 +442,16 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
         album: `${roteiro.titulo} · ${roteiro.subtitulo}`,
       });
       sessao.playbackState = "playing";
-      sessao.setActionHandler("nexttrack", () => manual(indice + 1));
-      sessao.setActionHandler("previoustrack", () => manual(indice - 1));
-      sessao.setActionHandler("pause", () => pararDeOuvir());
-      sessao.setActionHandler("play", () => comecarAOuvir());
     } catch {
       // navegador sem Media Session completa
     }
+    atender("nexttrack", () => manual(indice + 1));
+    atender("seekforward", () => manual(indice + 1));
+    atender("previoustrack", () => manual(indice - 1));
+    atender("seekbackward", () => manual(indice - 1));
+    atender("pause", () => pararDeOuvir());
+    atender("stop", () => pararDeOuvir());
+    atender("play", () => comecarAOuvir());
   });
 
   // ---- apresentação ----------------------------------------------------------
@@ -611,6 +637,17 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       <p className="mt-4 min-h-[2.6em] text-[13px] leading-snug text-muted">
         <span className="font-semibold">O app ouviu:</span> {ouvido || "…"}
       </p>
+
+      {/* No teste, é isto que diz se o volante está mesmo falando com o app:
+          o número só sobe quando um botão de mídia chega até aqui. */}
+      {comVolante && (
+        <p className="mt-1 text-[13px] leading-snug text-muted">
+          <span className="font-semibold">Botão do volante:</span>{" "}
+          {toquesDoVolante === 0
+            ? "ligado, nenhum toque recebido ainda"
+            : `${toquesDoVolante} ${toquesDoVolante === 1 ? "toque recebido" : "toques recebidos"}`}
+        </p>
+      )}
 
       <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 mt-4 lg:bottom-6">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center rounded-2xl border border-border bg-background/95 px-2 py-2 shadow-lg backdrop-blur">

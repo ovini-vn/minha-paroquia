@@ -56,15 +56,15 @@ export const CONVITES_ATIVOS = false;
 export const CATECISMO_ATIVO = false;
 
 /**
- * TERÇO COM A VOZ — protótipo em teste desde 15/09/2026.
+ * TERÇO COM A VOZ — no ar desde 16/09/2026, depois do teste no carro.
  *
  * O aplicativo ouve quem reza, acende as palavras e passa sozinho para a
- * próxima oração. Pedido para quem reza no carro. Fica ligado para o
- * usuário testar em aparelhos reais; o link aparece no Terço marcado como
- * "em teste".
+ * próxima oração. Funciona melhor com uma pessoa só rezando, em lugar
+ * silencioso — com mais gente ou com barulho de estrada, quem passa a
+ * oração é o botão do volante (ver botao-do-volante.ts).
  *
  * Desligar esconde o link e faz /rezar/terco/voz responder "não
  * encontrado". Nada fica guardado: a voz não é gravada nem enviada ao
  * servidor do app.
  */
-export const TERCO_COM_A_VOZ_EM_TESTE = true;
+export const TERCO_COM_A_VOZ = true;

@@ -136,19 +136,28 @@ export function acompanhar(
   return { posicao, acertos, metadeEm, fimEm };
 }
 
-/** Parte mínima das palavras da oração que precisa ter sido reconhecida. */
-export const COBERTURA_MINIMA = 0.6;
+/**
+ * Parte mínima das palavras da oração que precisa ter sido reconhecida.
+ *
+ * Eram 0,6. Rezando em dupla, o reconhecimento perde mais — as vozes se
+ * sobrepõem e uma cobre a outra —, e a oração acabava e a tela esperava.
+ */
+export const COBERTURA_MINIMA = 0.5;
 
 /**
- * Chegou ao fim tendo rezado a maior parte. `quase` aceita a última palavra
- * perdida — o "Amém" final é justamente o que mais se perde, dito mais
- * baixo — e por isso a tela espera uma pausa maior antes de passar.
+ * Chegou ao fim tendo rezado a maior parte. `quase` aceita o fim perdido —
+ * o "Amém" é justamente o que mais se perde, dito mais baixo, e em dupla
+ * some também a palavra antes dele — e por isso a tela espera uma pausa
+ * maior antes de passar.
  */
 export function terminou(esperadas: string[], andamento: Andamento): "sim" | "quase" | "nao" {
   const cobriu = andamento.acertos >= Math.ceil(esperadas.length * COBERTURA_MINIMA);
   if (!cobriu) return "nao";
   if (andamento.posicao >= esperadas.length) return "sim";
-  if (esperadas.length >= 6 && andamento.posicao >= esperadas.length - 1) return "quase";
+  // Duas palavras nas orações longas; uma nas curtas, onde duas seriam
+  // metade do Glória.
+  const podeFaltar = esperadas.length >= 20 ? 2 : 1;
+  if (esperadas.length >= 6 && andamento.posicao >= esperadas.length - podeFaltar) return "quase";
   return "nao";
 }
 

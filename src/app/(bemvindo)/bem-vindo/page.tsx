@@ -4,7 +4,7 @@ import { requireSessionForPage } from "@/server/auth/guards";
 import { listActiveGroups } from "@/server/modules/pastorais/service";
 import { getPublicVapidKey } from "@/server/modules/push/service";
 import { getLiturgicalSeason } from "@/lib/liturgical-season";
-import { TERCO_COM_A_VOZ_EM_TESTE } from "@/lib/funcionalidades";
+import { TERCO_COM_A_VOZ } from "@/lib/funcionalidades";
 import { Passos } from "./Passos";
 
 export const metadata: Metadata = { title: "Boas-vindas" };
@@ -29,7 +29,7 @@ export default async function BemVindoPage() {
       fontScale={session.fontScale}
       themePreference={session.themePreference}
       nomeDoTempo={getLiturgicalSeason(new Date()).name}
-      comMicrofone={TERCO_COM_A_VOZ_EM_TESTE}
+      comMicrofone={TERCO_COM_A_VOZ}
       pastorais={pastorais.slice(0, 6).map((p) => ({
         id: p.id,
         name: p.name,

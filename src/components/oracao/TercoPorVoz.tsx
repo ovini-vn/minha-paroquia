@@ -12,9 +12,9 @@ import {
   terminou,
   type Andamento,
 } from "@/lib/oracoes/acompanhar-voz";
-import { wavQuaseEmSilencio } from "@/lib/oracoes/silencio";
 import { MaosEmOracao } from "./MaosEmOracao";
 import { CartaoDaConta } from "./CartaoDaConta";
+import { useBotaoDoVolante } from "./botao-do-volante";
 import { PermitirMicrofone } from "@/components/domain/PermitirMicrofone";
 
 /**
@@ -76,17 +76,17 @@ type TravaDeTela = { release: () => Promise<void> };
 const ZERO: Andamento = { posicao: 0, acertos: 0, metadeEm: null, fimEm: null };
 
 /*
- * Os botões de mídia que o app escuta.
+ * Pausa depois da última palavra antes de passar — e a maior, quando o fim
+ * se perdeu.
  *
- * Nem todo aparelho manda "próxima faixa": há fone e central de carro que
- * mandam avançar/retroceder (`seekforward`/`seekbackward`) no mesmo botão.
- * Todos levam para a oração seguinte ou para a anterior.
+ * Eram 700 ms e 1,6 s. Rezando em dupla, o usuário sentiu atraso: mal
+ * termina o "Amém" e a próxima Ave-Maria já começa, e a tela ficava para
+ * trás. Encurtado para um quarto de segundo, que é menos do que se leva
+ * para respirar entre uma oração e outra. Não há risco de passar no meio:
+ * a espera só começa quando a oração chegou à última palavra.
  */
-const ACOES_DE_MIDIA = ["nexttrack", "previoustrack", "seekforward", "seekbackward", "play", "pause", "stop"] as const;
-
-/** Pausa depois da última palavra antes de passar — e a maior, quando a última se perdeu. */
-const PAUSA_NO_FIM = 700;
-const PAUSA_QUASE_NO_FIM = 1600;
+const PAUSA_NO_FIM = 250;
+const PAUSA_QUASE_NO_FIM = 900;
 
 export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { href: string; rotulo: string } }) {
   const total = roteiro.passos.length;
@@ -95,13 +95,9 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   const [indice, setIndice] = useState(-1);
   const [posicao, setPosicao] = useState(0);
   const [estado, setEstado] = useState<Estado>("parado");
-  const [ouvido, setOuvido] = useState("");
   const [comSom, setComSom] = useState(true);
   const [comVolante, setComVolante] = useState(true);
   const [suportado, setSuportado] = useState(true);
-  /* Quantos toques de botão de mídia chegaram — a prova, no teste, de que o
-     volante está falando com o app. */
-  const [toquesDoVolante, setToquesDoVolante] = useState(0);
 
   const reconhecedor = useRef<Reconhecedor | null>(null);
   const querOuvir = useRef(false);
@@ -113,10 +109,27 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trava = useRef<TravaDeTela | null>(null);
   const audio = useRef<AudioContext | null>(null);
-  const somDoVolante = useRef<HTMLAudioElement | null>(null);
   const somLigado = useRef(true);
   const palavraAtual = useRef<HTMLSpanElement | null>(null);
   const ultimoErro = useRef<string | null>(null);
+  /* O desligar do volante por referência: `pararDeOuvir` é criado uma vez só. */
+  const volanteRef = useRef<() => void>(() => undefined);
+
+  const passoAtual = indice >= 0 && indice < total ? roteiro.passos[indice] : undefined;
+  const volante = useBotaoDoVolante({
+    ativo: comVolante && !!passoAtual,
+    ficha: passoAtual
+      ? {
+          titulo: passoAtual.oracao.titulo,
+          onde: `${passoAtual.parte} · ${passoAtual.contador}`,
+          album: `${roteiro.titulo} · ${roteiro.subtitulo}`,
+        }
+      : null,
+    aoAvancar: () => manual(indiceRef.current + 1),
+    aoVoltar: () => manual(indiceRef.current - 1),
+    aoPausar: () => pararDeOuvir(),
+    aoTocar: () => comecarAOuvir(),
+  });
 
   useEffect(() => {
     setSuportado(construtorDoNavegador() !== null);
@@ -124,6 +137,9 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
   useEffect(() => {
     somLigado.current = comSom;
   }, [comSom]);
+  useEffect(() => {
+    volanteRef.current = volante.desligar;
+  });
 
   const cancelarEspera = () => {
     if (espera.current) clearTimeout(espera.current);
@@ -154,49 +170,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     }
   };
 
-  /**
-   * O botão "próxima faixa" do volante, do fone ou da tela de bloqueio.
-   *
-   * O carro só mostra esses controles quando o aparelho está tocando algo —
-   * daí o som quase em silêncio em repetição. Quem responde aos botões é a
-   * Media Session, e a mesma ficha mostra no painel do carro em que oração a
-   * pessoa está.
-   */
-  const ligarVolante = () => {
-    if (!somDoVolante.current) {
-      try {
-        const elemento = new Audio(URL.createObjectURL(wavQuaseEmSilencio()));
-        elemento.loop = true;
-        elemento.volume = 0.6;
-        // Dentro da página, e não solto: há navegador que só oferece os
-        // controles de mídia quando o áudio está no documento.
-        elemento.setAttribute("aria-hidden", "true");
-        document.body.appendChild(elemento);
-        somDoVolante.current = elemento;
-      } catch {
-        return;
-      }
-    }
-    somDoVolante.current.play().catch(() => undefined);
-  };
-
-  const desligarVolante = () => {
-    const elemento = somDoVolante.current;
-    if (elemento) {
-      elemento.pause();
-      elemento.currentTime = 0;
-    }
-    if (typeof navigator !== "undefined" && "mediaSession" in navigator) {
-      for (const acao of ACOES_DE_MIDIA) {
-        try {
-          navigator.mediaSession.setActionHandler(acao, null);
-        } catch {
-          // navegador sem essa ação
-        }
-      }
-    }
-  };
-
   const soltarTela = () => {
     trava.current?.release().catch(() => undefined);
     trava.current = null;
@@ -211,7 +184,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       // já parado
     }
     soltarTela();
-    desligarVolante();
+    volanteRef.current();
     setEstado((e) => (e === "ouvindo" ? "parado" : e));
   }, []);
 
@@ -226,7 +199,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       andamento.current = ZERO;
       setIndice(limitado);
       setPosicao(0);
-      setOuvido("");
       if (pelaVoz) tocarSom();
       if (limitado >= total) pararDeOuvir();
     },
@@ -243,7 +215,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
       const a = acompanhar(atual.esperadas, doPasso, base.current);
       andamento.current = a;
       setPosicao(a.posicao);
-      setOuvido(doPasso.slice(-12).join(" "));
 
       // Segunda chance: a próxima oração já começou.
       const proxima = oracoes[i + 1];
@@ -298,7 +269,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     querOuvir.current = true;
     ultimoErro.current = null;
     void segurarTela();
-    if (comVolante) ligarVolante();
+    if (comVolante) volante.ligar();
 
     const r = reconhecedor.current ?? new Construtor();
     reconhecedor.current = r;
@@ -374,6 +345,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     } catch {
       // já estava ligado
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [oracoes, processar, irPara, comVolante]);
 
   // A trava da tela cai quando o app vai para o fundo; ao voltar, pede de novo.
@@ -396,8 +368,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
         // já parado
       }
       soltarTela();
-      desligarVolante();
-      somDoVolante.current?.remove();
       audio.current?.close().catch(() => undefined);
     },
     [],
@@ -413,47 +383,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
 
   const manual = (novo: number) => irPara(novo, palavrasDaSessao.current.length, false);
 
-  /*
-   * O que os botões do volante fazem, e o que o painel do carro mostra.
-   * Refeito a cada oração: é assim que o carro exibe "Ave-Maria · 4ª de 10"
-   * e que "próxima" sabe para onde ir.
-   */
-  useEffect(() => {
-    if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
-    const sessao = navigator.mediaSession;
-    const passoAtual = roteiro.passos[indice];
-    if (!comVolante || indice < 0 || indice >= total || !passoAtual) return;
-
-    const atender = (acao: (typeof ACOES_DE_MIDIA)[number], fazer: () => void) => {
-      try {
-        sessao.setActionHandler(acao, () => {
-          setToquesDoVolante((n) => n + 1);
-          fazer();
-        });
-      } catch {
-        // este aparelho não manda esta ação
-      }
-    };
-
-    try {
-      sessao.metadata = new MediaMetadata({
-        title: passoAtual.oracao.titulo,
-        artist: `${passoAtual.parte} · ${passoAtual.contador}`,
-        album: `${roteiro.titulo} · ${roteiro.subtitulo}`,
-      });
-      sessao.playbackState = "playing";
-    } catch {
-      // navegador sem Media Session completa
-    }
-    atender("nexttrack", () => manual(indice + 1));
-    atender("seekforward", () => manual(indice + 1));
-    atender("previoustrack", () => manual(indice - 1));
-    atender("seekbackward", () => manual(indice - 1));
-    atender("pause", () => pararDeOuvir());
-    atender("stop", () => pararDeOuvir());
-    atender("play", () => comecarAOuvir());
-  });
-
   // ---- apresentação ----------------------------------------------------------
   if (indice < 0) {
     return (
@@ -465,10 +394,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
           <ChevronLeft className="h-4 w-4" strokeWidth={1.5} aria-hidden />
           {voltar.rotulo}
         </Link>
-        <p className="self-start rounded-full bg-gold/20 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-eyebrow text-[#8a6b24] dark:text-gold">
-          Em teste
-        </p>
-        <h1 className="mt-2 font-serif text-[30px] font-semibold leading-tight text-foreground">Terço com a voz</h1>
+        <h1 className="font-serif text-[30px] font-semibold leading-tight text-foreground">Terço com a voz</h1>
         <p className="mt-1 text-[14px] font-medium text-primary">{roteiro.subtitulo}</p>
 
         <ol className="mt-5 flex flex-col gap-2.5">
@@ -486,7 +412,11 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
           ))}
         </ol>
 
-        <p className="mt-5 text-[14px] leading-relaxed text-muted">
+        <p className="mt-5 rounded-lg border border-gold/45 bg-gradient-to-b from-gold/[0.08] to-transparent px-3.5 py-3 text-[14px] leading-relaxed text-foreground">
+          Funciona melhor rezando sozinho, em lugar silencioso. Com mais gente rezando junto, ou com barulho de
+          estrada, o aplicativo perde o fio — nessa hora, passe as orações pelo botão do volante ou do fone.
+        </p>
+        <p className="mt-4 text-[14px] leading-relaxed text-muted">
           No carro, deixe o celular no suporte. A tela não apaga enquanto o aplicativo estiver ouvindo, e quem dirige não
           precisa olhar nem tocar: basta rezar.
         </p>
@@ -577,7 +507,7 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
     <div className="flex flex-col lg:max-w-[42rem]">
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="min-w-0 truncate text-[13px] font-medium text-muted">
-          Terço com a voz · <span className="text-[#8a6b24] dark:text-gold">em teste</span>
+          Terço com a voz
         </p>
         <Link href={voltar.href} className="alvo-de-toque shrink-0 text-[13px] font-medium text-muted hover:text-primary">
           Sair
@@ -633,21 +563,6 @@ export function TercoPorVoz({ roteiro, voltar }: { roteiro: Roteiro; voltar: { h
           );
         })}
       </p>
-
-      <p className="mt-4 min-h-[2.6em] text-[13px] leading-snug text-muted">
-        <span className="font-semibold">O app ouviu:</span> {ouvido || "…"}
-      </p>
-
-      {/* No teste, é isto que diz se o volante está mesmo falando com o app:
-          o número só sobe quando um botão de mídia chega até aqui. */}
-      {comVolante && (
-        <p className="mt-1 text-[13px] leading-snug text-muted">
-          <span className="font-semibold">Botão do volante:</span>{" "}
-          {toquesDoVolante === 0
-            ? "ligado, nenhum toque recebido ainda"
-            : `${toquesDoVolante} ${toquesDoVolante === 1 ? "toque recebido" : "toques recebidos"}`}
-        </p>
-      )}
 
       <div className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-10 mt-4 lg:bottom-6">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center rounded-2xl border border-border bg-background/95 px-2 py-2 shadow-lg backdrop-blur">

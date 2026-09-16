@@ -7,6 +7,7 @@ import type { Roteiro } from "@/lib/oracoes/roteiros";
 import { marcarDiaRezadoAction } from "@/server/actions/novena-actions";
 import { MaosEmOracao } from "./MaosEmOracao";
 import { CartaoDaConta } from "./CartaoDaConta";
+import { useBotaoDoVolante } from "./botao-do-volante";
 
 /**
  * A oração guiada: um passo por vez, com o botão das mãos para seguir.
@@ -18,6 +19,12 @@ import { CartaoDaConta } from "./CartaoDaConta";
  * Tudo aqui usa os tokens do tema e as famílias de letra do app — nenhuma
  * cor escrita à mão. Quem escolheu tema escuro, cor do Tempo Litúrgico ou a
  * letra Legível em Aparência reza com a mesma cara do resto do aplicativo.
+ *
+ * O BOTÃO DO VOLANTE (16/09/2026) é opcional e começa desligado: para o
+ * carro oferecer os botões de faixa, o app precisa tocar um som, e quem
+ * reza sentado em casa não quer que o rádio pare por causa disso. Quem reza
+ * dirigindo liga na tela de apresentação, e passa as contas sem tirar a mão
+ * do volante.
  *
  * Onde a pessoa parou fica guardado NO APARELHO, por roteiro. Um terço
  * interrompido pela campainha continua de onde estava; e o Rosário, que são
@@ -80,13 +87,36 @@ export function SessaoDeOracao({
   const [indice, setIndice] = useState(-1);
   const [retomar, setRetomar] = useState<Guardado | null>(null);
   const [marcacao, setMarcacao] = useState<"nada" | "enviando" | "feito" | "erro">("nada");
+  const [comVolante, setComVolante] = useState(false);
   const topo = useRef<HTMLDivElement>(null);
+  /* Por referência porque o botão do volante é registrado antes de `irPara`. */
+  const indiceRef = useRef(-1);
+  const irParaRef = useRef<(n: number) => void>(() => undefined);
   const instrucao = useRef<HTMLParagraphElement>(null);
   const jaMarcou = useRef(false);
+  const volanteDesligaRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     setRetomar(lerGuardado(chave, total));
   }, [chave, total]);
+
+  useEffect(() => {
+    indiceRef.current = indice;
+  }, [indice]);
+
+  const passoAtual = indice >= 0 && indice < total ? roteiro.passos[indice] : undefined;
+  const volante = useBotaoDoVolante({
+    ativo: comVolante && !!passoAtual,
+    ficha: passoAtual
+      ? {
+          titulo: passoAtual.oracao.titulo,
+          onde: `${passoAtual.parte} · ${passoAtual.contador}`,
+          album: `${roteiro.titulo} · ${roteiro.subtitulo}`,
+        }
+      : null,
+    aoAvancar: () => irParaRef.current(indiceRef.current + 1),
+    aoVoltar: () => irParaRef.current(indiceRef.current - 1),
+  });
 
   const irPara = useCallback(
     (novo: number) => {
@@ -94,9 +124,15 @@ export function SessaoDeOracao({
       setIndice(limitado);
       if (limitado >= 1 && limitado < total) guardar(chave, limitado);
       if (limitado >= total) esquecer(chave);
+      if (limitado >= total) volanteDesligaRef.current();
     },
     [chave, total],
   );
+
+  useEffect(() => {
+    irParaRef.current = irPara;
+    volanteDesligaRef.current = volante.desligar;
+  });
 
   const avancar = useCallback(() => {
     // Um toque curto no aparelho, como a conta passando entre os dedos.
@@ -204,7 +240,31 @@ export function SessaoDeOracao({
           </div>
         )}
 
-        <BotaoDasMaos rotulo="Começar" onClick={() => irPara(0)} />
+        {/* Desligado por padrão: ligar faz o app tocar um som para o carro
+            mostrar os controles, e isso pode parar o rádio. */}
+        <label className="mt-6 flex items-start gap-2.5 text-[14px] text-foreground">
+          <input
+            type="checkbox"
+            checked={comVolante}
+            className="mt-1"
+            onChange={(e) => setComVolante(e.target.checked)}
+          />
+          <span>
+            Passar as orações pelo botão do volante ou do fone
+            <span className="mt-0.5 block text-[13px] leading-relaxed text-muted">
+              Para rezar dirigindo, ou com as mãos ocupadas. O aplicativo toca um som quase em silêncio para o
+              carro oferecer os botões, e por isso pode parar o rádio.
+            </span>
+          </span>
+        </label>
+
+        <BotaoDasMaos
+          rotulo="Começar"
+          onClick={() => {
+            if (comVolante) volante.ligar();
+            irPara(0);
+          }}
+        />
       </div>
     );
   }

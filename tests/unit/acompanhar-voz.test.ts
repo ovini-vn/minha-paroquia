@@ -67,6 +67,14 @@ describe("acompanhar a oração pela voz", () => {
     expect(terminou(oferecimento, acompanhar(oferecimento, ouvidoOferecimento))).toBe("sim");
   });
 
+  it("em dupla, o fim some: até duas palavras podem faltar numa oração longa", () => {
+    const ave = esperadas(AVE_MARIA.texto);
+    const semAsDuasUltimas = ouvir(
+      "ave maria cheia de graça o senhor é convosco bendita sois vós entre as mulheres e bendito é o fruto do vosso ventre jesus santa maria mãe de deus rogai por nós pecadores agora e na hora da nossa",
+    );
+    expect(terminou(ave, acompanhar(ave, semAsDuasUltimas))).toBe("quase");
+  });
+
   it("dizer só as últimas palavras não termina a oração", () => {
     const jesus = esperadas(O_MEU_JESUS.texto);
     const andamento = acompanhar(jesus, ouvir("as que mais precisarem"));

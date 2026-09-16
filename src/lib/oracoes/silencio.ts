@@ -15,8 +15,14 @@
  * 55 Hz porque é grave: alto-falante de celular quase não reproduz essa
  * faixa, e no carro e no fone, nesse volume, fica abaixo do ruído do
  * ambiente.
+ *
+ * TRINTA SEGUNDOS, e não um em repetição: no computador o botão passou a
+ * funcionar com um segundo, mas em dois fones no celular não. O Android só
+ * monta a ficha de mídia — e com ela os botões do fone — quando o que está
+ * tocando dura MAIS DE CINCO SEGUNDOS; cada volta do laço de um segundo é
+ * curta demais para ele. O laço continua, só que de trinta em trinta.
  */
-export function wavQuaseEmSilencio(taxa = 8000, segundos = 1): Blob {
+export function wavQuaseEmSilencio(taxa = 8000, segundos = 30): Blob {
   const amostras = Math.max(1, Math.round(taxa * segundos));
   const dados = new DataView(new ArrayBuffer(44 + amostras * 2));
 

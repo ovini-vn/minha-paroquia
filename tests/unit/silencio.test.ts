@@ -6,6 +6,14 @@ import { wavQuaseEmSilencio } from "@/lib/oracoes/silencio";
  * e quase mudo: silêncio absoluto alguns navegadores e carros ignoram.
  */
 describe("o som quase em silêncio do botão do volante", () => {
+  it("dura mais de cinco segundos — o mínimo que o Android aceita para dar os botões do fone", async () => {
+    const bytes = new Uint8Array(await wavQuaseEmSilencio().arrayBuffer());
+    const u16 = (de: number) => bytes[de]! | (bytes[de + 1]! << 8);
+    const u32 = (de: number) => u16(de) | (u16(de + 2) << 16);
+    const segundos = u32(40) / u32(28);
+    expect(segundos).toBeGreaterThan(5);
+  });
+
   it("é um WAV mono de 16 bits com a duração pedida", async () => {
     const bytes = new Uint8Array(await wavQuaseEmSilencio(8000, 1).arrayBuffer());
     const texto = (de: number) => String.fromCharCode(...bytes.slice(de, de + 4));

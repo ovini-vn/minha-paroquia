@@ -42,6 +42,20 @@ const LIMITE_LOGIN_POR_EMAIL = 8;
 const LIMITE_LOGIN_POR_ENDERECO = 30;
 const LIMITE_RECUPERACAO = 5;
 
+/**
+ * Cadastro: só por endereço. Cada cadastro já chega com um e-mail novo, e
+ * limitar por e-mail não conteria nada.
+ *
+ * A mesma folga do login por endereço, e pelo mesmo motivo, aqui ainda mais
+ * forte: depois da missa, quando o padre pede que todos baixem o aplicativo,
+ * dezenas de pessoas se cadastram pelo Wi-Fi da paróquia — um endereço só.
+ * Cinco por hora, que parece prudente, deixaria o sexto fiel do lado de
+ * fora. Trinta a cada quinze minutos ainda reduzem o ataque que importa —
+ * centenas de cadastros por segundo, cada um com 19 MB de Argon2 — a dois
+ * por minuto.
+ */
+const LIMITE_CADASTRO_POR_ENDERECO = 30;
+
 export type ActionState = { error?: string };
 
 function firstZodMessage(error: ZodError): string {
@@ -65,6 +79,32 @@ export async function registerAction(_prev: ActionState, formData: FormData): Pr
       email: formData.get("email"),
       password: formData.get("password"),
     });
+
+    /*
+     * Antes de `registerUser`, que é quem chama o Argon2 — o mesmo racional
+     * do login. Sem isto, qualquer um disparava cadastros com e-mails
+     * inventados, e cada um gastava 19 MB de memória do servidor.
+     *
+     * Depois da validação, e não antes: quem errou o e-mail ao digitar não
+     * gasta a vez de ninguém, e um formulário inválido nem chega ao Argon2.
+     *
+     * O contador não é zerado quando o cadastro dá certo, ao contrário do
+     * login por e-mail: ele mede volume vindo de uma conexão, e um cadastro
+     * que deu certo não desmente volume.
+     */
+    const endereco = await enderecoDeQuemChama();
+    if (endereco) {
+      const limite = await consumirTentativa(
+        `cadastro:ip:${endereco}`,
+        LIMITE_CADASTRO_POR_ENDERECO,
+        QUINZE_MINUTOS,
+      );
+      if (!limite.permitido) {
+        return {
+          error: `Muitos cadastros seguidos a partir desta conexão. Espere ${textoDeEspera(limite.segundosParaTentar)} e tente de novo.`,
+        };
+      }
+    }
 
     const user = await registerUser(input);
     await createSession(user.id);

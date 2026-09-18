@@ -20,8 +20,16 @@ export const metadata: Metadata = {
  * "podemos coletar informações de uso" e não compromete ninguém a nada; a
  * lista abaixo é a que existe no banco, campo por campo, e mudá-la exige
  * mudar esta página junto.
+ *
+ * Foi o que faltou com as ofertas: até 18/09/2026 esta página dizia que o
+ * aplicativo não sabia quanto alguém contribuiu, escrita antes de o Pix de
+ * contribuição existir. Continua valendo para o que vem a seguir — as
+ * tabelas `lancamentos_de_extrato` e `conciliacoes_pix` já existem, mas nada
+ * grava nelas. Quando a importação do extrato entrar, o nome de quem fez o
+ * Pix, que vem do banco, passa a ser guardado — inclusive de quem não tem
+ * conta —, e esta página precisa dizer isso no mesmo dia.
  */
-const ATUALIZADO_EM = "26 de agosto de 2026";
+const ATUALIZADO_EM = "18 de setembro de 2026";
 
 function Secao({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
@@ -97,10 +105,27 @@ export default function PrivacidadePage() {
             "presença em encontros de catequese e sacramentos recebidos",
             "interesse em servir em pastorais e ministérios",
             "as novenas que você começou em Rezar e em que dia de cada uma você está — só isso: o que você pede em silêncio durante a oração não é escrito em lugar nenhum, e ninguém da paróquia vê as suas novenas",
-            "no Terço com a voz (em teste), o microfone só fica ligado naquela tela enquanto você reza; o aplicativo não grava nem guarda o áudio, e a transformação da voz em texto é feita pelo serviço do próprio navegador (no Chrome, o do Google)",
+            "no Terço com a voz, o microfone só fica ligado naquela tela enquanto você reza; o aplicativo não grava nem guarda o áudio, e a transformação da voz em texto é feita pelo serviço do próprio navegador (no Chrome, o do Google)",
             "sua preferência de tema visual e, se você autorizar, o registro para receber notificações",
           ]}
         />
+        <p>
+          <strong className="font-semibold text-foreground">Das suas ofertas,</strong> quando a sua
+          paróquia recebe contribuições pelo aplicativo:
+        </p>
+        <Lista
+          itens={[
+            "o código Pix que você gerar em Ofertar: a finalidade que você escolheu (o dízimo, uma obra, a festa), o valor — só se você quis informar um, porque ele nunca é obrigatório —, a data e se o código já foi usado",
+            "o que a paróquia registrou como recebido de você: o valor, o dia, a finalidade e a forma (Pix, dinheiro, envelope ou transferência), com uma eventual observação da secretaria e o registro de quem, na paróquia, fez o lançamento. Entram aqui também as ofertas entregues em mãos, como o envelope do dízimo, quando a secretaria as lança",
+          ]}
+        />
+        <p>
+          A paróquia guarda esses registros para prestar contas do que recebe — ao conselho de
+          assuntos econômicos, à diocese e às obrigações de qualquer entidade que recebe
+          contribuições. Você consulta o que foi registrado em seu nome em{" "}
+          <strong className="font-semibold text-foreground">Minhas ofertas</strong>, dentro de
+          Ofertar.
+        </p>
         <p>
           <strong className="font-semibold text-foreground">Se você entrar com Google ou
           Facebook:</strong> recebemos do provedor apenas o seu nome, o seu e-mail e um
@@ -181,9 +206,12 @@ export default function PrivacidadePage() {
               violar aqui porque a estrutura não permite.
             </>,
             <>
-              <strong className="font-semibold text-foreground">Valores de dízimo ou doação.</strong>{" "}
-              O dízimo é registrado apenas como participação num período. O aplicativo não processa
-              pagamentos, não guarda dados bancários seus e não sabe quanto alguém contribuiu.
+              <strong className="font-semibold text-foreground">Seus dados bancários.</strong>{" "}
+              O Pix sai do aplicativo do seu banco direto para a conta da paróquia: o Minha Paróquia
+              não movimenta dinheiro, não vê o seu saldo e não recebe o número da sua conta nem do seu
+              cartão. O código Pix leva a chave, o nome e a cidade da paróquia, o valor, se houver, e um
+              identificador sorteado — nenhum dado seu, porque ele aparece no extrato de quem o
+              recebe.
             </>,
             <>
               <strong className="font-semibold text-foreground">
@@ -230,6 +258,7 @@ export default function PrivacidadePage() {
         <Lista
           itens={[
             "seus atendimentos, seus pedidos de oração privados e seu registro de dízimo são vistos por você e por quem tem função para isso na paróquia",
+            "as suas ofertas, e quanto você contribuiu, são vistas por você e, na paróquia, só pelo pároco, pela administração, pela secretaria e por quem a paróquia encarregar das finanças — não pelos demais sacerdotes, pela catequista, pela coordenação de pastoral nem por outros fiéis",
             "um pedido de oração marcado como privado só é visto pelo pároco e pelos sacerdotes",
             "quem tem função na paróquia (secretaria, catequista, coordenação) enxerga apenas o necessário para exercer aquela função",
             "um fiel comum não tem acesso à lista de membros nem aos dados de outros fiéis",
@@ -288,6 +317,11 @@ export default function PrivacidadePage() {
         <p>
           Se você pedir a exclusão da conta, os dados pessoais são apagados, preservando-se apenas
           o que a paróquia precise manter por obrigação legal ou canônica.
+        </p>
+        <p>
+          As ofertas são um desses casos: fazem parte das contas da paróquia, que precisa
+          guardá-las. Com a conta excluída, elas continuam lá sem o seu nome — fica que entrou um
+          valor naquele dia, para aquela finalidade, e não mais de quem ele veio.
         </p>
       </Secao>
 

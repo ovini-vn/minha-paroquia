@@ -63,6 +63,7 @@ export async function expressPastoralInterestAction(formData: FormData): Promise
   const groupId = formData.get("groupId") as string;
   await expressGroupInterest(session.membership.parishId, groupId, session.userId);
   revalidatePath("/comunidade/pastorais");
+  revalidatePath(`/comunidade/pastorais/${groupId}`);
 }
 
 export async function withdrawPastoralInterestAction(formData: FormData): Promise<void> {
@@ -72,4 +73,5 @@ export async function withdrawPastoralInterestAction(formData: FormData): Promis
   const groupId = formData.get("groupId") as string;
   await withdrawGroupInterest(session.membership.parishId, groupId, session.userId);
   revalidatePath("/comunidade/pastorais");
+  revalidatePath(`/comunidade/pastorais/${groupId}`);
 }

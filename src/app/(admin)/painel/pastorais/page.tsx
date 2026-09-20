@@ -6,7 +6,7 @@ import { listAllGroups, listInterestsForParish } from "@/server/modules/pastorai
 import { setPastoralGroupStatusAction } from "@/server/actions/pastoral-actions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader, Eyebrow, EyebrowComAtalho } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
@@ -121,6 +121,11 @@ export default async function PainelPastoraisPage({
                         {group._count.interests === 1 ? "interessado" : "interessados"}
                       </Badge>
                     )}
+                    {group._count.membros > 0 && (
+                      <Badge tone="accent">
+                        {group._count.membros} {group._count.membros === 1 ? "participa" : "participam"}
+                      </Badge>
+                    )}
                   </div>
                   <p className="mt-0.5 text-[12.5px] text-muted">
                     {[group.leaderName, group.meetsWhen, group.meetsWhere]
@@ -128,6 +133,11 @@ export default async function PainelPastoraisPage({
                       .join(" · ") || "Sem coordenador ou horário informados"}
                   </p>
                 </div>
+                {/* Membros, cronograma e quem coordena ficam na página do
+                    grupo — a mesma que a coordenação usa, sem painel. */}
+                <LinkButton href={`/comunidade/pastorais/${group.id}#coordenacao`} variant="ghost" size="sm">
+                  Membros e cronograma
+                </LinkButton>
                 <form action={setPastoralGroupStatusAction}>
                   <input type="hidden" name="id" value={group.id} />
                   <input

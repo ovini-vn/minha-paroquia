@@ -42,6 +42,12 @@ export type SessionContext = {
   /** Escopo nacional (CNBB) — vê todas as dioceses. null se não tem. */
   national: { role: NationalRole } | null;
   permissions: PermissionCode[];
+  /**
+   * Coordena algum grupo da paróquia (ver modules/grupos). Não é permissão:
+   * coordenar é por grupo, e cada tela confere o grupo dela. Serve só para a
+   * porta Gestão aparecer para quem coordena sem ter papel na paróquia.
+   */
+  coordenaGrupo: boolean;
 };
 
 /** Cria a sessão no banco e escreve o cookie. Só pode rodar em Server Action. */
@@ -105,7 +111,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   // Tudo o que o usuário pode ler sobre si mesmo antes de haver contexto de
   // tenant, numa transação só: vínculo de paróquia, overrides e vínculos
   // diocesanos (as três políticas de RLS permitem leitura por user_id).
-  const { membershipRow, overrides, dioceseRows, provinceRows, nationalRow } =
+  const { membershipRow, overrides, dioceseRows, provinceRows, nationalRow, gruposCoordenados } =
     await withOwnMembershipLookup(user.id, async (tx) => {
       const membershipRow = await tx.parishMembership.findFirst({
         where: { userId: user.id, status: "active" },
@@ -123,7 +129,14 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       const nationalRow = await tx.nationalMembership.findFirst({
         where: { userId: user.id, status: "active" },
       });
-      return { membershipRow, overrides, dioceseRows, provinceRows, nationalRow };
+      // Só da paróquia atual: quem mudou de paróquia não coordena mais o
+      // grupo que deixou para trás.
+      const gruposCoordenados = membershipRow
+        ? await tx.membroDoGrupo.count({
+            where: { userId: user.id, parishId: membershipRow.parishId, papel: "coordenador" },
+          })
+        : 0;
+      return { membershipRow, overrides, dioceseRows, provinceRows, nationalRow, gruposCoordenados };
     });
 
   const dioceses = dioceseRows.map((row) => ({
@@ -155,6 +168,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       provinces,
       national,
       permissions: [],
+      coordenaGrupo: false,
     };
   }
 
@@ -182,5 +196,6 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     provinces,
     national,
     permissions: computeEffectivePermissions(rolePermissions, overrides),
+    coordenaGrupo: gruposCoordenados > 0,
   };
 });

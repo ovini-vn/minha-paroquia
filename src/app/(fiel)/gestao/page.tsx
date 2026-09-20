@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { LayoutDashboard, BookOpen, Landmark, Crown, Flag, Settings } from "lucide-react";
+import { LayoutDashboard, BookOpen, Landmark, Crown, Flag, Settings, Users } from "lucide-react";
 import { requireManagementPage } from "@/server/auth/management";
+import { gruposQueCoordeno } from "@/server/modules/grupos/service";
 import { Card } from "@/components/ui/Card";
 import { RowLink } from "@/components/ui/RowLink";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
@@ -15,12 +16,15 @@ import { PageHeader, Eyebrow } from "@/components/ui/Typography";
  *
  * Quem tem o painel da paróquia normalmente entra direto nele pelo
  * cabeçalho; esta página é o caminho de quem NÃO tem — a catequista, que só
- * acompanha turmas, e o bispo, que pode não ter paróquia nenhuma.
+ * acompanha turmas, quem coordena um grupo (o de adolescentes, por
+ * exemplo), e o bispo, que pode não ter paróquia nenhuma.
  */
 export const metadata: Metadata = { title: "Gestão" };
 
 export default async function GestaoPage() {
   const { session, acesso } = await requireManagementPage();
+  const grupos =
+    acesso.grupos && session.membership ? await gruposQueCoordeno(session.membership.parishId, session.userId) : [];
 
   return (
     <div className="flex flex-col">
@@ -29,7 +33,7 @@ export default async function GestaoPage() {
         description="O trabalho da comunidade, separado da sua vida pessoal no app."
       />
 
-      {(acesso.parishPanel || acesso.catequese) && (
+      {(acesso.parishPanel || acesso.catequese || grupos.length > 0) && (
         <section>
           <Eyebrow tone="accent" className="mb-3">
             Na paróquia
@@ -54,6 +58,15 @@ export default async function GestaoPage() {
                   subtitle="Turmas que acompanho"
                 />
               )}
+              {grupos.map((grupo) => (
+                <RowLink
+                  key={grupo.id}
+                  href={`/comunidade/pastorais/${grupo.id}#coordenacao`}
+                  icon={Users}
+                  title={grupo.name}
+                  subtitle="Cronograma, quem prega e quem participa"
+                />
+              ))}
             </Card>
           </div>
         </section>

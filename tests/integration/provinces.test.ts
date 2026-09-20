@@ -37,6 +37,7 @@ function session(partial: Partial<SessionContext> = {}): SessionContext {
     provinces: [],
     national: null,
     permissions: [],
+    coordenaGrupo: false,
     ...partial,
   };
 }

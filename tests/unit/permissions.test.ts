@@ -19,6 +19,7 @@ function fakeSession(roleCode: keyof typeof ROLE_PERMISSIONS): SessionContext {
     provinces: [],
     national: null,
     permissions: ROLE_PERMISSIONS[roleCode],
+    coordenaGrupo: false,
   };
 }
 

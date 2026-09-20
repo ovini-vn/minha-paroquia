@@ -6,15 +6,20 @@ import { sendToUser } from "@/server/modules/push/service";
 import { LITURGICAL_ROLE_LABELS } from "@/lib/liturgia-labels";
 import { diaEmBrasilia } from "@/lib/brasilia";
 import { nomeDoSacerdote } from "@/lib/sacerdote";
+import { paraOBanco } from "@/lib/grupos/cronograma";
+import type { NotificationCategory } from "@prisma/client";
 
 /**
  * Lembretes dos compromissos assumidos — o que a pessoa se comprometeu a
  * fazer pela comunidade.
  *
- * Três origens, que são os três jeitos de se comprometer no app:
+ * Quatro origens, que são os quatro jeitos de ter compromisso no app:
  *   1. escala litúrgica (leitura, canto, acolhida...) numa celebração;
  *   2. interesse manifestado numa oportunidade de serviço com data;
- *   3. atendimento pastoral confirmado com um sacerdote.
+ *   3. atendimento pastoral confirmado com um sacerdote;
+ *   4. encontro do grupo de que a pessoa faz parte (ver modules/grupos) —
+ *      este vale para TODOS os membros do grupo de uma vez, e é o único que
+ *      não nasce de um gesto individual.
  *
  * Cada paróquia é lida no SEU contexto de tenant — o job é global, mas
  * nenhuma consulta atravessa o isolamento. Mesmo racional do painel
@@ -32,6 +37,12 @@ export type Commitment = {
   url: string;
   /** Estável por compromisso: evita empilhar avisos repetidos no aparelho. */
   tag: string;
+  /**
+   * "pessoal" no que a pessoa assumiu sozinha; "pastoral" no encontro do
+   * grupo, que é vida de comunidade — quem desliga uma categoria não
+   * esperava desligar a outra.
+   */
+  category: NotificationCategory;
 };
 
 const HORA = new Intl.DateTimeFormat("pt-BR", {
@@ -63,9 +74,11 @@ async function commitmentsForParish(
   when: "hoje" | "amanha",
   from: Date,
   to: Date,
+  /** O dia, no calendário de Brasília ("2026-09-20") — o encontro não tem hora. */
+  dia: string,
 ): Promise<Commitment[]> {
   return withTenantContext(parishId, async (tx) => {
-    const [escalas, interesses, atendimentos] = await Promise.all([
+    const [escalas, interesses, atendimentos, encontros] = await Promise.all([
       tx.liturgicalSchedule.findMany({
         where: { parishId, celebration: { startsAt: { gte: from, lt: to } } },
         include: { celebration: true },
@@ -82,6 +95,14 @@ async function commitmentsForParish(
         where: { parishId, status: "confirmado", scheduledAt: { gte: from, lt: to } },
         include: { priestProfile: { include: { user: { select: { fullName: true } } } } },
       }),
+      // Pelo DIA, e não pela janela de instantes: o encontro é dia de
+      // calendário, sem hora. Encontro de vários dias avisa no primeiro.
+      tx.encontroDoGrupo.findMany({
+        where: { parishId, data: paraOBanco(dia), group: { status: "ativa" } },
+        include: {
+          group: { select: { id: true, name: true, membros: { select: { userId: true } } } },
+        },
+      }),
     ]);
 
     const quando = when === "hoje" ? "hoje" : "amanhã";
@@ -97,6 +118,7 @@ async function commitmentsForParish(
       }`,
       url: "/servir/liturgia",
       tag: `escala-${e.id}`,
+      category: "pessoal",
     }));
 
     const deServico: Commitment[] = interesses
@@ -110,6 +132,7 @@ async function commitmentsForParish(
         body: `${i.opportunity.title} · ${HORA.format(i.opportunity.startsAt!)}`,
         url: "/servir",
         tag: `servico-${i.id}`,
+        category: "pessoal",
       }));
 
     const deAtendimento: Commitment[] = atendimentos.map((a) => ({
@@ -121,22 +144,54 @@ async function commitmentsForParish(
       body: `${nomeDoSacerdote(a.priestProfile)} · ${HORA.format(a.scheduledAt)}`,
       url: "/eu/atendimentos",
       tag: `atendimento-${a.id}`,
+      category: "pessoal",
     }));
 
-    return [...deEscala, ...deServico, ...deAtendimento];
+    const deGrupo: Commitment[] = encontros.flatMap((e) =>
+      e.group.membros.map((m) => ({
+        userId: m.userId,
+        parishId,
+        when,
+        at: e.data!,
+        title: `${when === "hoje" ? "Hoje" : "Amanhã"} tem ${e.group.name}`,
+        body: [e.tema, e.complemento, e.pregador ? `Prega: ${e.pregador}` : null].filter(Boolean).join(" · "),
+        url: `/comunidade/pastorais/${e.group.id}`,
+        tag: `encontro-${e.id}`,
+        category: "pastoral" as NotificationCategory,
+      })),
+    );
+
+    return [...deEscala, ...deServico, ...deAtendimento, ...deGrupo];
   });
 }
+
+/**
+ * Quantas paróquias o robô lê ao mesmo tempo.
+ *
+ * Cada paróquia é uma transação, e transação segura uma conexão do pool.
+ * Lendo todas de uma vez, o robô estourava o pool e a consulta morria em
+ * "Unable to start a transaction in the given time" — visto com doze
+ * paróquias, e o robô roda para todas as do país. Quatro por vez é o mesmo
+ * limite que a suíte de testes usa, e pelo mesmo motivo: o gargalo é a ida
+ * e volta até o banco, e não o processador.
+ */
+const PAROQUIAS_POR_VEZ = 4;
 
 /** Todos os compromissos de hoje e de amanhã, em todas as paróquias. */
 export async function collectCommitments(reference: Date): Promise<Commitment[]> {
   const parishes = await prisma.parish.findMany({ select: { id: true } });
 
-  const porDia = await Promise.all(
-    (["hoje", "amanha"] as const).flatMap((when) => {
-      const { from, to } = brasiliaDayRange(reference, when === "hoje" ? 0 : 1);
-      return parishes.map((p) => commitmentsForParish(p.id, when, from, to));
-    }),
-  );
+  const tarefas = (["hoje", "amanha"] as const).flatMap((when) => {
+    const offset = when === "hoje" ? 0 : 1;
+    const { from, to } = brasiliaDayRange(reference, offset);
+    const dia = diaEmBrasilia(new Date(reference.getTime() + offset * 86_400_000));
+    return parishes.map((p) => () => commitmentsForParish(p.id, when, from, to, dia));
+  });
+
+  const porDia: Commitment[][] = [];
+  for (let i = 0; i < tarefas.length; i += PAROQUIAS_POR_VEZ) {
+    porDia.push(...(await Promise.all(tarefas.slice(i, i + PAROQUIAS_POR_VEZ).map((ler) => ler()))));
+  }
 
   return porDia.flat();
 }
@@ -175,7 +230,7 @@ export async function sendCommitmentReminders(reference: Date): Promise<Reminder
       await notifyUser(tx, {
         parishId: c.parishId,
         userId: c.userId,
-        category: "pessoal",
+        category: c.category,
         // O destino é o do próprio compromisso: escala vai para a liturgia,
         // mutirão para Servir, atendimento para os atendimentos.
         linkPath: c.url,

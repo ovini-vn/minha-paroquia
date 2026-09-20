@@ -33,6 +33,8 @@ import { LidoAoVer } from "@/components/domain/LidoAoAbrir";
 import { POST_PREVIEW_LABEL } from "@/lib/post-labels";
 import { diaEmBrasilia, hojeEmBrasilia, horaEmBrasilia } from "@/lib/brasilia";
 import { MaosEmOracao } from "@/components/oracao/MaosEmOracao";
+import { proximosEncontrosDosMeusGrupos } from "@/server/modules/grupos/service";
+import { ProximoEncontro } from "@/components/grupos/ProximoEncontro";
 
 /*
  * Os atalhos são o que a pessoa VEIO fazer, e não um espelho da barra.
@@ -126,7 +128,8 @@ export default async function HomePage() {
     );
   }
 
-  const [parish, parocoRegistrado, nextCelebration, latestPost, latestAvisos, daComunidade] =
+  const hoje = hojeEmBrasilia();
+  const [parish, parocoRegistrado, nextCelebration, latestPost, latestAvisos, daComunidade, meusEncontros] =
     await Promise.all([
       getParish(session.membership.parishId),
       getParoco(session.membership.parishId),
@@ -136,6 +139,7 @@ export default async function HomePage() {
       // Sete dias: "esta semana" precisa caber numa semana, senão a lista
       // vira calendário e o convite a rezar perde a urgência.
       listarAniversariosDaComunidade(session.membership.parishId, new Date(), 7),
+      proximosEncontrosDosMeusGrupos(session.membership.parishId, session.userId, hoje),
     ]);
 
   /*
@@ -147,7 +151,7 @@ export default async function HomePage() {
    * que mais gente abre.
    */
   const palavraEhDeHoje = latestPost
-    ? diaEmBrasilia(latestPost.publishedAt) === hojeEmBrasilia()
+    ? diaEmBrasilia(latestPost.publishedAt) === hoje
     : false;
   const latestAviso = latestAvisos[0] ?? null;
   const paroco = parish ? resolverParoco(parish, parocoRegistrado) : null;
@@ -370,6 +374,29 @@ export default async function HomePage() {
       {(palavraEhDeHoje
         ? [palavraDoPadre, evangelhoDoDia]
         : [evangelhoDoDia, palavraDoPadre])}
+
+      {/*
+        O próximo encontro do grupo de que a pessoa faz parte — o de
+        adolescentes, por exemplo. Vem antes de "Hoje" porque é compromisso
+        DELA, e não notícia da comunidade; e some para quem não é de grupo
+        nenhum, que é a maioria.
+      */}
+      {meusEncontros.map(({ grupo, encontro }) => (
+        <section key={grupo.id} className="pt-[30px]">
+          <SectionTitle
+            eyebrow="Seu grupo"
+            title={grupo.name}
+            actionLabel="Cronograma"
+            actionHref={`/comunidade/pastorais/${grupo.id}`}
+          />
+          <ProximoEncontro
+            encontro={encontro}
+            hoje={hoje}
+            meetsWhen={grupo.meetsWhen}
+            meetsWhere={grupo.meetsWhere}
+          />
+        </section>
+      ))}
 
       {/* Hoje — o princípio "quero dar uma olhadinha". */}
       <section className="pt-[30px]">

@@ -40,6 +40,7 @@ function sessionWith(
     provinces: [],
     national: null,
     permissions: [],
+    coordenaGrupo: false,
   };
 }
 

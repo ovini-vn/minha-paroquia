@@ -25,7 +25,7 @@ export function listActiveGroups(parishId: string) {
     tx.pastoralGroup.findMany({
       where: { parishId, status: "ativa" },
       orderBy: { name: "asc" },
-      include: { _count: { select: { interests: true } } },
+      include: { _count: { select: { interests: true, encontros: true } } },
     }),
   );
 }
@@ -36,7 +36,7 @@ export function listAllGroups(parishId: string) {
     tx.pastoralGroup.findMany({
       where: { parishId },
       orderBy: [{ status: "asc" }, { name: "asc" }],
-      include: { _count: { select: { interests: true } } },
+      include: { _count: { select: { interests: true, membros: true, encontros: true } } },
     }),
   );
 }
@@ -57,16 +57,26 @@ export function listMyGroupInterests(parishId: string, userId: string) {
  *
  * Pastoral inativa não conta: mostrar como "minha" algo que a paróquia
  * encerrou seria informação velha.
+ *
+ * Fazer parte (ver modules/grupos) vem antes de ter manifestado interesse:
+ * quem já está no grupo de adolescentes e um dia se ofereceu para a festa
+ * da padroeira tem como "minha" o grupo, e não o pedido.
  */
 export async function getMyMainPastoral(parishId: string, userId: string) {
-  const interesse = await withTenantContext(parishId, (tx) =>
-    tx.pastoralGroupInterest.findFirst({
+  return withTenantContext(parishId, async (tx) => {
+    const membro = await tx.membroDoGrupo.findFirst({
       where: { parishId, userId, group: { status: "ativa" } },
       orderBy: { createdAt: "asc" },
       include: { group: true },
-    }),
-  );
-  return interesse?.group ?? null;
+    });
+    if (membro) return membro.group;
+    const interesse = await tx.pastoralGroupInterest.findFirst({
+      where: { parishId, userId, group: { status: "ativa" } },
+      orderBy: { createdAt: "asc" },
+      include: { group: true },
+    });
+    return interesse?.group ?? null;
+  });
 }
 
 export function listInterestsForParish(parishId: string) {
@@ -134,9 +144,11 @@ export async function expressGroupInterest(parishId: string, groupId: string, us
     // Mesmo problema das oportunidades de serviço: sem aviso, o interesse
     // ficava numa lista que alguém precisava lembrar de abrir.
     //
-    // leaderName é texto livre (nem todo coordenador tem conta), então não
-    // dá para avisar "o coordenador" diretamente — avisa quem criou a
-    // pastoral e quem responde pela área.
+    // leaderName é texto livre (nem todo coordenador tem conta). Quem
+    // coordena o grupo COM conta (ver modules/grupos) é avisado junto de
+    // quem criou a pastoral e de quem responde pela área — e o aviso leva
+    // à página do grupo, onde a coordenação acolhe, e não ao painel, que
+    // ela normalmente não tem.
     if (!jaExistia) {
       const quem = await tx.user.findUnique({
         where: { id: userId },
@@ -151,7 +163,15 @@ export async function expressGroupInterest(parishId: string, groupId: string, us
         },
         select: { userId: true },
       });
-      const destinatarios = new Set([group.createdBy, ...responsaveis.map((r) => r.userId)]);
+      const coordenacao = await tx.membroDoGrupo.findMany({
+        where: { parishId, groupId, papel: "coordenador" },
+        select: { userId: true },
+      });
+      const destinatarios = new Set([
+        group.createdBy,
+        ...responsaveis.map((r) => r.userId),
+        ...coordenacao.map((c) => c.userId),
+      ]);
       destinatarios.delete(userId);
 
       const contato = quem?.phone ? ` · ${quem.phone}` : "";
@@ -162,7 +182,7 @@ export async function expressGroupInterest(parishId: string, groupId: string, us
         "pastoral",
         "Alguém quer entrar numa pastoral",
         `${quem?.fullName ?? "Um fiel"} demonstrou interesse em ${group.name}${contato}. Entre em contato para acolher.`,
-        "/painel/pastorais",
+        `/comunidade/pastorais/${groupId}`,
       );
     }
 

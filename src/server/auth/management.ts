@@ -18,6 +18,8 @@ export type ManagementAccess = {
   parishPanel: boolean;
   /** Turmas que a pessoa acompanha como catequista. */
   catequese: boolean;
+  /** Grupos que a pessoa coordena — o de adolescentes, por exemplo. */
+  grupos: boolean;
   dioceses: boolean;
   provinces: boolean;
   national: boolean;
@@ -31,6 +33,7 @@ export function getManagementAccess(session: SessionContext | null): ManagementA
     return {
       parishPanel: false,
       catequese: false,
+      grupos: false,
       dioceses: false,
       provinces: false,
       national: false,
@@ -44,6 +47,7 @@ export function getManagementAccess(session: SessionContext | null): ManagementA
   const acesso = {
     parishPanel: has(PERMISSIONS.DASHBOARD_PARISH_VIEW),
     catequese: has(PERMISSIONS.CATEQUESE_TEACH) || has(PERMISSIONS.CATEQUESE_MANAGE),
+    grupos: session.coordenaGrupo,
     dioceses: session.dioceses.length > 0 || session.isPlatformAdmin,
     provinces: session.provinces.length > 0,
     national: session.national !== null || session.isPlatformAdmin,
@@ -54,6 +58,7 @@ export function getManagementAccess(session: SessionContext | null): ManagementA
   acesso.any =
     acesso.parishPanel ||
     acesso.catequese ||
+    acesso.grupos ||
     acesso.dioceses ||
     acesso.provinces ||
     acesso.national ||

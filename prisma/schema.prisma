@@ -137,6 +137,7 @@ model User {
   volunteerProfiles             VolunteerProfile[]
   serviceInterests              ServiceInterest[]
   pastoralInterests             PastoralGroupInterest[]
+  gruposDeQueParticipa          MembroDoGrupo[]
   dioceseMemberships            DioceseMembership[]
   provinceMemberships           ProvinceMembership[]
   nationalMembership            NationalMembership?
@@ -332,6 +333,8 @@ model Parish {
   liturgyOfTheDay         LiturgyOfTheDay[]
   pastoralGroups          PastoralGroup[]
   pastoralInterests       PastoralGroupInterest[]
+  membrosDeGrupos         MembroDoGrupo[]
+  encontrosDeGrupos       EncontroDoGrupo[]
   posts                   Post[]
   priestAvailability      PriestAvailability[]
   appointments            Appointment[]
@@ -987,6 +990,8 @@ model PastoralGroup {
 
   parish    Parish                  @relation(fields: [parishId], references: [id], onDelete: Cascade)
   interests PastoralGroupInterest[]
+  membros   MembroDoGrupo[]
+  encontros EncontroDoGrupo[]
 
   @@index([parishId, status])
   @@map("pastoral_groups")
@@ -1010,6 +1015,93 @@ model PastoralGroupInterest {
   @@unique([groupId, userId])
   @@index([parishId])
   @@map("pastoral_group_interests")
+}
+
+/// O papel de alguém DENTRO de um grupo — não na paróquia.
+///
+/// Separado do papel paroquial de propósito: quem coordena o grupo de
+/// adolescentes costuma ser fiel na paróquia, e dar a ele um papel de
+/// paróquia só para cuidar de um grupo abriria o painel inteiro.
+enum PapelNoGrupo {
+  coordenador
+  membro
+}
+
+/// Quem faz parte de um grupo ou pastoral.
+///
+/// Antes só existia o interesse (`PastoralGroupInterest`), que é "quero
+/// entrar" — um pedido, e não pertencimento. Um grupo com vida própria,
+/// como o de adolescentes que saíram da catequese, precisa saber quem é
+/// dele: é para essas pessoas que o próximo encontro aparece no Início e
+/// o lembrete chega na véspera.
+///
+/// Entra-se de dois jeitos, e os dois passam pela coordenação: ela acolhe
+/// quem manifestou interesse, ou adiciona pelo nome completo. Nunca por
+/// conta própria — continua valendo a regra de que entrar num grupo é uma
+/// conversa entre pessoas.
+model MembroDoGrupo {
+  id        String       @id @default(uuid())
+  parishId  String       @map("parish_id")
+  groupId   String       @map("group_id")
+  userId    String       @map("user_id")
+  papel     PapelNoGrupo @default(membro)
+  /// Quem pôs a pessoa no grupo.
+  addedBy   String       @map("added_by")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([parishId, groupId])
+  @@index([userId])
+  @@map("membros_do_grupo")
+}
+
+/// Um encontro do cronograma de um grupo: o dia, o tema e quem prega.
+///
+/// É da paróquia e digitado por ela, como o itinerário da catequese: o
+/// cronograma de formação de cada grupo é dele, e muda todo ano.
+///
+/// A data é OPCIONAL porque cronograma de verdade tem "data a definir" — o
+/// retiro que depende da casa, a confraternização que depende do salão.
+/// Para esses, `mesPrevisto` diz por volta de quando, e é só o que põe o
+/// encontro no lugar certo da lista.
+model EncontroDoGrupo {
+  id          String    @id @default(uuid())
+  parishId    String    @map("parish_id")
+  groupId     String    @map("group_id")
+  /// O primeiro dia. Nulo é "data a definir".
+  data        DateTime? @db.Date
+  /// O último dia, quando o encontro dura mais de um — o seminário do fim
+  /// de semana, o encontro fechado de sexta a domingo.
+  dataFim     DateTime? @map("data_fim") @db.Date
+  /// "2026-12". Só vale sem `data`, e só serve para ordenar.
+  mesPrevisto String?   @map("mes_previsto")
+  tema        String
+  /// O que vem entre parênteses no cronograma: "Seminário", "junto com a
+  /// juventude", "casa de encontro".
+  complemento String?
+  /// Quem prega. Texto, e não conta: o pregador convidado — um seminarista,
+  /// um casal, alguém da juventude — quase nunca tem conta no app.
+  pregador    String?
+  /// O que foge da formação de domingo: seminário, retiro, confraternização.
+  /// Muda o desenho na lista e a informação de horário (ver o cronograma).
+  destaque    Boolean   @default(false)
+  /// Chave do catálogo de ícones (ver src/lib/grupos/icones.tsx). Guardar
+  /// o nome do componente deixaria a tela renderizar o que viesse do banco.
+  icone       String?
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, groupId, data])
+  @@index([parishId, data])
+  @@map("encontros_do_grupo")
 }
 
 enum InterestStatus {

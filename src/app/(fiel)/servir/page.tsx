@@ -55,7 +55,7 @@ export default async function ServirPage() {
       */}
       {minhaPastoral && (
         <Link
-          href="/comunidade/pastorais"
+          href={`/comunidade/pastorais/${minhaPastoral.id}`}
           className="mb-4 block rounded-lg border border-primary/35 bg-primary-tint p-4 transition-colors hover:border-primary"
         >
           <Eyebrow tone="accent">Minha pastoral</Eyebrow>

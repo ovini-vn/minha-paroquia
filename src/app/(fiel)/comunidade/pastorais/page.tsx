@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { Users, Check, Clock, MapPin, UserRound } from "lucide-react";
+import Link from "next/link";
+import { Users, Check, Clock, MapPin, UserRound, CalendarDays, ChevronRight } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { listActiveGroups, listMyGroupInterests } from "@/server/modules/pastorais/service";
+import { meusGrupos } from "@/server/modules/grupos/service";
 import {
   expressPastoralInterestAction,
   withdrawPastoralInterestAction,
@@ -27,11 +29,13 @@ export default async function PastoraisPage() {
   }
 
   const parishId = session.membership.parishId;
-  const [groups, myInterests] = await Promise.all([
+  const [groups, myInterests, deQueFacoParte] = await Promise.all([
     listActiveGroups(parishId),
     listMyGroupInterests(parishId, session.userId),
+    meusGrupos(parishId, session.userId),
   ]);
-  const interested = new Set(myInterests.map((i) => i.groupId));
+  const interested = new Set(myInterests.filter((i) => i.status !== "declinado").map((i) => i.groupId));
+  const souDoGrupo = new Set(deQueFacoParte.map((m) => m.group.id));
 
   return (
     <div className="flex flex-col">
@@ -58,9 +62,12 @@ export default async function PastoraisPage() {
 
             return (
               <Card key={group.id}>
-                <p className="font-serif text-lg font-semibold leading-tight text-foreground">
+                <Link
+                  href={`/comunidade/pastorais/${group.id}`}
+                  className="font-serif text-lg font-semibold leading-tight text-foreground hover:text-primary"
+                >
                   {group.name}
-                </p>
+                </Link>
                 {group.description && (
                   <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">
                     {group.description}
@@ -78,8 +85,26 @@ export default async function PastoraisPage() {
                   </div>
                 )}
 
-                <div className="mt-3.5">
-                  {jaTemInteresse ? (
+                {/* O cronograma é o que um grupo com vida própria tem a
+                    mostrar — o de adolescentes, com os encontros do ano. */}
+                <Link
+                  href={`/comunidade/pastorais/${group.id}`}
+                  className="alvo-de-toque mt-3 flex items-center gap-2 rounded-md text-[13.5px] font-medium text-primary"
+                >
+                  <CalendarDays className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
+                  {group._count.encontros > 0
+                    ? `Ver o cronograma · ${group._count.encontros} ${group._count.encontros === 1 ? "encontro" : "encontros"}`
+                    : "Ver o grupo"}
+                  <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
+                </Link>
+
+                <div className="mt-3">
+                  {souDoGrupo.has(group.id) ? (
+                    <Badge tone="success">
+                      <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+                      Você faz parte
+                    </Badge>
+                  ) : jaTemInteresse ? (
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge tone="success">
                         <Check className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />

@@ -104,6 +104,7 @@ export default function PrivacidadePage() {
             "registro de participação no dízimo, por período",
             "presença em encontros de catequese e sacramentos recebidos",
             "interesse em servir em pastorais e ministérios",
+            "os grupos e pastorais de que você faz parte, e se você é da coordenação de algum — como o grupo de adolescentes que se reúne depois da catequese",
             "as novenas que você começou em Rezar e em que dia de cada uma você está — só isso: o que você pede em silêncio durante a oração não é escrito em lugar nenhum, e ninguém da paróquia vê as suas novenas",
             "no Terço com a voz, o microfone só fica ligado naquela tela enquanto você reza; o aplicativo não grava nem guarda o áudio, e a transformação da voz em texto é feita pelo serviço do próprio navegador (no Chrome, o do Google)",
             "sua preferência de tema visual e, se você autorizar, o registro para receber notificações",
@@ -247,6 +248,12 @@ export default function PrivacidadePage() {
           Uma criança não tem conta própria no aplicativo. Quem enxerga o cadastro dela é o
           responsável vinculado, a catequista da turma e a secretaria — ninguém mais.
         </p>
+        <p>
+          <strong className="font-semibold text-foreground">Adolescentes</strong> que já passaram pela
+          catequese podem ter conta própria e participar dos grupos da paróquia. A conta é igual à de
+          qualquer fiel, e o que o grupo mostra a eles é o cronograma dos encontros — nunca a lista de
+          quem participa. Quem põe alguém num grupo é sempre a coordenação dele.
+        </p>
       </Secao>
 
       <Secao titulo="Quem enxerga o quê">
@@ -261,6 +268,7 @@ export default function PrivacidadePage() {
             "as suas ofertas, e quanto você contribuiu, são vistas por você e, na paróquia, só pelo pároco, pela administração, pela secretaria e por quem a paróquia encarregar das finanças — não pelos demais sacerdotes, pela catequista, pela coordenação de pastoral nem por outros fiéis",
             "um pedido de oração marcado como privado só é visto pelo pároco e pelos sacerdotes",
             "quem tem função na paróquia (secretaria, catequista, coordenação) enxerga apenas o necessário para exercer aquela função",
+            "num grupo, o cronograma de encontros é visto por toda a paróquia — é o mesmo que o cartaz no mural —, mas a lista de quem participa é vista só pela coordenação do grupo e pela paróquia, nunca pelos outros participantes",
             "um fiel comum não tem acesso à lista de membros nem aos dados de outros fiéis",
           ]}
         />

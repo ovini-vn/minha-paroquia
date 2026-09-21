@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Church, Phone, MessageCircle, MapPin, Clock } from "lucide-react";
+import { Church, Phone, MessageCircle, MapPin, Mail, Clock } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getParish, listOfficeHours } from "@/server/modules/parishes/service";
 import { Card } from "@/components/ui/Card";
@@ -161,6 +161,23 @@ export default async function ContatoPage() {
               </a>
             )}
 
+            {parish.email && (
+              // mailto: abre o aplicativo de e-mail com o endereço pronto.
+              // Vale para a secretaria, que muitas vezes responde melhor por
+              // escrito do que por telefone no meio do expediente.
+              <a href={`mailto:${parish.email}`} className={linha}>
+                <span className={`${icone} bg-primary-tint text-primary`}>
+                  <Mail className="h-[19px] w-[19px]" strokeWidth={1.5} aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[14.5px] font-medium text-foreground">
+                    Escrever um e-mail
+                  </span>
+                  <span className="mt-0.5 block break-all text-[13px] text-muted">{parish.email}</span>
+                </span>
+              </a>
+            )}
+
             {endereco && (
               // maps: é o esquema que o próprio aparelho resolve — abre no app
               // de navegação que a pessoa usa, não força um específico.
@@ -182,9 +199,9 @@ export default async function ContatoPage() {
           </Card>
         </div>
 
-        {!parish.phone && !parish.whatsapp && !endereco && (
+        {!parish.phone && !parish.whatsapp && !parish.email && !endereco && (
           <p className="mt-3 text-[13px] leading-relaxed text-muted">
-            A paróquia ainda não cadastrou telefone, WhatsApp nem endereço.
+            A paróquia ainda não cadastrou telefone, WhatsApp, e-mail nem endereço.
           </p>
         )}
       </section>

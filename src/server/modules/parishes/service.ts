@@ -78,6 +78,7 @@ export function updateOwnParishProfile(parishId: string, input: UpdateParishProf
     state: input.state || null,
     address: input.address || null,
     phone: input.phone || null,
+    email: input.email || null,
     description: input.description || null,
     logoUrl: input.logoUrl || null,
     whatsapp: input.whatsapp || null,

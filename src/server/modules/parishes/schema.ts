@@ -26,6 +26,13 @@ export const updateParishProfileInputSchema = z.object({
   address: z.string().trim().max(200).optional(),
   phone: z.string().trim().max(30).optional(),
   whatsapp: z.string().trim().max(30).optional(),
+  /* Vazio passa pelo mesmo motivo do urlOuVazio: para dar para apagar. */
+  email: z
+    .string()
+    .trim()
+    .max(150)
+    .refine((v) => v === "" || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v), "Informe um e-mail válido.")
+    .optional(),
   description: z.string().trim().max(1000).optional(),
   logoUrl: urlOuVazio("logo"),
   facebookUrl: urlOuVazio("Facebook"),

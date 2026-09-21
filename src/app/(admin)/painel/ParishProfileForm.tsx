@@ -12,6 +12,7 @@ export type ParishProfileFormProps = {
   address: string;
   phone: string;
   whatsapp: string;
+  email: string;
   description: string;
   logoUrl: string;
   facebookUrl: string;
@@ -47,6 +48,7 @@ export function ParishProfileForm({
   address,
   phone,
   whatsapp,
+  email,
   description,
   logoUrl,
   facebookUrl,
@@ -84,6 +86,14 @@ export function ParishProfileForm({
           defaultValue={whatsapp}
         />
       </div>
+
+      <Campo
+        nome="email"
+        rotulo="E-mail (opcional)"
+        type="email"
+        ajuda="Aparece em Contato, e abre o aplicativo de e-mail do fiel."
+        defaultValue={email}
+      />
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="parish-description" className="text-sm font-medium text-muted">

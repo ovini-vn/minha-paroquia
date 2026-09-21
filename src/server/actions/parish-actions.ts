@@ -29,6 +29,7 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
       address: texto("address"),
       phone: texto("phone"),
       whatsapp: texto("whatsapp"),
+      email: texto("email"),
       description: texto("description"),
       logoUrl: texto("logoUrl"),
       facebookUrl: texto("facebookUrl"),

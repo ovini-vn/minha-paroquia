@@ -25,6 +25,7 @@ export function updateParishProfile(
     state: string | null;
     address: string | null;
     phone: string | null;
+    email: string | null;
     description: string | null;
     logoUrl: string | null;
     whatsapp: string | null;

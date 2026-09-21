@@ -38,6 +38,7 @@ export default async function DadosDaParoquiaPage() {
           description={parish?.description ?? ""}
           logoUrl={parish?.logoUrl ?? ""}
           whatsapp={parish?.whatsapp ?? ""}
+          email={parish?.email ?? ""}
           facebookUrl={parish?.facebookUrl ?? ""}
           instagramUrl={parish?.instagramUrl ?? ""}
         />

@@ -9,6 +9,7 @@ import {
   listDioceseMembers,
 } from "@/server/modules/dioceses/service";
 import {
+  abrirPainelDaParoquiaAction,
   setParishDioceseAction,
   removeDioceseMemberAction,
 } from "@/server/actions/diocese-actions";
@@ -69,25 +70,24 @@ export default async function PlataformaDiocesesPage() {
           </p>
           <div className="flex flex-col gap-2">
             {semDiocese.map((parish) => (
-              <form
-                key={parish.id}
-                action={setParishDioceseAction}
-                className="flex flex-wrap items-center gap-2"
-              >
-                <input type="hidden" name="parishId" value={parish.id} />
+              <div key={parish.id} className="flex flex-wrap items-center gap-2">
                 <span className="min-w-0 flex-1 text-[14px] text-foreground">{parish.name}</span>
-                <select name="dioceseId" className={`${INPUT_CLASSES} w-auto`} defaultValue="">
-                  <option value="">Escolha a diocese…</option>
-                  {dioceses.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-                <Button type="submit" variant="ghost" size="sm">
-                  Vincular
-                </Button>
-              </form>
+                <AbrirPainel parishId={parish.id} />
+                <form action={setParishDioceseAction} className="flex items-center gap-2">
+                  <input type="hidden" name="parishId" value={parish.id} />
+                  <select name="dioceseId" className={`${INPUT_CLASSES} w-auto`} defaultValue="">
+                    <option value="">Escolha a diocese…</option>
+                    {dioceses.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Button type="submit" variant="ghost" size="sm">
+                    Vincular
+                  </Button>
+                </form>
+              </div>
             ))}
           </div>
         </Card>
@@ -125,13 +125,7 @@ export default async function PlataformaDiocesesPage() {
               ) : (
                 <div className="flex flex-col gap-1.5">
                   {parishes.map((parish) => (
-                    <form
-                      key={parish.id}
-                      action={setParishDioceseAction}
-                      className="flex items-center gap-2"
-                    >
-                      <input type="hidden" name="parishId" value={parish.id} />
-                      <input type="hidden" name="dioceseId" value="" />
+                    <div key={parish.id} className="flex flex-wrap items-center gap-2">
                       <Church
                         className="h-4 w-4 shrink-0 text-muted"
                         strokeWidth={1.5}
@@ -140,10 +134,15 @@ export default async function PlataformaDiocesesPage() {
                       <span className="min-w-0 flex-1 text-[13.5px] text-foreground">
                         {parish.name}
                       </span>
-                      <Button type="submit" variant="ghost" size="sm">
-                        Desvincular
-                      </Button>
-                    </form>
+                      <AbrirPainel parishId={parish.id} />
+                      <form action={setParishDioceseAction}>
+                        <input type="hidden" name="parishId" value={parish.id} />
+                        <input type="hidden" name="dioceseId" value="" />
+                        <Button type="submit" variant="ghost" size="sm">
+                          Desvincular
+                        </Button>
+                      </form>
+                    </div>
                   ))}
                 </div>
               )}
@@ -180,5 +179,21 @@ export default async function PlataformaDiocesesPage() {
         ))
       )}
     </div>
+  );
+}
+
+/**
+ * Abre o painel daquela paróquia sem mudar o vínculo de ninguém (ver
+ * auth/foco-da-plataforma.ts). É o caminho para preparar uma paróquia nova,
+ * que ainda não tem uma pessoa sequer para administrá-la.
+ */
+function AbrirPainel({ parishId }: { parishId: string }) {
+  return (
+    <form action={abrirPainelDaParoquiaAction}>
+      <input type="hidden" name="parishId" value={parishId} />
+      <Button type="submit" variant="ghost" size="sm">
+        Abrir painel
+      </Button>
+    </form>
   );
 }

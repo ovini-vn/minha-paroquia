@@ -6,6 +6,7 @@ import { podeAlcancar } from "@/server/auth/guards";
 import { atributoDoTempo } from "@/lib/liturgical-season";
 import { PainelNav } from "@/components/layout/PainelNav";
 import { ITENS_DO_PAINEL } from "@/components/layout/painel-items";
+import { TarjaDoFoco } from "@/components/layout/TarjaDoFoco";
 
 /**
  * O painel usa a MESMA atmosfera do app.
@@ -34,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh bg-sunken" data-season={atributoDoTempo(session?.themePreference)}>
+      {session?.membership?.viaPlataforma && <TarjaDoFoco parishName={session.membership.parishName} />}
       <header className="sticky top-0 z-40 bg-wash px-5 py-3.5 text-white after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-gold after:to-transparent after:opacity-80">
         <div className="mx-auto flex max-w-3xl items-center gap-3 lg:max-w-6xl">
           <Symbol className="h-9 w-auto shrink-0 text-white" />

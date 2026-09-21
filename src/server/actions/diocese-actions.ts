@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
+import { redirect } from "next/navigation";
 import { requireSession, requirePlatformAdmin, requireDioceseAccess } from "@/server/auth/guards";
+import { focarParoquia, sairDoFoco } from "@/server/auth/foco-da-plataforma";
 import {
   createDiocese,
   setParishDiocese,
@@ -70,6 +72,27 @@ export async function createParishAction(
   revalidatePath("/diocese");
   revalidatePath("/escolher-paroquia");
   return { ok: true };
+}
+
+/**
+ * Abrir o painel de uma paróquia sem mudar de vínculo (ver
+ * auth/foco-da-plataforma.ts). Só administrador da plataforma.
+ */
+export async function abrirPainelDaParoquiaAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  requirePlatformAdmin(session);
+
+  const parishId = formData.get("parishId") as string;
+  if (parishId) await focarParoquia(parishId);
+
+  revalidatePath("/", "layout");
+  redirect("/painel");
+}
+
+export async function sairDoFocoAction(): Promise<void> {
+  await sairDoFoco();
+  revalidatePath("/", "layout");
+  redirect("/plataforma/dioceses");
 }
 
 export async function setParishDioceseAction(formData: FormData): Promise<void> {

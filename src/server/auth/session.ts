@@ -5,6 +5,7 @@ import { prisma } from "@/server/db/prisma";
 import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
+import { lerCookieDoFoco, resolverFoco } from "./foco-da-plataforma";
 import type { ColorScheme, DioceseRole, FontScale, NationalRole, ProvinceRole, ThemePreference, FontFamily } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
@@ -30,6 +31,12 @@ export type SessionContext = {
     roleId: string;
     roleCode: RoleCode;
     roleName: string;
+    /**
+     * A paróquia não é a da pessoa: ela está olhando esta pelo foco da
+     * administração da plataforma (ver auth/foco-da-plataforma.ts). O
+     * vínculo dela continua onde estava, e as telas avisam na tarja.
+     */
+    viaPlataforma?: boolean;
   } | null;
   /**
    * Dioceses que este usuário supervisiona. Escopo SEPARADO de `membership`:
@@ -152,6 +159,16 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   }));
   const national = nationalRow ? { role: nationalRow.role } : null;
 
+  const focoSemVinculo = membershipRow
+    ? null
+    : resolverFoco(user.isPlatformAdmin, await lerCookieDoFoco());
+  const paroquiaSemVinculo = focoSemVinculo
+    ? await prisma.parish.findUnique({
+        where: { id: focoSemVinculo },
+        select: { id: true, name: true, slug: true },
+      })
+    : null;
+
   if (!membershipRow) {
     return {
       userId: user.id,
@@ -163,7 +180,19 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
       fontScale: user.fontScale,
       fontFamily: user.fontFamily,
       onboardedAt: user.onboardedAt,
-      membership: null,
+      // Quem administra a plataforma pode não ter paróquia — o foco é o
+      // único jeito de ela abrir um painel, e continua sendo só uma lente.
+      membership: paroquiaSemVinculo
+        ? {
+            parishId: paroquiaSemVinculo.id,
+            parishName: paroquiaSemVinculo.name,
+            parishSlug: paroquiaSemVinculo.slug,
+            roleId: "",
+            roleCode: "ADMINISTRADOR_PAROQUIAL" as RoleCode,
+            roleName: "Administração da plataforma",
+            viaPlataforma: true,
+          }
+        : null,
       dioceses,
       provinces,
       national,
@@ -173,6 +202,42 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
   }
 
   const rolePermissions = membershipRow.role.rolePermissions.map((rp) => rp.permission.code as PermissionCode);
+
+  /*
+   * O foco da plataforma troca a paróquia VISTA, e não o vínculo.
+   *
+   * Todas as telas de gestão leem `membership.parishId`; trocá-lo aqui faz
+   * o painel inteiro passar a falar da paróquia focada sem que trinta telas
+   * precisem saber que isso existe. O papel exibido vira o da plataforma,
+   * para ninguém confundir com um vínculo que a pessoa não tem.
+   */
+  const foco = resolverFoco(user.isPlatformAdmin, await lerCookieDoFoco());
+  const paroquiaEmFoco =
+    foco && foco !== membershipRow.parishId
+      ? await prisma.parish.findUnique({
+          where: { id: foco },
+          select: { id: true, name: true, slug: true },
+        })
+      : null;
+
+  const membership = paroquiaEmFoco
+    ? {
+        parishId: paroquiaEmFoco.id,
+        parishName: paroquiaEmFoco.name,
+        parishSlug: paroquiaEmFoco.slug,
+        roleId: membershipRow.roleId,
+        roleCode: "ADMINISTRADOR_PAROQUIAL" as RoleCode,
+        roleName: "Administração da plataforma",
+        viaPlataforma: true,
+      }
+    : {
+        parishId: membershipRow.parishId,
+        parishName: membershipRow.parish.name,
+        parishSlug: membershipRow.parish.slug,
+        roleId: membershipRow.roleId,
+        roleCode: membershipRow.role.code as RoleCode,
+        roleName: membershipRow.role.name,
+      };
 
   return {
     userId: user.id,
@@ -184,14 +249,7 @@ export const getSessionContext = cache(async (): Promise<SessionContext | null> 
     fontScale: user.fontScale,
     fontFamily: user.fontFamily,
     onboardedAt: user.onboardedAt,
-    membership: {
-      parishId: membershipRow.parishId,
-      parishName: membershipRow.parish.name,
-      parishSlug: membershipRow.parish.slug,
-      roleId: membershipRow.roleId,
-      roleCode: membershipRow.role.code as RoleCode,
-      roleName: membershipRow.role.name,
-    },
+    membership,
     dioceses,
     provinces,
     national,

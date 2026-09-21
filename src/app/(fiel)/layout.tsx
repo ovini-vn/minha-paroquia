@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { getManagementAccess } from "@/server/auth/management";
+import { TarjaDoFoco } from "@/components/layout/TarjaDoFoco";
 import {
   countUnreadNotifications,
   situacaoDaBarra,
@@ -77,6 +78,7 @@ export default async function FielLayout({ children }: { children: React.ReactNo
      * trilha lateral que dava cara de aplicativo.
      */
     <div className="flex min-h-dvh flex-col bg-sunken lg:bg-background" data-season={seasonAttr}>
+      {session.membership?.viaPlataforma && <TarjaDoFoco parishName={session.membership.parishName} />}
       <SiteHeader
         parishName={parishName}
         seasonName={season.name}

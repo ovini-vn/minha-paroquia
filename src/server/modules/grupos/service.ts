@@ -3,6 +3,7 @@ import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
 import { findMemberByExactName } from "@/server/modules/parishes/service";
 import { notifyUser } from "@/server/modules/notifications/service";
+import { ESPERANDO_CONTATO } from "@/server/modules/pastorais/service";
 import {
   diaDoBanco,
   ehChaveDeIcone,
@@ -183,7 +184,7 @@ export function listarInteressados(parishId: string, groupId: string) {
   return withTenantContext(parishId, async (tx) => {
     const [interesses, membros] = await Promise.all([
       tx.pastoralGroupInterest.findMany({
-        where: { parishId, groupId, status: { in: ["manifestado", "em_contato"] } },
+        where: { parishId, groupId, ...ESPERANDO_CONTATO },
         orderBy: { createdAt: "asc" },
         select: { userId: true, createdAt: true, user: { select: { fullName: true, phone: true } } },
       }),

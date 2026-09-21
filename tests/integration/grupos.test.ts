@@ -3,7 +3,13 @@ import { ensureRolesAndPermissionsSeeded } from "@/server/auth/seed-rbac";
 import { registerParish } from "@/server/modules/parishes/service";
 import { registerUser } from "@/server/modules/users/service";
 import { createInvitation, acceptInvitation } from "@/server/modules/invitations/service";
-import { createGroup, expressGroupInterest, getMyMainPastoral } from "@/server/modules/pastorais/service";
+import {
+  createGroup,
+  expressGroupInterest,
+  getMyMainPastoral,
+  listAllGroups,
+  listInterestsForParish,
+} from "@/server/modules/pastorais/service";
 import {
   acolherInteressado,
   adicionarMembroPorNome,
@@ -147,6 +153,19 @@ describe("grupos com membros e cronograma", () => {
       tx.pastoralGroupInterest.findUnique({ where: { groupId_userId: { groupId: cdmId, userId: interessadoId } } }),
     );
     expect(interesse?.status).toBe("acolhido");
+  });
+
+  it("quem foi acolhido deixa de ser 'interessado' também no painel da paróquia", async () => {
+    // Antes, a mesma pessoa aparecia como interessada E como participante na
+    // linha da pastoral — visto em produção assim que o primeiro grupo ganhou
+    // membros.
+    const doPainel = await listInterestsForParish(parishId);
+    expect(doPainel.some((i) => i.userId === interessadoId)).toBe(false);
+
+    const cdm = (await listAllGroups(parishId)).find((g) => g.id === cdmId)!;
+    expect(cdm._count.interests).toBe(0);
+    // Coordenação, a adolescente adicionada pelo nome e quem foi acolhido agora.
+    expect(cdm._count.membros).toBe(3);
   });
 
   it("acolher quem não pediu nada é recusado", async () => {

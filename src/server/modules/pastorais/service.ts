@@ -1,7 +1,7 @@
 import { withTenantContext } from "@/server/db/tenant-context";
 import { ValidationError } from "@/server/shared/errors";
 import { notifyManyUsers } from "@/server/modules/notifications/service";
-import type { PastoralGroupStatus } from "@prisma/client";
+import type { PastoralGroupStatus, Prisma } from "@prisma/client";
 
 /**
  * Pastorais e grupos da paróquia.
@@ -11,6 +11,18 @@ import type { PastoralGroupStatus } from "@prisma/client";
  * o coordenador procurá-la. Entrar num grupo continua sendo uma conversa
  * entre pessoas — nada aqui faz match automático.
  */
+
+/**
+ * Quem ainda espera contato da coordenação.
+ *
+ * "Acolhido" já entrou no grupo (ver modules/grupos) e "declinado" não vai
+ * entrar: nenhum dos dois é gente esperando. Contá-los deixava a pastoral
+ * marcada como "1 interessado" para sempre, e a mesma pessoa aparecia como
+ * interessada e como participante na mesma linha do painel.
+ */
+export const ESPERANDO_CONTATO: Prisma.PastoralGroupInterestWhereInput = {
+  status: { in: ["manifestado", "em_contato"] },
+};
 
 export type PastoralGroupInput = {
   name: string;
@@ -25,7 +37,7 @@ export function listActiveGroups(parishId: string) {
     tx.pastoralGroup.findMany({
       where: { parishId, status: "ativa" },
       orderBy: { name: "asc" },
-      include: { _count: { select: { interests: true, encontros: true } } },
+      include: { _count: { select: { interests: { where: ESPERANDO_CONTATO }, encontros: true } } },
     }),
   );
 }
@@ -36,7 +48,9 @@ export function listAllGroups(parishId: string) {
     tx.pastoralGroup.findMany({
       where: { parishId },
       orderBy: [{ status: "asc" }, { name: "asc" }],
-      include: { _count: { select: { interests: true, membros: true, encontros: true } } },
+      include: {
+        _count: { select: { interests: { where: ESPERANDO_CONTATO }, membros: true, encontros: true } },
+      },
     }),
   );
 }
@@ -82,7 +96,7 @@ export async function getMyMainPastoral(parishId: string, userId: string) {
 export function listInterestsForParish(parishId: string) {
   return withTenantContext(parishId, (tx) =>
     tx.pastoralGroupInterest.findMany({
-      where: { parishId },
+      where: { parishId, ...ESPERANDO_CONTATO },
       orderBy: { createdAt: "desc" },
       include: {
         user: { select: { fullName: true, email: true } },

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ZodError } from "zod";
 import { requireSession, requirePlatformAdmin, requireDioceseAccess } from "@/server/auth/guards";
 import {
   createDiocese,
@@ -8,6 +9,7 @@ import {
   assignDioceseMember,
   removeDioceseMember,
 } from "@/server/modules/dioceses/service";
+import { criarParoquia } from "@/server/modules/parishes/service";
 import { AppError } from "@/server/shared/errors";
 import type { DioceseRole } from "@prisma/client";
 
@@ -37,6 +39,36 @@ export async function createDioceseAction(
 
   revalidatePath("/plataforma/dioceses");
   revalidatePath("/diocese");
+  return { ok: true };
+}
+
+/**
+ * Abrir uma paróquia nova no app. Operação de plataforma, como a diocese:
+ * é quem administra o sistema que decide o mapa eclesiástico dele.
+ */
+export async function createParishAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const session = await requireSession();
+  requirePlatformAdmin(session);
+
+  try {
+    await criarParoquia({
+      name: (formData.get("name") as string) ?? "",
+      city: (formData.get("city") as string) ?? "",
+      state: (formData.get("state") as string) ?? "",
+      dioceseId: (formData.get("dioceseId") as string) || null,
+    });
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    if (error instanceof ZodError) return { error: error.issues[0]?.message ?? "Dados inválidos." };
+    throw error;
+  }
+
+  revalidatePath("/plataforma/dioceses");
+  revalidatePath("/diocese");
+  revalidatePath("/escolher-paroquia");
   return { ok: true };
 }
 

@@ -17,7 +17,7 @@ import {
   updateParishParoco as atualizarParoco,
   updateParishDonationProfile as atualizarDoacao,
 } from "./repository";
-import type { UpdateParishProfileInput } from "./schema";
+import { registerParishInputSchema, type RegisterParishInput, type UpdateParishProfileInput } from "./schema";
 
 /**
  * Nomes de paróquia se repetem muito (padroeiros comuns, ex.: "Nossa
@@ -43,6 +43,29 @@ async function uniqueSlugFor(name: string, city?: string): Promise<string> {
 export async function registerParish(input: { name: string; city?: string; state?: string }) {
   const slug = await uniqueSlugFor(input.name, input.city);
   return createParish({ name: input.name, slug, city: input.city, state: input.state });
+}
+
+/**
+ * Cadastra uma paróquia nova pela administração da plataforma.
+ *
+ * Existe porque abrir uma paróquia no app dependia de rodar
+ * `prisma/bootstrap-founder.ts` com o banco de PRODUÇÃO na mão — coisa que
+ * só quem tem a credencial faz, e que ninguém deveria precisar fazer para
+ * mostrar o app a um pároco. O bootstrap continua servindo ao primeiro
+ * acesso de todos (ele cria o pároco e o link de senha); aqui é só a
+ * paróquia, vazia, pronta para ser preenchida.
+ *
+ * A diocese é opcional: paróquia sem diocese funciona, só não aparece em
+ * visão diocesana nenhuma (ver o modelo `Parish`).
+ */
+export async function criarParoquia(input: RegisterParishInput & { dioceseId?: string | null }) {
+  const dados = registerParishInputSchema.parse(input);
+  const paroquia = await registerParish(dados);
+  if (input.dioceseId) {
+    const dioceseId = input.dioceseId;
+    await withPlatformContext((tx) => tx.parish.update({ where: { id: paroquia.id }, data: { dioceseId } }));
+  }
+  return paroquia;
 }
 
 export function getParish(parishId: string) {

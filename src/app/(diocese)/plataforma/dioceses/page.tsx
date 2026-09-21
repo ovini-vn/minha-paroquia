@@ -20,7 +20,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { PageHeader, Eyebrow } from "@/components/ui/Typography";
 import { INPUT_CLASSES } from "@/components/ui/FormField";
 import { DIOCESE_ROLE_LABELS } from "@/lib/diocese-labels";
-import { CreateDioceseForm, AssignDioceseMemberForm } from "./DioceseForms";
+import { CreateDioceseForm, CreateParishForm, AssignDioceseMemberForm } from "./DioceseForms";
 
 /** Administração da plataforma: o mapa eclesiástico do sistema. */
 export const metadata: Metadata = { title: "Dioceses" };
@@ -47,10 +47,16 @@ export default async function PlataformaDiocesesPage() {
         description="Cadastre dioceses, vincule paróquias a elas e nomeie quem as acompanha."
       />
 
-      <Card>
-        <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova diocese</p>
-        <CreateDioceseForm />
-      </Card>
+      <div className="lista-adaptavel">
+        <Card className="card-adaptavel">
+          <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova paróquia</p>
+          <CreateParishForm dioceses={dioceses.map((d) => ({ id: d.id, name: d.name }))} />
+        </Card>
+        <Card className="card-adaptavel">
+          <p className="mb-3 font-serif text-lg font-semibold text-foreground">Nova diocese</p>
+          <CreateDioceseForm />
+        </Card>
+      </div>
 
       {semDiocese.length > 0 && (
         <Card className="border-gold/45 bg-gradient-to-b from-gold/[0.07] to-transparent">

@@ -68,3 +68,26 @@ export const CATECISMO_ATIVO = false;
  * servidor do app.
  */
 export const TERCO_COM_A_VOZ = true;
+
+/**
+ * CONTAS QUE REFAZEM O ONBOARDING A CADA ENTRADA.
+ *
+ * As boas-vindas acontecem uma vez na vida de cada conta, e é justamente
+ * por isso que elas são difíceis de rever: para olhar de novo era preciso
+ * criar outro e-mail ou rodar um script no banco.
+ *
+ * Um e-mail listado aqui volta ao começo TODA VEZ que entra — a marca de
+ * onboarding concluído é apagada ao criar a sessão (ver
+ * server/auth/session.ts). Depois de passar pelos passos, a pessoa usa o
+ * app normalmente até sair e entrar de novo.
+ *
+ * É lista de TESTE, curta e nominal, e não uma configuração de produto.
+ * Quem não está aqui passa pelas boas-vindas uma vez só, como sempre.
+ */
+export const CONTAS_QUE_REFAZEM_O_ONBOARDING = ["vinioalme@gmail.com"];
+
+/** O e-mail volta ao onboarding toda vez que entra? Comparação sem caixa. */
+export function refazOnboardingAoEntrar(email: string): boolean {
+  const alvo = email.trim().toLowerCase();
+  return CONTAS_QUE_REFAZEM_O_ONBOARDING.some((conta) => conta.toLowerCase() === alvo);
+}

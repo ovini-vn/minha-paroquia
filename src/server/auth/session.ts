@@ -6,6 +6,7 @@ import { withOwnMembershipLookup } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
 import { lerCookieDoFoco, resolverFoco } from "./foco-da-plataforma";
+import { CONTAS_QUE_REFAZEM_O_ONBOARDING } from "@/lib/funcionalidades";
 import type { ColorScheme, DioceseRole, FontScale, NationalRole, ProvinceRole, ThemePreference, FontFamily } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "comunidade_session";
@@ -57,8 +58,25 @@ export type SessionContext = {
   coordenaGrupo: boolean;
 };
 
+/**
+ * Devolve ao começo o onboarding das contas de teste (ver
+ * `CONTAS_QUE_REFAZEM_O_ONBOARDING`). Para todas as outras, não faz nada.
+ *
+ * Chamada ao criar a sessão, e não no formulário de login, porque entrar
+ * tem três portas — senha, Google e Facebook — e a regra vale nas três.
+ */
+export async function reiniciarOnboardingDeContaDeTeste(userId: string): Promise<void> {
+  if (CONTAS_QUE_REFAZEM_O_ONBOARDING.length === 0) return;
+  await prisma.user.updateMany({
+    where: { id: userId, email: { in: CONTAS_QUE_REFAZEM_O_ONBOARDING } },
+    data: { onboardedAt: null },
+  });
+}
+
 /** Cria a sessão no banco e escreve o cookie. Só pode rodar em Server Action. */
 export async function createSession(userId: string): Promise<void> {
+  await reiniciarOnboardingDeContaDeTeste(userId);
+
   const token = generateOpaqueToken();
   const tokenHash = hashToken(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);

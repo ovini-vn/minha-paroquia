@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { refazOnboardingAoEntrar } from "@/lib/funcionalidades";
 import { requirePermission } from "@/server/auth/guards";
 import { PERMISSIONS, ROLE_PERMISSIONS, computeEffectivePermissions } from "@/server/auth/rbac";
 import type { SessionContext } from "@/server/auth/session";
@@ -65,5 +66,14 @@ describe("delegação fina — computeEffectivePermissions", () => {
   it("sem overrides, a permissão efetiva é exatamente a do papel", () => {
     const result = computeEffectivePermissions(ROLE_PERMISSIONS.CATEQUISTA, []);
     expect(result).toEqual(ROLE_PERMISSIONS.CATEQUISTA);
+  });
+});
+
+describe("contas que refazem o onboarding", () => {
+  it("só os e-mails listados voltam ao começo, sem depender de caixa", () => {
+    expect(refazOnboardingAoEntrar("vinioalme@gmail.com")).toBe(true);
+    expect(refazOnboardingAoEntrar("  VINIOALME@Gmail.com ")).toBe(true);
+    expect(refazOnboardingAoEntrar("outra.pessoa@gmail.com")).toBe(false);
+    expect(refazOnboardingAoEntrar("")).toBe(false);
   });
 });

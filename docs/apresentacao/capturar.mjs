@@ -54,6 +54,24 @@ async function conferirServidor() {
   }
 }
 
+/**
+ * Roda um script tsx do projeto e devolve a saída.
+ *
+ * Chama o NODE direto no CLI do tsx, em vez de `npx tsx`, pelo motivo
+ * explicado em `obterToken`: no Windows as duas alternativas óbvias falham.
+ */
+function rodarTsx(scriptRelativoAoProjeto, ...argumentos) {
+  const script = path
+    .relative(process.cwd(), path.join(AQUI, "..", "..", scriptRelativoAoProjeto))
+    .split(path.sep)
+    .join("/");
+  const tsx = path.join(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
+  return execFileSync(process.execPath, [tsx, script, ...argumentos], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "inherit"],
+  }).trim();
+}
+
 function obterToken() {
   const daLinhaDeComando = process.argv[2];
   if (daLinhaDeComando) return daLinhaDeComando;
@@ -98,6 +116,21 @@ const TAMANHO_DOS_PRINTS = "m";
 
 /** Cada tela vira um arquivo. `espera` é o que precisa existir antes do clique do obturador. */
 const TELAS = [
+  /*
+   * As boas-vindas, com OUTRA conta.
+   *
+   * A tela só existe para quem ainda não passou por ela, e o app manda
+   * quem não passou para lá — inclusive nos outros 37 prints. Por isso a
+   * conta desta tela é uma segunda, devolvida ao começo antes do clique do
+   * obturador (ver preparar-onboarding.ts). Ela fica assim depois: no
+   * banco de desenvolvimento, é o que se quer para testar o fluxo de novo.
+   */
+  {
+    arquivo: "bem-vindo",
+    url: "/bem-vindo",
+    sessaoDe: "fiel.demo@comunidade.app",
+    espera: "text=Bem-vindo",
+  },
   { arquivo: "inicio", url: "/inicio", espera: "text=A VIDA DA PARÓQUIA" },
   { arquivo: "agenda", url: "/agenda" },
   // A Comunidade abre em "Nossa História"; o que a apresentação usa é a
@@ -298,6 +331,14 @@ const falhas = [];
 for (const tela of TELAS) {
   const endereco = `${BASE}${tela.url}`;
   try {
+    // Telas de outra conta: o cookie é trocado antes e devolvido depois.
+    if (tela.sessaoDe) {
+      rodarTsx("docs/apresentacao/preparar-onboarding.ts", tela.sessaoDe);
+      const outro = rodarTsx("docs/apresentacao/criar-sessao.ts", tela.sessaoDe);
+      await contexto.addCookies([
+        { name: "comunidade_session", value: outro, domain: new URL(BASE).hostname, path: "/", httpOnly: true, sameSite: "Lax" },
+      ]);
+    }
     const resposta = await pagina.goto(endereco, { waitUntil: "networkidle", timeout: 60_000 });
 
     // Cair no login significa sessão inválida — melhor saber do que salvar
@@ -381,6 +422,14 @@ for (const tela of TELAS) {
   } catch (erro) {
     falhas.push({ ...tela, motivo: erro.message });
     console.log(`FALHA ${tela.arquivo.padEnd(22)} ${tela.url} — ${erro.message}`);
+  } finally {
+    // Devolve a sessão principal, mesmo se a tela falhou: sem isso, uma
+    // falha no print das boas-vindas levaria as 37 telas seguintes junto.
+    if (tela.sessaoDe) {
+      await contexto.addCookies([
+        { name: "comunidade_session", value: token, domain: new URL(BASE).hostname, path: "/", httpOnly: true, sameSite: "Lax" },
+      ]);
+    }
   }
 }
 

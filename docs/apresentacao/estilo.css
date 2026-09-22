@@ -232,6 +232,32 @@
       .icone svg { width: 25px; height: 25px; stroke: var(--roxo); fill: none; stroke-width: 1.5; }
 
       /* A frase que precisa ficar — grande, em serifa. */
+      /*
+       * O QR do começo: fundo branco sempre, mesmo no slide escuro.
+       *
+       * Leitor de QR precisa de contraste alto e de margem clara em volta —
+       * um código desenhado em cima do roxo falha na metade dos celulares,
+       * e falharia justo na hora em que a sala inteira aponta a câmera.
+       */
+      .qr {
+        background: #ffffff;
+        border-radius: 26px;
+        padding: 20px;
+        width: 360px;
+        height: 360px;
+        box-shadow: 0 30px 70px -22px rgba(0, 0, 0, 0.55);
+      }
+      .qr img { display: block; width: 100%; height: 100%; }
+
+      /* O endereço escrito, para quem não alcança o código da cadeira. */
+      .endereco {
+        margin-top: 0.9em;
+        font-family: "Courier New", monospace;
+        font-size: 0.72em;
+        letter-spacing: 0.02em;
+        color: var(--dourado-claro);
+      }
+
       .frase { border-left: 3px solid var(--dourado); padding: 6px 0 6px 28px; margin-top: 1em; }
       .frase p {
         font-family: Georgia, serif;
@@ -242,6 +268,14 @@
       }
 
       .passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 0.7em; }
+      /*
+       * Passos em COLUNA, para caber ao lado de um celular (o primeiro
+       * acesso). O número vai à esquerda, e não acima: em pé, a fileira de
+       * números guia a leitura de cima para baixo.
+       */
+      .passos.coluna { grid-template-columns: 1fr; gap: 16px; }
+      .passos.coluna .passo { padding: 2px 0 0 66px; min-height: 54px; }
+      .passos.coluna .passo .n { top: 0; }
       .passo { position: relative; padding-top: 70px; }
       .passo .n {
         position: absolute;

@@ -76,10 +76,16 @@ export const TERCO_COM_A_VOZ = true;
  * por isso que elas são difíceis de rever: para olhar de novo era preciso
  * criar outro e-mail ou rodar um script no banco.
  *
- * Um e-mail listado aqui volta ao começo TODA VEZ que entra — a marca de
- * onboarding concluído é apagada ao criar a sessão (ver
- * server/auth/session.ts). Depois de passar pelos passos, a pessoa usa o
- * app normalmente até sair e entrar de novo.
+ * Um e-mail listado aqui volta ao começo TODA VEZ que entra: ao criar a
+ * sessão (ver server/auth/session.ts), o vínculo com a paróquia é
+ * encerrado e a marca de onboarding é apagada. A conta refaz o caminho
+ * inteiro de quem chega — escolher a paróquia e os passos das boas-vindas
+ * — e depois usa o app normalmente até sair e entrar de novo.
+ *
+ * O papel na paróquia não volta: a conta entra como fiel, e um papel de
+ * teste precisa ser dado de novo em Membros e papéis. Por isso NÃO liste
+ * aqui uma conta que administra uma paróquia de verdade: ela sairia do
+ * vínculo a cada entrada, e a paróquia poderia ficar sem quem a administre.
  *
  * É lista de TESTE, curta e nominal, e não uma configuração de produto.
  * Quem não está aqui passa pelas boas-vindas uma vez só, como sempre.

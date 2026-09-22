@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { prisma } from "@/server/db/prisma";
-import { withOwnMembershipLookup } from "@/server/db/tenant-context";
+import { withOwnMembershipLookup, withTenantContext } from "@/server/db/tenant-context";
 import { generateOpaqueToken, hashToken } from "./tokens";
 import { computeEffectivePermissions, type PermissionCode, type RoleCode } from "./rbac";
 import { lerCookieDoFoco, resolverFoco } from "./foco-da-plataforma";
@@ -59,23 +59,55 @@ export type SessionContext = {
 };
 
 /**
- * Devolve ao começo o onboarding das contas de teste (ver
+ * Devolve uma conta de teste ao estado de quem acabou de chegar ao app:
+ * sem paróquia escolhida e sem onboarding (ver
  * `CONTAS_QUE_REFAZEM_O_ONBOARDING`). Para todas as outras, não faz nada.
  *
  * Chamada ao criar a sessão, e não no formulário de login, porque entrar
  * tem três portas — senha, Google e Facebook — e a regra vale nas três.
+ *
+ * O PAPEL NÃO VOLTA: ao escolher a paróquia de novo, a conta entra como
+ * fiel, que é o que acontece com qualquer pessoa. Para testar uma tela de
+ * catequista ou de secretaria, dar o papel de novo em Membros e papéis.
  */
-export async function reiniciarOnboardingDeContaDeTeste(userId: string): Promise<void> {
+export async function reiniciarContaDeTeste(userId: string): Promise<void> {
   if (CONTAS_QUE_REFAZEM_O_ONBOARDING.length === 0) return;
-  await prisma.user.updateMany({
+
+  const { count } = await prisma.user.updateMany({
     where: { id: userId, email: { in: CONTAS_QUE_REFAZEM_O_ONBOARDING } },
     data: { onboardedAt: null },
   });
+  // Não é conta de teste: nada mais a fazer.
+  if (count === 0) return;
+
+  /*
+   * O VÍNCULO COM A PARÓQUIA sai junto.
+   *
+   * São os dois portões do app (ver o layout do fiel): sem vínculo, ele
+   * manda escolher a paróquia; sem onboarding, manda às boas-vindas.
+   * Derrubar só um testa metade do caminho — e escolher a paróquia é
+   * justamente a parte que mostra o que falta numa paróquia nova.
+   *
+   * A baixa acontece no contexto da paróquia ANTIGA, senão o RLS recusa a
+   * escrita; a leitura vem pelo caminho das próprias linhas, que é o que a
+   * política permite ler por user_id. Mesmo par de contextos do joinParish.
+   */
+  const atual = await withOwnMembershipLookup(userId, (tx) =>
+    tx.parishMembership.findFirst({ where: { userId, status: "active" } }),
+  );
+  if (!atual) return;
+
+  await withTenantContext(atual.parishId, (tx) =>
+    tx.parishMembership.update({
+      where: { id: atual.id },
+      data: { status: "inactive", leftAt: new Date() },
+    }),
+  );
 }
 
 /** Cria a sessão no banco e escreve o cookie. Só pode rodar em Server Action. */
 export async function createSession(userId: string): Promise<void> {
-  await reiniciarOnboardingDeContaDeTeste(userId);
+  await reiniciarContaDeTeste(userId);
 
   const token = generateOpaqueToken();
   const tokenHash = hashToken(token);

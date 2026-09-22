@@ -72,9 +72,26 @@ function rodarTsx(scriptRelativoAoProjeto, ...argumentos) {
   }).trim();
 }
 
+/**
+ * Quais telas refazer: `--apenas inicio,palavra`. Sem isso, todas.
+ *
+ * Existe porque recapturar as 38 leva minutos e, na maioria das vezes, uma
+ * tela só mudou. As outras continuam valendo — os arquivos ficam onde
+ * estão.
+ */
+function telasPedidas() {
+  const i = process.argv.indexOf("--apenas");
+  if (i === -1) return null;
+  const lista = (process.argv[i + 1] ?? "")
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean);
+  return lista.length > 0 ? new Set(lista) : null;
+}
+
 function obterToken() {
   const daLinhaDeComando = process.argv[2];
-  if (daLinhaDeComando) return daLinhaDeComando;
+  if (daLinhaDeComando && !daLinhaDeComando.startsWith("--")) return daLinhaDeComando;
 
   // Caminho RELATIVO: o absoluto passa por "App Paroquial", e o espaço no
   // meio faz o shell do Windows cortar o argumento em dois.
@@ -328,7 +345,14 @@ await mkdir(DESTINO, { recursive: true });
 const pagina = await contexto.newPage();
 const falhas = [];
 
-for (const tela of TELAS) {
+const escolhidas = telasPedidas();
+const aFazer = escolhidas ? TELAS.filter((t) => escolhidas.has(t.arquivo)) : TELAS;
+if (escolhidas && aFazer.length === 0) {
+  console.error(`Nenhuma tela com esse nome. Conhecidas: ${TELAS.map((t) => t.arquivo).join(", ")}`);
+  process.exit(1);
+}
+
+for (const tela of aFazer) {
   const endereco = `${BASE}${tela.url}`;
   try {
     // Telas de outra conta: o cookie é trocado antes e devolvido depois.
@@ -435,5 +459,5 @@ for (const tela of TELAS) {
 
 await navegador.close();
 
-console.log(`\n${TELAS.length - falhas.length}/${TELAS.length} capturadas em docs/apresentacao/screenshots.`);
+console.log(`\n${aFazer.length - falhas.length}/${aFazer.length} capturadas em docs/apresentacao/screenshots.`);
 if (falhas.length) process.exitCode = 1;

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, MessagesSquare, Phone, Users } from "lucide-react";
+import { Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -52,22 +52,25 @@ import { ProximoEncontro } from "@/components/grupos/ProximoEncontro";
  * "Pedir oração" virou "Orações" (15/09/2026, decisão do usuário). Um botão
  * de AÇÃO — mandar um pedido — no meio de botões que são LUGARES destoava.
  * "Orações" abre a aba Palavra, que no topo tem as quatro ferramentas de
- * oração: Bíblia, Rezar, Pedir oração e Minha caminhada. É a exceção à regra
- * de não espelhar a barra, pedida assim: para quem pensa "vou rezar", o
- * nome da aba, Palavra, não diz que é ali.
+ * oração: Bíblia, Rezar, Pedir oração e Minha caminhada.
  *
- * Os ícones são os mesmos da aba Palavra para os mesmos destinos: quem
- * reconhece o desenho num lugar reconhece no outro — as mãos em oração são
- * as do botão Rezar.
+ * SERVIR VOLTOU (22/09/2026, decisão do usuário), no lugar de "Falar com o
+ * padre". O aplicativo existe para fazer mais gente participar da
+ * comunidade, e esta é a tela que todos abrem: deixar o caminho de servir
+ * fora dela era esconder justamente o convite que a paróquia mais quer
+ * fazer. Falar com o padre continua a dois toques — o cartão "Sacerdotes e
+ * pastorais", logo abaixo, leva até lá.
  *
- * "o padre" vai preso por espaço inquebrável. No celular o rótulo não cabe
- * numa linha, e a quebra natural deixava "Falar com o" em cima e "padre"
- * sozinho embaixo — medido a 375px e a 320px.
+ * Servir e Orações são as duas exceções à regra de não espelhar a barra, e
+ * pelo mesmo motivo: quem pensa "quero ajudar" ou "vou rezar" não procura
+ * pelo nome da aba. Os ícones são os mesmos dos destinos — as mãos em
+ * oração são as do botão Rezar, e o aperto de mãos é o do convite de
+ * Servir, no fim desta tela.
  */
 const SHORTCUTS = [
   { href: "/agenda", icon: CalendarDays, label: "Agenda" },
   { href: "/oracao", icon: MaosEmOracao, label: "Orações" },
-  { href: "/comunidade/sacerdotes", icon: MessagesSquare, label: "Falar com o padre" },
+  { href: "/servir", icon: HeartHandshake, label: "Servir" },
   { href: "/caminhada", icon: Footprints, label: "Caminhada" },
   { href: "/doacao", icon: HandCoins, label: "Ofertar" },
   { href: "/contato", icon: Phone, label: "Contato" },

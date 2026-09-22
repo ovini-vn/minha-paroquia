@@ -27,11 +27,22 @@ import {
  * sempre, `opportunities.manage`) e os coordenadores DAQUELE grupo. Um
  * coordenador não alcança os outros grupos, nem nada da paróquia.
  *
- * O QUE CADA UM VÊ: o cronograma é da paróquia inteira — é o mesmo que o
- * cartaz na porta do salão. A lista de quem participa, não: só a
- * coordenação e a paróquia. Mesma regra do resto do app, em que ser da
- * paróquia não dá acesso a quem mais é dela.
+ * O QUE CADA UM VÊ: o cronograma é de QUEM PARTICIPA. Um grupo não é um
+ * mural da paróquia — é um grupo, como uma pastoral: quem está dentro
+ * acompanha os encontros, quem está fora vê o convite e pede para entrar.
+ * A lista de quem participa é mais restrita ainda: só a coordenação.
  */
+
+/**
+ * Quem enxerga o cronograma: quem faz parte do grupo, em qualquer papel, e
+ * quem o administra (a coordenação dele e quem gere as pastorais).
+ *
+ * Função à parte, e testada, porque é regra de privacidade: espalhada pelas
+ * telas, ela vira três versões que divergem no primeiro ajuste.
+ */
+export function podeVerOCronograma(papel: PapelNoGrupo | null, gereOGrupo: boolean): boolean {
+  return gereOGrupo || papel !== null;
+}
 
 export type EncontroVisto = {
   id: string;

@@ -92,7 +92,9 @@ export default async function PastoraisPage() {
                   className="alvo-de-toque mt-3 flex items-center gap-2 rounded-md text-[13.5px] font-medium text-primary"
                 >
                   <CalendarDays className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />
-                  {group._count.encontros > 0
+                  {/* O cronograma é de quem participa (ver modules/grupos);
+                      para os outros, o link leva ao convite do grupo. */}
+                  {souDoGrupo.has(group.id) && group._count.encontros > 0
                     ? `Ver o cronograma · ${group._count.encontros} ${group._count.encontros === 1 ? "encontro" : "encontros"}`
                     : "Ver o grupo"}
                   <ChevronRight className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden />

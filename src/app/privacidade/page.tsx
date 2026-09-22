@@ -251,8 +251,8 @@ export default function PrivacidadePage() {
         <p>
           <strong className="font-semibold text-foreground">Adolescentes</strong> que já passaram pela
           catequese podem ter conta própria e participar dos grupos da paróquia. A conta é igual à de
-          qualquer fiel, e o que o grupo mostra a eles é o cronograma dos encontros — nunca a lista de
-          quem participa. Quem põe alguém num grupo é sempre a coordenação dele.
+          qualquer fiel, e o que o grupo mostra a quem participa é o cronograma dos encontros — nunca
+          a lista de quem participa. Quem põe alguém num grupo é sempre a coordenação dele.
         </p>
       </Secao>
 
@@ -268,7 +268,7 @@ export default function PrivacidadePage() {
             "as suas ofertas, e quanto você contribuiu, são vistas por você e, na paróquia, só pelo pároco, pela administração, pela secretaria e por quem a paróquia encarregar das finanças — não pelos demais sacerdotes, pela catequista, pela coordenação de pastoral nem por outros fiéis",
             "um pedido de oração marcado como privado só é visto pelo pároco e pelos sacerdotes",
             "quem tem função na paróquia (secretaria, catequista, coordenação) enxerga apenas o necessário para exercer aquela função",
-            "num grupo, o cronograma de encontros é visto por toda a paróquia — é o mesmo que o cartaz no mural —, mas a lista de quem participa é vista só pela coordenação do grupo e pela paróquia, nunca pelos outros participantes",
+            "num grupo, o cronograma dos encontros é visto por quem participa dele; quem está de fora vê só o convite — o que o grupo faz, quando e onde se reúne. A lista de quem participa é vista apenas pela coordenação do grupo e pela paróquia, nunca pelos outros participantes",
             "um fiel comum não tem acesso à lista de membros nem aos dados de outros fiéis",
           ]}
         />

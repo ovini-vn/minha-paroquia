@@ -9,6 +9,7 @@ import {
   listarMembros,
   obterGrupo,
   papelNoGrupo,
+  podeVerOCronograma,
   type EncontroVisto,
 } from "@/server/modules/grupos/service";
 import { listMyGroupInterests } from "@/server/modules/pastorais/service";
@@ -38,12 +39,12 @@ import {
 export const metadata: Metadata = { title: "Grupo" };
 
 /**
- * A página de um grupo: o cronograma para todos, a gestão para a coordenação.
+ * A página de um grupo: o cronograma para quem participa, a gestão para a
+ * coordenação.
  *
- * O cronograma é visto por qualquer pessoa da paróquia — é o mesmo que o
- * cartaz no mural, e é o que faz o pai de um adolescente saber o que o
- * filho vai ouvir no domingo. Quem participa, não: essa lista é da
- * coordenação e da paróquia, como em todo o app.
+ * Quem está de fora vê o convite — o que o grupo é, quando e onde se reúne,
+ * quem coordena — e o botão de pedir para entrar. O cronograma dos
+ * encontros é de dentro: um grupo não é mural de paróquia.
  *
  * A gestão mora aqui, e não no painel, porque quem coordena um grupo de
  * adolescentes normalmente não tem painel nenhum — mesma escolha da turma
@@ -80,8 +81,9 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
   ]);
   const temInteresse = meusInteresses.some((i) => i.groupId === id && i.status !== "declinado");
 
+  const verCronograma = podeVerOCronograma(papel, podeGerir);
   const hoje = hojeEmBrasilia();
-  const proximo = proximoEncontro(grupo.encontros, hoje);
+  const proximo = verCronograma ? proximoEncontro(grupo.encontros, hoje) : null;
   const passados = grupo.encontros.filter((e) => jaPassou(e, hoje));
   const adiante = grupo.encontros.filter((e) => !jaPassou(e, hoje));
 
@@ -171,7 +173,15 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
 
           <section className="pt-8">
             <SectionTitle eyebrow="Cronograma" title="Os encontros" />
-            {grupo.encontros.length === 0 ? (
+            {!verCronograma ? (
+              /* De fora, o convite. O que o grupo faz e quando se reúne já
+                 está no alto da página; aqui fica o caminho para entrar. */
+              <EmptyState
+                icon={CalendarDays}
+                title="Os encontros são de quem participa"
+                description="Peça para entrar no grupo: assim que a coordenação acolher você, o cronograma aparece aqui, com o tema de cada encontro e quem prega."
+              />
+            ) : grupo.encontros.length === 0 ? (
               <EmptyState
                 icon={CalendarDays}
                 title="O cronograma ainda não foi publicado"

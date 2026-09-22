@@ -23,6 +23,7 @@ import {
   obterGrupo,
   papelNoGrupo,
   podeGerirGrupo,
+  podeVerOCronograma,
   proximosEncontrosDosMeusGrupos,
   removerMembro,
 } from "@/server/modules/grupos/service";
@@ -186,6 +187,16 @@ describe("grupos com membros e cronograma", () => {
       expect.objectContaining({ id: cdmId, name: "Colo de Mãe (CDM)" }),
     ]);
     expect(await gruposQueCoordeno(parishId, adolescenteId)).toEqual([]);
+  });
+
+  it("o cronograma é de quem participa — de fora, só o convite", async () => {
+    // Um grupo não é mural de paróquia: quem está fora vê o que o grupo é e
+    // pede para entrar; os encontros aparecem depois de ser acolhido.
+    expect(podeVerOCronograma(await papelNoGrupo(parishId, cdmId, adolescenteId), false)).toBe(true);
+    expect(podeVerOCronograma(await papelNoGrupo(parishId, cdmId, coordenadorId), false)).toBe(true);
+    expect(podeVerOCronograma(await papelNoGrupo(parishId, cdmId, deOutroGrupoId), false)).toBe(false);
+    // Quem gere as pastorais da paróquia vê, mesmo sem participar.
+    expect(podeVerOCronograma(null, true)).toBe(true);
   });
 
   it("o grupo não fica sem coordenação por engano", async () => {

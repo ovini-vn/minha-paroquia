@@ -29,6 +29,20 @@ import { iconeDeEncontro } from "@/lib/grupos/icones";
 import { cn } from "@/lib/cn";
 import { EditarEncontroForm, NovoEncontroForm } from "./_components/FormulariosDoEncontro";
 import {
+  ApagarRecado,
+  ChamadaForm,
+  ConviteDoGrupo,
+  RecadoForm,
+  TarefasDoEncontro,
+} from "./_components/VidaDoGrupo";
+import {
+  chamadaDoEncontro,
+  listarRecados,
+  quemEstaSeAfastando,
+  tarefasDosEncontros,
+} from "@/server/modules/grupos/vida-do-grupo";
+import { formatDateTime } from "@/lib/date";
+import {
   AcoesDoInteressado,
   AcoesDoMembro,
   AdicionarMembroForm,
@@ -50,8 +64,15 @@ export const metadata: Metadata = { title: "Grupo" };
  * adolescentes normalmente não tem painel nenhum — mesma escolha da turma
  * de catequese, que a catequista cuida na própria tela da turma.
  */
-export default async function GrupoPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GrupoPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ chamada?: string }>;
+}) {
   const { id } = await params;
+  const { chamada: chamadaPedida } = await searchParams;
   const session = await getSessionContext();
   if (!session?.membership) {
     return (
@@ -84,6 +105,25 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
   const verCronograma = podeVerOCronograma(papel, podeGerir);
   const hoje = hojeEmBrasilia();
   const proximo = verCronograma ? proximoEncontro(grupo.encontros, hoje) : null;
+  const souDoGrupo = papel !== null;
+
+  /*
+   * A vida do grupo entre os encontros (ver modules/grupos/vida-do-grupo).
+   * A chamada é dos encontros que já aconteceram — os oito mais recentes,
+   * do mais novo para trás —, e abre no último, a menos que a coordenação
+   * escolha outro.
+   */
+  const encontrosDaChamada = podeGerir
+    ? grupo.encontros.filter((e) => e.data !== null && e.data <= hoje).slice(-8).reverse()
+    : [];
+  const encontroDaChamada = encontrosDaChamada.find((e) => e.id === chamadaPedida) ?? encontrosDaChamada[0] ?? null;
+  const [recados, tarefasDoProximo, linhasDaChamada, afastando] = await Promise.all([
+    verCronograma ? listarRecados(parishId, id, 5) : Promise.resolve([]),
+    proximo ? tarefasDosEncontros(parishId, [proximo.id]) : Promise.resolve([]),
+    podeGerir && encontroDaChamada ? chamadaDoEncontro(parishId, id, encontroDaChamada.id) : Promise.resolve([]),
+    podeGerir ? quemEstaSeAfastando(parishId, id) : Promise.resolve([]),
+  ]);
+
   const passados = grupo.encontros.filter((e) => jaPassou(e, hoje));
   const adiante = grupo.encontros.filter((e) => !jaPassou(e, hoje));
 
@@ -168,6 +208,40 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
                 meetsWhen={grupo.meetsWhen}
                 meetsWhere={grupo.meetsWhere}
               />
+              <TarefasDoEncontro
+                groupId={id}
+                encontroId={proximo.id}
+                tarefas={tarefasDoProximo.map((t) => ({
+                  id: t.id,
+                  descricao: t.descricao,
+                  responsavelId: t.responsavelId,
+                  responsavel: t.responsavel?.fullName ?? null,
+                }))}
+                souDoGrupo={souDoGrupo}
+                coordeno={podeGerir}
+                membros={membros.map((m) => ({ userId: m.userId, fullName: m.fullName }))}
+              />
+            </section>
+          )}
+
+          {recados.length > 0 && (
+            <section className="pt-8">
+              <SectionTitle eyebrow="Recados" title="Da coordenação" />
+              <Card className="px-3.5 py-1">
+                <ul>
+                  {recados.map((r) => (
+                    <li key={r.id} className="border-b border-border py-3 last:border-b-0">
+                      <p className="whitespace-pre-line text-[14.5px] leading-relaxed text-foreground">{r.texto}</p>
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <p className="text-[12.5px] text-muted">
+                          {r.autor.fullName} · {formatDateTime(r.createdAt)}
+                        </p>
+                        {podeGerir && <ApagarRecado groupId={id} recadoId={r.id} />}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             </section>
           )}
 
@@ -222,7 +296,33 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
         {podeGerir && (
           <section id="coordenacao" className="scroll-mt-24 pt-8">
             <SectionTitle eyebrow="Coordenação" title="Cuidar do grupo" />
+            {afastando.length > 0 && (
+              <div className="mb-3 rounded-lg border border-warning/40 bg-warning-tint p-3.5 text-[13.5px] text-foreground">
+                <p className="font-semibold">Faltaram aos últimos três encontros</p>
+                <p className="mt-0.5 text-muted">Talvez valha uma palavra — ninguém some sem que alguém perceba.</p>
+                <ul className="mt-1.5 list-disc pl-5">
+                  {afastando.map((a) => (
+                    <li key={a.userId}>{a.fullName}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="flex flex-col gap-3">
+              <Gaveta titulo="Recado para o grupo">
+                <RecadoForm groupId={id} />
+              </Gaveta>
+
+              {encontroDaChamada && (
+                <Gaveta titulo="Chamada" aberta={Boolean(chamadaPedida)}>
+                  <ChamadaForm
+                    groupId={id}
+                    encontroId={encontroDaChamada.id}
+                    encontros={encontrosDaChamada.map((e) => ({ id: e.id, rotulo: `${quando(e)} — ${e.tema}` }))}
+                    linhas={linhasDaChamada.map((l) => ({ userId: l.userId, fullName: l.fullName, presente: l.presente }))}
+                  />
+                </Gaveta>
+              )}
+
               <Gaveta titulo={`Quem participa (${membros.length})`} aberta={interessados.length > 0}>
                 {interessados.length > 0 && (
                   <div className="mb-4 rounded-lg border border-gold/45 bg-gold/[0.06] p-3.5">
@@ -279,6 +379,7 @@ export default async function GrupoPage({ params }: { params: Promise<{ id: stri
                   </ul>
                 )}
                 <AdicionarMembroForm groupId={id} />
+                <ConviteDoGrupo groupId={id} />
               </Gaveta>
 
               <Gaveta titulo="Colar o cronograma" aberta={grupo.encontros.length === 0}>

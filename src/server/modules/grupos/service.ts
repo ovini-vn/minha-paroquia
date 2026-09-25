@@ -215,7 +215,7 @@ export function listarInteressados(parishId: string, groupId: string) {
  * que a paróquia já usava para isso. E a pessoa é avisada: entrar num
  * grupo sem saber que entrou é descobrir por um lembrete de domingo.
  */
-async function incluirNoGrupo(
+export async function incluirNoGrupo(
   tx: Prisma.TransactionClient,
   parishId: string,
   groupId: string,

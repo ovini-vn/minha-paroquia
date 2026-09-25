@@ -19,7 +19,8 @@ import type { NotificationCategory } from "@prisma/client";
  *   3. atendimento pastoral confirmado com um sacerdote;
  *   4. encontro do grupo de que a pessoa faz parte (ver modules/grupos) —
  *      este vale para TODOS os membros do grupo de uma vez, e é o único que
- *      não nasce de um gesto individual.
+ *      não nasce de um gesto individual;
+ *   5. tarefa de um encontro que ficou com a pessoa — a acolhida, o lanche.
  *
  * Cada paróquia é lida no SEU contexto de tenant — o job é global, mas
  * nenhuma consulta atravessa o isolamento. Mesmo racional do painel
@@ -78,7 +79,7 @@ async function commitmentsForParish(
   dia: string,
 ): Promise<Commitment[]> {
   return withTenantContext(parishId, async (tx) => {
-    const [escalas, interesses, atendimentos, encontros] = await Promise.all([
+    const [escalas, interesses, atendimentos, encontros, tarefas] = await Promise.all([
       tx.liturgicalSchedule.findMany({
         where: { parishId, celebration: { startsAt: { gte: from, lt: to } } },
         include: { celebration: true },
@@ -102,6 +103,10 @@ async function commitmentsForParish(
         include: {
           group: { select: { id: true, name: true, membros: { select: { userId: true } } } },
         },
+      }),
+      tx.tarefaDoEncontro.findMany({
+        where: { parishId, responsavelId: { not: null }, encontro: { data: paraOBanco(dia), group: { status: "ativa" } } },
+        include: { encontro: { select: { data: true, group: { select: { id: true, name: true } } } } },
       }),
     ]);
 
@@ -161,7 +166,19 @@ async function commitmentsForParish(
       })),
     );
 
-    return [...deEscala, ...deServico, ...deAtendimento, ...deGrupo];
+    const deTarefa: Commitment[] = tarefas.map((t) => ({
+      userId: t.responsavelId!,
+      parishId,
+      when,
+      at: t.encontro.data!,
+      title: `${when === "hoje" ? "Hoje" : "Amanhã"} você fica com: ${t.descricao}`,
+      body: t.encontro.group.name,
+      url: `/comunidade/pastorais/${t.encontro.group.id}`,
+      tag: `tarefa-${t.id}`,
+      category: "pastoral" as NotificationCategory,
+    }));
+
+    return [...deEscala, ...deServico, ...deAtendimento, ...deGrupo, ...deTarefa];
   });
 }
 

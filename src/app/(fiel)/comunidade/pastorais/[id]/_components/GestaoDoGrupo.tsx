@@ -98,7 +98,7 @@ export function AdicionarMembroForm({ groupId }: { groupId: string }) {
       <input type="hidden" name="groupId" value={groupId} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`nome-${groupId}`} className={rotulo}>
-          Nome completo, como a pessoa escreveu no app
+          Nome completo ou e-mail da pessoa no app
         </label>
         <input id={`nome-${groupId}`} name="nome" required autoComplete="off" className={INPUT_CLASSES} />
       </div>
@@ -122,8 +122,9 @@ export function AdicionarMembroForm({ groupId }: { groupId: string }) {
         {estado.error && <p className="w-full text-sm text-error">{estado.error}</p>}
       </div>
       <p className="text-[13px] leading-relaxed text-muted">
-        Não existe lista para escolher: o app só acha quem já entrou na paróquia, pelo nome inteiro. Quem ainda não
-        tem conta pode baixar o app, entrar na paróquia e tocar em <em>Tenho interesse</em> nesta página.
+        Não existe lista para escolher: o app só acha quem já entrou na paróquia, pelo nome inteiro ou pelo e-mail
+        — o e-mail resolve quando há duas pessoas com o mesmo nome. Para quem você não acha, mande o link de
+        convite do grupo, logo abaixo.
       </p>
     </form>
   );

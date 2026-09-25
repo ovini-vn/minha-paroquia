@@ -138,6 +138,11 @@ model User {
   serviceInterests              ServiceInterest[]
   pastoralInterests             PastoralGroupInterest[]
   gruposDeQueParticipa          MembroDoGrupo[]
+  recadosEscritos               RecadoDoGrupo[]
+  presencasEmEncontros          PresencaNoEncontro[]
+  tarefasDeEncontros            TarefaDoEncontro[]
+  respostasAEncontros           RespostaAoEncontro[]
+  respostasAEventos             RespostaAoEvento[]
   dioceseMemberships            DioceseMembership[]
   provinceMemberships           ProvinceMembership[]
   nationalMembership            NationalMembership?
@@ -335,6 +340,11 @@ model Parish {
   pastoralInterests       PastoralGroupInterest[]
   membrosDeGrupos         MembroDoGrupo[]
   encontrosDeGrupos       EncontroDoGrupo[]
+  recadosDeGrupos         RecadoDoGrupo[]
+  presencasEmEncontros    PresencaNoEncontro[]
+  tarefasDeEncontros      TarefaDoEncontro[]
+  respostasAEncontros     RespostaAoEncontro[]
+  respostasAEventos       RespostaAoEvento[]
   posts                   Post[]
   priestAvailability      PriestAvailability[]
   appointments            Appointment[]
@@ -739,6 +749,7 @@ model Event {
   createdAt   DateTime    @default(now()) @map("created_at")
 
   parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  respostas RespostaAoEvento[]
 
   @@index([parishId, startsAt])
   @@map("events")
@@ -992,6 +1003,11 @@ model PastoralGroup {
   interests PastoralGroupInterest[]
   membros   MembroDoGrupo[]
   encontros EncontroDoGrupo[]
+  recados   RecadoDoGrupo[]
+
+  /// O link de convite do grupo (ver modules/grupos). Nulo até a
+  /// coordenação gerar um; gerar de novo troca o antigo, que para de valer.
+  conviteToken String? @unique @map("convite_token")
 
   @@index([parishId, status])
   @@map("pastoral_groups")
@@ -1096,12 +1112,113 @@ model EncontroDoGrupo {
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
-  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
-  group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  parish    Parish               @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group     PastoralGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  presencas PresencaNoEncontro[]
+  tarefas   TarefaDoEncontro[]
+  respostas RespostaAoEncontro[]
 
   @@index([parishId, groupId, data])
   @@index([parishId, data])
   @@map("encontros_do_grupo")
+}
+
+/// Um recado da coordenação para o grupo.
+///
+/// Existe porque a coordenação falava com o grupo pelo WhatsApp, fora do
+/// app — e quem entrava depois não via o que já tinha sido combinado. O
+/// recado chega a cada membro como notificação e fica na página do grupo.
+model RecadoDoGrupo {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  groupId   String   @map("group_id")
+  autorId   String   @map("autor_id")
+  texto     String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  parish Parish        @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  autor  User          @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([parishId, groupId, createdAt])
+  @@map("recados_do_grupo")
+}
+
+/// Quem esteve num encontro. É o que deixa a coordenação perceber quem
+/// está se afastando antes de a pessoa sumir.
+model PresencaNoEncontro {
+  id         String   @id @default(uuid())
+  parishId   String   @map("parish_id")
+  encontroId String   @map("encontro_id")
+  userId     String   @map("user_id")
+  presente   Boolean
+  /// Quem marcou — a coordenação.
+  marcadaPor String   @map("marcada_por")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  parish   Parish          @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  encontro EncontroDoGrupo @relation(fields: [encontroId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([encontroId, userId])
+  @@index([parishId, userId])
+  @@map("presencas_no_encontro")
+}
+
+/// Uma tarefa de um encontro: a acolhida, o lanche, a música.
+model TarefaDoEncontro {
+  id            String   @id @default(uuid())
+  parishId      String   @map("parish_id")
+  encontroId    String   @map("encontro_id")
+  descricao     String
+  /// Quem ficou com ela — alguém do grupo. Nulo é "ainda sem ninguém".
+  responsavelId String?  @map("responsavel_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  parish      Parish          @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  encontro    EncontroDoGrupo @relation(fields: [encontroId], references: [id], onDelete: Cascade)
+  responsavel User?           @relation(fields: [responsavelId], references: [id], onDelete: SetNull)
+
+  @@index([parishId, encontroId])
+  @@index([parishId, responsavelId])
+  @@map("tarefas_do_encontro")
+}
+
+/// "Vou" ou "não posso": a resposta de um membro a um encontro do grupo.
+model RespostaAoEncontro {
+  id         String   @id @default(uuid())
+  parishId   String   @map("parish_id")
+  encontroId String   @map("encontro_id")
+  userId     String   @map("user_id")
+  vai        Boolean
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  parish   Parish          @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  encontro EncontroDoGrupo @relation(fields: [encontroId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([encontroId, userId])
+  @@index([parishId, userId])
+  @@map("respostas_ao_encontro")
+}
+
+/// "Vou" ou "não posso" num evento da paróquia — a festa, o mutirão.
+model RespostaAoEvento {
+  id        String   @id @default(uuid())
+  parishId  String   @map("parish_id")
+  eventId   String   @map("event_id")
+  userId    String   @map("user_id")
+  vai       Boolean
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([parishId, userId])
+  @@map("respostas_ao_evento")
 }
 
 enum InterestStatus {

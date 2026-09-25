@@ -5,6 +5,7 @@ import { enviarResumoSemanal, ehDiaDoResumo } from "@/server/modules/digest/serv
 import { enviarDicasDaTrilha, ehDiaDaTrilha } from "@/server/modules/trilha/service";
 import { limparEnviosAntigos } from "@/server/modules/notifications/service";
 import { limparJanelasVencidas } from "@/server/auth/rate-limit";
+import { lembrarInteressesParados } from "@/server/modules/grupos/vida-do-grupo";
 
 /**
  * Job diário — disparado pelo cron da Vercel (ver vercel.json).
@@ -96,6 +97,20 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  /*
+   * Interesse em pastoral sem resposta há uma semana: a coordenação é
+   * lembrada uma vez. Isolado como o resumo — pedir para entrar num grupo
+   * e não ouvir nada é o jeito mais rápido de perder alguém, mas uma falha
+   * aqui não pode calar os lembretes de compromisso.
+   */
+  let interessesParados: unknown = 0;
+  try {
+    interessesParados = await lembrarInteressesParados(agora);
+  } catch (error) {
+    console.error("Falha no lembrete de interesses parados:", error);
+    interessesParados = { erro: error instanceof Error ? error.message : "desconhecido" };
+  }
+
   // Poda do registro de envios. Por último e engolindo o erro: é faxina,
   // não pode derrubar um job que já entregou o que importava.
   try {
@@ -110,5 +125,5 @@ export async function GET(request: NextRequest) {
 
   console.log("Job diário:", JSON.stringify({ ocorrencias, lembretes, resumo, trilha }));
 
-  return NextResponse.json({ ok: true, ocorrencias, resumo, trilha, ...lembretes });
+  return NextResponse.json({ ok: true, ocorrencias, resumo, trilha, interessesParados, ...lembretes });
 }

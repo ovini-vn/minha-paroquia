@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import {
+import { CalendarCheck,
   UserPen,
   Sparkles,
   Bell,
@@ -98,6 +98,12 @@ export default async function ProfilePage() {
               Minha vida na paróquia
             </Eyebrow>
             <Card className="px-3.5 py-1.5">
+              <RowLink
+                href="/eu/compromissos"
+                icon={CalendarCheck}
+                title="Meus compromissos"
+                subtitle="Escalas, encontros, tarefas e atendimentos"
+              />
               <RowLink
                 href="/caminhada"
                 icon={Footprints}

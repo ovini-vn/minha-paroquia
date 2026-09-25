@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { Cake, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Phone, Users } from "lucide-react";
+import { Cake, CalendarCheck, CalendarDays, Church, Footprints, HandCoins, HeartHandshake, Megaphone, Phone, Users } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { getNextCelebration } from "@/server/modules/celebrations/service";
 import { getLatestPost } from "@/server/modules/posts/service";
@@ -413,6 +413,12 @@ export default async function HomePage() {
               subtitle={latestAviso.body}
             />
           )}
+          <RowLink
+            href="/eu/compromissos"
+            icon={CalendarCheck}
+            title="Meus compromissos"
+            subtitle="Escalas, encontros e tarefas que você assumiu"
+          />
           <RowLink
             href="/agenda"
             icon={CalendarDays}

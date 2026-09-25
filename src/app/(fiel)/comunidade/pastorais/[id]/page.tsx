@@ -42,6 +42,12 @@ import {
   tarefasDosEncontros,
 } from "@/server/modules/grupos/vida-do-grupo";
 import { formatDateTime } from "@/lib/date";
+import { VouNaoPosso } from "@/components/domain/VouNaoPosso";
+import {
+  minhaRespostaAoEncontro,
+  respostasDosEncontros,
+  type Contagem,
+} from "@/server/modules/compromissos/service";
 import {
   AcoesDoInteressado,
   AcoesDoMembro,
@@ -117,11 +123,19 @@ export default async function GrupoPage({
     ? grupo.encontros.filter((e) => e.data !== null && e.data <= hoje).slice(-8).reverse()
     : [];
   const encontroDaChamada = encontrosDaChamada.find((e) => e.id === chamadaPedida) ?? encontrosDaChamada[0] ?? null;
-  const [recados, tarefasDoProximo, linhasDaChamada, afastando] = await Promise.all([
+  const [recados, tarefasDoProximo, linhasDaChamada, afastando, minhaResposta, contagens] = await Promise.all([
     verCronograma ? listarRecados(parishId, id, 5) : Promise.resolve([]),
     proximo ? tarefasDosEncontros(parishId, [proximo.id]) : Promise.resolve([]),
     podeGerir && encontroDaChamada ? chamadaDoEncontro(parishId, id, encontroDaChamada.id) : Promise.resolve([]),
     podeGerir ? quemEstaSeAfastando(parishId, id) : Promise.resolve([]),
+    proximo && souDoGrupo ? minhaRespostaAoEncontro(parishId, session.userId, proximo.id) : Promise.resolve(null),
+    // A coordenação vê quantos vão a cada encontro que ainda vai acontecer.
+    podeGerir
+      ? respostasDosEncontros(
+          parishId,
+          grupo.encontros.filter((e) => e.data !== null && e.data >= hoje).map((e) => e.id),
+        )
+      : Promise.resolve(new Map<string, Contagem>()),
   ]);
 
   const passados = grupo.encontros.filter((e) => jaPassou(e, hoje));
@@ -145,6 +159,7 @@ export default async function GrupoPage({
       key={e.id}
       encontro={e}
       passou={passou}
+      contagem={contagens.get(e.id)}
       edicao={podeGerir ? <EditarEncontroForm groupId={id} encontroId={e.id} valores={e} /> : null}
     />
   );
@@ -208,6 +223,11 @@ export default async function GrupoPage({
                 meetsWhen={grupo.meetsWhen}
                 meetsWhere={grupo.meetsWhere}
               />
+              {souDoGrupo && (
+                <div className="mt-3">
+                  <VouNaoPosso alvo="encontro" alvoId={proximo.id} vaiAtual={minhaResposta} />
+                </div>
+              )}
               <TarefasDoEncontro
                 groupId={id}
                 encontroId={proximo.id}
@@ -435,10 +455,13 @@ function LinhaDoEncontro({
   encontro: e,
   passou,
   edicao,
+  contagem,
 }: {
   encontro: EncontroVisto;
   passou: boolean;
   edicao: React.ReactNode;
+  /** Só para a coordenação: quantos disseram que vão, e quantos não podem. */
+  contagem?: Contagem;
 }) {
   const l = ladrilho(e);
   const Icone = e.destaque ? iconeDeEncontro(e.icone) : null;
@@ -482,6 +505,14 @@ function LinhaDoEncontro({
           <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted">
             <Mic className="h-3.5 w-3.5 shrink-0" strokeWidth={1.6} aria-hidden />
             Prega: {e.pregador}
+          </p>
+        )}
+        {contagem && (contagem.vao > 0 || contagem.naoPodem > 0) && (
+          <p className="mt-1 text-[12.5px] font-medium text-success">
+            {contagem.vao} {contagem.vao === 1 ? "vai" : "vão"}
+            {contagem.naoPodem > 0 && (
+              <span className="text-muted"> · {contagem.naoPodem} não {contagem.naoPodem === 1 ? "pode" : "podem"}</span>
+            )}
           </p>
         )}
         {edicao}

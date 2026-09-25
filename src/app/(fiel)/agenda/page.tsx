@@ -5,6 +5,8 @@ import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { listCelebrationsInMonth } from "@/server/modules/celebrations/service";
 import { listEventsInMonth } from "@/server/modules/events/service";
+import { respostasDosEventos } from "@/server/modules/compromissos/service";
+import { VouNaoPosso } from "@/components/domain/VouNaoPosso";
 import { listPriests } from "@/server/modules/priests/service";
 import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
 import { Card } from "@/components/ui/Card";
@@ -27,6 +29,8 @@ export const metadata: Metadata = { title: "Agenda" };
 
 type ItemDaAgenda = {
   id: string;
+  /** Só nos eventos: o id de verdade, para a resposta "vou / não posso". */
+  eventoId?: string;
   startsAt: Date;
   label: string;
   location: string | null;
@@ -117,6 +121,7 @@ export default async function AgendaPage({
     })),
     ...eventos.map((e) => ({
       id: `event-${e.id}`,
+      eventoId: e.id,
       startsAt: e.startsAt,
       label: e.title,
       location: e.location,
@@ -133,6 +138,17 @@ export default async function AgendaPage({
    * à mão.
    */
   const presentes = ORDEM_DA_LEGENDA.filter((cat) => todos.some((i) => i.categoria === cat));
+
+  /*
+   * "Vou" ou "não posso" nos eventos que ainda vão acontecer: a festa e o
+   * mutirão sabem quantos esperar, e quem respondeu vê a própria resposta.
+   */
+  const agora = new Date();
+  const respostas = await respostasDosEventos(
+    parishId,
+    session.userId,
+    eventos.filter((e) => e.startsAt >= agora).map((e) => e.id),
+  );
   const quantos = Object.fromEntries(
     presentes.map((cat) => [cat, todos.filter((i) => i.categoria === cat).length]),
   );
@@ -287,6 +303,20 @@ export default async function AgendaPage({
                             : `${formatDateTime(item.startsAt).split(", ").pop()} · ${CATEGORIAS[item.categoria].rotulo}`}
                           {item.location ? ` · ${item.location}` : ""}
                         </p>
+                        {item.eventoId && item.startsAt >= agora && (
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <VouNaoPosso
+                              alvo="evento"
+                              alvoId={item.eventoId}
+                              vaiAtual={respostas.minhas.get(item.eventoId) ?? null}
+                            />
+                            {(respostas.contagens.get(item.eventoId)?.vao ?? 0) > 0 && (
+                              <span className="text-[12.5px] text-muted">
+                                {respostas.contagens.get(item.eventoId)!.vao} confirmaram
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </Card>
                   ))}

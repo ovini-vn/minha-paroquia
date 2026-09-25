@@ -5,7 +5,7 @@ import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getOwnVolunteerProfile } from "@/server/modules/volunteering/service";
 import { listOpenOpportunities, listMyInterests } from "@/server/modules/opportunities/service";
-import { getMyMainPastoral } from "@/server/modules/pastorais/service";
+import { meusGrupos } from "@/server/modules/grupos/service";
 import { expressInterestAction } from "@/server/actions/opportunity-actions";
 import { Card } from "@/components/ui/Card";
 import { Button, LinkButton } from "@/components/ui/Button";
@@ -33,11 +33,11 @@ export default async function ServirPage() {
   }
 
   const parishId = session.membership.parishId;
-  const [volunteerProfile, opportunities, myInterests, minhaPastoral] = await Promise.all([
+  const [volunteerProfile, opportunities, myInterests, minhasPastorais] = await Promise.all([
     getOwnVolunteerProfile(parishId, session.userId),
     listOpenOpportunities(parishId),
     listMyInterests(parishId, session.userId),
-    getMyMainPastoral(parishId, session.userId),
+    meusGrupos(parishId, session.userId),
   ]);
   const interestedOpportunityIds = new Set(myInterests.map((i) => i.opportunityId));
 
@@ -53,27 +53,38 @@ export default async function ServirPage() {
         aba e ver "existe um lugar para você" quando a pessoa já está numa
         pastoral há meses é o app não reconhecer o que ela faz.
       */}
-      {minhaPastoral && (
-        <Link
-          href={`/comunidade/pastorais/${minhaPastoral.id}`}
-          className="mb-4 block rounded-lg border border-primary/35 bg-primary-tint p-4 transition-colors hover:border-primary"
-        >
-          <Eyebrow tone="accent">Minha pastoral</Eyebrow>
-          <p className="mt-1.5 font-serif text-[19px] font-semibold leading-tight text-foreground">
-            {minhaPastoral.name}
-          </p>
-          {(minhaPastoral.meetsWhen || minhaPastoral.meetsWhere) && (
-            <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted">
-              <Clock className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden />
-              {[minhaPastoral.meetsWhen, minhaPastoral.meetsWhere].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          {minhaPastoral.leaderName && (
-            <p className="mt-0.5 text-[13px] text-muted">
-              Coordenação: {minhaPastoral.leaderName}
-            </p>
-          )}
-        </Link>
+      {/* Todas as pastorais e grupos da pessoa, e não só o primeiro: quem
+          serve na liturgia e no grupo de jovens não é menos de nenhum dos dois. */}
+      {minhasPastorais.length > 0 && (
+        <section className="mb-4">
+          <Eyebrow tone="accent" className="mb-2">
+            {minhasPastorais.length === 1 ? "Minha pastoral" : "Minhas pastorais"}
+          </Eyebrow>
+          <div className="flex flex-col gap-2">
+            {minhasPastorais.map(({ group, papel }) => (
+              <Link
+                key={group.id}
+                href={`/comunidade/pastorais/${group.id}`}
+                className="block rounded-lg border border-primary/35 bg-primary-tint p-4 transition-colors hover:border-primary"
+              >
+                <p className="font-serif text-[19px] font-semibold leading-tight text-foreground">{group.name}</p>
+                {(group.meetsWhen || group.meetsWhere) && (
+                  <p className="mt-1 flex items-center gap-1.5 text-[13px] text-muted">
+                    <Clock className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} aria-hidden />
+                    {[group.meetsWhen, group.meetsWhere].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+                <p className="mt-0.5 text-[13px] text-muted">
+                  {papel === "coordenador"
+                    ? "Você coordena"
+                    : group.leaderName
+                      ? `Coordenação: ${group.leaderName}`
+                      : "Você participa"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Chamada principal — o coração desta aba, em destaque dourado. */}

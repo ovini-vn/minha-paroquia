@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { Church, ChevronLeft } from "lucide-react";
 import { requireSessionForPage } from "@/server/auth/guards";
 import { listParishesForJoin } from "@/server/modules/parishes/service";
+import { lerParoquiaDeEntrada } from "@/server/auth/paroquia-de-entrada";
+import { withPlatformContext } from "@/server/db/tenant-context";
 import { Symbol } from "@/components/brand/Symbol";
 import { EscolherForm } from "./EscolherForm";
 
@@ -42,7 +44,21 @@ export default async function EscolherParoquiaPage({
   if (atual && trocar !== "1") redirect("/inicio");
   const trocando = Boolean(atual);
 
-  const paroquias = (await listParishesForJoin(busca)).filter((p) => p.id !== atual?.parishId);
+  const lista = (await listParishesForJoin(busca)).filter((p) => p.id !== atual?.parishId);
+
+  /*
+   * Quem chegou pelo link de uma paróquia (/p/<paróquia>) a encontra no
+   * topo, já marcada. A pessoa ainda confirma: o link lembra de onde ela
+   * veio, não decide por ela.
+   */
+  const idDeEntrada = await lerParoquiaDeEntrada();
+  const deEntrada =
+    idDeEntrada && idDeEntrada !== atual?.parishId
+      ? await withPlatformContext((tx) =>
+          tx.parish.findUnique({ where: { id: idDeEntrada }, select: { id: true, name: true, city: true, state: true } }),
+        )
+      : null;
+  const paroquias = deEntrada ? [deEntrada, ...lista.filter((p) => p.id !== deEntrada.id)] : lista;
 
   return (
     <div className="flex min-h-dvh flex-col px-[18px] pb-10 pt-8">
@@ -75,7 +91,13 @@ export default async function EscolherParoquiaPage({
       )}
 
       <div className="mt-6">
+        {deEntrada && (
+          <p className="mb-3 rounded-lg border border-gold/45 bg-gold/[0.08] px-3.5 py-2.5 text-[13.5px] text-foreground">
+            Você chegou pelo link da <strong>{deEntrada.name}</strong>. Ela já está marcada abaixo.
+          </p>
+        )}
         <EscolherForm
+          sugerida={deEntrada?.id ?? null}
           trocando={trocando}
           paroquias={paroquias.map((p) => ({
             id: p.id,

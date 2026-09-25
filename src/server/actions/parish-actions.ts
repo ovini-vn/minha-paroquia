@@ -9,6 +9,7 @@ import {
   changeMemberRole,
 } from "@/server/modules/parishes/service";
 import { updateParishProfileInputSchema } from "@/server/modules/parishes/schema";
+import { uploadImagem } from "@/server/modules/uploads/service";
 import { AppError } from "@/server/shared/errors";
 
 export type ActionState = { error?: string };
@@ -23,6 +24,12 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
     // dado passa a ser possível. Com undefined o Prisma ignora o campo, e o
     // valor antigo sobreviveria a uma tentativa de limpeza.
     const texto = (campo: string) => String(formData.get(campo) ?? "");
+    // Arquivo enviado ganha do link digitado, como na foto da história.
+    const arquivo = formData.get("logoFile");
+    const logoEnviado =
+      arquivo instanceof File && arquivo.size > 0
+        ? await uploadImagem(session.membership.parishId, arquivo, "logo")
+        : null;
     const input = updateParishProfileInputSchema.parse({
       city: texto("city"),
       state: texto("state"),
@@ -31,7 +38,7 @@ export async function updateParishProfileAction(_prev: ActionState, formData: Fo
       whatsapp: texto("whatsapp"),
       email: texto("email"),
       description: texto("description"),
-      logoUrl: texto("logoUrl"),
+      logoUrl: logoEnviado ?? texto("logoUrl"),
       facebookUrl: texto("facebookUrl"),
       instagramUrl: texto("instagramUrl"),
     });

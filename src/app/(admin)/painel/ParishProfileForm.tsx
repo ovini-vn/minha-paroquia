@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { updateParishProfileAction, type ActionState } from "@/server/actions/parish-actions";
 import { Button } from "@/components/ui/Button";
+import { CampoDeImagem } from "@/components/ui/CampoDeImagem";
 
 const initialState: ActionState = {};
 
@@ -15,6 +16,8 @@ export type ParishProfileFormProps = {
   email: string;
   description: string;
   logoUrl: string;
+  podeEnviarArquivo: boolean;
+  motivoIndisponivel?: string;
   facebookUrl: string;
   instagramUrl: string;
 };
@@ -51,6 +54,8 @@ export function ParishProfileForm({
   email,
   description,
   logoUrl,
+  podeEnviarArquivo,
+  motivoIndisponivel,
   facebookUrl,
   instagramUrl,
 }: ParishProfileFormProps) {
@@ -108,7 +113,21 @@ export function ParishProfileForm({
         />
       </div>
 
-      <Campo nome="logoUrl" rotulo="URL do logo (opcional)" type="url" defaultValue={logoUrl} />
+      {/* O logo por arquivo, como a foto da igreja e a do pároco: pedir um
+          endereço de imagem a uma secretaria era pedir o que ela não tem. */}
+      {logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt="Logo cadastrado da paróquia" className="h-20 w-20 rounded-lg border border-border object-contain" />
+      )}
+      <CampoDeImagem
+        nomeDoArquivo="logoFile"
+        nomeDoLink="logoUrl"
+        rotulo="Logo da paróquia (opcional)"
+        linkAtual={logoUrl}
+        podeEnviarArquivo={podeEnviarArquivo}
+        motivoIndisponivel={motivoIndisponivel}
+        ajuda="Enviar um arquivo novo substitui o logo atual; apagar o link remove o logo."
+      />
       <Campo
         nome="instagramUrl"
         rotulo="Instagram (opcional)"

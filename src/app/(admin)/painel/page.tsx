@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { requirePermissionForPage, podeAlcancar } from "@/server/auth/guards";
+import { listaDaImplantacao } from "@/server/modules/implantacao/service";
+import { ListaDaImplantacao } from "@/components/domain/ListaDaImplantacao";
 import { getManagementAccess } from "@/server/auth/management";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { ITENS_DO_PAINEL, GRUPOS_DO_PAINEL } from "@/components/layout/painel-items";
@@ -47,6 +49,8 @@ export default async function AdminDashboardPage() {
       />
     );
   }
+
+  const implantacao = await listaDaImplantacao(session.membership.parishId);
 
   const [
     counts,
@@ -131,6 +135,8 @@ export default async function AdminDashboardPage() {
       <div>
         <h1 className="font-serif text-[29px] font-semibold leading-tight text-foreground">{session.membership.parishName}</h1>
       </div>
+
+      <ListaDaImplantacao itens={implantacao} />
 
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Fiéis" value={counts.fielCount} />

@@ -6,6 +6,7 @@ import { requireSession } from "@/server/auth/guards";
 import { prisma } from "@/server/db/prisma";
 import { expressGroupInterest } from "@/server/modules/pastorais/service";
 import { joinParish } from "@/server/modules/parishes/service";
+import { esquecerParoquiaDeEntrada } from "@/server/auth/paroquia-de-entrada";
 import { AppError } from "@/server/shared/errors";
 
 /**
@@ -67,6 +68,7 @@ export async function entrarNaParoquiaAction(
 
   try {
     await joinParish(parishId, session.userId);
+    await esquecerParoquiaDeEntrada();
   } catch (error) {
     if (error instanceof AppError) return { error: error.message };
     throw error;

@@ -12,6 +12,8 @@ import {
   removeDioceseMember,
 } from "@/server/modules/dioceses/service";
 import { criarParoquia } from "@/server/modules/parishes/service";
+import { criarPrimeiroAcesso } from "@/server/modules/implantacao/service";
+import { enderecoDoApp } from "@/server/http/endereco-do-app";
 import { AppError } from "@/server/shared/errors";
 import type { DioceseRole } from "@prisma/client";
 
@@ -145,4 +147,44 @@ export async function removeDioceseMemberAction(formData: FormData): Promise<voi
   await removeDioceseMember(dioceseId, formData.get("userId") as string);
   revalidatePath("/plataforma/dioceses");
   revalidatePath(`/diocese/${dioceseId}`);
+}
+
+export type PrimeiroAcessoState = {
+  error?: string;
+  link?: string;
+  nome?: string;
+  expiraEm?: string;
+  jaTinhaConta?: boolean;
+};
+
+/**
+ * O primeiro acesso de quem vai administrar uma paróquia (ver
+ * modules/implantacao). O link volta na tela para ser copiado e mandado —
+ * o e-mail da plataforma ainda não tem domínio verificado.
+ */
+export async function criarPrimeiroAcessoAction(
+  _prev: PrimeiroAcessoState,
+  formData: FormData,
+): Promise<PrimeiroAcessoState> {
+  const session = await requireSession();
+  requirePlatformAdmin(session);
+
+  try {
+    const acesso = await criarPrimeiroAcesso({
+      parishId: String(formData.get("parishId") ?? ""),
+      nome: String(formData.get("nome") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      papel: String(formData.get("papel") ?? ""),
+      criadoPor: session.userId,
+    });
+    return {
+      link: `${await enderecoDoApp()}${acesso.caminho}`,
+      nome: acesso.nome,
+      expiraEm: acesso.expiraEm.toISOString(),
+      jaTinhaConta: acesso.jaTinhaConta,
+    };
+  } catch (error) {
+    if (error instanceof AppError) return { error: error.message };
+    throw error;
+  }
 }

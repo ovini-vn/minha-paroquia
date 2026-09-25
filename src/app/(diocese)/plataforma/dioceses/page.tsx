@@ -72,6 +72,12 @@ export default async function PlataformaDiocesesPage() {
             {semDiocese.map((parish) => (
               <div key={parish.id} className="flex flex-wrap items-center gap-2">
                 <span className="min-w-0 flex-1 text-[14px] text-foreground">{parish.name}</span>
+                <Link
+                  href={`/plataforma/paroquias/${parish.id}`}
+                  className="alvo-de-toque rounded-full px-3 py-1.5 text-[13px] font-semibold text-primary hover:underline"
+                >
+                  Implantar
+                </Link>
                 <AbrirPainel parishId={parish.id} />
                 <form action={setParishDioceseAction} className="flex items-center gap-2">
                   <input type="hidden" name="parishId" value={parish.id} />
@@ -134,7 +140,13 @@ export default async function PlataformaDiocesesPage() {
                       <span className="min-w-0 flex-1 text-[13.5px] text-foreground">
                         {parish.name}
                       </span>
-                      <AbrirPainel parishId={parish.id} />
+                      <Link
+                  href={`/plataforma/paroquias/${parish.id}`}
+                  className="alvo-de-toque rounded-full px-3 py-1.5 text-[13px] font-semibold text-primary hover:underline"
+                >
+                  Implantar
+                </Link>
+                <AbrirPainel parishId={parish.id} />
                       <form action={setParishDioceseAction}>
                         <input type="hidden" name="parishId" value={parish.id} />
                         <input type="hidden" name="dioceseId" value="" />

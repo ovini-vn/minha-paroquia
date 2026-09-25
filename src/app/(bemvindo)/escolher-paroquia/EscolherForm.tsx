@@ -13,13 +13,16 @@ export function EscolherForm({
   paroquias,
   buscaAtual,
   trocando = false,
+  sugerida = null,
 }: {
   paroquias: Paroquia[];
+  /** A paróquia do link por onde a pessoa chegou — já vem marcada. */
+  sugerida?: string | null;
   buscaAtual: string;
   /** Quem já tem paróquia e veio por "Mudar de paróquia". */
   trocando?: boolean;
 }) {
-  const [escolhida, setEscolhida] = useState<string | null>(null);
+  const [escolhida, setEscolhida] = useState<string | null>(sugerida);
   const [state, formAction, pending] = useActionState(entrarNaParoquiaAction, initialState);
 
   return (

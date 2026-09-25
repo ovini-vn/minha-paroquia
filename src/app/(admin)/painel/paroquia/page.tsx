@@ -3,6 +3,9 @@ import { requirePermissionForPage } from "@/server/auth/guards";
 import { PERMISSIONS } from "@/server/auth/rbac";
 import { getParish } from "@/server/modules/parishes/service";
 import { Card } from "@/components/ui/Card";
+import { isUploadConfigured, diagnosticoDoUpload } from "@/server/modules/uploads/service";
+import { enderecoDoApp } from "@/server/http/endereco-do-app";
+import { LinkDaParoquia } from "./LinkDaParoquia";
 import { PageHeader } from "@/components/ui/Typography";
 import { ParishProfileForm } from "../ParishProfileForm";
 
@@ -39,10 +42,13 @@ export default async function DadosDaParoquiaPage() {
           logoUrl={parish?.logoUrl ?? ""}
           whatsapp={parish?.whatsapp ?? ""}
           email={parish?.email ?? ""}
+          podeEnviarArquivo={isUploadConfigured()}
+          motivoIndisponivel={diagnosticoDoUpload()}
           facebookUrl={parish?.facebookUrl ?? ""}
           instagramUrl={parish?.instagramUrl ?? ""}
         />
       </Card>
+      {parish && <LinkDaParoquia endereco={`${await enderecoDoApp()}/p/${parish.slug}`} />}
     </div>
   );
 }

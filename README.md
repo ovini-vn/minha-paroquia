@@ -5,12 +5,28 @@ sua comunidade. Ver [docs/ARQUITETURA.md](docs/ARQUITETURA.md) e
 [docs/FUNDACAO.md](docs/FUNDACAO.md) para o racional completo do produto e
 das decisões técnicas desta primeira fatia.
 
-Esta etapa entrega a fundação: cadastro/login, multi-paróquia com isolamento
-por Row-Level Security, fluxo de convite, papéis/permissões básicos, e os
-dashboards iniciais do fiel e da paróquia. Catequese, liturgia, dízimo,
-confissão, sacramentos completos e qualquer integração externa ficam para
-etapas futuras — ver docs/FUNDACAO.md para o que é intencionalmente "Em
-construção" nesta versão.
+Em uso: o app do fiel (Início, Palavra, Comunidade, Servir, Eu) e o painel da
+paróquia, com multi-paróquia isolada por Row-Level Security. O que existe hoje:
+
+- **Fiel:** agenda de missas e eventos com "vou / não posso", avisos, Palavra
+  do padre, leituras do dia com leitura em voz, Bíblia, terço, rosário e
+  novenas, pedidos de oração, Minha Caminhada (sacramentos, missas,
+  confissões), intenção de missa, preparação de batismo e casamento, meus
+  compromissos, busca, ofertar (Pix), aparência (letra, fonte, tema).
+- **Pastorais e grupos:** membros e coordenação, cronograma de encontros,
+  recados, chamada com alerta de quem está se afastando, tarefas por
+  encontro, convite por link.
+- **Paróquia:** implantação guiada (primeiro acesso, link e QR de entrada,
+  lista do que falta), catequese, liturgia e escalas, horários de missa,
+  intenções com o rol para imprimir, sacramentos e certidão, relatórios
+  (tela, A4 e planilha), painel do conselho, financeiro e auditoria.
+- **Plataforma:** dioceses e paróquias, e o foco para administrar qualquer
+  paróquia sem trocar de conta.
+
+Regra que atravessa tudo: **nenhum pagamento é obrigatório.** O app não usa
+cobrança, boleto ou "em aberto"; intenção de missa e preparação de
+sacramento não têm valor. Ver [docs/REVISAO-FIEL-E-PASTORAIS.md](docs/REVISAO-FIEL-E-PASTORAIS.md)
+para a avaliação atual e o cronograma.
 
 ## Stack
 
@@ -178,6 +194,7 @@ numa aba anônima.
 | `npm run start` | Roda o build de produção |
 | `npm run lint` | ESLint |
 | `npm run test` | Testes (Vitest) — os testes de integração exigem `DATABASE_URL` configurado |
+| `node scripts/contraste.mjs` | Audita o contraste das 14 paletas (7 tempos litúrgicos × claro/escuro) |
 | `npm run db:generate` | Regenera o Prisma Client após mudar o schema |
 | `npm run db:migrate` | Cria/aplica uma migration |
 | `npm run db:deploy` | Aplica migrations pendentes (uso em produção/CI) |
@@ -201,6 +218,15 @@ manipulando o `WHERE` da query, não só que a aplicação "lembrou de filtrar".
 Os testes em `tests/integration/` precisam de `DATABASE_URL` configurado e
 das migrations (incluindo RLS) aplicadas. `tests/unit/` roda sem banco.
 
+### Verificação no GitHub
+
+`.github/workflows/ci.yml` roda a cada envio para `master` e `teste` e em todo
+pull request: tipos, lint, testes de unidade e a auditoria de contraste. Os
+testes de integração rodam num trabalho separado **só quando** o repositório
+tem os segredos `DATABASE_URL_TESTE` e `DIRECT_URL_TESTE` — um banco criado
+só para isso, nunca o de produção nem o de desenvolvimento. Sem os segredos,
+esse trabalho é pulado com um aviso.
+
 ## Estrutura do projeto
 
 ```text
@@ -208,15 +234,18 @@ prisma/                    schema, migrations, seed, rls-policies.sql
 src/
   app/
     (public)/               login, cadastro, recuperar-acesso, /convite/[code]
-    (fiel)/                 início, caminhada, comunidade, servir, eu
-    (admin)/painel/         dashboard da paróquia
+    (fiel)/                 início, agenda, palavra, comunidade, servir, eu,
+                            intenções, preparação, buscar, /g/[token] (convite de grupo)
+    (admin)/painel/         o painel da paróquia (intenções, relatórios, conselho...)
+    (diocese)/              diocese, província, plataforma (implantação)
+    p/[slug]/               link de entrada de uma paróquia (QR)
   components/
     ui/                     Button, Card, FormField, EmptyState...
     layout/                 TabBar, ParishHeader
   server/
     auth/                   sessão, hash de senha, guards, RBAC
-    modules/                users, parishes, memberships, invitations,
-                             priests, celebrations, events
+    modules/                um por assunto: grupos, compromissos, intencoes,
+                             relatorios, busca, preparacao, conta, implantacao...
     db/                     Prisma client, contexto de tenant (RLS)
     actions/                Server Actions (auth, convites)
     shared/                 erros de aplicação
@@ -251,11 +280,11 @@ build, HTTPS e CDN automáticos). Passo a passo:
      redirecionamento `https://<domínio>/api/auth/<provider>/callback` no
      Google Cloud Console / Facebook for Developers)
    - `NODE_ENV` a Vercel já define como `production` sozinha — não precisa setar.
-4. **Aplique as migrations no banco de produção antes do primeiro deploy**:
-   rode `npm run db:deploy` localmente com `DIRECT_URL` apontando pro banco
-   de produção (só para essa execução — não deixe essa variável configurada
-   assim no seu `.env` de dev depois). Repita isso a cada deploy que inclua
-   uma migration nova.
+4. **Migrations**: o `npm run build` roda `scripts/migrar-no-deploy.mjs`
+   antes do `next build`, e aplica as migrations pendentes no banco do
+   ambiente — o deploy de produção migra a produção sozinho. Para um banco
+   novo, a primeira aplicação continua manual (`npm run db:deploy` com
+   `DIRECT_URL` apontando para ele, só naquela execução).
 5. **Popule papéis e permissões** rodando `npm run db:seed:prod` (com
    `DATABASE_URL`/`DIRECT_URL` apontando pro banco de produção) — **nunca**
    rode `npm run db:seed` em produção, esse é só para dev e cria contas demo

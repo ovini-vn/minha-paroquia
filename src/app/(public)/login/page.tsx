@@ -14,9 +14,9 @@ export const metadata: Metadata = { title: "Entrar" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ convite?: string; error?: string }>;
+  searchParams: Promise<{ convite?: string; error?: string; conta?: string }>;
 }) {
-  const { convite, error } = await searchParams;
+  const { convite, error, conta } = await searchParams;
   const errorMessage = error ? (OAUTH_ERROR_LABELS[error] ?? error) : null;
 
   return (
@@ -30,6 +30,11 @@ export default async function LoginPage({
       <p className="mb-5 mt-1.5 text-[13.5px] leading-relaxed text-muted">
         A vida da sua paróquia durante a semana: missas, avisos, a palavra do padre e a Bíblia.
       </p>
+      {conta === "excluida" && (
+        <p className="mb-4 rounded-md bg-sunken px-3 py-2.5 text-[13.5px] text-foreground">
+          Sua conta foi excluída. Obrigado por ter caminhado com a comunidade.
+        </p>
+      )}
       {errorMessage && <p className="mb-4 text-sm text-error">{errorMessage}</p>}
       {/* Convites desligados: o código do endereço não segue adiante
           (ver src/lib/funcionalidades.ts). */}

@@ -323,8 +323,9 @@ export default function PrivacidadePage() {
           normas de guarda da Igreja, que são anteriores e independentes deste aplicativo.
         </p>
         <p>
-          Se você pedir a exclusão da conta, os dados pessoais são apagados, preservando-se apenas
-          o que a paróquia precise manter por obrigação legal ou canônica.
+          Você mesmo exclui a conta, em Eu → Editar perfil → Excluir minha conta. Os dados
+          pessoais são apagados na hora, preservando-se apenas o que a paróquia precise manter por
+          obrigação legal ou canônica.
         </p>
         <p>
           As ofertas são um desses casos: fazem parte das contas da paróquia, que precisa

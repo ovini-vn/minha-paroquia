@@ -28,6 +28,7 @@ export const ACOES = {
   TURMA_APAGADA: "turma.apagada",
   ONBOARDING_REINICIADO: "onboarding.reiniciado",
   PRIMEIRO_ACESSO_CRIADO: "acesso.primeiro_criado",
+  CONTA_EXCLUIDA: "conta.excluida",
 } as const;
 
 export type Acao = (typeof ACOES)[keyof typeof ACOES];
@@ -43,6 +44,7 @@ export const ROTULO_DA_ACAO: Record<Acao, string> = {
   [ACOES.ORACAO_MODERADA]: "Moderou um pedido de oração",
   [ACOES.ONBOARDING_REINICIADO]: "Reiniciou o cadastro de alguém",
   [ACOES.PRIMEIRO_ACESSO_CRIADO]: "Criou o primeiro acesso de alguém à paróquia",
+  [ACOES.CONTA_EXCLUIDA]: "Excluiu a própria conta",
 };
 
 export type Entrada = {

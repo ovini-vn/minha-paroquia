@@ -4,6 +4,7 @@ import { findUserById } from "@/server/modules/users/repository";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/Typography";
 import { ProfileForm } from "./ProfileForm";
+import { ExcluirConta } from "./ExcluirConta";
 
 export const metadata: Metadata = { title: "Meu perfil" };
 
@@ -26,6 +27,10 @@ export default async function ProfileEditPage() {
           photoUrl={user.photoUrl ?? ""}
           compartilhaDatas={user.compartilhaDatas}
         />
+      </Card>
+      {/* No fim da página, longe do "Salvar": ninguém chega aqui sem querer. */}
+      <Card className="mt-8 border-error/30">
+        <ExcluirConta />
       </Card>
     </div>
   );

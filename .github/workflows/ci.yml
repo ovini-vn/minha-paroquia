@@ -1,0 +1,68 @@
+# Verificação a cada envio.
+#
+# Dois trabalhos. O primeiro não precisa de nada além do código — tipos,
+# lint, testes de unidade e a auditoria de contraste das 14 paletas — e roda
+# sempre. O segundo fala com um banco: só roda quando o repositório tem o
+# segredo DATABASE_URL_TESTE, apontando para um banco SÓ DE TESTE (nunca o
+# de produção, nem o de desenvolvimento de alguém). Sem o segredo, ele é
+# pulado com aviso, e o primeiro continua valendo.
+name: Verificação
+
+on:
+  push:
+    branches: [master, teste]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codigo:
+    name: Tipos, lint e unidade
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Tipos
+        run: npx tsc --noEmit -p .
+      - name: Lint
+        run: npm run lint
+      - name: Testes de unidade
+        run: npx vitest run tests/unit
+      - name: Contraste das paletas
+        run: node scripts/contraste.mjs
+
+  banco:
+    name: Integração (banco de teste)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: codigo
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_TESTE }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL_TESTE }}
+    steps:
+      - name: Sem banco de teste configurado
+        if: env.DATABASE_URL == ''
+        run: echo "::notice::Integração pulada — configure os segredos DATABASE_URL_TESTE e DIRECT_URL_TESTE."
+      - uses: actions/checkout@v4
+        if: env.DATABASE_URL != ''
+      - uses: actions/setup-node@v4
+        if: env.DATABASE_URL != ''
+        with:
+          node-version: 22
+          cache: npm
+      - if: env.DATABASE_URL != ''
+        run: npm ci
+      - name: Migrações no banco de teste
+        if: env.DATABASE_URL != ''
+        run: npx prisma migrate deploy
+      - name: Testes de integração
+        if: env.DATABASE_URL != ''
+        run: npx vitest run tests/integration

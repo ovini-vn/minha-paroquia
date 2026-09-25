@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { HandHeart, Footprints, ScrollText } from "lucide-react";
+import { HandHeart, Footprints, ScrollText, Baby, Gem } from "lucide-react";
+import { RowLink } from "@/components/ui/RowLink";
 import { getSessionContext } from "@/server/auth/session";
 import {
   listMyMassParticipations,
@@ -183,6 +184,17 @@ export default async function CaminhadaPage() {
               olhando — e a suposição errada, aqui, é a que faz alguém não
               registrar nada. Dizer só "é privado" não basta: privado de quem,
               e o que então NÃO é. */}
+          {/* Para quem vai batizar um filho ou casar: o que a paróquia pede. */}
+          <section className="pt-7">
+            <Eyebrow tone="accent" className="mb-3">
+              Preparar um sacramento
+            </Eyebrow>
+            <Card className="px-3.5 py-1.5">
+              <RowLink href="/preparacao/batismo" icon={Baby} title="Batismo" subtitle="Documentos e encontros de pais e padrinhos" />
+              <RowLink href="/preparacao/casamento" icon={Gem} title="Casamento" subtitle="Documentos e encontro de noivos" />
+            </Card>
+          </section>
+
           <section className="pt-7">
             <Eyebrow tone="accent" className="mb-3">
               Quem vê o quê

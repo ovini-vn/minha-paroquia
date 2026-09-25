@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { BlocoDeLeitura } from "@/server/modules/liturgia/vatican-news-service";
+import { OuvirEmVoz } from "./OuvirEmVoz";
 
 /** Quantas linhas do Evangelho ficam à vista sem ninguém tocar em nada. */
 const LINHAS_A_VISTA = 4;
@@ -94,9 +95,16 @@ export function LeiturasDoDia({ blocos }: { blocos: BlocoDeLeitura[] }) {
   const evangelho = blocos.find((b) => b.tipo === "evangelho") ?? blocos[0]!;
   const primeiras = evangelho.linhas.slice(0, LINHAS_A_VISTA);
   const temMais = blocos.length > 1 || evangelho.linhas.length > primeiras.length;
+  // Em voz, as leituras e o Evangelho — a reflexão já está no áudio do
+  // Vatican News logo acima, e ler as duas coisas repetiria o mesmo.
+  const emVoz = blocos
+    .filter((b) => b.tipo !== "reflexao")
+    .map((b) => [b.rotulo, b.linhas.join(" ")].filter(Boolean).join(". "))
+    .join(" ");
 
   return (
     <div className="mt-3 border-t border-border pt-3">
+      <OuvirEmVoz texto={emVoz} rotulo="Ouvir as leituras" className="mb-3" />
       {aberto ? (
         <div className="flex flex-col gap-4">
           {blocos.map((bloco, i) => (

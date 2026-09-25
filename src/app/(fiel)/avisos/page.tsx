@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/Typography";
 import { formatDateTime } from "@/lib/date";
 import { Leitura } from "@/components/layout/DuasColunas";
+import { OuvirEmVoz } from "@/components/domain/OuvirEmVoz";
 
 /**
  * Os avisos da paróquia, por inteiro.
@@ -72,6 +73,7 @@ export default async function AvisosPage() {
               <p className="mt-3 whitespace-pre-line text-[14.5px] leading-relaxed text-foreground">
                 {aviso.body}
               </p>
+              <OuvirEmVoz texto={`${aviso.title}. ${aviso.body}`} rotulo="Ouvir o aviso" className="mt-3" />
             </Card>
           ))}
         </div>

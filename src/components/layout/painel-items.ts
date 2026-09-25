@@ -5,6 +5,7 @@ import {
   Clock,
   Compass,
   Flame,
+  FileCheck2,
   FileSpreadsheet,
   Gauge,
   HandCoins,
@@ -102,6 +103,13 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
   },
   { href: "/painel/oracao", label: "Pedidos de oração", icon: HandHeart, grupo: "Atendimento" },
   { href: "/painel/sacramentos", label: "Sacramentos", icon: ScrollText, grupo: "Atendimento" },
+  {
+    href: "/painel/preparacao",
+    label: "Batismo e casamento",
+    icon: FileCheck2,
+    grupo: "Atendimento",
+    permissao: PERMISSIONS.SACRAMENTS_VALIDATE,
+  },
   {
     href: "/painel/intencoes",
     label: "Intenções de missa",

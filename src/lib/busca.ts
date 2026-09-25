@@ -19,6 +19,8 @@ export const ATALHOS: Atalho[] = [
   { titulo: "Leituras do dia", descricao: "A liturgia da Palavra de hoje", href: "/oracao", palavras: ["leitura", "liturgia", "evangelho do dia", "palavra do dia", "homilia"] },
   { titulo: "Catecismo", descricao: "O Catecismo da Igreja", href: "/catecismo", palavras: ["catecismo", "doutrina", "fe"] },
   { titulo: "Catequese", descricao: "Turmas e encontros da catequese", href: "/catequese", palavras: ["catequese", "primeira comunhao", "crisma", "eucaristia", "catequista"] },
+  { titulo: "Preparar um batismo", descricao: "Documentos e encontros de pais e padrinhos", href: "/preparacao/batismo", palavras: ["batismo", "batizar", "batizado", "padrinho", "madrinha", "documentos"] },
+  { titulo: "Preparar um casamento", descricao: "Documentos e encontro de noivos", href: "/preparacao/casamento", palavras: ["casamento", "casar", "noivos", "noiva", "matrimonio", "curso de noivos", "documentos"] },
   { titulo: "Minha Caminhada", descricao: "Sacramentos, missas e confissões", href: "/caminhada", palavras: ["caminhada", "sacramento", "batismo", "crisma", "casamento", "matrimonio"] },
   { titulo: "Servir", descricao: "Pastorais e onde ajudar", href: "/servir", palavras: ["servir", "pastoral", "voluntario", "ajudar", "grupo", "ministerio"] },
   { titulo: "Meus compromissos", descricao: "Escalas, encontros e tarefas", href: "/eu/compromissos", palavras: ["compromisso", "escala", "tarefa", "encontro"] },

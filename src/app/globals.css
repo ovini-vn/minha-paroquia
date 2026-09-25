@@ -114,7 +114,16 @@
   --color-primary-hover: 145 113 38;
   --color-primary-light: 201 164 76;
   --color-primary-tint: 251 244 228;
-  --wash: linear-gradient(170deg, #a8862f 0%, #7a5c1c 100%);
+  /*
+   * Ouro mais fundo no topo, e a assinatura num creme quase branco.
+   *
+   * O ouro claro de antes (#a8862f) dava 3,4:1 com o texto branco e 2,6:1
+   * com a assinatura dourada — dourado sobre dourado, bonito e ilegível
+   * justamente no Natal, quando mais gente abre o app. Medido por
+   * scripts/contraste.mjs: agora 5,3:1 e 4,6:1.
+   */
+  --color-gold-soft: 251 240 212;
+  --wash: linear-gradient(170deg, #84681f 0%, #6b5015 100%);
 }
 [data-season="quaresma"] {
   --color-primary: 78 34 119;
@@ -135,7 +144,9 @@
   --color-primary-hover: 140 110 34;
   --color-primary-light: 201 164 76;
   --color-primary-tint: 250 243 226;
-  --wash: linear-gradient(170deg, #b08e33 0%, #7e6318 100%);
+  /* O mesmo acerto do Natal (ver acima): 5,2:1 e 4,7:1. */
+  --color-gold-soft: 252 243 220;
+  --wash: linear-gradient(170deg, #86691f 0%, #6f5512 100%);
 }
 [data-season="pentecostes"] {
   --color-primary: 138 43 43;

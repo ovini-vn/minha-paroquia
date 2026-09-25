@@ -120,6 +120,7 @@ export default async function AdminDashboardPage() {
     "/painel/liturgia": `${liturgicalAvailabilityCount} ${liturgicalAvailabilityCount === 1 ? "disponibilidade informada" : "disponibilidades informadas"}`,
     "/painel/missas": "O que se repete toda semana ou todo mês",
     "/painel/intencoes": "Os pedidos do app e o rol de cada missa",
+    "/painel/preparacao": "O que a família precisa para marcar um batismo ou um casamento",
     "/painel/relatorios": "Pastorais, sacramentos, catequese e contribuições — na tela, no papel e em planilha",
     "/painel/paroquia": "Endereço, contato e redes — o que o fiel vê",
     "/painel/paroco": "A apresentação do pároco e a foto dele",

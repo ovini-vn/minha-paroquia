@@ -11,6 +11,7 @@ import { CalendarCheck,
   Clock,
   Church,
   LogOut,
+  Flame,
 } from "lucide-react";
 import { getSessionContext } from "@/server/auth/session";
 import { PERMISSIONS } from "@/server/auth/rbac";
@@ -115,6 +116,12 @@ export default async function ProfilePage() {
                 icon={CalendarDays}
                 title="Meus atendimentos"
                 subtitle="Conversas e confissões agendadas"
+              />
+              <RowLink
+                href="/intencoes"
+                icon={Flame}
+                title="Intenção de missa"
+                subtitle="Pedir que a comunidade reze por alguém"
               />
               <RowLink
                 href="/eu/familia"

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Sparkles, LayoutDashboard } from "lucide-react";
+import { Bell, Sparkles, LayoutDashboard, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Symbol } from "@/components/brand/Symbol";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
@@ -167,6 +167,15 @@ export function SiteHeader({
           A bolinha continua `aria-hidden`, senão a contagem seria anunciada
           duas vezes.
         */}
+        {/* Buscar: a lupa ao lado do sino, onde todo app a põe. */}
+        <Link
+          href="/buscar"
+          className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"
+          aria-label="Buscar"
+        >
+          <Search className="h-5 w-5" strokeWidth={1.5} aria-hidden />
+        </Link>
+
         <Link
           href="/eu/notificacoes"
           className="alvo-de-toque grid h-[38px] w-[38px] shrink-0 place-items-center rounded-full transition-colors hover:bg-white/15"

@@ -4,6 +4,9 @@ import {
   Church,
   Clock,
   Compass,
+  Flame,
+  FileSpreadsheet,
+  Gauge,
   HandCoins,
   HandHeart,
   HeartHandshake,
@@ -99,6 +102,13 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
   },
   { href: "/painel/oracao", label: "Pedidos de oração", icon: HandHeart, grupo: "Atendimento" },
   { href: "/painel/sacramentos", label: "Sacramentos", icon: ScrollText, grupo: "Atendimento" },
+  {
+    href: "/painel/intencoes",
+    label: "Intenções de missa",
+    icon: Flame,
+    grupo: "Atendimento",
+    permissao: PERMISSIONS.AGENDA_MANAGE,
+  },
 
   {
     href: "/painel/financeiro",
@@ -113,6 +123,13 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
   { href: "/painel/avisos", label: "Avisos", icon: Megaphone, grupo: "Comunidade" },
   { href: "/painel/eventos", label: "Eventos", icon: PartyPopper, grupo: "Comunidade" },
   { href: "/painel/aniversarios", label: "Aniversários", icon: Cake, grupo: "Comunidade" },
+  {
+    href: "/painel/conselho",
+    label: "Painel do conselho",
+    icon: Gauge,
+    grupo: "Comunidade",
+    permissao: PERMISSIONS.DASHBOARD_PARISH_VIEW,
+  },
   { href: "/painel/pastorais", label: "Grupos e pastorais", icon: Users, grupo: "Comunidade" },
   { href: "/painel/servir", label: "Servir", icon: HeartHandshake, grupo: "Comunidade" },
 
@@ -126,6 +143,13 @@ export const ITENS_DO_PAINEL: ItemDoPainel[] = [
   { href: "/painel/liturgia", label: "Liturgia", icon: Music, grupo: "Formação e liturgia" },
   { href: "/painel/missas", label: "Horários das missas", icon: Repeat, grupo: "Formação e liturgia" },
 
+  {
+    href: "/painel/relatorios",
+    label: "Relatórios",
+    icon: FileSpreadsheet,
+    grupo: "A paróquia",
+    permissao: PERMISSIONS.DASHBOARD_PARISH_VIEW,
+  },
   {
     href: "/painel/paroquia",
     label: "Dados da paróquia",

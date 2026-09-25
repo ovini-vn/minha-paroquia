@@ -143,6 +143,7 @@ model User {
   tarefasDeEncontros            TarefaDoEncontro[]
   respostasAEncontros           RespostaAoEncontro[]
   respostasAEventos             RespostaAoEvento[]
+  intencoesPedidas              IntencaoDeMissa[]
   dioceseMemberships            DioceseMembership[]
   provinceMemberships           ProvinceMembership[]
   nationalMembership            NationalMembership?
@@ -345,6 +346,8 @@ model Parish {
   tarefasDeEncontros      TarefaDoEncontro[]
   respostasAEncontros     RespostaAoEncontro[]
   respostasAEventos       RespostaAoEvento[]
+  intencoesDeMissa        IntencaoDeMissa[]
+  preparacoesDeSacramento PreparacaoDeSacramento[]
   posts                   Post[]
   priestAvailability      PriestAvailability[]
   appointments            Appointment[]
@@ -665,6 +668,7 @@ model Celebration {
   parish                   Parish                    @relation(fields: [parishId], references: [id], onDelete: Cascade)
   priestProfile            PriestProfile?            @relation(fields: [priestProfileId], references: [id], onDelete: SetNull)
   schedule                 CelebrationSchedule?      @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  intencoes                IntencaoDeMissa[]
   massParticipations       MassParticipation[]
   liturgicalSchedules      LiturgicalSchedule[]
   catechismMassAttendances CatechismMassAttendance[]
@@ -1219,6 +1223,81 @@ model RespostaAoEvento {
   @@unique([eventId, userId])
   @@index([parishId, userId])
   @@map("respostas_ao_evento")
+}
+
+/// Por quem ou pelo que a missa é oferecida.
+enum TipoDeIntencao {
+  /// Pelas almas — a intenção mais pedida no balcão.
+  sufragio
+  setimo_dia
+  trigesimo_dia
+  acao_de_gracas
+  saude
+  aniversario
+  outra
+}
+
+/// Pedida pelo fiel no app, ou já conferida pela secretaria e no rol.
+enum EstadoDaIntencao {
+  pedida
+  confirmada
+}
+
+/// Uma intenção de missa.
+///
+/// SEM VALOR, e não por esquecimento: intenção de missa não tem preço,
+/// nem opcional (decisão do usuário em 18/09/2026). Não há campo de
+/// dinheiro, de Pix nem de "espórtula" — quem quiser ofertar usa o
+/// Ofertar, que é outro gesto e outra tela.
+///
+/// Presa a uma celebração de verdade: é o que monta o rol que o leitor lê
+/// no ambão, missa por missa.
+model IntencaoDeMissa {
+  id            String           @id @default(uuid())
+  parishId      String           @map("parish_id")
+  celebrationId String           @map("celebration_id")
+  tipo          TipoDeIntencao
+  /// Os nomes ou o motivo, como vão ser lidos: "Maria das Graças Souza".
+  texto         String
+  /// Quem pediu pelo app. Nulo quando foi no balcão.
+  pedidoPorId   String?          @map("pedido_por_id")
+  /// O nome de quem pediu no balcão, para a secretaria saber a quem avisar.
+  pedidoPorNome String?          @map("pedido_por_nome")
+  estado        EstadoDaIntencao @default(pedida)
+  /// Quem registrou no balcão ou confirmou o pedido do app.
+  registradaPor String?          @map("registrada_por")
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  parish      Parish      @relation(fields: [parishId], references: [id], onDelete: Cascade)
+  celebration Celebration @relation(fields: [celebrationId], references: [id], onDelete: Cascade)
+  pedidoPor   User?       @relation(fields: [pedidoPorId], references: [id], onDelete: SetNull)
+
+  @@index([parishId, celebrationId])
+  @@index([parishId, estado])
+  @@map("intencoes_de_missa")
+}
+
+/// O que a paróquia pede para preparar um sacramento: a orientação, os
+/// documentos e os encontros de preparação.
+///
+/// Escrito pela paróquia, uma vez por sacramento — cada paróquia tem as
+/// suas exigências, e um roteiro fixo aqui estaria errado para quase todas.
+/// SEM VALORES: taxa não é coisa que o app peça nem mostre.
+model PreparacaoDeSacramento {
+  id         String        @id @default(uuid())
+  parishId   String        @map("parish_id")
+  tipo       SacramentType
+  orientacao String        @db.Text
+  /// Um documento por item: "Certidão de nascimento da criança".
+  documentos String[]
+  /// Os encontros de preparação, em texto: quando, onde, quantos.
+  encontros  String?       @db.Text
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+
+  parish Parish @relation(fields: [parishId], references: [id], onDelete: Cascade)
+
+  @@unique([parishId, tipo])
+  @@map("preparacoes_de_sacramento")
 }
 
 enum InterestStatus {

@@ -666,6 +666,47 @@ body {
 }
 
 /*
+ * As outras folhas do painel: o rol das intenções e os relatórios.
+ *
+ * Mesma ideia da certidão, sem a solenidade: na tela é um cartão; no papel,
+ * tinta preta sobre branco, sem moldura e sem o fundo do painel.
+ */
+.folha {
+  background: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 14px;
+  padding: 32px 28px;
+}
+
+@media print {
+  body:has(.folha) > div,
+  body:has(.folha) main {
+    background: #fff !important;
+  }
+
+  .folha {
+    background: #fff;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .folha,
+  .folha * {
+    color: #000 !important;
+    border-color: #000 !important;
+  }
+
+  .folha table {
+    break-inside: auto;
+  }
+
+  .folha tr {
+    break-inside: avoid;
+  }
+}
+
+/*
  * A lista de encontros vira grade quando TEM ESPAÇO — e o espaço é o do
  * contêiner, não o da tela.
  *

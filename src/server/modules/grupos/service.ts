@@ -236,6 +236,11 @@ export async function incluirNoGrupo(
   }
 
   await tx.membroDoGrupo.create({ data: { parishId, groupId, userId, papel, addedBy } });
+  // A primeira resposta fica registrada; acolher depois de dispensar não a apaga.
+  await tx.pastoralGroupInterest.updateMany({
+    where: { parishId, groupId, userId, respondidoEm: null },
+    data: { respondidoEm: new Date() },
+  });
   await tx.pastoralGroupInterest.updateMany({
     where: { parishId, groupId, userId },
     data: { status: "acolhido" },
@@ -333,9 +338,13 @@ export async function acolherInteressado(parishId: string, groupId: string, user
  * uma notificação dizendo "recusado" seria o jeito errado de tê-la.
  */
 export function dispensarInteresse(parishId: string, groupId: string, userId: string) {
-  return withTenantContext(parishId, (tx) =>
-    tx.pastoralGroupInterest.updateMany({ where: { parishId, groupId, userId }, data: { status: "declinado" } }),
-  );
+  return withTenantContext(parishId, async (tx) => {
+    await tx.pastoralGroupInterest.updateMany({
+      where: { parishId, groupId, userId, respondidoEm: null },
+      data: { respondidoEm: new Date() },
+    });
+    return tx.pastoralGroupInterest.updateMany({ where: { parishId, groupId, userId }, data: { status: "declinado" } });
+  });
 }
 
 export async function mudarPapel(parishId: string, groupId: string, membroId: string, papel: PapelNoGrupo) {

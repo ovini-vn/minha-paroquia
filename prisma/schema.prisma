@@ -1027,6 +1027,10 @@ model PastoralGroupInterest {
   parishId  String         @map("parish_id")
   status    InterestStatus @default(manifestado)
   createdAt DateTime       @default(now()) @map("created_at")
+  /// Quando a coordenação respondeu — acolheu ou dispensou. Nulo enquanto
+  /// a pessoa espera. É o que mede "em quanto tempo quem se oferece é
+  /// respondido", a pergunta principal do piloto.
+  respondidoEm DateTime? @map("respondido_em")
 
   group  PastoralGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)

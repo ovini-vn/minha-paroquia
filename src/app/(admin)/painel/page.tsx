@@ -114,6 +114,7 @@ export default async function AdminDashboardPage() {
     "/painel/eventos": `${events.length} ${events.length === 1 ? "futuro" : "futuros"}`,
     "/painel/aniversarios": "Nascimento e sacramentos dos próximos 30 dias",
     "/painel/conselho": "Quantos servem, e o que pede atenção",
+    "/painel/adesao": "Cadastros, boas-vindas, interesses respondidos e presença, semana a semana",
     "/painel/pastorais": `${pastoralGroupCount} ${pastoralGroupCount === 1 ? "pastoral cadastrada" : "pastorais cadastradas"}`,
     "/painel/servir": `${volunteerCount} ${volunteerCount === 1 ? "pessoa disponível" : "pessoas disponíveis"} · ${openOpportunities.length} ${openOpportunities.length === 1 ? "oportunidade aberta" : "oportunidades abertas"}`,
     "/catequese": `${catechismGroupCount} ${catechismGroupCount === 1 ? "turma" : "turmas"}`,
